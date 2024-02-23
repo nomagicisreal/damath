@@ -3,7 +3,8 @@ library damath;
 import 'dart:async';
 import 'dart:math' as math;
 
-part 'src/_definition.dart';
+part 'src/definition/others.dart';
+part 'src/definition/space.dart';
 part 'src/async.dart';
 part 'src/collection.dart';
 part 'src/function.dart';
