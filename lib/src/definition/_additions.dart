@@ -2,6 +2,10 @@
 ///
 /// this file contains:
 ///
+/// [DamathException]
+/// [ComparableData]
+///
+///
 /// [Radian]
 ///
 ///
@@ -27,6 +31,34 @@
 ///
 ///
 part of damath;
+
+class DamathException implements Exception {
+  final String message;
+
+  DamathException(this.message);
+
+  @override
+  String toString() => "DamathException: $message";
+}
+
+//
+mixin ComparableData<D extends Comparable, C extends ComparableData<D, C>>
+    implements Comparable<C> {
+  D get data;
+
+  @override
+  int compareTo(C other) => data.compareTo(other.data);
+
+  bool operator >(C other) => Comparable.compare(this, other) == 1;
+
+  bool operator <(C other) => Comparable.compare(this, other) == -1;
+
+  @override
+  bool operator ==(covariant C other) => Comparable.compare(this, other) == 0;
+
+  @override
+  int get hashCode => data.hashCode;
+}
 
 ///
 ///
@@ -334,7 +366,6 @@ class Combination {
       'p: $p------${pGroups.fold('', (a, b) => '$a \n $b')}\n'
       ')';
 }
-
 
 ///
 ///

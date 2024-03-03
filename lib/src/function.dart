@@ -5,8 +5,10 @@
 /// [FPredicator], [FPredicatorCombiner]
 /// [FMapper], [FMapperDouble], [FMapperCubic], [FMapperMapCubicOffset]
 /// [FGenerator], [FGeneratorOffset]
+///
 /// [FTranslator]
-/// [FReducerNum]
+/// [FReducer]
+/// [FDifferentiator]
 /// [FCompanion]
 ///
 ///
@@ -29,7 +31,6 @@
 part of damath;
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names
 
-
 ///
 ///
 /// listener
@@ -48,7 +49,7 @@ extension FListener on Listener {
 ///
 extension FPredicator on Predicator {
   static Predicator<DateTime> isSameDayWith(DateTime? day) =>
-          (currentDay) => DateTimeExtension.isSameDay(currentDay, day);
+      (currentDay) => DateTimeExtension.isSameDay(currentDay, day);
 }
 
 extension FPredicatorCombiner on PredicateCombiner<num> {
@@ -98,10 +99,10 @@ extension FPredicatorCombiner on PredicateCombiner<num> {
 
   // ternary equal, less, larger
   static bool? ternaryIntEqualOrLessOrLarger(int a, int b) => switch (a - b) {
-    0 => true,
-    < 0 => false,
-    _ => null,
-  };
+        0 => true,
+        < 0 => false,
+        _ => null,
+      };
 }
 
 ///
@@ -120,11 +121,11 @@ extension FMapper on Mapper {
   static T keep<T>(T value) => value;
 
   static Translator<double, T> lerpOf<T>(
-      T begin,
-      T end,
-      Translator<double, T> transform,
-      ) =>
-          (value) {
+    T begin,
+    T end,
+    Translator<double, T> transform,
+  ) =>
+      (value) {
         if (value == 0) return begin;
         if (value == 1) return end;
         return transform(value);
@@ -156,10 +157,10 @@ extension FMapperDouble on Mapper<double> {
   /// [fromTimesFactor], [fromPeriod]
   ///
   static Mapper<double> fromTimesFactor(
-      double times,
-      double factor, [
-        Mapper<double> transform = math.sin,
-      ]) {
+    double times,
+    double factor, [
+    Mapper<double> transform = math.sin,
+  ]) {
     assert(times.isFinite && factor.isFinite);
     return (value) => transform(times * value) * factor;
   }
@@ -167,9 +168,9 @@ extension FMapperDouble on Mapper<double> {
   // sin period: (0 ~ 1 ~ 0 ~ -1 ~ 0)
   // cos period: (1 ~ 0 ~ -1 ~ 0 ~ 1)
   static Mapper<double> fromPeriod(
-      double period, [
-        Mapper<double> transform = math.sin,
-      ]) {
+    double period, [
+    Mapper<double> transform = math.sin,
+  ]) {
     assert(transform == math.sin || transform == math.cos);
     final times = Radian.angle_360 * period;
     return FMapper.lerpOf(0, 1, (value) => transform(times * value));
@@ -226,19 +227,39 @@ extension FTranslator on Translator {
 
 ///
 /// [doubleMax], [doubleMin]
-/// [doubleAdding]
-///
 /// [intMax], [intMin]
+///
+/// [doubleAdding], [doubleAddingSquared],
+/// [doubleSubtracting], [doubleSubtractingSquared]
+/// [doubleMultiplying], [doubleDividing]
 /// [intAdding]
 ///
-extension FReducerNum<N extends num> on Reducer<N> {
+extension FReducer on Reducer {
   static const Reducer<double> doubleMax = math.max<double>;
   static const Reducer<double> doubleMin = math.min<double>;
   static const Reducer<int> intMax = math.max<int>;
   static const Reducer<int> intMin = math.min<int>;
 
   static double doubleAdding(double v1, double v2) => v1 + v2;
+
+  static double doubleAddingSquared(double a, double b) => a * a + b * b;
+
+  static double doubleSubtracting(double v1, double v2) => v1 - v2;
+
+  static double doubleSubtractingSquared(double v1, double v2) =>
+      (v1 + v2) * (v1 - v2);
+
+  static double doubleMultiplying(double v1, double v2) => v1 * v2;
+
+  static double doubleDividing(double v1, double v2) => v1 / v2;
+
   static int intAdding(int v1, int v2) => v1 + v2;
+}
+
+extension FDifferentiator<P, Q> on Differentiator<P, Q> {
+  static Differentiator<P, Q> equal<P, Q>() => (p, q) => p == q ? 0 : -1;
+
+  static Differentiator<P, Q> unequal<P, Q>() => (p, q) => p != q ? 0 : -1;
 }
 
 extension FCompanion on Companion {

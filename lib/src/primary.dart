@@ -2,7 +2,9 @@
 ///
 /// this file contains:
 ///
-/// [NumExtension], [DoubleExtension], [IntExtension]
+/// [NumExtension]
+/// [DoubleExtension]
+/// [IntExtension]
 ///
 /// [DurationExtension], [DateTimeExtension]
 ///
@@ -59,7 +61,7 @@ extension NumExtension on num {
 ///
 ///
 /// [sqrt2], ...
-/// [isNearlyInt]
+/// [isPositive], [isNearlyInt], ...
 ///
 /// [proximateInfinityOf], [proximateNegativeInfinityOf]
 /// [infinity2_31], ...
@@ -81,6 +83,8 @@ extension DoubleExtension on double {
   static const double sqrt1_7 = 0.3779644730092272;
   static const double sqrt1_8 = 0.3535533905932738;
   static const double sqrt1_10 = 0.31622776601683794;
+
+  bool get isPositive => !isNegative && this != 0.0;
 
   bool get isNearlyInt => (ceil() - this) <= 0.01;
 
@@ -118,6 +122,8 @@ extension DoubleExtension on double {
 ///
 ///
 extension IntExtension on int {
+  int get contrary => -this;
+
   bool get isPositiveOrZero => !isNegative;
 
   bool get isPositive => !isNegative && this != 0;
@@ -637,7 +643,6 @@ extension DurationExtension on Duration {
   }
 }
 
-
 ///
 /// datetime
 ///
@@ -651,26 +656,26 @@ extension DateTimeExtension on DateTime {
   String get time => toString().split(' ').last; // $h:$min:$sec.$ms$us
 
   int get monthDays => switch (month) {
-    1 => 31,
-    2 => year % 4 == 0
-        ? year % 100 == 0
-        ? year % 400 == 0
-        ? 29
-        : 28
-        : 29
-        : 28,
-    3 => 31,
-    4 => 30,
-    5 => 31,
-    6 => 30,
-    7 => 31,
-    8 => 31,
-    9 => 30,
-    10 => 31,
-    11 => 30,
-    12 => 31,
-    _ => throw UnimplementedError(),
-  };
+        1 => 31,
+        2 => year % 4 == 0
+            ? year % 100 == 0
+                ? year % 400 == 0
+                    ? 29
+                    : 28
+                : 29
+            : 28,
+        3 => 31,
+        4 => 30,
+        5 => 31,
+        6 => 30,
+        7 => 31,
+        8 => 31,
+        9 => 30,
+        10 => 31,
+        11 => 30,
+        12 => 31,
+        _ => throw UnimplementedError(),
+      };
 
   static String parseTimestampOf(String string) =>
       DateTime.fromMillisecondsSinceEpoch(int.parse(string)).toIso8601String();
@@ -686,9 +691,9 @@ extension NullableExtension<T> on T? {
       this == null ? null : value(this as T);
 
   S translateOr<S>(
-      Translator<T, S> translate, {
-        required Supplier<S> ifAbsent,
-      }) {
+    Translator<T, S> translate, {
+    required Supplier<S> ifAbsent,
+  }) {
     final value = this;
     return value == null ? ifAbsent() : translate(value);
   }

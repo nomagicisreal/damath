@@ -3,8 +3,8 @@
 /// this file contains:
 ///
 /// [Coordinate2D]
-/// [Coordinate]
-/// [CoordinateRadian]
+/// [Coordinate3D]
+/// [Radian3D]
 ///
 /// [Vector3D]
 ///
@@ -16,7 +16,6 @@
 ///     [Direction3DIn6]
 ///     [Direction3DIn14]
 ///     [Direction3DIn22]
-///
 ///
 ///
 ///
@@ -107,7 +106,7 @@ class Coordinate2D {
 ///
 ///
 ///
-/// [Coordinate]
+/// [Coordinate3D]
 ///
 ///
 ///
@@ -124,11 +123,11 @@ class Coordinate2D {
 /// [Coordinate.cube], [Coordinate.ofX], [Coordinate.ofY], [Coordinate.ofZ]; [Coordinate.ofXY], [Coordinate.ofYZ], [Coordinate.ofXZ]
 /// [Coordinate.fromDirection]
 ///
-/// [Coordinate.zero], [Coordinate.one]
+/// [Coordinate3D.zero], [Coordinate3D.one]
 /// [maxDistance], [transferToTransformOf],
 ///
 ///
-class Coordinate extends Coordinate2D {
+class Coordinate3D extends Coordinate2D {
   final double dz;
 
   bool get isNot3D => (dz == 0 || dx == 0 || dy == 0);
@@ -139,26 +138,28 @@ class Coordinate extends Coordinate2D {
 
   bool get withoutXY => (dx == 0 && dy == 0);
 
-  Coordinate get retainXY => Coordinate(dx, dy, 0);
+  Coordinate3D get retainXY => Coordinate3D(dx, dy, 0);
 
-  Coordinate get retainYZAsYX => Coordinate(dz, dy, 0);
+  Coordinate3D get retainYZAsYX => Coordinate3D(dz, dy, 0);
 
-  Coordinate get retainYZAsXY => Coordinate(dy, dz, 0);
+  Coordinate3D get retainYZAsXY => Coordinate3D(dy, dz, 0);
 
-  Coordinate get retainXZAsXY => Coordinate(dx, dz, 0);
+  Coordinate3D get retainXZAsXY => Coordinate3D(dx, dz, 0);
 
-  Coordinate get retainXZAsYX => Coordinate(dz, dx, 0);
+  Coordinate3D get retainXZAsYX => Coordinate3D(dz, dx, 0);
 
-  Coordinate get roundup => Coordinate(
+  Coordinate3D get roundToDouble => Coordinate3D(
         dx.roundToDouble(),
         dy.roundToDouble(),
         dz.roundToDouble(),
       );
 
-  Coordinate get abs => Coordinate(dx.abs(), dy.abs(), dz.abs());
+  Coordinate3D get abs => Coordinate3D(dx.abs(), dy.abs(), dz.abs());
 
+  @override
   double get distanceSquared => dx * dx + dy * dy + dz * dz;
 
+  @override
   double get distance => math.sqrt(distanceSquared);
 
   double get volume => dx * dy * dz;
@@ -172,91 +173,91 @@ class Coordinate extends Coordinate2D {
   @override
   double get direction => throw UnimplementedError();
 
-  CoordinateRadian get direction3D => throw UnimplementedError();
+  Radian3D get direction3D => throw UnimplementedError();
 
   @override
-  Coordinate operator +(covariant Coordinate other) =>
-      Coordinate(dx + other.dx, dy + other.dy, dz + other.dz);
+  Coordinate3D operator +(covariant Coordinate3D other) =>
+      Coordinate3D(dx + other.dx, dy + other.dy, dz + other.dz);
 
   @override
-  Coordinate operator -(covariant Coordinate other) =>
-      Coordinate(dx - other.dx, dy - other.dy, dz - other.dz);
+  Coordinate3D operator -(covariant Coordinate3D other) =>
+      Coordinate3D(dx - other.dx, dy - other.dy, dz - other.dz);
 
   @override
-  Coordinate operator -() => Coordinate(-dx, -dy, -dz);
+  Coordinate3D operator -() => Coordinate3D(-dx, -dy, -dz);
 
   @override
-  Coordinate operator *(double operand) => Coordinate(
+  Coordinate3D operator *(double operand) => Coordinate3D(
         dx * operand,
         dy * operand,
         dz * operand,
       );
 
   @override
-  Coordinate operator /(double operand) => Coordinate(
+  Coordinate3D operator /(double operand) => Coordinate3D(
         dx / operand,
         dy / operand,
         dz / operand,
       );
 
   @override
-  Coordinate operator ~/(double operand) => Coordinate(
+  Coordinate3D operator ~/(double operand) => Coordinate3D(
         (dx ~/ operand).toDouble(),
         (dy ~/ operand).toDouble(),
         (dz ~/ operand).toDouble(),
       );
 
   @override
-  Coordinate operator %(double operand) => Coordinate(
+  Coordinate3D operator %(double operand) => Coordinate3D(
         dx % operand,
         dy % operand,
         dz % operand,
       );
 
   @override
-  bool operator <(covariant Coordinate other) =>
+  bool operator <(covariant Coordinate3D other) =>
       dz < other.dz && (super < other);
 
   @override
-  bool operator <=(covariant Coordinate other) =>
+  bool operator <=(covariant Coordinate3D other) =>
       dz <= other.dz && (super <= other);
 
   @override
-  bool operator >(covariant Coordinate other) =>
+  bool operator >(covariant Coordinate3D other) =>
       dz > other.dz && (super > other);
 
   @override
-  bool operator >=(covariant Coordinate other) =>
+  bool operator >=(covariant Coordinate3D other) =>
       dz >= other.dz && (super >= other);
 
   @override
-  bool operator ==(covariant Coordinate other) =>
+  bool operator ==(covariant Coordinate3D other) =>
       dz == other.dz && (super == other);
 
   @override
   int get hashCode => Object.hash(super.hashCode, dz);
 
   @override
-  Coordinate scale(
+  Coordinate3D scale(
     double scaleX,
     double scaleY, {
     double scaleZ = 0,
   }) =>
-      Coordinate(dx * scaleX, dy * scaleY, dz * scaleZ);
+      Coordinate3D(dx * scaleX, dy * scaleY, dz * scaleZ);
 
-  Coordinate scaleCoordinate(Coordinate scale) =>
+  Coordinate3D scaleCoordinate(Coordinate3D scale) =>
       this.scale(scale.dx, scale.dy, scaleZ: scale.dz);
 
   @override
-  Coordinate translate(
+  Coordinate3D translate(
     double translateX,
     double translateY, {
     double translateZ = 0,
   }) =>
-      Coordinate(dx + translateX, dy + translateY, dz + translateZ);
+      Coordinate3D(dx + translateX, dy + translateY, dz + translateZ);
 
-  Coordinate rotate(CoordinateRadian direction) =>
-      Coordinate.fromDirection(direction3D + direction, distance);
+  Coordinate3D rotate(Radian3D direction) =>
+      Coordinate3D.fromDirection(direction3D + direction, distance);
 
   @override
   String toString() => 'Coordinate('
@@ -264,92 +265,92 @@ class Coordinate extends Coordinate2D {
       '${dy.toStringAsFixed(1)}, '
       '${dz.toStringAsFixed(1)})';
 
-  const Coordinate(super.dx, super.dy, this.dz);
+  const Coordinate3D(super.dx, super.dy, this.dz);
 
-  const Coordinate.cube(double dimension)
+  const Coordinate3D.cube(double dimension)
       : dz = dimension,
         super(dimension, dimension);
 
-  const Coordinate.ofX(double x)
+  const Coordinate3D.ofX(double x)
       : dz = 0,
         super(x, 0);
 
-  const Coordinate.ofY(double y)
+  const Coordinate3D.ofY(double y)
       : dz = 0,
         super(0, y);
 
-  const Coordinate.ofZ(double z)
+  const Coordinate3D.ofZ(double z)
       : dz = z,
         super(0, 0);
 
-  const Coordinate.ofXY(double value)
+  const Coordinate3D.ofXY(double value)
       : dz = 0,
         super(value, value);
 
-  const Coordinate.ofYZ(double value)
+  const Coordinate3D.ofYZ(double value)
       : dz = value,
         super(0, value);
 
-  const Coordinate.ofXZ(double value)
+  const Coordinate3D.ofXZ(double value)
       : dz = value,
         super(value, 0);
 
   //
-  Coordinate.fromCoordinate2D(Coordinate2D Coordinate2D)
+  Coordinate3D.fromCoordinate2D(Coordinate2D Coordinate2D)
       : dz = 0,
         super(Coordinate2D.dx, Coordinate2D.dy);
 
-  static const Coordinate zero = Coordinate.cube(0);
-  static const Coordinate one = Coordinate.cube(1);
-  static const Coordinate cube_01 = Coordinate.cube(0.1);
-  static const Coordinate cube_02 = Coordinate.cube(0.2);
-  static const Coordinate cube_03 = Coordinate.cube(0.3);
-  static const Coordinate cube_04 = Coordinate.cube(0.4);
-  static const Coordinate cube_05 = Coordinate.cube(0.5);
-  static const Coordinate cube_06 = Coordinate.cube(0.6);
-  static const Coordinate cube_07 = Coordinate.cube(0.7);
-  static const Coordinate cube_08 = Coordinate.cube(0.8);
-  static const Coordinate cube_09 = Coordinate.cube(0.9);
-  static const Coordinate cube_1 = Coordinate.cube(1);
-  static const Coordinate cube_2 = Coordinate.cube(2);
-  static const Coordinate cube_3 = Coordinate.cube(3);
-  static const Coordinate cube_4 = Coordinate.cube(4);
-  static const Coordinate cube_5 = Coordinate.cube(5);
-  static const Coordinate cube_6 = Coordinate.cube(6);
-  static const Coordinate cube_7 = Coordinate.cube(7);
-  static const Coordinate cube_8 = Coordinate.cube(8);
-  static const Coordinate cube_9 = Coordinate.cube(9);
-  static const Coordinate cube_10 = Coordinate.cube(10);
-  static const Coordinate cube_100 = Coordinate.cube(100);
-  static const Coordinate x100 = Coordinate(100, 0, 0);
-  static const Coordinate y100 = Coordinate(0, 100, 0);
-  static const Coordinate z100 = Coordinate(0, 0, 100);
+  static const Coordinate3D zero = Coordinate3D.cube(0);
+  static const Coordinate3D one = Coordinate3D.cube(1);
+  static const Coordinate3D cube_01 = Coordinate3D.cube(0.1);
+  static const Coordinate3D cube_02 = Coordinate3D.cube(0.2);
+  static const Coordinate3D cube_03 = Coordinate3D.cube(0.3);
+  static const Coordinate3D cube_04 = Coordinate3D.cube(0.4);
+  static const Coordinate3D cube_05 = Coordinate3D.cube(0.5);
+  static const Coordinate3D cube_06 = Coordinate3D.cube(0.6);
+  static const Coordinate3D cube_07 = Coordinate3D.cube(0.7);
+  static const Coordinate3D cube_08 = Coordinate3D.cube(0.8);
+  static const Coordinate3D cube_09 = Coordinate3D.cube(0.9);
+  static const Coordinate3D cube_1 = Coordinate3D.cube(1);
+  static const Coordinate3D cube_2 = Coordinate3D.cube(2);
+  static const Coordinate3D cube_3 = Coordinate3D.cube(3);
+  static const Coordinate3D cube_4 = Coordinate3D.cube(4);
+  static const Coordinate3D cube_5 = Coordinate3D.cube(5);
+  static const Coordinate3D cube_6 = Coordinate3D.cube(6);
+  static const Coordinate3D cube_7 = Coordinate3D.cube(7);
+  static const Coordinate3D cube_8 = Coordinate3D.cube(8);
+  static const Coordinate3D cube_9 = Coordinate3D.cube(9);
+  static const Coordinate3D cube_10 = Coordinate3D.cube(10);
+  static const Coordinate3D cube_100 = Coordinate3D.cube(100);
+  static const Coordinate3D x100 = Coordinate3D(100, 0, 0);
+  static const Coordinate3D y100 = Coordinate3D(0, 100, 0);
+  static const Coordinate3D z100 = Coordinate3D(0, 0, 100);
 
   ///
   /// it implement in 'my coordinate system', not 'dart coordinate system' ([Transform], [Matrix4], [Coordinate2D]], ...)
   /// see the comment above [transferToTransformOf] to understand more.
   ///
-  factory Coordinate.fromDirection(
-    CoordinateRadian direction, [
+  factory Coordinate3D.fromDirection(
+    Radian3D direction, [
     double distance = 1,
   ]) {
     final rX = direction.dx;
     final rY = direction.dy;
     final rZ = direction.dz;
     final d = distance * DoubleExtension.sqrt1_3;
-    return Coordinate(
+    return Coordinate3D(
       d * (math.cos(rZ) * math.cos(rY)),
       d * (math.sin(rZ) * math.cos(rX)),
       d * (math.sin(rX) * math.sin(rY)),
     );
   }
 
-  static Coordinate maxDistance(Coordinate a, Coordinate b) =>
+  static Coordinate3D maxDistance(Coordinate3D a, Coordinate3D b) =>
       a.distance > b.distance ? a : b;
 
   ///
   ///
-  /// [Coordinate.transferToTransformOf] transfer from my coordinate system:
+  /// [Coordinate3D.transferToTransformOf] transfer from my coordinate system:
   /// x axis is [Direction3DIn6.left] -> [Direction3DIn6.right], radian start from [Direction3DIn6.back]
   /// y axis is [Direction3DIn6.front] -> [Direction3DIn6.back], radian start from [Direction3DIn6.left]
   /// z axis is [Direction3DIn6.bottom] -> [Direction3DIn6.top], radian start from [Direction3DIn6.right]
@@ -364,79 +365,79 @@ class Coordinate extends Coordinate2D {
   ///   * [Coordinate2D.fromDirection], [Coordinate.fromDirection]
   ///   * [Direction], [Direction3DIn6]
   ///
-  static Coordinate transferToTransformOf(Coordinate p) =>
-      Coordinate(p.dx, -p.dz, -p.dy);
+  static Coordinate3D transferToTransformOf(Coordinate3D p) =>
+      Coordinate3D(p.dx, -p.dz, -p.dy);
 }
 
 ///
 ///
 ///
-/// [CoordinateRadian]
+/// [Radian3D]
 ///
 ///
 ///
 
 ///
 ///
-/// [CoordinateRadian.circle], [CoordinateRadian.ofX], [CoordinateRadian.ofY], [CoordinateRadian.ofZ]; [CoordinateRadian.ofXY], [CoordinateRadian.ofYZ], [CoordinateRadian.ofXZ]
+/// [Radian3D.circle], [Radian3D.ofX], [Radian3D.ofY], [Radian3D.ofZ]; [Radian3D.ofXY], [Radian3D.ofYZ], [Radian3D.ofXZ]
 /// [modulus90Angle], [modulus180Angle], [modulus360Angle]
 /// [zero], [angleX_1], [angleY_1], [angleZ_1]...
 ///
-class CoordinateRadian extends Coordinate {
-  const CoordinateRadian(super.dx, super.dy, super.dz);
+class Radian3D extends Coordinate3D {
+  const Radian3D(super.dx, super.dy, super.dz);
 
-  const CoordinateRadian.circle(super.dimension) : super.cube();
+  const Radian3D.circle(super.dimension) : super.cube();
 
-  const CoordinateRadian.ofX(super.dx) : super.ofX();
+  const Radian3D.ofX(super.dx) : super.ofX();
 
-  const CoordinateRadian.ofY(super.dy) : super.ofY();
+  const Radian3D.ofY(super.dy) : super.ofY();
 
-  const CoordinateRadian.ofZ(super.dz) : super.ofZ();
+  const Radian3D.ofZ(super.dz) : super.ofZ();
 
-  const CoordinateRadian.ofXY(super.value) : super.ofXY();
+  const Radian3D.ofXY(super.value) : super.ofXY();
 
-  const CoordinateRadian.ofYZ(super.value) : super.ofYZ();
+  const Radian3D.ofYZ(super.value) : super.ofYZ();
 
-  const CoordinateRadian.ofXZ(super.value) : super.ofXZ();
-
-  @override
-  CoordinateRadian operator +(covariant CoordinateRadian other) =>
-      CoordinateRadian(dx + other.dx, dy + other.dy, dz + other.dz);
+  const Radian3D.ofXZ(super.value) : super.ofXZ();
 
   @override
-  CoordinateRadian operator -(covariant CoordinateRadian other) =>
-      CoordinateRadian(dx - other.dx, dy - other.dy, dz - other.dz);
+  Radian3D operator +(covariant Radian3D other) =>
+      Radian3D(dx + other.dx, dy + other.dy, dz + other.dz);
 
   @override
-  CoordinateRadian operator *(double operand) =>
-      CoordinateRadian(dx * operand, dy * operand, dz * operand);
+  Radian3D operator -(covariant Radian3D other) =>
+      Radian3D(dx - other.dx, dy - other.dy, dz - other.dz);
 
   @override
-  CoordinateRadian operator /(double operand) =>
-      CoordinateRadian(dx / operand, dy / operand, dz / operand);
+  Radian3D operator *(double operand) =>
+      Radian3D(dx * operand, dy * operand, dz * operand);
+
+  @override
+  Radian3D operator /(double operand) =>
+      Radian3D(dx / operand, dy / operand, dz / operand);
 
   ///
   /// getters
   ///
-  CoordinateRadian get modulus90Angle => CoordinateRadian(
+  Radian3D get modulus90Angle => Radian3D(
         Radian.modulus90AngleOf(dx),
         Radian.modulus90AngleOf(dy),
         Radian.modulus90AngleOf(dz),
       );
 
-  CoordinateRadian get modulus180Angle => CoordinateRadian(
+  Radian3D get modulus180Angle => Radian3D(
         Radian.modulus180AngleOf(dx),
         Radian.modulus180AngleOf(dy),
         Radian.modulus180AngleOf(dz),
       );
 
-  CoordinateRadian get modulus360Angle => CoordinateRadian(
+  Radian3D get modulus360Angle => Radian3D(
         Radian.modulus360AngleOf(dx),
         Radian.modulus360AngleOf(dy),
         Radian.modulus360AngleOf(dz),
       );
 
-  CoordinateRadian get restrict180AbsAngle => CoordinateRadian(
+  Radian3D get restrict180AbsAngle => Radian3D(
         Radian.restrict180AbsForAngle(dx),
         Radian.restrict180AbsForAngle(dy),
         Radian.restrict180AbsForAngle(dz),
@@ -445,91 +446,91 @@ class CoordinateRadian extends Coordinate {
   ///
   /// [complementary], [supplementary]
   ///
-  CoordinateRadian get complementary => CoordinateRadian(
+  Radian3D get complementary => Radian3D(
         Radian.complementaryOf(dx),
         Radian.complementaryOf(dy),
         Radian.complementaryOf(dz),
       );
 
-  CoordinateRadian get supplementary => CoordinateRadian(
+  Radian3D get supplementary => Radian3D(
         Radian.supplementaryOf(dx),
         Radian.supplementaryOf(dy),
         Radian.supplementaryOf(dz),
       );
 
-  Coordinate get toAngle =>
-      Coordinate(Radian.angleOf(dx), Radian.angleOf(dy), Radian.angleOf(dz));
+  Coordinate3D get toAngle =>
+      Coordinate3D(Radian.angleOf(dx), Radian.angleOf(dy), Radian.angleOf(dz));
 
-  Coordinate get toRound =>
-      Coordinate(Radian.roundOf(dx), Radian.roundOf(dy), Radian.roundOf(dz));
+  Coordinate3D get toRound =>
+      Coordinate3D(Radian.roundOf(dx), Radian.roundOf(dy), Radian.roundOf(dz));
 
   ///
   /// constants
   ///
-  static const zero = CoordinateRadian.circle(0);
-  static const angleX_360 = CoordinateRadian.ofX(Radian.angle_360);
-  static const angleY_360 = CoordinateRadian.ofY(Radian.angle_360);
-  static const angleZ_360 = CoordinateRadian.ofZ(Radian.angle_360);
-  static const angleXYZ_360 = CoordinateRadian.circle(Radian.angle_360);
-  static const angleXY_360 = CoordinateRadian.ofXY(Radian.angle_360);
-  static const angleX_270 = CoordinateRadian.ofX(Radian.angle_270);
-  static const angleY_270 = CoordinateRadian.ofY(Radian.angle_270);
-  static const angleZ_270 = CoordinateRadian.ofZ(Radian.angle_270);
-  static const angleXYZ_270 = CoordinateRadian.circle(Radian.angle_270);
-  static const angleXY_270 = CoordinateRadian.ofXY(Radian.angle_270);
-  static const angleX_180 = CoordinateRadian.ofX(Radian.angle_180);
-  static const angleY_180 = CoordinateRadian.ofY(Radian.angle_180);
-  static const angleZ_180 = CoordinateRadian.ofZ(Radian.angle_180);
-  static const angleXYZ_180 = CoordinateRadian.circle(Radian.angle_180);
-  static const angleXY_180 = CoordinateRadian.ofXY(Radian.angle_180);
-  static const angleX_120 = CoordinateRadian.ofX(Radian.angle_120);
-  static const angleY_120 = CoordinateRadian.ofY(Radian.angle_120);
-  static const angleZ_120 = CoordinateRadian.ofZ(Radian.angle_120);
-  static const angleZ_150 = CoordinateRadian.ofZ(Radian.angle_150);
-  static const angleXYZ_120 = CoordinateRadian.circle(Radian.angle_120);
-  static const angleXY_120 = CoordinateRadian.ofXY(Radian.angle_120);
-  static const angleX_90 = CoordinateRadian.ofX(Radian.angle_90);
-  static const angleY_90 = CoordinateRadian.ofY(Radian.angle_90);
-  static const angleZ_90 = CoordinateRadian.ofZ(Radian.angle_90);
-  static const angleXYZ_90 = CoordinateRadian.circle(Radian.angle_90);
-  static const angleXY_90 = CoordinateRadian.ofXY(Radian.angle_90);
-  static const angleYZ_90 = CoordinateRadian.ofYZ(Radian.angle_90);
-  static const angleXZ_90 = CoordinateRadian.ofXZ(Radian.angle_90);
-  static const angleX_60 = CoordinateRadian.ofX(Radian.angle_60);
-  static const angleY_60 = CoordinateRadian.ofY(Radian.angle_60);
-  static const angleZ_60 = CoordinateRadian.ofZ(Radian.angle_60);
-  static const angleXYZ_60 = CoordinateRadian.circle(Radian.angle_60);
-  static const angleXY_60 = CoordinateRadian.ofXY(Radian.angle_60);
-  static const angleX_45 = CoordinateRadian.ofX(Radian.angle_45);
-  static const angleY_45 = CoordinateRadian.ofY(Radian.angle_45);
-  static const angleZ_45 = CoordinateRadian.ofZ(Radian.angle_45);
-  static const angleXYZ_45 = CoordinateRadian.circle(Radian.angle_45);
-  static const angleXY_45 = CoordinateRadian.ofXY(Radian.angle_45);
-  static const angleX_30 = CoordinateRadian.ofX(Radian.angle_30);
-  static const angleY_30 = CoordinateRadian.ofY(Radian.angle_30);
-  static const angleZ_30 = CoordinateRadian.ofZ(Radian.angle_30);
-  static const angleXYZ_30 = CoordinateRadian.circle(Radian.angle_30);
-  static const angleXY_30 = CoordinateRadian.ofXY(Radian.angle_30);
-  static const angleX_15 = CoordinateRadian.ofX(Radian.angle_15);
-  static const angleY_15 = CoordinateRadian.ofY(Radian.angle_15);
-  static const angleZ_15 = CoordinateRadian.ofZ(Radian.angle_15);
-  static const angleXYZ_15 = CoordinateRadian.circle(Radian.angle_15);
-  static const angleXY_15 = CoordinateRadian.ofXY(Radian.angle_15);
-  static const angleX_10 = CoordinateRadian.ofX(Radian.angle_10);
-  static const angleY_10 = CoordinateRadian.ofY(Radian.angle_10);
-  static const angleZ_10 = CoordinateRadian.ofZ(Radian.angle_10);
-  static const angleXYZ_10 = CoordinateRadian.circle(Radian.angle_10);
-  static const angleXY_10 = CoordinateRadian.ofXY(Radian.angle_10);
-  static const angleX_1 = CoordinateRadian.ofX(Radian.angle_1);
-  static const angleY_1 = CoordinateRadian.ofY(Radian.angle_1);
-  static const angleZ_1 = CoordinateRadian.ofZ(Radian.angle_1);
-  static const angleXYZ_1 = CoordinateRadian.circle(Radian.angle_1);
-  static const angleXY_1 = CoordinateRadian.ofXY(Radian.angle_1);
-  static const angleX_01 = CoordinateRadian.ofX(Radian.angle_01);
-  static const angleY_01 = CoordinateRadian.ofY(Radian.angle_01);
-  static const angleZ_01 = CoordinateRadian.ofZ(Radian.angle_01);
-  static const angleXYZ_01 = CoordinateRadian.circle(Radian.angle_01);
-  static const angleXY_01 = CoordinateRadian.ofXY(Radian.angle_01);
+  static const zero = Radian3D.circle(0);
+  static const angleX_360 = Radian3D.ofX(Radian.angle_360);
+  static const angleY_360 = Radian3D.ofY(Radian.angle_360);
+  static const angleZ_360 = Radian3D.ofZ(Radian.angle_360);
+  static const angleXYZ_360 = Radian3D.circle(Radian.angle_360);
+  static const angleXY_360 = Radian3D.ofXY(Radian.angle_360);
+  static const angleX_270 = Radian3D.ofX(Radian.angle_270);
+  static const angleY_270 = Radian3D.ofY(Radian.angle_270);
+  static const angleZ_270 = Radian3D.ofZ(Radian.angle_270);
+  static const angleXYZ_270 = Radian3D.circle(Radian.angle_270);
+  static const angleXY_270 = Radian3D.ofXY(Radian.angle_270);
+  static const angleX_180 = Radian3D.ofX(Radian.angle_180);
+  static const angleY_180 = Radian3D.ofY(Radian.angle_180);
+  static const angleZ_180 = Radian3D.ofZ(Radian.angle_180);
+  static const angleXYZ_180 = Radian3D.circle(Radian.angle_180);
+  static const angleXY_180 = Radian3D.ofXY(Radian.angle_180);
+  static const angleX_120 = Radian3D.ofX(Radian.angle_120);
+  static const angleY_120 = Radian3D.ofY(Radian.angle_120);
+  static const angleZ_120 = Radian3D.ofZ(Radian.angle_120);
+  static const angleZ_150 = Radian3D.ofZ(Radian.angle_150);
+  static const angleXYZ_120 = Radian3D.circle(Radian.angle_120);
+  static const angleXY_120 = Radian3D.ofXY(Radian.angle_120);
+  static const angleX_90 = Radian3D.ofX(Radian.angle_90);
+  static const angleY_90 = Radian3D.ofY(Radian.angle_90);
+  static const angleZ_90 = Radian3D.ofZ(Radian.angle_90);
+  static const angleXYZ_90 = Radian3D.circle(Radian.angle_90);
+  static const angleXY_90 = Radian3D.ofXY(Radian.angle_90);
+  static const angleYZ_90 = Radian3D.ofYZ(Radian.angle_90);
+  static const angleXZ_90 = Radian3D.ofXZ(Radian.angle_90);
+  static const angleX_60 = Radian3D.ofX(Radian.angle_60);
+  static const angleY_60 = Radian3D.ofY(Radian.angle_60);
+  static const angleZ_60 = Radian3D.ofZ(Radian.angle_60);
+  static const angleXYZ_60 = Radian3D.circle(Radian.angle_60);
+  static const angleXY_60 = Radian3D.ofXY(Radian.angle_60);
+  static const angleX_45 = Radian3D.ofX(Radian.angle_45);
+  static const angleY_45 = Radian3D.ofY(Radian.angle_45);
+  static const angleZ_45 = Radian3D.ofZ(Radian.angle_45);
+  static const angleXYZ_45 = Radian3D.circle(Radian.angle_45);
+  static const angleXY_45 = Radian3D.ofXY(Radian.angle_45);
+  static const angleX_30 = Radian3D.ofX(Radian.angle_30);
+  static const angleY_30 = Radian3D.ofY(Radian.angle_30);
+  static const angleZ_30 = Radian3D.ofZ(Radian.angle_30);
+  static const angleXYZ_30 = Radian3D.circle(Radian.angle_30);
+  static const angleXY_30 = Radian3D.ofXY(Radian.angle_30);
+  static const angleX_15 = Radian3D.ofX(Radian.angle_15);
+  static const angleY_15 = Radian3D.ofY(Radian.angle_15);
+  static const angleZ_15 = Radian3D.ofZ(Radian.angle_15);
+  static const angleXYZ_15 = Radian3D.circle(Radian.angle_15);
+  static const angleXY_15 = Radian3D.ofXY(Radian.angle_15);
+  static const angleX_10 = Radian3D.ofX(Radian.angle_10);
+  static const angleY_10 = Radian3D.ofY(Radian.angle_10);
+  static const angleZ_10 = Radian3D.ofZ(Radian.angle_10);
+  static const angleXYZ_10 = Radian3D.circle(Radian.angle_10);
+  static const angleXY_10 = Radian3D.ofXY(Radian.angle_10);
+  static const angleX_1 = Radian3D.ofX(Radian.angle_1);
+  static const angleY_1 = Radian3D.ofY(Radian.angle_1);
+  static const angleZ_1 = Radian3D.ofZ(Radian.angle_1);
+  static const angleXYZ_1 = Radian3D.circle(Radian.angle_1);
+  static const angleXY_1 = Radian3D.ofXY(Radian.angle_1);
+  static const angleX_01 = Radian3D.ofX(Radian.angle_01);
+  static const angleY_01 = Radian3D.ofY(Radian.angle_01);
+  static const angleZ_01 = Radian3D.ofZ(Radian.angle_01);
+  static const angleXYZ_01 = Radian3D.circle(Radian.angle_01);
+  static const angleXY_01 = Radian3D.ofXY(Radian.angle_01);
 }
 
 ///
@@ -542,7 +543,7 @@ class CoordinateRadian extends Coordinate {
 
 //
 class Vector3D {
-  final CoordinateRadian direction;
+  final Radian3D direction;
   final double distance;
 
   const Vector3D(this.direction, this.distance);
@@ -550,12 +551,12 @@ class Vector3D {
   Coordinate2D get toCoordinate2D =>
       Coordinate2D.fromDirection(-direction.dy, distance);
 
-  Coordinate get toCoordinate => Coordinate.fromDirection(
+  Coordinate3D get toCoordinate => Coordinate3D.fromDirection(
         direction,
         distance,
       );
 
-  Vector3D rotated(CoordinateRadian d) => Vector3D(direction + d, distance);
+  Vector3D rotated(Radian3D d) => Vector3D(direction + d, distance);
 
   @override
   String toString() => "Vector($direction, $distance)";
@@ -568,7 +569,7 @@ class Vector3D {
   static Translator<double, Vector3D> lerpOf(Vector3D begin, Vector3D end) {
     final direction = end.direction - begin.direction;
     final distance = end.distance - begin.distance;
-    final directionOf = FMapper.lerpOf<CoordinateRadian>(
+    final directionOf = FMapper.lerpOf<Radian3D>(
       begin.direction,
       end.direction,
       (t) => direction * t,
@@ -599,7 +600,7 @@ class Vector3D {
 ///
 /// See Also:
 ///   * [KRadian]
-///   * [Coordinate.transferToTransformOf], [Coordinate.fromDirection]
+///   * [Coordinate3D.transferToTransformOf], [Coordinate.fromDirection]
 ///
 ///
 ///
@@ -611,7 +612,7 @@ sealed class Direction<D> {
 
   Coordinate2D get toCoordinate2D;
 
-  Coordinate get toCoordinate;
+  Coordinate3D get toCoordinate;
 
   static const radian2D_right = 0;
   static const radian2D_bottomRight = Radian.angle_45;
@@ -636,46 +637,46 @@ sealed class Direction<D> {
   static const Coordinate2D_bottomRight =
       Coordinate2D(math.sqrt1_2, math.sqrt1_2);
 
-  static const coordinate_center = Coordinate.zero;
-  static const coordinate_left = Coordinate.ofX(-1);
-  static const coordinate_top = Coordinate.ofY(-1);
-  static const coordinate_right = Coordinate.ofX(1);
-  static const coordinate_bottom = Coordinate.ofY(1);
-  static const coordinate_front = Coordinate.ofZ(1);
-  static const coordinate_back = Coordinate.ofZ(-1);
+  static const coordinate_center = Coordinate3D.zero;
+  static const coordinate_left = Coordinate3D.ofX(-1);
+  static const coordinate_top = Coordinate3D.ofY(-1);
+  static const coordinate_right = Coordinate3D.ofX(1);
+  static const coordinate_bottom = Coordinate3D.ofY(1);
+  static const coordinate_front = Coordinate3D.ofZ(1);
+  static const coordinate_back = Coordinate3D.ofZ(-1);
 
-  static const coordinate_topLeft = Coordinate.ofXY(-math.sqrt1_2);
-  static const coordinate_bottomRight = Coordinate.ofXY(math.sqrt1_2);
-  static const coordinate_frontRight = Coordinate.ofXZ(math.sqrt1_2);
-  static const coordinate_frontBottom = Coordinate.ofYZ(math.sqrt1_2);
-  static const coordinate_backLeft = Coordinate.ofXZ(-math.sqrt1_2);
-  static const coordinate_backTop = Coordinate.ofYZ(-math.sqrt1_2);
-  static const coordinate_topRight = Coordinate(math.sqrt1_2, -math.sqrt1_2, 0);
-  static const coordinate_frontTop = Coordinate(0, -math.sqrt1_2, math.sqrt1_2);
+  static const coordinate_topLeft = Coordinate3D.ofXY(-math.sqrt1_2);
+  static const coordinate_bottomRight = Coordinate3D.ofXY(math.sqrt1_2);
+  static const coordinate_frontRight = Coordinate3D.ofXZ(math.sqrt1_2);
+  static const coordinate_frontBottom = Coordinate3D.ofYZ(math.sqrt1_2);
+  static const coordinate_backLeft = Coordinate3D.ofXZ(-math.sqrt1_2);
+  static const coordinate_backTop = Coordinate3D.ofYZ(-math.sqrt1_2);
+  static const coordinate_topRight = Coordinate3D(math.sqrt1_2, -math.sqrt1_2, 0);
+  static const coordinate_frontTop = Coordinate3D(0, -math.sqrt1_2, math.sqrt1_2);
   static const coordinate_bottomLeft =
-      Coordinate(-math.sqrt1_2, math.sqrt1_2, 0);
+      Coordinate3D(-math.sqrt1_2, math.sqrt1_2, 0);
   static const coordinate_frontLeft =
-      Coordinate(-math.sqrt1_2, 0, math.sqrt1_2);
+      Coordinate3D(-math.sqrt1_2, 0, math.sqrt1_2);
   static const coordinate_backRight =
-      Coordinate(math.sqrt1_2, 0, -math.sqrt1_2);
+      Coordinate3D(math.sqrt1_2, 0, -math.sqrt1_2);
   static const coordinate_backBottom =
-      Coordinate(0, math.sqrt1_2, -math.sqrt1_2);
+      Coordinate3D(0, math.sqrt1_2, -math.sqrt1_2);
 
-  static const coordinate_frontTopLeft = Coordinate(-DoubleExtension.sqrt1_3,
+  static const coordinate_frontTopLeft = Coordinate3D(-DoubleExtension.sqrt1_3,
       -DoubleExtension.sqrt1_3, DoubleExtension.sqrt1_3);
-  static const coordinate_frontTopRight = Coordinate(DoubleExtension.sqrt1_3,
+  static const coordinate_frontTopRight = Coordinate3D(DoubleExtension.sqrt1_3,
       -DoubleExtension.sqrt1_3, DoubleExtension.sqrt1_3);
-  static const coordinate_frontBottomLeft = Coordinate(-DoubleExtension.sqrt1_3,
+  static const coordinate_frontBottomLeft = Coordinate3D(-DoubleExtension.sqrt1_3,
       DoubleExtension.sqrt1_3, DoubleExtension.sqrt1_3);
-  static const coordinate_frontBottomRight = Coordinate(DoubleExtension.sqrt1_3,
+  static const coordinate_frontBottomRight = Coordinate3D(DoubleExtension.sqrt1_3,
       DoubleExtension.sqrt1_3, DoubleExtension.sqrt1_3);
-  static const coordinate_backTopLeft = Coordinate(-DoubleExtension.sqrt1_3,
+  static const coordinate_backTopLeft = Coordinate3D(-DoubleExtension.sqrt1_3,
       -DoubleExtension.sqrt1_3, -DoubleExtension.sqrt1_3);
-  static const coordinate_backTopRight = Coordinate(DoubleExtension.sqrt1_3,
+  static const coordinate_backTopRight = Coordinate3D(DoubleExtension.sqrt1_3,
       -DoubleExtension.sqrt1_3, -DoubleExtension.sqrt1_3);
-  static const coordinate_backBottomLeft = Coordinate(-DoubleExtension.sqrt1_3,
+  static const coordinate_backBottomLeft = Coordinate3D(-DoubleExtension.sqrt1_3,
       DoubleExtension.sqrt1_3, -DoubleExtension.sqrt1_3);
-  static const coordinate_backBottomRight = Coordinate(DoubleExtension.sqrt1_3,
+  static const coordinate_backBottomRight = Coordinate3D(DoubleExtension.sqrt1_3,
       DoubleExtension.sqrt1_3, -DoubleExtension.sqrt1_3);
 }
 
@@ -707,7 +708,7 @@ enum Direction2DIn4 implements Direction2D<Direction2DIn4> {
   Coordinate2D get toCoordinate2D => toDirection8.toCoordinate2D;
 
   @override
-  Coordinate get toCoordinate => toDirection8.toCoordinate;
+  Coordinate3D get toCoordinate => toDirection8.toCoordinate;
 
 }
 
@@ -746,7 +747,7 @@ enum Direction2DIn8 implements Direction2D<Direction2DIn8> {
       };
 
   @override
-  Coordinate get toCoordinate => switch (this) {
+  Coordinate3D get toCoordinate => switch (this) {
         top => Direction.coordinate_top,
         left => Direction.coordinate_left,
         right => Direction.coordinate_right,
@@ -816,7 +817,7 @@ enum Direction3DIn6 implements Direction3D<Direction3DIn6> {
       };
 
   @override
-  Coordinate get toCoordinate => switch (this) {
+  Coordinate3D get toCoordinate => switch (this) {
         Direction3DIn6.left => Direction.coordinate_left,
         Direction3DIn6.top => Direction.coordinate_top,
         Direction3DIn6.right => Direction.coordinate_right,
@@ -836,7 +837,7 @@ enum Direction3DIn6 implements Direction3D<Direction3DIn6> {
   /// [bottom] can be seen while [top] not be seen.
   ///
   ///
-  static List<Direction3DIn6> parseRotation(CoordinateRadian radian) {
+  static List<Direction3DIn6> parseRotation(Radian3D radian) {
     // ?
     final r = radian.restrict180AbsAngle;
 
@@ -902,7 +903,7 @@ enum Direction3DIn14 implements Direction3D<Direction3DIn14> {
       };
 
   @override
-  Coordinate get toCoordinate => switch (this) {
+  Coordinate3D get toCoordinate => switch (this) {
         Direction3DIn14.left => Direction.coordinate_left,
         Direction3DIn14.top => Direction.coordinate_top,
         Direction3DIn14.right => Direction.coordinate_right,
