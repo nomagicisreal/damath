@@ -3,8 +3,9 @@ library damath;
 import 'dart:async';
 import 'dart:math' as math;
 
-part 'src/definition/others.dart';
+part 'src/definition/_additions.dart';
 part 'src/definition/space.dart';
+part 'src/definition/graph.dart';
 part 'src/async.dart';
 part 'src/collection.dart';
 part 'src/function.dart';
@@ -29,6 +30,9 @@ part 'src/value.dart';
 ///
 /// [Predicator], [PredicatorTernary]
 /// [Generator], [Generator2D]
+///
+///
+/// [DamathException]
 ///
 ///
 ///
@@ -62,3 +66,12 @@ typedef GeneratorFolder<P, Q, S> = S Function(int index, P p, Q q);
 typedef GeneratorReducer<T> = T Function(int index, T v1, T v2);
 typedef Generator2D<T> = T Function(int i, int j);
 typedef Differentiator<P, Q> = int Function(P p, Q q);
+
+
+class DamathException implements Exception {
+  final String message;
+  DamathException(this.message);
+
+  @override
+  String toString() => 'DamathException: $message';
+}

@@ -2,12 +2,23 @@
 ///
 /// this file contains:
 ///
-/// [NumExtension], [DoubleExtension], [IntExtension]
+/// [ComparableData]
 ///
-/// [DurationExtension], [DateTimeExtension]
+///
+/// [NumExtension]
+/// [DoubleExtension]
+/// [IntExtension]
+///
+///
+/// [DurationExtension]
+/// [DateTimeExtension]
+///
 ///
 /// [NullableExtension]
-/// [StringExtension], [MatchExtension]
+///
+///
+/// [StringExtension]
+/// [MatchExtension]
 ///
 ///
 ///
@@ -27,6 +38,19 @@
 ///
 ///
 part of damath;
+
+///
+/// comparable data
+///
+
+//
+mixin ComparableData<C extends Comparable, D extends ComparableData<C, D>>
+implements Comparable<D> {
+  bool operator >(D other) => Comparable.compare(this, other) == 1;
+
+  bool operator <(D other) => ComparableReverse.compare(this, other) == -1;
+}
+
 
 ///
 ///
@@ -680,6 +704,9 @@ extension DateTimeExtension on DateTime {
 /// nullable
 ///
 extension NullableExtension<T> on T? {
+  bool get isNull => this == null;
+  bool get isNotNull => this != null;
+
   S? nullOr<S>(S value) => this == null ? null : value;
 
   S? nullOrTranslate<S>(Translator<T, S> value) =>

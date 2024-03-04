@@ -2,10 +2,11 @@
 ///
 /// this file contains:
 ///
+/// [ComparableReverse]
+///
 /// [IterableExtension]
 /// [IterableIntExtension], [IterableDoubleExtension], [IterableTimerExtension]
 /// [IterableIterableExtension], [IterableSetExtension]
-///
 ///
 /// [ListExtension]
 /// [ListComparableExtension]
@@ -33,6 +34,10 @@
 ///
 ///
 part of damath;
+
+extension ComparableReverse<C extends Comparable> on Comparable {
+  static int compare<C extends Comparable>(C a, C b) => b.compareTo(a);
+}
 
 ///
 /// static methods:
@@ -937,6 +942,7 @@ extension MapEntryIterableExtension<K, V> on Iterable<MapEntry<K, V>> {
 ///
 /// [notContainsKey]
 /// [containsKeys]
+/// [updateIfNotNull]
 ///
 /// [keysIntersectionWith], [keysDifferenceWith]
 /// [addAllDifference],
@@ -961,6 +967,9 @@ extension MapExtension<K, V> on Map<K, V> {
     }
     return true;
   }
+
+  V? updateIfNotNull(K? key, Mapper<V> mapper, {Supplier<V>? ifAbsent}) =>
+      key == null ? null : update(key, mapper, ifAbsent: ifAbsent);
 
   Set<K> get keysSet => keys.toSet();
 

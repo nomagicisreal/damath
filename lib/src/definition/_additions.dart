@@ -2,8 +2,9 @@
 ///
 /// this file contains:
 ///
-/// [Radian]
+/// [ComparableData]
 ///
+/// [Radian]
 ///
 /// [Operator]
 ///
@@ -334,7 +335,6 @@ class Combination {
       'p: $p------${pGroups.fold('', (a, b) => '$a \n $b')}\n'
       ')';
 }
-
 
 ///
 ///
