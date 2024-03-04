@@ -4,8 +4,13 @@
 /// [KColor]
 /// [KTextStyle]
 ///
-/// [KSize], [KSize3Ratio4], [KSize9Ratio16], [KSize16Ratio9]
-/// [KOffset], [KOffsetPermutation4], [KMapperCubicPointsPermutation]
+/// [KSize]
+/// [KSize2Ratio3]
+/// [KSize3Ratio4]
+/// [KSize9Ratio16]
+///
+/// [KOffset],
+/// [KOffsetPermutation4], [KMapperCubicPointsPermutation]
 ///
 /// [KRadius], [KBorderRadius]
 /// [KEdgeInsets]
@@ -33,10 +38,8 @@
 ///
 ///
 ///
-///
-///
 part of damath_flutter;
-// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: non_constant_identifier_names, constant_identifier_names
 
 extension KColor on Color {
   /// R
@@ -195,146 +198,59 @@ extension KSize on Size {
   static const a1 = Size(59.4, 84.1);
 }
 
+extension KSize2Ratio3 on Size {
+  static const w360_h540 = Size(360, 540);
+  static const w420_h630 = Size(420, 630);
+  static const w480_h720 = Size(480, 720);
+}
+
 extension KSize3Ratio4 on Size {
-  static const w360_h480 = Size(360, 480);
-  static const w420_h560 = Size(420, 560);
-  static const w450_h600 = Size(450, 600);
-  static const w480_h640 = Size(480, 640);
+  static Size get w360_h480 => Size(360, 480);
+  static Size get w420_h560 => Size(420, 560);
+  static Size get w480_h640 => Size(480, 640);
 }
 
 extension KSize9Ratio16 on Size {
-  static const w270_h480 = Size(270, 480);
-  static const w405_h720 = Size(405, 720);
-  static const w450_h800 = Size(450, 800);
-}
-
-extension KSize16Ratio9 on Size {
-  static const w800_h450 = Size(800, 450);
+  static Size get w270_h480 => Size(270, 480);
+  static Size get w405_h720 => Size(405, 720);
+  static Size get w450_h800 => Size(450, 800);
 }
 
 ///
 ///
 ///
-/// offset, coordinate, vector
+/// offset, space3, vector
 ///
 ///
 ///
 
+///
+/// [top], ..., [bottomRight]
+/// [square_1], [square_10], [square_100]
+/// [x_1], [x_10], [x_100]
+/// [y_1], [y_10], [y_100]
+///
 extension KOffset on Offset {
+  static const top = Offset(0, -1);
+  static const left = Offset(-1, 0);
+  static const right = Offset(1, 0);
+  static const bottom = Offset(0, 1);
+  static const center = Offset.zero;
+  static const topLeft = Offset(-math.sqrt1_2, -math.sqrt1_2);
+  static const topRight = Offset(math.sqrt1_2, -math.sqrt1_2);
+  static const bottomLeft = Offset(-math.sqrt1_2, math.sqrt1_2);
+  static const bottomRight = Offset(math.sqrt1_2, math.sqrt1_2);
+
   static const square_1 = Offset(1, 1);
-  static const square_2 = Offset(2, 2);
-  static const square_3 = Offset(3, 3);
-  static const square_4 = Offset(4, 4);
-  static const square_5 = Offset(5, 5);
-  static const square_6 = Offset(6, 6);
-  static const square_7 = Offset(7, 7);
-  static const square_8 = Offset(8, 8);
-  static const square_9 = Offset(9, 9);
   static const square_10 = Offset(10, 10);
-  static const square_20 = Offset(20, 20);
-  static const square_30 = Offset(30, 30);
-  static const square_40 = Offset(40, 40);
-  static const square_50 = Offset(50, 50);
-  static const square_60 = Offset(60, 60);
-  static const square_70 = Offset(70, 70);
-  static const square_80 = Offset(80, 80);
-  static const square_90 = Offset(90, 90);
   static const square_100 = Offset(100, 100);
-
-  // y == 0
   static const x_1 = Offset(1, 0);
-  static const x_2 = Offset(2, 0);
-  static const x_3 = Offset(3, 0);
-  static const x_4 = Offset(4, 0);
-  static const x_5 = Offset(5, 0);
-  static const x_6 = Offset(6, 0);
-  static const x_7 = Offset(7, 0);
-  static const x_8 = Offset(8, 0);
-  static const x_9 = Offset(9, 0);
   static const x_10 = Offset(10, 0);
-  static const x_20 = Offset(20, 0);
-  static const x_30 = Offset(30, 0);
-  static const x_40 = Offset(40, 0);
-  static const x_50 = Offset(50, 0);
-  static const x_60 = Offset(60, 0);
-  static const x_70 = Offset(70, 0);
-  static const x_80 = Offset(80, 0);
-  static const x_90 = Offset(90, 0);
   static const x_100 = Offset(100, 0);
-  static const x_110 = Offset(110, 0);
-
-  // x == 0
   static const y_1 = Offset(0, 1);
-  static const y_2 = Offset(0, 2);
-  static const y_3 = Offset(0, 3);
-  static const y_4 = Offset(0, 4);
-  static const y_5 = Offset(0, 5);
-  static const y_6 = Offset(0, 6);
-  static const y_7 = Offset(0, 7);
-  static const y_8 = Offset(0, 8);
-  static const y_9 = Offset(0, 9);
   static const y_10 = Offset(0, 10);
-  static const y_20 = Offset(0, 20);
-  static const y_30 = Offset(0, 30);
-  static const y_40 = Offset(0, 40);
-  static const y_50 = Offset(0, 50);
-  static const y_60 = Offset(0, 60);
-  static const y_70 = Offset(0, 70);
-  static const y_80 = Offset(0, 80);
-  static const y_90 = Offset(0, 90);
   static const y_100 = Offset(0, 100);
-  static const y_200 = Offset(0, 200);
 
-  // x == 1
-  static const xy_1_2 = Offset(1, 2);
-  static const xy_1_3 = Offset(1, 3);
-  static const xy_1_4 = Offset(1, 4);
-  static const xy_1_5 = Offset(1, 5);
-  static const xy_1_6 = Offset(1, 6);
-  static const xy_1_7 = Offset(1, 7);
-  static const xy_1_8 = Offset(1, 8);
-  static const xy_1_9 = Offset(1, 9);
-  static const xy_1_10 = Offset(1, 10);
-
-  // x == 10
-  static const xy_10_20 = Offset(10, 20);
-  static const xy_10_30 = Offset(10, 30);
-  static const xy_10_40 = Offset(10, 40);
-  static const xy_10_50 = Offset(10, 50);
-  static const xy_10_60 = Offset(10, 60);
-  static const xy_10_70 = Offset(10, 70);
-  static const xy_10_80 = Offset(10, 80);
-  static const xy_10_90 = Offset(10, 90);
-  static const xy_10_10N = Offset(10, -10);
-  static const xy_10_20N = Offset(10, -20);
-  static const xy_10_30N = Offset(10, -30);
-  static const xy_10_40N = Offset(10, -40);
-  static const xy_10_50N = Offset(10, -50);
-  static const xy_10_60N = Offset(10, -60);
-  static const xy_10_70N = Offset(10, -70);
-  static const xy_10_80N = Offset(10, -80);
-  static const xy_10_90N = Offset(10, -90);
-
-  // x == 100
-  static const xy_100_10 = Offset(100, 10);
-  static const xy_100_20 = Offset(100, 20);
-  static const xy_100_30 = Offset(100, 30);
-  static const xy_100_40 = Offset(100, 40);
-  static const xy_100_50 = Offset(100, 50);
-  static const xy_100_60 = Offset(100, 60);
-  static const xy_100_70 = Offset(100, 70);
-  static const xy_100_80 = Offset(100, 80);
-  static const xy_100_90 = Offset(100, 90);
-  static const xy_100_10N = Offset(100, -10);
-  static const xy_100_20N = Offset(100, -20);
-  static const xy_100_30N = Offset(100, -30);
-  static const xy_100_40N = Offset(100, -40);
-  static const xy_100_50N = Offset(100, -50);
-  static const xy_100_60N = Offset(100, -60);
-  static const xy_100_70N = Offset(100, -70);
-  static const xy_100_80N = Offset(100, -80);
-  static const xy_100_90N = Offset(100, -90);
-  static const xy_100_100N = Offset(100, -100);
 }
 
 extension KOffsetPermutation4 on List<Offset> {

@@ -3,7 +3,7 @@
 /// this file contains:
 /// [FListener]
 /// [FPredicator], [FPredicatorCombiner]
-/// [FMapper], [FMapperDouble], [FMapperCubic], [FMapperMapCubicOffset]
+/// [FMapper]
 /// [FGenerator], [FGeneratorOffset]
 /// [FTranslator]
 /// [FReducer]
@@ -127,47 +127,37 @@ extension FPredicatorCombiner on PredicateCombiner<num> {
 extension FMapper on Mapper {
   static T keep<T>(T value) => value;
 
-  static Translator<double, T> lerpOf<T>(
-    T begin,
-    T end,
-    Translator<double, T> transform,
-  ) =>
-      (value) {
-        if (value == 0) return begin;
-        if (value == 1) return end;
-        return transform(value);
-      };
-}
+  static Space3 keepSpace3(Space3 v) => v;
 
-extension FMapperDouble on Mapper<double> {
-  static double of(double v) => v;
-
-  static double zero(double value) => 0;
-
-  static double keep(double value) => value;
+  static double keepDouble(double value) => value;
 
   ///
-  /// operate
+  /// [doubleOf], [doubleZero]
+  /// [doubleOnPlus], [doubleOnMinus], [doubleOnMultiply], [doubleOnDivide]
   ///
-  static Mapper<double> plus(double value) => (v) => v + value;
+  static double doubleOf(double v) => v;
 
-  static Mapper<double> minus(double value) => (v) => v - value;
+  static double doubleZero(double value) => 0;
 
-  static Mapper<double> multiply(double value) => (v) => v * value;
+  static Mapper<double> doubleOnPlus(double value) => (v) => v + value;
 
-  static Mapper<double> divide(double value) => (v) => v / value;
+  static Mapper<double> doubleOnMinus(double value) => (v) => v - value;
 
-  static Mapper<double> operate(Operator operator, double value) =>
+  static Mapper<double> doubleOnMultiply(double value) => (v) => v * value;
+
+  static Mapper<double> doubleOnDivide(double value) => (v) => v / value;
+
+  static Mapper<double> doubleOnOperate(Operator operator, double value) =>
       operator.doubleCompanion(value);
 
   ///
-  /// [fromTimesFactor]
-  /// [fromPeriod]
-  ///   [fromPeriodSinByTimes]
-  ///   [fromPeriodCosByTimes]
-  ///   [fromPeriodTanByTimes]
+  /// [doubleOnTimesFactor]
+  /// [doubleOnPeriod]
+  ///   [doubleOnPeriodSinByTimes]
+  ///   [doubleOnPeriodCosByTimes]
+  ///   [doubleOnPeriodTanByTimes]
   ///
-  static Mapper<double> fromTimesFactor(
+  static Mapper<double> doubleOnTimesFactor(
     double times,
     double factor, [
     Mapper<double> transform = math.sin,
@@ -178,23 +168,33 @@ extension FMapperDouble on Mapper<double> {
 
   // sin period: (0 ~ 1 ~ 0 ~ -1 ~ 0)
   // cos period: (1 ~ 0 ~ -1 ~ 0 ~ 1)
-  static Mapper<double> fromPeriod(
+  static Mapper<double> doubleOnPeriod(
     double period, [
     Mapper<double> transform = math.sin,
   ]) {
     assert(transform == math.sin || transform == math.cos);
     final times = Radian.angle_360 * period;
-    return FMapper.lerpOf(0, 1, (value) => transform(times * value));
+    return lerp<double>(0, 1, (value) => transform(times * value));
   }
 
-  static Mapper<double> fromPeriodSinByTimes(int times) =>
-      FMapperDouble.fromPeriod(times.toDouble(), math.sin);
+  static Mapper<double> doubleOnPeriodSinByTimes(int times) =>
+      doubleOnPeriod(times.toDouble(), math.sin);
 
-  static Mapper<double> fromPeriodCosByTimes(int times) =>
-      FMapperDouble.fromPeriod(times.toDouble(), math.cos);
+  static Mapper<double> doubleOnPeriodCosByTimes(int times) =>
+      doubleOnPeriod(times.toDouble(), math.cos);
 
-  static Mapper<double> fromPeriodTanByTimes(int times) =>
-      FMapperDouble.fromPeriod(times.toDouble(), math.tan);
+  static Mapper<double> doubleOnPeriodTanByTimes(int times) =>
+      doubleOnPeriod(times.toDouble(), math.tan);
+
+  ///
+  /// lerpOf
+  ///
+  static OnLerp<T> lerp<T>(T begin, T end, OnLerp<T> transform) =>
+      (value) {
+        if (value == 0) return begin;
+        if (value == 1) return end;
+        return transform(value);
+      };
 }
 
 ///
@@ -247,10 +247,9 @@ extension FTranslator on Translator {
 
 ///
 /// [doubleMax], [doubleMin]
-/// [doubleAdd]
-///
 /// [intMax], [intMin]
-/// [intAdding]
+/// [doubleAdd], ...
+/// [intAdd], ...
 ///
 extension FReducer<N> on Reducer<N> {
   static const Reducer<double> doubleMax = math.max<double>;
@@ -268,7 +267,15 @@ extension FReducer<N> on Reducer<N> {
 
   static double doubleAddSquared(double v1, double v2) => v1 * v1 + v2 * v2;
 
-  static int intAdding(int v1, int v2) => v1 + v2;
+  static int intAdd(int v1, int v2) => v1 + v2;
+
+  static int intSubtract(int v1, int v2) => v1 - v2;
+
+  static int intMultiply(int v1, int v2) => v1 * v2;
+
+  static int intDivide(int v1, int v2) => v1 ~/ v2;
+
+  static int intAddSquared(int v1, int v2) => v1 * v1 + v2 * v2;
 }
 
 extension FCompanion on Companion {

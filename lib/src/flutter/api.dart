@@ -4,8 +4,12 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:damath/src/math/api.dart';
 import 'package:flutter/material.dart';
+import 'package:vector_math/vector_math_64.dart' show Vector3;
 
-part 'function.dart';
-part 'definition.dart';
-part 'extension.dart';
+part 'definition/_additions.dart';
+part 'definition/shape.dart';
+part 'extension/_additions.dart';
+part 'extension/ui.dart';
+part 'function/_additions.dart';
+part 'function/ui.dart';
 part 'value.dart';

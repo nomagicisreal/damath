@@ -62,20 +62,15 @@ class Space2 {
 
   Space2 operator -() => Space2(-dx, -dy);
 
-  Space2 operator +(Space2 other) =>
-      Space2(dx + other.dx, dy + other.dy);
+  Space2 operator +(Space2 other) => Space2(dx + other.dx, dy + other.dy);
 
-  Space2 operator -(Space2 other) =>
-      Space2(dx - other.dx, dy - other.dy);
+  Space2 operator -(Space2 other) => Space2(dx - other.dx, dy - other.dy);
 
-  Space2 operator %(double operand) =>
-      Space2(dx % operand, dy % operand);
+  Space2 operator %(double operand) => Space2(dx % operand, dy % operand);
 
-  Space2 operator *(double operand) =>
-      Space2(dx * operand, dy * operand);
+  Space2 operator *(double operand) => Space2(dx * operand, dy * operand);
 
-  Space2 operator /(double operand) =>
-      Space2(dx / operand, dy / operand);
+  Space2 operator /(double operand) => Space2(dx / operand, dy / operand);
 
   Space2 operator ~/(double operand) =>
       Space2((dx ~/ operand).toDouble(), (dy ~/ operand).toDouble());
@@ -215,16 +210,14 @@ class Space3 extends Space2 {
       );
 
   @override
-  bool operator <(covariant Space3 other) =>
-      dz < other.dz && (super < other);
+  bool operator <(covariant Space3 other) => dz < other.dz && (super < other);
 
   @override
   bool operator <=(covariant Space3 other) =>
       dz <= other.dz && (super <= other);
 
   @override
-  bool operator >(covariant Space3 other) =>
-      dz > other.dz && (super > other);
+  bool operator >(covariant Space3 other) => dz > other.dz && (super > other);
 
   @override
   bool operator >=(covariant Space3 other) =>
@@ -327,7 +320,7 @@ class Space3 extends Space2 {
   static const Space3 z100 = Space3(0, 0, 100);
 
   ///
-  /// it implement in 'my coordinate system', not 'dart coordinate system' ([Transform], [Matrix4], [Space2]], ...)
+  /// it implement in 'my space3 system', not 'dart space3 system' ([Transform], [Matrix4], [Space2]], ...)
   /// see the comment above [transferToTransformOf] to understand more.
   ///
   factory Space3.fromDirection(
@@ -350,12 +343,12 @@ class Space3 extends Space2 {
 
   ///
   ///
-  /// [Space3.transferToTransformOf] transfer from my coordinate system:
+  /// [Space3.transferToTransformOf] transfer from my space3 system:
   /// x axis is [Direction3DIn6.left] -> [Direction3DIn6.right], radian start from [Direction3DIn6.back]
   /// y axis is [Direction3DIn6.front] -> [Direction3DIn6.back], radian start from [Direction3DIn6.left]
   /// z axis is [Direction3DIn6.bottom] -> [Direction3DIn6.top], radian start from [Direction3DIn6.right]
   ///
-  /// to "dart coordinate system" ([Transform], [Matrix4], [Space2]], ...):
+  /// to "dart space3 system" ([Transform], [Matrix4], [Space2]], ...):
   /// x axis is [Direction3DIn6.left] -> [Direction3DIn6.right], radian start from [Direction3DIn6.back] ?
   /// y axis is [Direction3DIn6.top] -> [Direction3DIn6.bottom], radian start from [Direction3DIn6.left] ?
   /// z axis is [Direction3DIn6.front] -> [Direction3DIn6.back], radian start from [Direction3DIn6.right]
@@ -365,8 +358,7 @@ class Space3 extends Space2 {
   ///   * [Coordinate2D.fromDirection], [Coordinate.fromDirection]
   ///   * [Direction], [Direction3DIn6]
   ///
-  static Space3 transferToTransformOf(Space3 p) =>
-      Space3(p.dx, -p.dz, -p.dy);
+  static Space3 transferToTransformOf(Space3 p) => Space3(p.dx, -p.dz, -p.dy);
 }
 
 ///
@@ -548,8 +540,7 @@ class Vector3D {
 
   const Vector3D(this.direction, this.distance);
 
-  Space2 get toCoordinate2D =>
-      Space2.fromDirection(-direction.dy, distance);
+  Space2 get toCoordinate2D => Space2.fromDirection(-direction.dy, distance);
 
   Space3 get toCoordinate => Space3.fromDirection(
         direction,
@@ -569,12 +560,12 @@ class Vector3D {
   static Translator<double, Vector3D> lerpOf(Vector3D begin, Vector3D end) {
     final direction = end.direction - begin.direction;
     final distance = end.distance - begin.distance;
-    final directionOf = FMapper.lerpOf<Space3Radian>(
+    final directionOf = FMapper.lerp<Space3Radian>(
       begin.direction,
       end.direction,
       (t) => direction * t,
     );
-    final distanceOf = FMapper.lerpOf<double>(
+    final distanceOf = FMapper.lerp<double>(
       begin.distance,
       end.distance,
       (t) => distance * t,
@@ -610,79 +601,38 @@ class Vector3D {
 sealed class Direction<D> {
   D get flipped;
 
-  Space2 get toCoordinate2D;
+  Space2 get toSpace2;
 
-  Space3 get toCoordinate;
+  Space3 get toSpace3;
 
-  static const radian2D_right = 0;
-  static const radian2D_bottomRight = Radian.angle_45;
-  static const radian2D_bottom = Radian.angle_90;
-  static const radian2D_bottomLeft = Radian.angle_135;
-  static const radian2D_left = Radian.angle_180;
-  static const radian2D_topLeft = Radian.angle_225;
-  static const radian2D_top = Radian.angle_270;
-  static const radian2D_topRight = Radian.angle_315;
-
-  static const coordinate2D_top = Space2(0, -1);
-  static const coordinate2D_left = Space2(-1, 0);
-  static const coordinate2D_right = Space2(1, 0);
-  static const coordinate2D_bottom = Space2(0, 1);
-  static const coordinate2D_center = Space2.zero;
-  static const coordinate2D_topLeft =
-      Space2(-math.sqrt1_2, -math.sqrt1_2);
-  static const coordinate2D_topRight =
-      Space2(math.sqrt1_2, -math.sqrt1_2);
-  static const coordinate2D_bottomLeft =
-      Space2(-math.sqrt1_2, math.sqrt1_2);
-  static const coordinate2D_bottomRight =
-      Space2(math.sqrt1_2, math.sqrt1_2);
-
-  static const coordinate_center = Space3.zero;
-  static const coordinate_left = Space3.ofX(-1);
-  static const coordinate_top = Space3.ofY(-1);
-  static const coordinate_right = Space3.ofX(1);
-  static const coordinate_bottom = Space3.ofY(1);
-  static const coordinate_front = Space3.ofZ(1);
-  static const coordinate_back = Space3.ofZ(-1);
-
-  static const coordinate_topLeft = Space3.ofXY(-math.sqrt1_2);
-  static const coordinate_bottomRight = Space3.ofXY(math.sqrt1_2);
-  static const coordinate_frontRight = Space3.ofXZ(math.sqrt1_2);
-  static const coordinate_frontBottom = Space3.ofYZ(math.sqrt1_2);
-  static const coordinate_backLeft = Space3.ofXZ(-math.sqrt1_2);
-  static const coordinate_backTop = Space3.ofYZ(-math.sqrt1_2);
-  static const coordinate_topRight = Space3(math.sqrt1_2, -math.sqrt1_2, 0);
-  static const coordinate_frontTop = Space3(0, -math.sqrt1_2, math.sqrt1_2);
-  static const coordinate_bottomLeft =
-      Space3(-math.sqrt1_2, math.sqrt1_2, 0);
-  static const coordinate_frontLeft =
-      Space3(-math.sqrt1_2, 0, math.sqrt1_2);
-  static const coordinate_backRight =
-      Space3(math.sqrt1_2, 0, -math.sqrt1_2);
-  static const coordinate_backBottom =
-      Space3(0, math.sqrt1_2, -math.sqrt1_2);
-
-  static const coordinate_frontTopLeft = Space3(-DoubleExtension.sqrt1_3,
-      -DoubleExtension.sqrt1_3, DoubleExtension.sqrt1_3);
-  static const coordinate_frontTopRight = Space3(DoubleExtension.sqrt1_3,
-      -DoubleExtension.sqrt1_3, DoubleExtension.sqrt1_3);
-  static const coordinate_frontBottomLeft = Space3(-DoubleExtension.sqrt1_3,
-      DoubleExtension.sqrt1_3, DoubleExtension.sqrt1_3);
-  static const coordinate_frontBottomRight = Space3(DoubleExtension.sqrt1_3,
-      DoubleExtension.sqrt1_3, DoubleExtension.sqrt1_3);
-  static const coordinate_backTopLeft = Space3(-DoubleExtension.sqrt1_3,
-      -DoubleExtension.sqrt1_3, -DoubleExtension.sqrt1_3);
-  static const coordinate_backTopRight = Space3(DoubleExtension.sqrt1_3,
-      -DoubleExtension.sqrt1_3, -DoubleExtension.sqrt1_3);
-  static const coordinate_backBottomLeft = Space3(-DoubleExtension.sqrt1_3,
-      DoubleExtension.sqrt1_3, -DoubleExtension.sqrt1_3);
-  static const coordinate_backBottomRight = Space3(DoubleExtension.sqrt1_3,
-      DoubleExtension.sqrt1_3, -DoubleExtension.sqrt1_3);
 }
 
 sealed class Direction2D<D extends Direction2D<D>> implements Direction<D> {
+  static const radian_right = 0;
+  static const radian_bottomRight = Radian.angle_45;
+  static const radian_bottom = Radian.angle_90;
+  static const radian_bottomLeft = Radian.angle_135;
+  static const radian_left = Radian.angle_180;
+  static const radian_topLeft = Radian.angle_225;
+  static const radian_top = Radian.angle_270;
+  static const radian_topRight = Radian.angle_315;
+  
+  static const space_top = Space2(0, -1);
+  static const space_left = Space2(-1, 0);
+  static const space_right = Space2(1, 0);
+  static const space_bottom = Space2(0, 1);
+  static const space_center = Space2.zero;
+  static const space_topLeft = Space2(-math.sqrt1_2, -math.sqrt1_2);
+  static const space_topRight = Space2(math.sqrt1_2, -math.sqrt1_2);
+  static const space_bottomLeft = Space2(-math.sqrt1_2, math.sqrt1_2);
+  static const space_bottomRight = Space2(math.sqrt1_2, math.sqrt1_2);
 }
 
+///
+///
+/// direction 2D in 4
+///
+///
 enum Direction2DIn4 implements Direction2D<Direction2DIn4> {
   left,
   right,
@@ -697,21 +647,25 @@ enum Direction2DIn4 implements Direction2D<Direction2DIn4> {
         Direction2DIn4.bottom => Direction2DIn4.bottom,
       };
 
+  @override
+  Space2 get toSpace2 => toDirection8.toSpace2;
+
+  @override
+  Space3 get toSpace3 => toDirection8.toSpace3;
+
   Direction2DIn8 get toDirection8 => switch (this) {
-        Direction2DIn4.left => Direction2DIn8.left,
-        Direction2DIn4.top => Direction2DIn8.top,
-        Direction2DIn4.right => Direction2DIn8.right,
-        Direction2DIn4.bottom => Direction2DIn8.bottom,
-      };
-
-  @override
-  Space2 get toCoordinate2D => toDirection8.toCoordinate2D;
-
-  @override
-  Space3 get toCoordinate => toDirection8.toCoordinate;
-
+    Direction2DIn4.left => Direction2DIn8.left,
+    Direction2DIn4.top => Direction2DIn8.top,
+    Direction2DIn4.right => Direction2DIn8.right,
+    Direction2DIn4.bottom => Direction2DIn8.bottom,
+  };
 }
 
+///
+///
+/// direction 2D in 8
+///
+///
 enum Direction2DIn8 implements Direction2D<Direction2DIn8> {
   top,
   left,
@@ -735,27 +689,27 @@ enum Direction2DIn8 implements Direction2D<Direction2DIn8> {
       };
 
   @override
-  Space2 get toCoordinate2D => switch (this) {
-        top => Direction.coordinate2D_top,
-        left => Direction.coordinate2D_left,
-        right => Direction.coordinate2D_right,
-        bottom => Direction.coordinate2D_bottom,
-        topLeft => Direction.coordinate2D_topLeft,
-        topRight => Direction.coordinate2D_topRight,
-        bottomLeft => Direction.coordinate2D_bottomLeft,
-        bottomRight => Direction.coordinate2D_bottomRight,
+  Space2 get toSpace2 => switch (this) {
+        top => Direction2D.space_top,
+        left => Direction2D.space_left,
+        right => Direction2D.space_right,
+        bottom => Direction2D.space_bottom,
+        topLeft => Direction2D.space_topLeft,
+        topRight => Direction2D.space_topRight,
+        bottomLeft => Direction2D.space_bottomLeft,
+        bottomRight => Direction2D.space_bottomRight,
       };
 
   @override
-  Space3 get toCoordinate => switch (this) {
-        top => Direction.coordinate_top,
-        left => Direction.coordinate_left,
-        right => Direction.coordinate_right,
-        bottom => Direction.coordinate_bottom,
-        topLeft => Direction.coordinate_topLeft,
-        topRight => Direction.coordinate_topRight,
-        bottomLeft => Direction.coordinate_bottomLeft,
-        bottomRight => Direction.coordinate_bottomRight,
+  Space3 get toSpace3 => switch (this) {
+        top => Direction3D.space_top,
+        left => Direction3D.space_left,
+        right => Direction3D.space_right,
+        bottom => Direction3D.space_bottom,
+        topLeft => Direction3D.space_topLeft,
+        topRight => Direction3D.space_topRight,
+        bottomLeft => Direction3D.space_bottomLeft,
+        bottomRight => Direction3D.space_bottomRight,
       };
 
   bool get isDiagonal => switch (this) {
@@ -785,7 +739,45 @@ enum Direction2DIn8 implements Direction2D<Direction2DIn8> {
 ///
 ///
 
-sealed class Direction3D<D extends Direction3D<D>> implements Direction<D> {}
+sealed class Direction3D<D extends Direction3D<D>> implements Direction<D> {
+  static const space_center = Space3.zero;
+  static const space_left = Space3.ofX(-1);
+  static const space_top = Space3.ofY(-1);
+  static const space_right = Space3.ofX(1);
+  static const space_bottom = Space3.ofY(1);
+  static const space_front = Space3.ofZ(1);
+  static const space_back = Space3.ofZ(-1);
+
+  static const space_topLeft = Space3.ofXY(-math.sqrt1_2);
+  static const space_bottomRight = Space3.ofXY(math.sqrt1_2);
+  static const space_frontRight = Space3.ofXZ(math.sqrt1_2);
+  static const space_frontBottom = Space3.ofYZ(math.sqrt1_2);
+  static const space_backLeft = Space3.ofXZ(-math.sqrt1_2);
+  static const space_backTop = Space3.ofYZ(-math.sqrt1_2);
+  static const space_topRight = Space3(math.sqrt1_2, -math.sqrt1_2, 0);
+  static const space_frontTop = Space3(0, -math.sqrt1_2, math.sqrt1_2);
+  static const space_bottomLeft = Space3(-math.sqrt1_2, math.sqrt1_2, 0);
+  static const space_frontLeft = Space3(-math.sqrt1_2, 0, math.sqrt1_2);
+  static const space_backRight = Space3(math.sqrt1_2, 0, -math.sqrt1_2);
+  static const space_backBottom = Space3(0, math.sqrt1_2, -math.sqrt1_2);
+
+  static const space_frontTopLeft = Space3(-DoubleExtension.sqrt1_3,
+      -DoubleExtension.sqrt1_3, DoubleExtension.sqrt1_3);
+  static const space_frontTopRight = Space3(DoubleExtension.sqrt1_3,
+      -DoubleExtension.sqrt1_3, DoubleExtension.sqrt1_3);
+  static const space_frontBottomLeft = Space3(-DoubleExtension.sqrt1_3,
+      DoubleExtension.sqrt1_3, DoubleExtension.sqrt1_3);
+  static const space_frontBottomRight = Space3(DoubleExtension.sqrt1_3,
+      DoubleExtension.sqrt1_3, DoubleExtension.sqrt1_3);
+  static const space_backTopLeft = Space3(-DoubleExtension.sqrt1_3,
+      -DoubleExtension.sqrt1_3, -DoubleExtension.sqrt1_3);
+  static const space_backTopRight = Space3(DoubleExtension.sqrt1_3,
+      -DoubleExtension.sqrt1_3, -DoubleExtension.sqrt1_3);
+  static const space_backBottomLeft = Space3(-DoubleExtension.sqrt1_3,
+      DoubleExtension.sqrt1_3, -DoubleExtension.sqrt1_3);
+  static const space_backBottomRight = Space3(DoubleExtension.sqrt1_3,
+      DoubleExtension.sqrt1_3, -DoubleExtension.sqrt1_3);
+}
 
 ///
 ///
@@ -808,22 +800,22 @@ enum Direction3DIn6 implements Direction3D<Direction3DIn6> {
       };
 
   @override
-  Space2 get toCoordinate2D => switch (this) {
-        Direction3DIn6.left => Direction.coordinate2D_left,
-        Direction3DIn6.top => Direction.coordinate2D_top,
-        Direction3DIn6.right => Direction.coordinate2D_right,
-        Direction3DIn6.bottom => Direction.coordinate2D_bottom,
+  Space2 get toSpace2 => switch (this) {
+        Direction3DIn6.left => Direction2D.space_left,
+        Direction3DIn6.top => Direction2D.space_top,
+        Direction3DIn6.right => Direction2D.space_right,
+        Direction3DIn6.bottom => Direction2D.space_bottom,
         _ => throw UnimplementedError(),
       };
 
   @override
-  Space3 get toCoordinate => switch (this) {
-        Direction3DIn6.left => Direction.coordinate_left,
-        Direction3DIn6.top => Direction.coordinate_top,
-        Direction3DIn6.right => Direction.coordinate_right,
-        Direction3DIn6.bottom => Direction.coordinate_bottom,
-        Direction3DIn6.front => Direction.coordinate_front,
-        Direction3DIn6.back => Direction.coordinate_back,
+  Space3 get toSpace3 => switch (this) {
+        Direction3DIn6.left => Direction3D.space_left,
+        Direction3DIn6.top => Direction3D.space_top,
+        Direction3DIn6.right => Direction3D.space_right,
+        Direction3DIn6.bottom => Direction3D.space_bottom,
+        Direction3DIn6.front => Direction3D.space_front,
+        Direction3DIn6.back => Direction3D.space_back,
       };
 }
 
@@ -862,30 +854,30 @@ enum Direction3DIn14 implements Direction3D<Direction3DIn14> {
       };
 
   @override
-  Space2 get toCoordinate2D => switch (this) {
-        Direction3DIn14.left => Direction.coordinate2D_left,
-        Direction3DIn14.top => Direction.coordinate2D_top,
-        Direction3DIn14.right => Direction.coordinate2D_right,
-        Direction3DIn14.bottom => Direction.coordinate2D_bottom,
+  Space2 get toSpace2 => switch (this) {
+        Direction3DIn14.left => Direction2D.space_left,
+        Direction3DIn14.top => Direction2D.space_top,
+        Direction3DIn14.right => Direction2D.space_right,
+        Direction3DIn14.bottom => Direction2D.space_bottom,
         _ => throw UnimplementedError(),
       };
 
   @override
-  Space3 get toCoordinate => switch (this) {
-        Direction3DIn14.left => Direction.coordinate_left,
-        Direction3DIn14.top => Direction.coordinate_top,
-        Direction3DIn14.right => Direction.coordinate_right,
-        Direction3DIn14.bottom => Direction.coordinate_bottom,
-        Direction3DIn14.front => Direction.coordinate_front,
-        Direction3DIn14.frontLeft => Direction.coordinate_frontLeft,
-        Direction3DIn14.frontTop => Direction.coordinate_frontTop,
-        Direction3DIn14.frontRight => Direction.coordinate_frontRight,
-        Direction3DIn14.frontBottom => Direction.coordinate_frontBottom,
-        Direction3DIn14.back => Direction.coordinate_back,
-        Direction3DIn14.backLeft => Direction.coordinate_backLeft,
-        Direction3DIn14.backTop => Direction.coordinate_backTop,
-        Direction3DIn14.backRight => Direction.coordinate_backRight,
-        Direction3DIn14.backBottom => Direction.coordinate_backBottom,
+  Space3 get toSpace3 => switch (this) {
+        Direction3DIn14.left => Direction3D.space_left,
+        Direction3DIn14.top => Direction3D.space_top,
+        Direction3DIn14.right => Direction3D.space_right,
+        Direction3DIn14.bottom => Direction3D.space_bottom,
+        Direction3DIn14.front => Direction3D.space_front,
+        Direction3DIn14.frontLeft => Direction3D.space_frontLeft,
+        Direction3DIn14.frontTop => Direction3D.space_frontTop,
+        Direction3DIn14.frontRight => Direction3D.space_frontRight,
+        Direction3DIn14.frontBottom => Direction3D.space_frontBottom,
+        Direction3DIn14.back => Direction3D.space_back,
+        Direction3DIn14.backLeft => Direction3D.space_backLeft,
+        Direction3DIn14.backTop => Direction3D.space_backTop,
+        Direction3DIn14.backRight => Direction3D.space_backRight,
+        Direction3DIn14.backBottom => Direction3D.space_backBottom,
       };
 
   double get scaleOnGrid => switch (this) {

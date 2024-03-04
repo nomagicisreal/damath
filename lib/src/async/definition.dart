@@ -185,5 +185,3 @@ class BeatsOfInstrument extends Beats {
         maxTick: interval * maxSection,
       );
 }
-
-
