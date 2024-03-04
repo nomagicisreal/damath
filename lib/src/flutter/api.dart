@@ -2,7 +2,9 @@ library damath_flutter;
 
 import 'dart:math' as math;
 import 'dart:ui' as ui;
+import 'package:damath/damath.dart';
 import 'package:damath/src/math/api.dart';
+import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
 import 'package:vector_math/vector_math_64.dart' show Vector3;
 

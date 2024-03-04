@@ -38,7 +38,6 @@
 part of damath_flutter;
 // ignore_for_file: use_string_in_part_of_directives
 
-
 ///
 ///
 ///
@@ -64,38 +63,49 @@ extension SizeExtension on Size {
   Size extrudingWidth(double value) => Size(width + value, height);
 }
 
+///
+/// instance methods:
+/// [toStringAsFixed1]
+/// [directionTo]
+/// [distanceTo], [distanceHalfTo]
+/// [middleWith],
+/// ...
+///
 extension OffsetExtension on Offset {
-  ///
-  ///
-  /// instance methods
-  ///
-  ///
   String toStringAsFixed1() =>
       '(${dx.toStringAsFixed(1)}, ${dy.toStringAsFixed(1)})';
 
+  ///
+  /// [directionTo]
+  /// [distanceTo], [distanceHalfTo]
+  ///
   double directionTo(Offset p) => (p - this).direction;
 
   double distanceTo(Offset p) => (p - this).distance;
 
   double distanceHalfTo(Offset p) => (p - this).distance / 2;
 
+  ///
+  /// [middleWith], [rotate]
+  ///
   Offset middleWith(Offset p) => (p + this) / 2;
 
   Offset rotate(double direction) =>
       Offset.fromDirection(this.direction + direction, distance);
 
+  ///
+  /// [direct], [directionPerpendicular]
+  ///
   Offset direct(double direction, [double distance = 1]) =>
       this + Offset.fromDirection(direction, distance);
 
   double directionPerpendicular({bool isCounterclockwise = true}) =>
       direction + Radian.angle_90 * (isCounterclockwise ? 1 : -1);
 
-  Offset get toPerpendicularUnit =>
-      Offset.fromDirection(directionPerpendicular());
-
-  Offset get toPerpendicular =>
-      Offset.fromDirection(directionPerpendicular(), distance);
-
+  ///
+  /// [isAtBottomRightOf], [isAtTopLeftOf]
+  /// [isAtBottomLeftOf], [isAtTopRightOf]
+  ///
   bool isAtBottomRightOf(Offset offset) => this > offset;
 
   bool isAtTopLeftOf(Offset offset) => this < offset;
@@ -105,14 +115,18 @@ extension OffsetExtension on Offset {
   bool isAtTopRightOf(Offset offset) => dx > offset.dx && dy < offset.dy;
 
   ///
+  /// [toSize], [toReciprocal]
+  /// [toPerpendicularUnit], [toPerpendicular]
   ///
-  /// instance getters
-  ///
-  ///
-
   Size get toSize => Size(dx, dy);
 
   Offset get toReciprocal => Offset(1 / dx, 1 / dy);
+
+  Offset get toPerpendicularUnit =>
+      Offset.fromDirection(directionPerpendicular());
+
+  Offset get toPerpendicular =>
+      Offset.fromDirection(directionPerpendicular(), distance);
 
   ///
   ///
@@ -169,8 +183,21 @@ extension OffsetExtension on Offset {
     double t,
   ) =>
       a.middleWith(b) + perpendicularUnitOf(a, b) * t;
+
+  ///
+  /// [fromSpace2]
+  /// [fromDirection]
+  ///
+  static Offset fromSpace2(Space2 space2) => Offset(space2.dx, space2.dy);
+
+  static Offset fromDirection(Direction direction) =>
+      fromSpace2(direction.toSpace2);
 }
 
+///
+/// static methods:
+/// [fromZeroTo], ...
+///
 extension RectExtension on Rect {
   static Rect fromZeroTo(Size size) => Offset.zero & size;
 
@@ -186,6 +213,11 @@ extension RectExtension on Rect {
   static Rect fromCircle(Offset center, double radius) =>
       Rect.fromCircle(center: center, radius: radius);
 
+  ///
+  ///
+  /// instance methods
+  ///
+  ///
   double get distanceDiagonal => size.diagonal;
 
   Offset offsetFromDirection(Direction direction) => switch (direction) {
@@ -249,7 +281,6 @@ extension AlignmentExtension on Alignment {
   double get radianRangeForSide {
     final boundary = radianBoundaryForSide;
     return boundary.$2 - boundary.$1;
-
   }
 
   (double, double) get radianBoundaryForSide => switch (this) {
@@ -435,7 +466,6 @@ extension ListOffsetExtension on List<Offset> {
 /// [PathExtension]
 ///
 ///
-
 
 ///
 ///
