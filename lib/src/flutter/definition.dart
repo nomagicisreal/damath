@@ -1,6 +1,20 @@
 ///
 ///
 /// this file contains:
+///
+///
+/// typedefs:
+/// [Extruding2D]
+/// [TextFormFieldValidator]
+///
+/// [SizingPath], [SizingOffset], ...
+/// [PaintFrom], [PaintingPath], [Painter]
+/// [RectBuilder]
+///
+///
+///
+///
+/// classes:
 /// [Painting], [Clipping]
 ///
 /// [Curving], [CurveFR]
@@ -21,22 +35,43 @@
 ///
 ///
 ///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
 part of damath_flutter;
-// ignore_for_file: use_string_in_part_of_directives, constant_identifier_names
+
+///
+///
+///
+typedef Extruding2D = Rect Function(double width, double height);
+
+typedef TextFormFieldValidator = FormFieldValidator<String> Function(
+  String failedMessage,
+);
+
+///
+///
+/// sizing
+///
+///
+typedef Sizing = Size Function(Size size);
+typedef SizingDouble = double Function(Size size);
+typedef SizingOffset = Offset Function(Size size);
+typedef SizingRect = Rect Function(Size size);
+typedef SizingPath = Path Function(Size size);
+typedef SizingPathFrom<T> = SizingPath Function(T value);
+typedef SizingOffsetIterable = Iterable<Offset> Function(Size size);
+typedef SizingOffsetList = List<Offset> Function(Size size);
+typedef SizingCubicOffsetIterable = Iterable<CubicOffset> Function(Size size);
+
+///
+/// painting
+///
+typedef PaintFrom = Paint Function(Canvas canvas, Size size);
+typedef PaintingPath = void Function(Canvas canvas, Paint paint, Path path);
+typedef Painter = Painting Function(SizingPath sizingPath);
+
+///
+/// rect
+///
+typedef RectBuilder = Rect Function(BuildContext context);
 
 ///
 ///
@@ -161,20 +196,26 @@ class Clipping extends CustomClipper<Path> {
 ///
 ///
 
-//
+///
+/// [mapper]
+///
+/// [Curving.sinPeriodOf]
+/// [Curving.cosPeriodOf]
+/// [Curving.tanPeriodOf]
+///
 class Curving extends Curve {
   final Mapper<double> mapper;
 
   const Curving(this.mapper);
 
   Curving.sinPeriodOf(int times)
-      : mapper = FMapperDouble.fromPeriod(times.toDouble(), math.sin);
+      : mapper = FMapperDouble.fromPeriodSinByTimes(times);
 
   Curving.cosPeriodOf(int times)
-      : mapper = FMapperDouble.fromPeriod(times.toDouble(), math.cos);
+      : mapper = FMapperDouble.fromPeriodCosByTimes(times);
 
   Curving.tanPeriodOf(int times)
-      : mapper = FMapperDouble.fromPeriod(times.toDouble(), math.tan);
+      : mapper = FMapperDouble.fromPeriodTanByTimes(times);
 
   @override
   double transformInternal(double t) => mapper(t);
@@ -183,15 +224,17 @@ class Curving extends Curve {
 ///
 /// [forward], [reverse]
 ///
-/// [CurveFR.symmetry]
-/// [CurveFR.intervalFlip]
+/// [CurveFR.of], [CurveFR.intervalOf], [CurveFR.intervalForwardOf], [CurveFR.intervalReverseOf], ...
+/// [CurveFR.flip], [CurveFR.flipIntervalOf], [CurveFR.flipIntervalForwardOf], [CurveFR.flipIntervalReverseOf], ...
 ///
-/// static methods
+/// static methods, constants:
 /// [fusionIntervalFlipIn]
 /// [fusionIntervalFlipForSymmetryPeriodSinIn]
+/// [all]
 ///
-/// instance methods
+/// instance methods:
 /// [interval], [flipped]
+///
 ///
 class CurveFR {
   final Curve forward;
@@ -199,17 +242,43 @@ class CurveFR {
 
   const CurveFR(this.forward, this.reverse);
 
-  const CurveFR.symmetry(Curve curve)
+  ///
+  /// of
+  ///
+  const CurveFR.of(Curve curve)
       : forward = curve,
         reverse = curve;
 
-  CurveFR.intervalFlip(CurveFR curve, double begin, double end)
-      : forward = Interval(begin, end, curve: curve.forward),
-        reverse = Interval(begin, end, curve: curve.reverse);
+  CurveFR.intervalOf(Curve curve, double begin, double end)
+      : forward = Interval(begin, end, curve: curve),
+        reverse = Interval(begin, end, curve: curve);
+
+  CurveFR.intervalForwardOf(Curve curve, double begin, double end)
+      : forward = Interval(begin, end, curve: curve),
+        reverse = curve;
+
+  CurveFR.intervalReverseOf(Curve curve, double begin, double end)
+      : forward = curve,
+        reverse = Interval(begin, end, curve: curve);
 
   ///
-  /// static methods
+  /// flip
   ///
+  CurveFR.flip(Curve curve)
+      : forward = curve,
+        reverse = curve.flipped;
+
+  CurveFR.flipIntervalOf(Curve curve, double begin, double end)
+      : forward = Interval(begin, end, curve: curve),
+        reverse = Interval(begin, end, curve: curve.flipped);
+
+  CurveFR.flipIntervalForwardOf(Curve curve, double begin, double end)
+      : forward = Interval(begin, end, curve: curve),
+        reverse = curve.flipped;
+
+  CurveFR.flipIntervalReverseOf(Curve curve, double begin, double end)
+      : forward = curve,
+        reverse = Interval(begin, end, curve: curve.flipped);
 
   ///
   /// [fusionIntervalFlipIn]
@@ -218,27 +287,21 @@ class CurveFR {
   static Fusionor<CurveFR, double, double, CurveFR> fusionIntervalFlipIn(
     int steps,
   ) =>
-      (curve, begin, end) => CurveFR.intervalFlip(
-            curve,
-            begin / steps,
-            end / steps,
-          );
+      (curve, begin, end) => curve.interval(begin / steps, end / steps);
 
   static Fusionor<int, double, double, CurveFR>
       fusionIntervalFlipForSymmetryPeriodSinIn(
     int steps,
   ) =>
-          (times, begin, end) => CurveFR.intervalFlip(
-                CurveFR.symmetry(Curving.sinPeriodOf(times)),
+          (times, begin, end) =>
+              CurveFR.of(Curving.sinPeriodOf(times)).interval(
                 begin / steps,
                 end / steps,
               );
 
   ///
-  /// constants
-  ///
-
   /// [all].length == 43, see https://api.flutter.dev/flutter/animation/Curves-class.html?gclid=CjwKCAiA-bmsBhAGEiwAoaQNmg9ZfimSGJRAty3QNZ0AA32ztq51qPlJfFPBsFc5Iv1n-EgFQtULyxoC8q0QAvD_BwE&gclsrc=aw.ds
+  ///
   static const List<CurveFR> all = [
     linear,
     decelerate,
@@ -285,52 +348,52 @@ class CurveFR {
     elasticInOut,
   ];
 
-  static const linear = CurveFR.symmetry(Curves.linear);
-  static const decelerate = CurveFR.symmetry(Curves.decelerate);
+  static const linear = CurveFR.of(Curves.linear);
+  static const decelerate = CurveFR.of(Curves.decelerate);
   static const fastLinearToSlowEaseIn =
-      CurveFR.symmetry(Curves.fastLinearToSlowEaseIn);
+      CurveFR.of(Curves.fastLinearToSlowEaseIn);
   static const fastEaseInToSlowEaseOut =
-      CurveFR.symmetry(Curves.fastEaseInToSlowEaseOut);
-  static const ease = CurveFR.symmetry(Curves.ease);
-  static const easeInToLinear = CurveFR.symmetry(Curves.easeInToLinear);
-  static const linearToEaseOut = CurveFR.symmetry(Curves.linearToEaseOut);
-  static const easeIn = CurveFR.symmetry(Curves.easeIn);
-  static const easeInSine = CurveFR.symmetry(Curves.easeInSine);
-  static const easeInQuad = CurveFR.symmetry(Curves.easeInQuad);
-  static const easeInCubic = CurveFR.symmetry(Curves.easeInCubic);
-  static const easeInQuart = CurveFR.symmetry(Curves.easeInQuart);
-  static const easeInQuint = CurveFR.symmetry(Curves.easeInQuint);
-  static const easeInExpo = CurveFR.symmetry(Curves.easeInExpo);
-  static const easeInCirc = CurveFR.symmetry(Curves.easeInCirc);
-  static const easeInBack = CurveFR.symmetry(Curves.easeInBack);
-  static const easeOut = CurveFR.symmetry(Curves.easeOut);
-  static const easeOutSine = CurveFR.symmetry(Curves.easeOutSine);
-  static const easeOutQuad = CurveFR.symmetry(Curves.easeOutQuad);
-  static const easeOutCubic = CurveFR.symmetry(Curves.easeOutCubic);
-  static const easeOutQuart = CurveFR.symmetry(Curves.easeOutQuart);
-  static const easeOutQuint = CurveFR.symmetry(Curves.easeOutQuint);
-  static const easeOutExpo = CurveFR.symmetry(Curves.easeOutExpo);
-  static const easeOutCirc = CurveFR.symmetry(Curves.easeOutCirc);
-  static const easeOutBack = CurveFR.symmetry(Curves.easeOutBack);
-  static const easeInOut = CurveFR.symmetry(Curves.easeInOut);
-  static const easeInOutSine = CurveFR.symmetry(Curves.easeInOutSine);
-  static const easeInOutQuad = CurveFR.symmetry(Curves.easeInOutQuad);
-  static const easeInOutCubic = CurveFR.symmetry(Curves.easeInOutCubic);
+      CurveFR.of(Curves.fastEaseInToSlowEaseOut);
+  static const ease = CurveFR.of(Curves.ease);
+  static const easeInToLinear = CurveFR.of(Curves.easeInToLinear);
+  static const linearToEaseOut = CurveFR.of(Curves.linearToEaseOut);
+  static const easeIn = CurveFR.of(Curves.easeIn);
+  static const easeInSine = CurveFR.of(Curves.easeInSine);
+  static const easeInQuad = CurveFR.of(Curves.easeInQuad);
+  static const easeInCubic = CurveFR.of(Curves.easeInCubic);
+  static const easeInQuart = CurveFR.of(Curves.easeInQuart);
+  static const easeInQuint = CurveFR.of(Curves.easeInQuint);
+  static const easeInExpo = CurveFR.of(Curves.easeInExpo);
+  static const easeInCirc = CurveFR.of(Curves.easeInCirc);
+  static const easeInBack = CurveFR.of(Curves.easeInBack);
+  static const easeOut = CurveFR.of(Curves.easeOut);
+  static const easeOutSine = CurveFR.of(Curves.easeOutSine);
+  static const easeOutQuad = CurveFR.of(Curves.easeOutQuad);
+  static const easeOutCubic = CurveFR.of(Curves.easeOutCubic);
+  static const easeOutQuart = CurveFR.of(Curves.easeOutQuart);
+  static const easeOutQuint = CurveFR.of(Curves.easeOutQuint);
+  static const easeOutExpo = CurveFR.of(Curves.easeOutExpo);
+  static const easeOutCirc = CurveFR.of(Curves.easeOutCirc);
+  static const easeOutBack = CurveFR.of(Curves.easeOutBack);
+  static const easeInOut = CurveFR.of(Curves.easeInOut);
+  static const easeInOutSine = CurveFR.of(Curves.easeInOutSine);
+  static const easeInOutQuad = CurveFR.of(Curves.easeInOutQuad);
+  static const easeInOutCubic = CurveFR.of(Curves.easeInOutCubic);
   static const easeInOutCubicEmphasized =
-      CurveFR.symmetry(Curves.easeInOutCubicEmphasized);
-  static const easeInOutQuart = CurveFR.symmetry(Curves.easeInOutQuart);
-  static const easeInOutQuint = CurveFR.symmetry(Curves.easeInOutQuint);
-  static const easeInOutExpo = CurveFR.symmetry(Curves.easeInOutExpo);
-  static const easeInOutCirc = CurveFR.symmetry(Curves.easeInOutCirc);
-  static const easeInOutBack = CurveFR.symmetry(Curves.easeInOutBack);
-  static const fastOutSlowIn = CurveFR.symmetry(Curves.fastOutSlowIn);
-  static const slowMiddle = CurveFR.symmetry(Curves.slowMiddle);
-  static const bounceIn = CurveFR.symmetry(Curves.bounceIn);
-  static const bounceOut = CurveFR.symmetry(Curves.bounceOut);
-  static const bounceInOut = CurveFR.symmetry(Curves.bounceInOut);
-  static const elasticIn = CurveFR.symmetry(Curves.elasticIn);
-  static const elasticOut = CurveFR.symmetry(Curves.elasticOut);
-  static const elasticInOut = CurveFR.symmetry(Curves.elasticInOut);
+      CurveFR.of(Curves.easeInOutCubicEmphasized);
+  static const easeInOutQuart = CurveFR.of(Curves.easeInOutQuart);
+  static const easeInOutQuint = CurveFR.of(Curves.easeInOutQuint);
+  static const easeInOutExpo = CurveFR.of(Curves.easeInOutExpo);
+  static const easeInOutCirc = CurveFR.of(Curves.easeInOutCirc);
+  static const easeInOutBack = CurveFR.of(Curves.easeInOutBack);
+  static const fastOutSlowIn = CurveFR.of(Curves.fastOutSlowIn);
+  static const slowMiddle = CurveFR.of(Curves.slowMiddle);
+  static const bounceIn = CurveFR.of(Curves.bounceIn);
+  static const bounceOut = CurveFR.of(Curves.bounceOut);
+  static const bounceInOut = CurveFR.of(Curves.bounceInOut);
+  static const elasticIn = CurveFR.of(Curves.elasticIn);
+  static const elasticOut = CurveFR.of(Curves.elasticOut);
+  static const elasticInOut = CurveFR.of(Curves.elasticInOut);
 
   ///
   /// instance methods
@@ -416,24 +479,25 @@ class CubicOffset {
 abstract class RegularPolygon {
   static double radianCornerOf(int n) => (n - 2) * Radian.angle_180 / n;
 
-  static double lengthSideOf(int n, num radiusCircumscribedCircle) => math.sqrt(
-        radiusCircumscribedCircle.square *
-            2 *
-            (1 - math.cos(Radian.angle_360 / n)),
-      );
+  static double lengthSideOf(
+    int n,
+    double radiusCircumscribed, [
+    int roundUp = 0,
+  ]) =>
+      radiusCircumscribed *
+      math.sin(Radian.angle_180 / n).roundUpTo(roundUp) *
+      2;
 
   static List<Offset> cornersOf(
     int n,
-    num radiusCircumscribedCircle, {
+    double radiusCircumscribedCircle, {
     Size? size,
   }) {
     final step = Radian.angle_360 / n;
     final center = size?.center(Offset.zero) ?? Offset.zero;
     return List.generate(
       n,
-      (i) =>
-          center +
-          Offset.fromDirection(step * i, radiusCircumscribedCircle.toDouble()),
+      (i) => center + Offset.fromDirection(step * i, radiusCircumscribedCircle),
       growable: false,
     );
   }
@@ -462,7 +526,9 @@ abstract class RegularPolygon {
 
   double get radianSideSide => radianCornerOf(n);
 
+  double get radianCornerSideCenter => Radian.angle_90;
   double get radianCornerCenterSide => Radian.angle_180 / n;
+  double get radianSideCornerCenter => Radian.angle_90 - radianCornerCenterSide;
 
   double get radiusInscribedCircle => inscribedCircleRadiusOf(
         n,

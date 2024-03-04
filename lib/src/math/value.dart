@@ -11,7 +11,7 @@
 ///
 ///
 ///
-part of damath;
+part of damath_math;
 
 ///
 /// duration
@@ -146,7 +146,6 @@ extension KDuration on Duration {
   static const min1 = Duration(minutes: 1);
 }
 
-
 ///
 ///
 ///
@@ -197,80 +196,19 @@ extension KLatexStringMatrix2N on String {
 extension FLaTexString on String {
   static String equationOf(Iterable<String> values) => values.reduce(
         (a, b) => "$a = $b",
-  );
+      );
 }
 
 ///
-///
-///
-///
-/// [binary]
-/// [int2], [int3], ...
-/// [double02], [double03], ...
-///
-///
+/// random
 ///
 extension VRandom on math.Random {
   static bool get binary => math.Random().nextBool();
 
-  static int get int2 => math.Random().nextInt(2);
+  static double get doubleIn1 => math.Random().nextDouble();
 
-  static int get int3 => math.Random().nextInt(3);
+  static int intTo(int max) => math.Random().nextInt(max);
 
-  static int get int4 => math.Random().nextInt(4);
-
-  static int get int5 => math.Random().nextInt(5);
-
-  static int get int6 => math.Random().nextInt(6);
-
-  static int get int7 => math.Random().nextInt(7);
-
-  static int get int8 => math.Random().nextInt(8);
-
-  static int get int9 => math.Random().nextInt(9);
-
-  static int get int10 => math.Random().nextInt(10);
-
-  static int get int20 => math.Random().nextInt(20);
-
-  static int get int30 => math.Random().nextInt(30);
-
-  static int get int40 => math.Random().nextInt(40);
-
-  static int get int50 => math.Random().nextInt(50);
-
-  static int get int100 => math.Random().nextInt(100);
-
-  static double get double02 => math.Random().nextInt(2) * 0.1;
-
-  static double get double03 => math.Random().nextInt(3) * 0.1;
-
-  static double get double04 => math.Random().nextInt(4) * 0.1;
-
-  static double get double05 => math.Random().nextInt(5) * 0.1;
-
-  static double get double06 => math.Random().nextInt(6) * 0.1;
-
-  static double get double07 => math.Random().nextInt(7) * 0.1;
-
-  static double get double08 => math.Random().nextInt(8) * 0.1;
-
-  static double get double09 => math.Random().nextInt(9) * 0.1;
-
-  static double get double002 => math.Random().nextInt(2) * 0.01;
-
-  static double get double003 => math.Random().nextInt(3) * 0.01;
-
-  static double get double004 => math.Random().nextInt(4) * 0.01;
-
-  static double get double005 => math.Random().nextInt(5) * 0.01;
-
-  static double get double006 => math.Random().nextInt(6) * 0.01;
-
-  static double get double007 => math.Random().nextInt(7) * 0.01;
-
-  static double get double008 => math.Random().nextInt(8) * 0.01;
-
-  static double get double009 => math.Random().nextInt(9) * 0.01;
+  static double doubleTo(int max, [double factor = 0.1]) =>
+      math.Random().nextInt(max) * factor;
 }
-

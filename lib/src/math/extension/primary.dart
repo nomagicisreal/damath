@@ -37,34 +37,21 @@
 ///
 ///
 ///
-part of damath;
-
-///
-/// comparable data
-///
-
-//
-mixin ComparableData<C extends Comparable, D extends ComparableData<C, D>>
-implements Comparable<D> {
-  bool operator >(D other) => Comparable.compare(this, other) == 1;
-
-  bool operator <(D other) => compareReverse(this, other) == -1;
-
-  static int compareReverse<C extends Comparable>(C a, C b) => b.compareTo(a);
-
-}
+part of damath_math;
 
 
 ///
 ///
-/// [square]
+/// [squared], [isPositive]
 /// [rangeIn], [rangeFromMaxTo], [rangeFromMinTo], [within]
 /// [isLowerOrEqualTo], [isHigherOrEqualTo]
 /// [isLowerOneOrEqualTo], [isHigherOneOrEqualTo]
 ///
 ///
 extension NumExtension on num {
-  num get square => math.pow(this, 2);
+  num get squared => math.pow(this, 2);
+
+  bool get isPositive => this > 0;
 
   bool rangeIn(num min, num max) => this >= min && this <= max;
 
@@ -109,8 +96,6 @@ extension DoubleExtension on double {
   static const double sqrt1_8 = 0.3535533905932738;
   static const double sqrt1_10 = 0.31622776601683794;
 
-  bool get isNearlyInt => (ceil() - this) <= 0.01;
-
   ///
   /// infinity usages
   ///
@@ -123,11 +108,21 @@ extension DoubleExtension on double {
   static final double infinity2_31 = proximateInfinityOf(2.31);
   static final double infinity3_2 = proximateInfinityOf(3.2);
 
+  static double squareRootOf(List<double> values, Reducer<double> reducer) =>
+      math.sqrt(values.reduce(reducer));
+
+  bool get isNearlyInt => (ceil() - this) <= 0.01;
+
   double filterInfinity(double precision) => switch (this) {
         double.infinity => proximateInfinityOf(precision),
         double.negativeInfinity => proximateNegativeInfinityOf(precision),
         _ => this,
       };
+
+  double roundUpTo(int digit) {
+    final value = math.pow(10, digit);
+    return (this * value).roundToDouble() / value;
+  }
 }
 
 ///
@@ -167,15 +162,15 @@ extension IntExtension on int {
     return accelerator;
   }
 
-  int digit({int carry = 10}) {
+  int digit([int carry = 10]) {
     int value = abs();
     int d = 0;
     for (var i = 1; i < value; i *= carry, d++) {}
     return d;
   }
 
-  int digitFirst({int carry = 10}) {
-    final value = math.pow(carry, digit(carry: carry) - 1).toInt();
+  int digitFirst([int carry = 10]) {
+    final value = math.pow(carry, digit(carry) - 1).toInt();
     int i = 0;
     for (; value * i < this; i++) {}
     return i - 1;
@@ -664,7 +659,6 @@ extension DurationExtension on Duration {
   }
 }
 
-
 ///
 /// datetime
 ///
@@ -678,26 +672,26 @@ extension DateTimeExtension on DateTime {
   String get time => toString().split(' ').last; // $h:$min:$sec.$ms$us
 
   int get monthDays => switch (month) {
-    1 => 31,
-    2 => year % 4 == 0
-        ? year % 100 == 0
-        ? year % 400 == 0
-        ? 29
-        : 28
-        : 29
-        : 28,
-    3 => 31,
-    4 => 30,
-    5 => 31,
-    6 => 30,
-    7 => 31,
-    8 => 31,
-    9 => 30,
-    10 => 31,
-    11 => 30,
-    12 => 31,
-    _ => throw UnimplementedError(),
-  };
+        1 => 31,
+        2 => year % 4 == 0
+            ? year % 100 == 0
+                ? year % 400 == 0
+                    ? 29
+                    : 28
+                : 29
+            : 28,
+        3 => 31,
+        4 => 30,
+        5 => 31,
+        6 => 30,
+        7 => 31,
+        8 => 31,
+        9 => 30,
+        10 => 31,
+        11 => 30,
+        12 => 31,
+        _ => throw UnimplementedError(),
+      };
 
   static String parseTimestampOf(String string) =>
       DateTime.fromMillisecondsSinceEpoch(int.parse(string)).toIso8601String();
@@ -708,6 +702,7 @@ extension DateTimeExtension on DateTime {
 ///
 extension NullableExtension<T> on T? {
   bool get isNull => this == null;
+
   bool get isNotNull => this != null;
 
   S? nullOr<S>(S value) => this == null ? null : value;
@@ -716,9 +711,9 @@ extension NullableExtension<T> on T? {
       this == null ? null : value(this as T);
 
   S translateOr<S>(
-      Translator<T, S> translate, {
-        required Supplier<S> ifAbsent,
-      }) {
+    Translator<T, S> translate, {
+    required Supplier<S> ifAbsent,
+  }) {
     final value = this;
     return value == null ? ifAbsent() : translate(value);
   }

@@ -709,11 +709,11 @@ extension VThemeData on ThemeData {
 /// [colorPrimary], ...
 /// [fabLocation]
 ///
-extension VRandomMaterial on math.Random {
+extension VRandomMaterial on Material {
   ///
   /// material
   ///
-  static Color get colorPrimary => Colors.primaries[math.Random().nextInt(18)];
+  static Color get colorPrimary => Colors.primaries[VRandom.intTo(18)];
 
   static final List<FloatingActionButtonLocation> _fabLocations = [
     FloatingActionButtonLocation.startTop,
@@ -729,6 +729,6 @@ extension VRandomMaterial on math.Random {
   ];
 
   static FloatingActionButtonLocation get fabLocation =>
-      _fabLocations[math.Random().nextInt(10)];
+      _fabLocations[VRandom.intTo(10)];
 }
 

@@ -48,7 +48,7 @@ extension FMapperMaterial on Mapper {
 
   static Iterable<Offset> keepOffsetIterable(Iterable<Offset> v) => v;
 
-  static Coordinate keepCoordinate(Coordinate v) => v;
+  static Space3 keepCoordinate(Space3 v) => v;
 
   static Size keepSize(Size v) => v;
 

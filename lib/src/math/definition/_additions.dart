@@ -22,6 +22,8 @@
 ///
 ///
 ///
+/// 
+/// 
 ///
 ///
 ///
@@ -33,9 +35,23 @@
 ///
 ///
 ///
+part of damath_math;
+
+
 ///
+/// comparable data
 ///
-part of damath;
+
+//
+mixin ComparableData<C extends Comparable, D extends ComparableData<C, D>>
+implements Comparable<D> {
+  bool operator >(D other) => Comparable.compare(this, other) == 1;
+
+  bool operator <(D other) => Comparable.compare(this, other) == -1;
+
+  static int compareReverse<C extends Comparable>(C a, C b) => b.compareTo(a);
+}
+
 
 ///
 ///

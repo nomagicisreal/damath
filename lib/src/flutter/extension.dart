@@ -71,7 +71,10 @@ extension DoubleMaterialExtension on double {
 
 //
 extension SizeExtension on Size {
-  double get diagonal => math.sqrt(width * width + height * height);
+  double get diagonal => DoubleExtension.squareRootOf(
+        [width, height],
+        FReducer.doubleAddSquared,
+      );
 
   Radius get toRadiusEllipse => Radius.elliptical(width, height);
 
@@ -108,7 +111,7 @@ extension OffsetExtension on Offset {
       this + Offset.fromDirection(direction, distance);
 
   double directionPerpendicular({bool isCounterclockwise = true}) =>
-      direction + math.pi / 2 * (isCounterclockwise ? 1 : -1);
+      direction + Radian.angle_90 * (isCounterclockwise ? 1 : -1);
 
   Offset get toPerpendicularUnit =>
       Offset.fromDirection(directionPerpendicular());
@@ -184,10 +187,10 @@ extension OffsetExtension on Offset {
       a + perpendicularUnitOf(a, b) * t;
 
   static Offset perpendicularOffsetUnitFromCenterOf(
-      Offset a,
-      Offset b,
-      double t,
-      ) =>
+    Offset a,
+    Offset b,
+    double t,
+  ) =>
       a.middleWith(b) + perpendicularUnitOf(a, b) * t;
 }
 
@@ -209,24 +212,24 @@ extension RectExtension on Rect {
   double get distanceDiagonal => size.diagonal;
 
   Offset offsetFromDirection(Direction direction) => switch (direction) {
-    Direction2D() => () {
-      final direction2DIn8 = switch (direction) {
-        Direction2DIn4() => direction.toDirection8,
-        Direction2DIn8() => direction,
+        Direction2D() => () {
+            final direction2DIn8 = switch (direction) {
+              Direction2DIn4() => direction.toDirection8,
+              Direction2DIn8() => direction,
+            };
+            return switch (direction2DIn8) {
+              Direction2DIn8.top => topCenter,
+              Direction2DIn8.left => centerLeft,
+              Direction2DIn8.right => centerRight,
+              Direction2DIn8.bottom => bottomCenter,
+              Direction2DIn8.topLeft => topLeft,
+              Direction2DIn8.topRight => topRight,
+              Direction2DIn8.bottomLeft => bottomLeft,
+              Direction2DIn8.bottomRight => bottomRight,
+            };
+          }(),
+        Direction3D() => throw UnimplementedError(),
       };
-      return switch (direction2DIn8) {
-        Direction2DIn8.top => topCenter,
-        Direction2DIn8.left => centerLeft,
-        Direction2DIn8.right => centerRight,
-        Direction2DIn8.bottom => bottomCenter,
-        Direction2DIn8.topLeft => topLeft,
-        Direction2DIn8.topRight => topRight,
-        Direction2DIn8.bottomLeft => bottomLeft,
-        Direction2DIn8.bottomRight => bottomRight,
-      };
-    }(),
-    Direction3D() => throw UnimplementedError(),
-  };
 }
 
 ///
@@ -253,36 +256,37 @@ extension AlignmentExtension on Alignment {
   Alignment get flipped => Alignment(-x, -y);
 
   static Alignment fromDirection(Direction2D direction) => switch (direction) {
-    Direction2DIn4() => fromDirection(direction.toDirection8),
-    Direction2DIn8() => switch (direction) {
-      Direction2DIn8.top => Alignment.topCenter,
-      Direction2DIn8.left => Alignment.centerLeft,
-      Direction2DIn8.right => Alignment.centerRight,
-      Direction2DIn8.bottom => Alignment.bottomCenter,
-      Direction2DIn8.topLeft => Alignment.topLeft,
-      Direction2DIn8.topRight => Alignment.topRight,
-      Direction2DIn8.bottomLeft => Alignment.bottomLeft,
-      Direction2DIn8.bottomRight => Alignment.bottomRight,
-    }
-  };
+        Direction2DIn4() => fromDirection(direction.toDirection8),
+        Direction2DIn8() => switch (direction) {
+            Direction2DIn8.top => Alignment.topCenter,
+            Direction2DIn8.left => Alignment.centerLeft,
+            Direction2DIn8.right => Alignment.centerRight,
+            Direction2DIn8.bottom => Alignment.bottomCenter,
+            Direction2DIn8.topLeft => Alignment.topLeft,
+            Direction2DIn8.topRight => Alignment.topRight,
+            Direction2DIn8.bottomLeft => Alignment.bottomLeft,
+            Direction2DIn8.bottomRight => Alignment.bottomRight,
+          }
+      };
 
   double get radianRangeForSide {
     final boundary = radianBoundaryForSide;
     return boundary.$2 - boundary.$1;
+
   }
 
   (double, double) get radianBoundaryForSide => switch (this) {
-    Alignment.center => (0, Radian.angle_360),
-    Alignment.centerLeft => (-Radian.angle_90, Radian.angle_90),
-    Alignment.centerRight => (Radian.angle_90, Radian.angle_270),
-    Alignment.topCenter => (0, Radian.angle_180),
-    Alignment.topLeft => (0, Radian.angle_90),
-    Alignment.topRight => (Radian.angle_90, Radian.angle_180),
-    Alignment.bottomCenter => (Radian.angle_180, Radian.angle_360),
-    Alignment.bottomLeft => (Radian.angle_270, Radian.angle_360),
-    Alignment.bottomRight => (Radian.angle_180, Radian.angle_270),
-    _ => throw UnimplementedError(),
-  };
+        Alignment.center => (0, Radian.angle_360),
+        Alignment.centerLeft => (-Radian.angle_90, Radian.angle_90),
+        Alignment.centerRight => (Radian.angle_90, Radian.angle_270),
+        Alignment.topCenter => (0, Radian.angle_180),
+        Alignment.topLeft => (0, Radian.angle_90),
+        Alignment.topRight => (Radian.angle_90, Radian.angle_180),
+        Alignment.bottomCenter => (Radian.angle_180, Radian.angle_360),
+        Alignment.bottomLeft => (Radian.angle_270, Radian.angle_360),
+        Alignment.bottomRight => (Radian.angle_180, Radian.angle_270),
+        _ => throw UnimplementedError(),
+      };
 
   double radianRangeForSideStepOf(int count) =>
       radianRangeForSide / (this == Alignment.center ? count : count - 1);
@@ -298,17 +302,17 @@ extension AlignmentExtension on Alignment {
   }
 
   Offset parseRect(Rect rect) => switch (this) {
-    Alignment.topLeft => rect.topLeft,
-    Alignment.topCenter => rect.topCenter,
-    Alignment.topRight => rect.topRight,
-    Alignment.centerLeft => rect.centerLeft,
-    Alignment.center => rect.center,
-    Alignment.centerRight => rect.centerRight,
-    Alignment.bottomLeft => rect.bottomLeft,
-    Alignment.bottomCenter => rect.bottomCenter,
-    Alignment.bottomRight => rect.bottomRight,
-    _ => throw UnimplementedError(),
-  };
+        Alignment.topLeft => rect.topLeft,
+        Alignment.topCenter => rect.topCenter,
+        Alignment.topRight => rect.topRight,
+        Alignment.centerLeft => rect.centerLeft,
+        Alignment.center => rect.center,
+        Alignment.centerRight => rect.centerRight,
+        Alignment.bottomLeft => rect.bottomLeft,
+        Alignment.bottomCenter => rect.bottomCenter,
+        Alignment.bottomRight => rect.bottomRight,
+        _ => throw UnimplementedError(),
+      };
 }
 
 ///
@@ -347,34 +351,34 @@ extension IterableOffsetExtension on Iterable<Offset> {
   /// companion
   ///
   static Iterable<Offset> companionAdjustCenter(
-      Iterable<Offset> points,
-      Size size,
-      ) =>
+    Iterable<Offset> points,
+    Size size,
+  ) =>
       points.adjustCenterFor(size);
 
   ///
   /// fill
   ///
   static Generator<Radius> fillRadiusCircular(double radius) =>
-          (_) => Radius.circular(radius);
+      (_) => Radius.circular(radius);
 
   ///
   /// generator
   ///
   static Generator<Offset> generatorWithValue(
-      double value,
-      GeneratorTranslator<double, Offset> generator,
-      ) =>
-          (index) => generator(index, value);
+    double value,
+    GeneratorTranslator<double, Offset> generator,
+  ) =>
+      (index) => generator(index, value);
 
   static Generator<Offset> generatorLeftRightLeftRight(
-      double dX,
-      double dY, {
-        required Offset topLeft,
-        required Offset Function(int line, double dX, double dY) left,
-        required Offset Function(int line, double dX, double dY) right,
-      }) =>
-          (i) {
+    double dX,
+    double dY, {
+    required Offset topLeft,
+    required Offset Function(int line, double dX, double dY) left,
+    required Offset Function(int line, double dX, double dY) right,
+  }) =>
+      (i) {
         final indexLine = i ~/ 2;
         return topLeft +
             (i % 2 == 0 ? left(indexLine, dX, dY) : right(indexLine, dX, dY));
@@ -392,14 +396,14 @@ extension IterableOffsetExtension on Iterable<Offset> {
     required int group2ThresholdX,
     required int group2ThresholdY,
   }) =>
-          (index) => Offset(
-        constantX +
-            (index % modulusX) * dX +
-            (index > group2ThresholdX ? group2ConstantX : 0),
-        constantY +
-            (index % modulusY) * dY +
-            (index > group2ThresholdY ? group2ConstantY : 0),
-      );
+      (index) => Offset(
+            constantX +
+                (index % modulusX) * dX +
+                (index > group2ThresholdX ? group2ConstantX : 0),
+            constantY +
+                (index % modulusY) * dY +
+                (index > group2ThresholdY ? group2ConstantY : 0),
+          );
 
   static Generator<Offset> generatorTopBottomStyle1(double group2ConstantY) =>
       generatorGrouping2(
@@ -426,9 +430,9 @@ extension IterableOffsetExtension on Iterable<Offset> {
 
 extension ListOffsetExtension on List<Offset> {
   List<Offset> symmetryInsert(
-      double dPerpendicular,
-      double dParallel,
-      ) {
+    double dPerpendicular,
+    double dParallel,
+  ) {
     final length = this.length;
     assert(length % 2 == 0);
     final insertionIndex = length ~/ 2;
@@ -448,7 +452,6 @@ extension ListOffsetExtension on List<Offset> {
   }
 }
 
-
 ///
 ///
 ///
@@ -463,32 +466,32 @@ extension ListOffsetExtension on List<Offset> {
 ///
 extension ColorExtension on Color {
   Color plusARGB(int alpha, int red, int green, int blue) => Color.fromARGB(
-    this.alpha + alpha,
-    this.red + red,
-    this.green + green,
-    this.blue + blue,
-  );
+        this.alpha + alpha,
+        this.red + red,
+        this.green + green,
+        this.blue + blue,
+      );
 
   Color minusARGB(int alpha, int red, int green, int blue) => Color.fromARGB(
-    this.alpha - alpha,
-    this.red - red,
-    this.green - green,
-    this.blue - blue,
-  );
+        this.alpha - alpha,
+        this.red - red,
+        this.green - green,
+        this.blue - blue,
+      );
 
   Color multiplyARGB(int alpha, int red, int green, int blue) => Color.fromARGB(
-    this.alpha * alpha,
-    this.red * red,
-    this.green * green,
-    this.blue * blue,
-  );
+        this.alpha * alpha,
+        this.red * red,
+        this.green * green,
+        this.blue * blue,
+      );
 
   Color divideARGB(int alpha, int red, int green, int blue) => Color.fromARGB(
-    this.alpha ~/ alpha,
-    this.red ~/ red,
-    this.green ~/ green,
-    this.blue ~/ blue,
-  );
+        this.alpha ~/ alpha,
+        this.red ~/ red,
+        this.green ~/ green,
+        this.blue ~/ blue,
+      );
 
   Color plusAllRGB(int value) =>
       Color.fromARGB(alpha, red + value, green + value, blue + value);
@@ -503,12 +506,12 @@ extension ColorExtension on Color {
       Color.fromARGB(alpha, red ~/ value, green ~/ value, blue ~/ value);
 
   Color operateWithValue(Operator operator, int value) => switch (operator) {
-    Operator.plus => plusARGB(0, value, value, value),
-    Operator.minus => minusARGB(0, value, value, value),
-    Operator.multiply => multiplyARGB(1, value, value, value),
-    Operator.divide => divideARGB(1, value, value, value),
-    Operator.modulus => throw UnimplementedError(),
-  };
+        Operator.plus => plusARGB(0, value, value, value),
+        Operator.minus => minusARGB(0, value, value, value),
+        Operator.multiply => multiplyARGB(1, value, value, value),
+        Operator.divide => divideARGB(1, value, value, value),
+        Operator.modulus => throw UnimplementedError(),
+      };
 }
 
 ///
@@ -548,18 +551,18 @@ extension PathExtension on Path {
     ..lineToPoint(b);
 
   void lineFromAToAll(Offset a, Iterable<Offset> points) => points.fold<Path>(
-    this..moveToPoint(a),
+        this..moveToPoint(a),
         (path, point) => path..lineToPoint(point),
-  );
+      );
 
   void arcFromStartToEnd(
-      Offset arcStart,
-      Offset arcEnd, {
-        Radius radius = Radius.zero,
-        bool clockwise = true,
-        double rotation = 0.0,
-        bool largeArc = false,
-      }) =>
+    Offset arcStart,
+    Offset arcEnd, {
+    Radius radius = Radius.zero,
+    bool clockwise = true,
+    double rotation = 0.0,
+    bool largeArc = false,
+  }) =>
       this
         ..moveToPoint(arcStart)
         ..arcToPoint(
@@ -592,10 +595,10 @@ extension PathExtension on Path {
       );
 
   void cubicToPoint(
-      Offset controlPoint1,
-      Offset controlPoint2,
-      Offset endPoint,
-      ) =>
+    Offset controlPoint1,
+    Offset controlPoint2,
+    Offset endPoint,
+  ) =>
       cubicTo(
         controlPoint1.dx,
         controlPoint1.dy,
@@ -606,10 +609,10 @@ extension PathExtension on Path {
       );
 
   void cubicToRelativePoint(
-      Offset controlPoint1,
-      Offset controlPoint2,
-      Offset endPoint,
-      ) =>
+    Offset controlPoint1,
+    Offset controlPoint2,
+    Offset endPoint,
+  ) =>
       relativeCubicTo(
         controlPoint1.dx,
         controlPoint1.dy,
@@ -668,9 +671,9 @@ extension GlobalKeyExtension on GlobalKey {
     return translation == null
         ? offset
         : Offset(
-      offset.dx - translation.x,
-      offset.dy - translation.y,
-    );
+            offset.dx - translation.x,
+            offset.dy - translation.y,
+          );
   }
 }
 
@@ -899,13 +902,13 @@ extension BuildContextExtension on BuildContext {
       scaffoldMessenger.showSnackBar(snackBar);
 
   void showSnackbarWithMessage(
-      String? message, {
-        bool isCenter = true,
-        bool showWhetherMessageIsNull = false,
-        Duration duration = KDuration.second1,
-        Color? backgroundColor,
-        SnackBarBehavior behavior = SnackBarBehavior.floating,
-      }) {
+    String? message, {
+    bool isCenter = true,
+    bool showWhetherMessageIsNull = false,
+    Duration duration = KDuration.second1,
+    Color? backgroundColor,
+    SnackBarBehavior behavior = SnackBarBehavior.floating,
+  }) {
     if (showWhetherMessageIsNull || message != null) {
       scaffoldMessenger.showSnackBar(
         SnackBar(
@@ -952,11 +955,11 @@ extension BuildContextExtension on BuildContext {
         content: Text(content),
         actions: options.keys
             .map((optionTitle) => TextButton(
-          onPressed: () => context.navigator.pop(
-            options[optionTitle],
-          ),
-          child: Text(optionTitle),
-        ))
+                  onPressed: () => context.navigator.pop(
+                    options[optionTitle],
+                  ),
+                  child: Text(optionTitle),
+                ))
             .toList(),
       ),
     );
@@ -983,19 +986,19 @@ extension BuildContextExtension on BuildContext {
         builder: (context) => content == null
             ? SimpleDialog(title: Text(title), children: actions)
             : AlertDialog(
-          title: Text(title),
-          content: Text(content),
-          actions: actions,
-        ));
+                title: Text(title),
+                content: Text(content),
+                actions: actions,
+              ));
     return returnValue;
   }
 
   void showDialogStyle3(
-      String text,
-      VoidCallback? onEnsure, {
-        Widget? content,
-        String messageEnsure = '確認',
-      }) {
+    String text,
+    VoidCallback? onEnsure, {
+    Widget? content,
+    String messageEnsure = '確認',
+  }) {
     showDialog<void>(
       context: this,
       builder: (context) {
@@ -1051,31 +1054,30 @@ extension BuildContextExtension on BuildContext {
   }
 
   Future<bool?> showDialogDecideTureOfFalse(
-      Widget iconProcess,
-      Widget iconCancel,
-      ) async {
+    Widget iconProcess,
+    Widget iconCancel,
+  ) async {
     bool? result;
     await showDialog(
         context: this,
         builder: (context) => SimpleDialog(
-          children: [
-            TextButton(
-              onPressed: () {
-                result = true;
-                context.navigator.pop();
-              },
-              child: iconProcess,
-            ),
-            TextButton(
-              onPressed: () {
-                result = false;
-                context.navigator.pop();
-              },
-              child: iconCancel,
-            ),
-          ],
-        ));
+              children: [
+                TextButton(
+                  onPressed: () {
+                    result = true;
+                    context.navigator.pop();
+                  },
+                  child: iconProcess,
+                ),
+                TextButton(
+                  onPressed: () {
+                    result = false;
+                    context.navigator.pop();
+                  },
+                  child: iconCancel,
+                ),
+              ],
+            ));
     return result;
   }
 }
-

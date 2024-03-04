@@ -35,7 +35,7 @@
 ///
 ///
 ///
-part of damath;
+part of damath_math;
 
 ///
 ///
