@@ -211,9 +211,11 @@ extension FSizingPath on SizingPath {
       _polygonCubic(cornersCubic, scale, adjust: adjust);
 
   ///
-  /// shape border
+  /// [shapeBorderOuter]
+  /// [shapeBorderInner]
+  /// [shapeBorder]
   ///
-  static SizingPath _shapeBorderOuter(
+  static SizingPath shapeBorderOuter(
     ShapeBorder shape,
     SizingRect sizingRect,
     TextDirection? textDirection,
@@ -223,7 +225,7 @@ extension FSizingPath on SizingPath {
             textDirection: textDirection,
           );
 
-  static SizingPath _shapeBorderInner(
+  static SizingPath shapeBorderInner(
     ShapeBorder shape,
     SizingRect sizingRect,
     TextDirection? textDirection,
@@ -240,8 +242,8 @@ extension FSizingPath on SizingPath {
     SizingRect sizingRect = FSizingRect.full,
   }) =>
       outerPath
-          ? _shapeBorderOuter(shape, sizingRect, textDirection)
-          : _shapeBorderInner(shape, sizingRect, textDirection);
+          ? shapeBorderOuter(shape, sizingRect, textDirection)
+          : shapeBorderInner(shape, sizingRect, textDirection);
 
   ///
   /// [pie]
