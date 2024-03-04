@@ -1,4 +1,4 @@
-// import 'package:damath/damath.dart' as damath;
+// import 'package:damath/cmd.dart' as damath;
 
 import 'package:damath/damath.dart';
 

@@ -18,6 +18,7 @@
 ///     [Direction3DIn22]
 ///
 ///
+/// [CubicOffset]
 ///
 ///
 ///

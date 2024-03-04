@@ -300,7 +300,7 @@ class Edge<E> {
 }
 
 extension IterableEdgeExtension<E> on Iterable<Edge<E>> {
-  Map<Vertex<E>, List<Edge<E>>> get groupOfVertex {
+  Map<Vertex<E>, List<Edge<E>>> get groupByVertex {
     final map = <Vertex<E>, List<Edge<E>>>{};
     for (var edge in this) {
       map.updateIfNotNull(

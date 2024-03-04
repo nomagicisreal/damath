@@ -2,8 +2,6 @@
 ///
 /// this file contains:
 ///
-/// [ComparableReverse]
-///
 /// [IterableExtension]
 /// [IterableIntExtension], [IterableDoubleExtension], [IterableTimerExtension]
 /// [IterableIterableExtension], [IterableSetExtension]
@@ -33,11 +31,11 @@
 ///
 ///
 ///
+///
+///
+///
+///
 part of damath;
-
-extension ComparableReverse<C extends Comparable> on Comparable {
-  static int compare<C extends Comparable>(C a, C b) => b.compareTo(a);
-}
 
 ///
 /// static methods:
