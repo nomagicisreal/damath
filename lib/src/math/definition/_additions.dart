@@ -37,7 +37,6 @@
 ///
 part of damath_math;
 
-
 ///
 /// comparable data
 ///

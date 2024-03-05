@@ -432,7 +432,7 @@ class CurveFR {
   ]) =>
       CurveFR(
         forward.interval(begin, end, flipForward),
-        reverse.interval(begin, end, flipForward),
+        reverse.interval(begin, end, flipReverse),
       );
 
   CurveFR intervalForward(
@@ -468,7 +468,7 @@ class CurveFR {
   ]) =>
       CurveFR(
         reverse.interval(begin, end, flipForward),
-        forward.interval(begin, end, flipForward),
+        forward.interval(begin, end, flipReverse),
       );
 
   CurveFR invertIntervalForward(

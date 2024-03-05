@@ -186,7 +186,7 @@ extension FSizingPath on SizingPath {
 
     Path from(Iterable<CubicOffset> offsets) => scaled(offsets).foldWithIndex(
           Path(),
-          (index, path, points) => path
+          (path, points, index) => path
             ..moveOrLineToPoint(points.a, index == 0)
             ..cubicToPoint(points.b, points.c, points.d),
         )..close();

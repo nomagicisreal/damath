@@ -375,9 +375,9 @@ extension IterableOffsetExtension on Iterable<Offset> {
   ///
   static Generator<Offset> generatorWithValue(
     double value,
-    GeneratorTranslator<double, Offset> generator,
+    TranslatorGenerator<double, Offset> generator,
   ) =>
-      (index) => generator(index, value);
+      (i) => generator(value, i);
 
   static Generator<Offset> generatorLeftRightLeftRight(
     double dX,

@@ -4,14 +4,16 @@
 ///
 /// [Vertex]
 ///   [VertexComparable]
+///
 ///   [Node]
-///     [NodeBinary]
-///       [TreeBinary]
-///         [TreeBinarySet]
+///   [NodeBinary]
+///     [NodeAvl]
+///     * [NodeBinarySet]
+///   [NodeTree]
 ///
-/// [Edge]
 ///
-/// [IterableEdgeExtension]
+///   * [Edge]
+///     * [Graph]
 ///
 ///
 ///
@@ -74,6 +76,8 @@ class VertexComparable<E extends Comparable> extends Vertex<E>
 ///
 /// [Node]
 /// [NodeBinary]
+/// [NodeAvl]
+/// [NodeTree]
 ///
 ///
 
@@ -116,11 +120,18 @@ class Node<E> extends Vertex<E> {
 ///
 /// [data], [left], [right]
 ///
+/// static methods:
 /// [stringDiagramOf]
 ///
+/// instance getters, methods:
 /// [iterateFromLeftToRight], [iterateFromRightToLeft]
 /// [traversalFromLeftToRight], [traversalFromRightToLeft]
 /// [climbFromLeftToRight], [climbFromRightToLeft]
+/// [leftest], [rightest]
+/// [depthLeft], [depthRight], [depth], [height]
+/// [values]
+/// [any], [contains]
+/// [everyIsUnique]
 ///
 ///
 class NodeBinary<E> extends Vertex<E> {
@@ -254,9 +265,76 @@ class NodeBinary<E> extends Vertex<E> {
 }
 
 ///
+/// [data], [left], [right], ...
 ///
-/// [TreeBinary]
-/// [TreeBinarySet]
+/// instance getters, methods:
+/// [balanceFactor]
+/// [balance]
+/// [rotateLeft], [rotateRight]
+/// [rotateLeftRight], [rotateRightLeft]
+///
+///
+class NodeAvl<E> extends NodeBinary<E> {
+  @override
+  NodeAvl<E>? get left => super.left as NodeAvl<E>?;
+
+  @override
+  NodeAvl<E>? get right => super.right as NodeAvl<E>?;
+
+  NodeAvl(super.data, {NodeAvl<E>? super.left, NodeAvl<E>? super.right});
+
+  ///
+  /// because [depthLeft] >= 0, [depthRight] >= 0,
+  /// if [balanceFactor] == 2, [depthLeft] >=2, which indicates [left] != null
+  /// if [balanceFactor] == -2, [depthRight] >=2, which indicates [right] != null
+  ///
+  int get balanceFactor => depthLeft - depthRight;
+
+  ///
+  /// after balancing, these methods return the balanced root of current node
+  ///
+  /// [balance]
+  /// [rotateLeft], [rotateRight]
+  /// [rotateLeftRight], [rotateRightLeft]
+  ///
+  NodeAvl<E> balance() => switch (balanceFactor) {
+        2 => left!.balanceFactor == -1 ? rotateLeftRight() : rotateRight(),
+        -2 => right!.balanceFactor == 1 ? rotateRightLeft() : rotateLeft(),
+        _ => this,
+      };
+
+  NodeAvl<E> rotateLeft() {
+    final pivot = right!;
+    right = pivot.left;
+    pivot.left = this;
+    return pivot;
+  }
+
+  NodeAvl<E> rotateRight() {
+    final pivot = left!;
+    left = pivot.right;
+    pivot.right = this;
+    return pivot;
+  }
+
+  NodeAvl<E> rotateLeftRight() {
+    final left = this.left;
+    if (left == null) return this;
+    this.left = left.rotateLeft();
+    return rotateRight();
+  }
+
+  NodeAvl<E> rotateRightLeft() {
+    final right = this.right;
+    if (right == null) return this;
+    this.right = right.rotateRight();
+    return rotateLeft();
+  }
+}
+
+///
+///
+/// [NodeBinarySet]
 ///
 ///
 
@@ -265,19 +343,101 @@ class NodeBinary<E> extends Vertex<E> {
 ///
 /// [contains]
 ///
-class TreeBinary<E> {
+class NodeBinarySet<E> {
   NodeBinary<E> root;
 
-  TreeBinary(this.root);
+  NodeBinarySet(this.root) : assert(root.everyIsUnique);
 
   bool contains(E element) => root.contains(element);
 }
 
 ///
+/// [children]
+/// [isLeaf]
 ///
+/// [add]
+/// [forEachData], [forEachNode]
+/// [foldData], [foldNode]
+/// [whereData], [whereNode]
 ///
-class TreeBinarySet<E> extends TreeBinary<E> {
-  TreeBinarySet(super.root) : assert(root.everyIsUnique);
+class NodeTree<E> extends Vertex<E> {
+  final List<NodeTree<E>> children;
+
+  NodeTree(super.data, this.children);
+
+  ///
+  /// [isLeaf]
+  ///
+  bool get isLeaf => children.isEmpty;
+
+  ///
+  /// [add]
+  ///
+  void add(NodeTree<E> child) => children.add(child);
+
+  ///
+  /// [forEachData]
+  /// [forEachNode]
+  ///
+  void forEachData(Consumer<E> consume, [bool breadth = true]) =>
+      forEachNode((node) => consume(node.data), breadth);
+
+  void forEachNode(Consumer<NodeTree<E>> consume, [bool breadth = true]) =>
+      breadth
+          ? _forEachNodeBreadthFirst(consume)
+          : _forEachNodeDepthFirst(consume);
+
+  ///
+  /// [_forEachNodeDepthFirst]
+  /// [_forEachNodeBreadthFirst]
+  ///
+  void _forEachNodeDepthFirst(Consumer<NodeTree<E>> consume) {
+    consume(this);
+    for (final child in children) {
+      child._forEachNodeDepthFirst(consume);
+    }
+  }
+
+  void _forEachNodeBreadthFirst(Consumer<NodeTree<E>> consume) {
+    consume(this);
+    final list = List<NodeTree<E>>.of(children);
+    for (var i = 0; i < list.length; i++) {
+      final node = list[i];
+      consume(node);
+      list.addAll(node.children);
+    }
+  }
+
+  ///
+  /// [foldData], [foldNode]
+  ///
+  F foldData<F>(F initial, Companion<F, E> combine, [bool breadth = true]) {
+    var value = initial;
+    forEachNode((node) => value = combine(value, node.data), breadth);
+    return value;
+  }
+
+  F foldNode<F>(
+    F initial,
+    Companion<F, NodeTree<E>> combine, [
+    bool breadth = true,
+  ]) {
+    var value = initial;
+    forEachNode((node) => value = combine(value, node), breadth);
+    return value;
+  }
+
+  ///
+  /// [whereData], [whereNode]
+  ///
+  List<E> whereData(Predicator<E> test, [bool breadth = true]) =>
+      foldData([], (l, data) => test(data) ? (l..add(data)) : l);
+
+  List<NodeTree<E>> whereNode(
+    Predicator<NodeTree<E>> test, [
+    bool breadth = true,
+  ]) =>
+      foldNode([], (l, node) => test(node) ? (l..add(node)) : l, breadth);
 }
 
 ///
@@ -299,21 +459,137 @@ class Edge<E> {
   bool contains(Vertex<E> vertex) => source == vertex || destination == vertex;
 }
 
-extension IterableEdgeExtension<E> on Iterable<Edge<E>> {
-  Map<Vertex<E>, List<Edge<E>>> get groupByVertex {
+///
+///
+/// [vertices]
+///
+/// [createVertex], ...
+/// [createEdge], ...
+///
+/// [edgesFrom], ...
+///
+/// [hasCycle], ...
+///
+/// [_hasCycle]
+///
+///
+abstract class Graph<E> {
+  ///
+  /// [vertices]
+  /// [edges]
+  ///
+  Iterable<Vertex<E>> get vertices;
+
+  Iterable<Edge<E>> get edges;
+
+  ///
+  /// [edgesGroupByVertex]
+  ///
+  Map<Vertex<E>, List<Edge<E>>> get edgesGroupByVertex {
     final map = <Vertex<E>, List<Edge<E>>>{};
-    for (var edge in this) {
+    for (var edge in edges) {
       map.updateIfNotNull(
         edge.source,
-        (value) => value..add(edge),
+            (value) => value..add(edge),
         ifAbsent: () => [edge],
       );
       map.updateIfNotNull(
         edge.destination,
-        (value) => value..add(edge),
+            (value) => value..add(edge),
         ifAbsent: () => [edge],
       );
     }
     return map;
+  }
+
+  ///
+  /// [createVertex]
+  /// [containsVertex]
+  ///
+  Vertex<E> createVertex(E data);
+
+  bool containsVertex(Vertex<E> vertex) => vertices.contains(vertex);
+
+  ///
+  /// [createEdge]
+  /// [addEdge]
+  /// [containsEdge]
+  ///
+  void createEdge(Edge<E> edge);
+
+  void addEdge(Edge<E> edge);
+
+  bool containsEdge(Edge<E> edge) => edges.contains(edge);
+
+  ///
+  /// [edgesFrom]
+  /// [destinationsFrom]
+  /// [weightFrom]
+  ///
+  List<Edge<E>> edgesFrom(Vertex<E> source);
+
+  List<Vertex<E>> destinationsFrom(Vertex<E> source);
+
+  double? weightFrom(Vertex<E> source, Vertex<E> destination);
+
+  ///
+  /// [searchReachableFrom]
+  ///
+  List<Vertex<E>> searchReachableFrom(
+      Vertex<E> source, [
+        bool breadth = true,
+      ]) =>
+      breadth ? _searchBreathFirst(source) : _searchDepthFirst(source);
+
+  ///
+  /// [hasCycle]
+  ///
+  bool hasCycle(Vertex<E> source) => _hasCycle(source, []);
+
+  ///
+  ///
+  /// private implementations:
+  ///
+  /// [_hasCycle]
+  /// [_searchBreathFirst]
+  /// [_searchDepthFirst]
+  ///
+  ///
+
+  ///
+  /// [_hasCycle]
+  ///
+  bool _hasCycle(Vertex<E> source, List<Vertex<E>> pushed) {
+    pushed.add(source);
+    final result = destinationsFrom(source).any((destination) =>
+    pushed.contains(destination) || _hasCycle(destination, pushed));
+    pushed.remove(source);
+    return result;
+  }
+
+  ///
+  /// [_searchBreathFirst]
+  /// [_searchDepthFirst]
+  ///
+  List<Vertex<E>> _searchBreathFirst(Vertex<E> source) {
+    final visited = <Vertex<E>>[source];
+    for (var i = 0; i < visited.length; i++) {
+      destinationsFrom(visited[i]).conditionalConsume(
+            (destination) => visited.notContains(destination),
+            (destination) => visited.add(destination),
+      );
+    }
+    return visited;
+  }
+
+  List<Vertex<E>> _searchDepthFirst(Vertex<E> source) {
+    final visited = <Vertex<E>>[source];
+    while (visited.isNotEmpty) {
+      destinationsFrom(visited.removeLast()).conditionalConsume(
+            (destination) => visited.notContains(destination),
+            (destination) => visited.add(destination),
+      );
+    }
+    return visited;
   }
 }

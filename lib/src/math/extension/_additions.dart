@@ -2,7 +2,7 @@
 ///
 /// this file contains:
 ///
-/// [ComparableData]
+/// [NullableExtension]
 ///
 ///
 /// [NumExtension]
@@ -12,10 +12,6 @@
 ///
 /// [DurationExtension]
 /// [DateTimeExtension]
-///
-///
-/// [NullableExtension]
-///
 ///
 /// [StringExtension]
 /// [MatchExtension]
@@ -31,14 +27,50 @@
 ///
 ///
 ///
-///
-///
-///
-///
-///
-///
 part of damath_math;
 
+///
+/// object
+///
+extension ObjectExtension<T> on T {
+  void listen(Consumer<T> consumer) => consumer(this);
+}
+
+///
+/// nullable
+///
+extension NullableExtension<T> on T? {
+  bool get isNull => this == null;
+  bool get isNotNull => this != null;
+
+  ///
+  /// [nullOr]
+  /// [nullOrTranslate]
+  ///
+  S? nullOr<S>(S value) => this == null ? null : value;
+
+  S? nullOrTranslate<S>(Translator<T, S> value) =>
+      this == null ? null : value(this as T);
+
+  ///
+  /// [translateOrDefault]
+  /// [consumeIfNotNull]
+  ///
+  S translateOrDefault<S>(
+      Translator<T, S> translate,
+      Supplier<S> defaultValue,
+      ) {
+    final value = this;
+    return value == null ? defaultValue() : translate(value);
+  }
+
+  void consumeIfNotNull(Consumer<T> consumer) {
+    final value = this;
+    if (value != null) {
+      consumer(value);
+    }
+  }
+}
 
 ///
 ///
@@ -697,27 +729,6 @@ extension DateTimeExtension on DateTime {
       DateTime.fromMillisecondsSinceEpoch(int.parse(string)).toIso8601String();
 }
 
-///
-/// nullable
-///
-extension NullableExtension<T> on T? {
-  bool get isNull => this == null;
-
-  bool get isNotNull => this != null;
-
-  S? nullOr<S>(S value) => this == null ? null : value;
-
-  S? nullOrTranslate<S>(Translator<T, S> value) =>
-      this == null ? null : value(this as T);
-
-  S translateOr<S>(
-    Translator<T, S> translate, {
-    required Supplier<S> ifAbsent,
-  }) {
-    final value = this;
-    return value == null ? ifAbsent() : translate(value);
-  }
-}
 
 ///
 /// string

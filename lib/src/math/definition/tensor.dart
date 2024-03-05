@@ -8,27 +8,27 @@
 ///     [TensorVector2D]
 ///
 ///
-/// 
-/// 
-/// 
-/// 
-/// 
-/// 
-/// 
-/// 
-/// 
-/// 
-/// 
-/// 
-/// 
-/// 
-/// 
-/// 
-/// 
-/// 
-/// 
-/// 
-/// 
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///
 ///
 ///
 ///
@@ -145,12 +145,13 @@ class TensorVector extends Tensor<List<double>> {
   int get length => value.length;
 
   TensorVector _computeAll(Mapper<double> toValue) =>
-      TensorVector(value.mapToList(toValue, growable: false));
+      TensorVector(List.of(value.mapToList(toValue), growable: false));
 
   TensorVector _computeAllWith(TensorVector other, Reducer<double> toValue) =>
-      TensorVector(
-        value.accordinglyAccompany(other.value, toValue, growable: false),
-      );
+      TensorVector(List.of(
+        value.accordinglyAccompany(other.value, toValue),
+        growable: false,
+      ));
 
   @override
   String toString() => 'TensorVector($value)';
@@ -239,4 +240,3 @@ class TensorVector2D extends TensorVector {
   double angleTo(TensorVector2D other) =>
       Radian.angleOf(radianTo(other)).roundToDouble();
 }
-
