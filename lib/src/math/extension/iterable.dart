@@ -7,6 +7,12 @@
 /// [IterableIterableExtension], [IterableSetExtension]
 ///
 ///
+/// about graph:
+/// [IterableEdgeExtension]
+///
+///
+///
+///
 part of damath_math;
 
 ///
@@ -17,12 +23,17 @@ part of damath_math;
 /// instance getter and methods
 /// [notContains], ...
 /// [conditionalConsume], ...
-/// [forEachWith], ...
 ///
-/// [anyOf], ...
+/// [forEachWith], ...
+/// [predicateToOthers], ...
+///
+/// [intersectionIterate], ...
+/// [differenceIterate], ...
+///
+/// [anyIsEqual]
 /// [everyIsEqual], ...
 ///
-/// [firstWhereOrNull], ...
+/// [whereMap], ...
 ///
 /// [foldWithIndex], ...
 /// [reduceWithIndex], ...
@@ -34,8 +45,6 @@ part of damath_math;
 ///
 /// [chunk], ...
 /// [groupBy], ...
-///
-/// [combine], ...
 ///
 extension IterableExtension<I> on Iterable<I> {
   ///
@@ -85,6 +94,7 @@ extension IterableExtension<I> on Iterable<I> {
 
   ///
   /// [forEachWith]
+  /// [forEachCombine]
   ///
   void forEachWith<S>(Iterable<S> another, Absorber<I, S> absorber) {
     assert(length == another.length, 'length must be equal');
@@ -95,34 +105,180 @@ extension IterableExtension<I> on Iterable<I> {
     }
   }
 
+  Iterable<MapEntry<I, V>> forEachCombine<V>(Iterable<V> values) sync* {
+    assert(length == values.length, 'length must be equal');
+    final iterator = this.iterator;
+    final iteratorValues = values.iterator;
+    while (iterator.moveNext() && iteratorValues.moveNext()) {
+      yield MapEntry(iterator.current, iteratorValues.current);
+    }
+  }
+
   ///
-  /// [anyOf]
+  /// [predicateToOthers]
   ///
-  bool anyOf(Comparator<I> compare, {int expect = 0}) {
+  bool predicateToOthers(PredicateCombiner<I> predicate) {
     final iterator = this.iterator..moveNext();
     final List<I> list = [iterator.current];
     while (iterator.moveNext()) {
       final current = iterator.current;
-      if (list.any((e) => compare(e, current) == expect)) return true;
+      if (list.any((e) => predicate(current, e))) return true;
       list.add(current);
     }
     return false;
   }
 
   ///
+  ///
+  /// set operations, see also [Set.intersection], [Set.difference],
+  ///
+  /// [intersectionIterate], [intersectionIterateIndexable]
+  /// [intersectionFold], [intersectionFoldIndexable]
+  /// [differenceIterate], [differenceIterateIndexable]
+  /// [differenceFold], [differenceFoldIndexable]
+  ///
+
+  ///
+  /// [intersectionIterate]
+  /// [intersectionIterateIndexable]
+  ///
+  void intersectionIterate(Iterable<I> another, Intersector<I> mutual) {
+    final iterator = this.iterator;
+    final iteratorAnother = another.iterator;
+    while (iterator.moveNext() && iteratorAnother.moveNext()) {
+      mutual(iterator.current, iteratorAnother.current);
+    }
+  }
+
+  void intersectionIterateIndexable(
+    Iterable<I> another,
+    IntersectorIndexable<I> mutual,
+  ) {
+    final iterator = this.iterator;
+    final iteratorAnother = another.iterator;
+    int i = -1;
+    while (iterator.moveNext() && iteratorAnother.moveNext()) {
+      mutual(iterator.current, iteratorAnother.current, ++i);
+    }
+  }
+
+  ///
+  /// [intersectionFold]
+  /// [intersectionFoldIndexable]
+  ///
+  S intersectionFold<S>(
+    S initialValue,
+    Iterable<I> another,
+    Companion2<S, I> companion,
+  ) {
+    var result = initialValue;
+    intersectionIterate(
+      another,
+      (valueA, valueB) => result = companion(initialValue, valueA, valueB),
+    );
+    return result;
+  }
+
+  S intersectionFoldIndexable<S>(
+    S initialValue,
+    Iterable<I> another,
+    Companion2Generator<S, I> companion,
+  ) {
+    var result = initialValue;
+    intersectionIterateIndexable(
+      another,
+      (e1, e2, i) => result = companion(initialValue, e1, e2, i),
+    );
+    return result;
+  }
+
+  ///
+  /// [differenceIterate]
+  /// [differenceIterateIndexable]
+  ///
+  void differenceIterate(
+    Iterable<I> another,
+    Intersector<I> mutual,
+    Consumer<I> overflow,
+  ) {
+    final iterator = this.iterator;
+    final iteratorAnother = another.iterator;
+    while (iteratorAnother.moveNext()) {
+      if (iterator.moveNext()) {
+        mutual(iterator.current, iteratorAnother.current);
+      }
+    }
+    while (iterator.moveNext()) {
+      overflow(iterator.current);
+    }
+  }
+
+  void differenceIterateIndexable(
+    Iterable<I> another,
+    IntersectorIndexable<I> mutual,
+    ConsumerIndexable<I> overflow,
+  ) {
+    final iterator = this.iterator;
+    final iteratorAnother = another.iterator;
+    var i = -1;
+    while (iteratorAnother.moveNext()) {
+      if (iterator.moveNext()) {
+        mutual(iterator.current, iteratorAnother.current, ++i);
+      }
+    }
+    while (iterator.moveNext()) {
+      overflow(iterator.current, ++i);
+    }
+  }
+
+  ///
+  /// [differenceFold]
+  /// [differenceFoldIndexable]
+  ///
+  S differenceFold<S>(
+    S initialValue,
+    Iterable<I> another,
+    Companion2<S, I> combineMutual,
+    Companion<S, I> combineOverflow,
+  ) {
+    var result = initialValue;
+    differenceIterate(
+      another,
+      (v1, v2) => result = combineMutual(result, v1, v2),
+      (value) => result = combineOverflow(result, value),
+    );
+    return result;
+  }
+
+  S differenceFoldIndexable<S>(
+    S initialValue,
+    Iterable<I> another,
+    Companion2Generator<S, I> combineMutual,
+    CompanionGenerator<S, I> combineOverflow,
+  ) {
+    var result = initialValue;
+    differenceIterateIndexable(
+      another,
+      (v1, v2, i) => result = combineMutual(result, v1, v2, i),
+      (value, i) => result = combineOverflow(result, value, i),
+    );
+    return result;
+  }
+
+  ///
   /// [anyIsEqual]
   /// [anyIsDifferent]
   ///
-  bool get anyIsEqual => anyOf((a, b) => a == b ? 0 : -1, expect: 0);
+  bool get anyIsEqual => predicateToOthers(FPredicatorCombiner.isEqual);
 
-  bool get anyIsDifferent => anyOf((a, b) => a != b ? 0 : -1, expect: 0);
+  bool get anyIsDifferent => predicateToOthers(FPredicatorCombiner.isNotEqual);
 
   ///
-  /// [anyWithIndex]
+  /// [anyIndexable]
   ///
-  bool anyWithIndex(Checker<I> checker, {int start = 0}) {
-    int index = start - 1;
-    return any((element) => checker(++index, element));
+  bool anyIndexable(Checker<I> checker) {
+    var i = -1;
+    return any((element) => checker(++i, element));
   }
 
   ///
@@ -159,20 +315,20 @@ extension IterableExtension<I> on Iterable<I> {
   ///
   /// [everyIsEqual]
   /// [everyIsDifferent]
+  /// [everyIsIdenticalOn]
   ///
   bool get everyIsEqual => !anyIsDifferent;
 
   bool get everyIsDifferent => !anyIsEqual;
 
-  ///
-  /// [everyIsIdenticalOn]
-  /// [everyWithIndex]
-  ///
   bool everyIsIdenticalOn<T>(Translator<I, T> toId) => toSet().length == length;
 
-  bool everyWithIndex(Checker<I> checker, {int start = 0}) {
-    int index = start - 1;
-    return every((element) => checker(++index, element));
+  ///
+  /// [everyIndexable]
+  ///
+  bool everyIndexable(Checker<I> checker) {
+    var i = -1;
+    return every((element) => checker(++i, element));
   }
 
   ///
@@ -203,7 +359,19 @@ extension IterableExtension<I> on Iterable<I> {
       !anyElementIsEqualWith(another);
 
   ///
+  /// [whereMap]
+  ///
+  Iterable<T> whereMap<T>(Predicator<I> test, Translator<I, T> toValue) sync* {
+    final iterator = this.iterator;
+    while (iterator.moveNext()) {
+      final current = iterator.current;
+      if (test(current)) yield toValue(current);
+    }
+  }
+
+  ///
   /// [firstWhereOrNull]
+  /// [firstWhereMap]
   ///
   I? firstWhereOrNull(Predicator<I> test) {
     try {
@@ -212,6 +380,9 @@ extension IterableExtension<I> on Iterable<I> {
       return null;
     }
   }
+
+  S firstWhereMap<S>(Predicator<I> test, Translator<I, S> toValue) =>
+      toValue(firstWhere(test));
 
   ///
   /// [foldWithIndex]
@@ -353,15 +524,15 @@ extension IterableExtension<I> on Iterable<I> {
 
   ///
   /// [mapToList]
+  /// [mapToListByGenerate]
   ///
   List<T> mapToList<T>(Translator<I, T> toElement) {
     final iterator = this.iterator;
-    final list = <T>[];
-    while (iterator.moveNext()) {
-      list.add(toElement(iterator.current));
-    }
-    return list;
+    return [for (; iterator.moveNext();) toElement(iterator.current)];
   }
+
+  List<E> mapToListByGenerate<E>(Generator<E> generator) =>
+      [for (var i = 0; i < length; i++) generator(i)];
 
   ///
   /// [chunk]
@@ -388,26 +559,14 @@ extension IterableExtension<I> on Iterable<I> {
   ///
   /// [groupBy]
   ///
-  Map<S, List<I>> groupBy<S>(Translator<I, S> translator) {
-    final map = <S, List<I>>{};
-    for (var item in this) {
-      map.update(
-        translator(item),
-        (value) => value..add(item),
-        ifAbsent: () => [item],
-      );
-    }
-    return map;
-  }
-
-  ///
-  /// [combine]
-  ///
-  List<MapEntry<I, V>> combine<V>(Iterable<V> values) =>
-      foldWith(
-        values,
-        [],
-        (list, key, value) => list..add(MapEntry(key, value)),
+  Map<K, List<I>> groupBy<K>(Translator<I, K> toKey) => fold(
+        {},
+        (map, item) => map
+          ..update(
+            toKey(item),
+            (value) => value..add(item),
+            ifAbsent: () => [item],
+          ),
       );
 }
 
@@ -434,7 +593,6 @@ extension IterableDoubleExtension on Iterable<double> {
 /// [foldWith2D]
 ///
 extension IterableIterableExtension<I> on Iterable<Iterable<I>> {
-
   ///
   /// [lengths]
   ///
@@ -484,7 +642,34 @@ extension IterableIterableExtension<I> on Iterable<Iterable<I>> {
 
 ///
 /// [merged]
+/// [forEachWithAddAll]
 ///
 extension IterableSetExtension<I> on Iterable<Set<I>> {
   Set<I> get merged => reduce((a, b) => a..addAll(b));
+
+  void forEachWithAddAll(List<Set<I>> another) =>
+      forEachWith(another, (a, b) => a..addAll(b));
+}
+
+///
+///
+///
+///
+/// graph
+///
+///
+///
+///
+
+///
+/// [toVertices]
+///
+extension IterableEdgeExtension<T, S, V extends VertexAncestor<T?>>
+    on Iterable<EdgeAncestor<T, S, V>> {
+  Set<V> get toVertices => fold(
+        {},
+        (set, edge) => set
+          ..add(edge._source)
+          ..add(edge._destination),
+      );
 }

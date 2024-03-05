@@ -28,10 +28,10 @@ part of damath_math;
 /// [copy], ...
 /// [split], ...
 ///
-/// [intersectionIterate], ...
-/// [differenceIterate], ...
+/// [intersection], ...
+/// [difference], ...
 ///
-/// [mapByGenerate], ...
+/// [mapToList], ...
 /// [accordinglyAccompany], ...
 ///
 extension ListExtension<T> on List<T> {
@@ -308,183 +308,41 @@ extension ListExtension<T> on List<T> {
   }
 
   ///
-  ///
-  /// set operations, see also [Set.intersection], [Set.difference],
-  ///
-  /// [intersectionIterate], [intersectionIterateIndexable]
-  /// [intersectionFold], [intersectionFoldIndexable]
-  /// [intersection], [intersectionIndex], [intersectionDetail]
-  ///
-  /// [differenceIterate], [differenceIterateIndexable]
-  /// [differenceFold], [differenceFoldIndexable]
-  /// [difference], [differenceIndex], [differenceDetail]
-  ///
-
-  ///
-  /// [intersectionIterate]
-  /// [intersectionIterateIndexable]
-  ///
-  void intersectionIterate(List<T> another, Intersector<T> mutual) {
-    final boundary = math.min(length, another.length);
-    for (var i = 0; i < boundary; i++) {
-      mutual(this[i], another[i]);
-    }
-  }
-
-  void intersectionIterateIndexable(
-    List<T> another,
-    IntersectorIndexable<T> mutual,
-  ) {
-    final boundary = math.min(length, another.length);
-    for (var i = 0; i < boundary; i++) {
-      mutual(this[i], another[i], i);
-    }
-  }
-
-  ///
-  /// [intersectionFold]
-  /// [intersectionFoldIndexable]
-  ///
-  S intersectionFold<S>(
-    S initialValue,
-    List<T> another,
-    Companion2<S, T> companion,
-  ) {
-    var result = initialValue;
-    intersectionIterate(
-      another,
-      (valueA, valueB) => result = companion(initialValue, valueA, valueB),
-    );
-    return result;
-  }
-
-  S intersectionFoldIndexable<S>(
-    S initialValue,
-    List<T> another,
-    Companion2Generator<S, T> companion,
-  ) {
-    var result = initialValue;
-    intersectionIterateIndexable(
-      another,
-      (e1, e2, i) => result = companion(initialValue, e1, e2, i),
-    );
-    return result;
-  }
-
-  ///
   /// [intersection]
   /// [intersectionIndex]
   /// [intersectionDetail]
   ///
-  List<T> intersection(List<T> another) => intersectionFold(
+  List<T> intersection(Iterable<T> another) => intersectionFold(
         [],
         another,
         (list, v1, v2) => list..addWhen(v1 == v2, v1),
       );
 
-  List<int> intersectionIndex(List<T> another) => intersectionFoldIndexable(
+  List<int> intersectionIndex(Iterable<T> another) => intersectionFoldIndexable(
         [],
         another,
         (list, v1, v2, index) => list..addWhen(v1 == v2, index),
       );
 
-  Map<int, T> intersectionDetail(List<T> another) => intersectionFoldIndexable(
+  Map<int, T> intersectionDetail(Iterable<T> another) => intersectionFoldIndexable(
         {},
         another,
         (map, v1, v2, index) => map..putIfAbsentWhen(v1 == v2, index, () => v1),
       );
 
   ///
-  /// [differenceIterate]
-  /// [differenceIterateIndexable]
-  ///
-  void differenceIterate(
-    List<T> another,
-    Intersector<T> mutual,
-    Consumer<T> overflow,
-  ) {
-    final length = this.length;
-    final lengthAnother = another.length;
-    final hasOverflow = length > lengthAnother;
-
-    final boundary = hasOverflow ? lengthAnother : length;
-    for (var i = 0; i < boundary; i++) {
-      mutual(this[i], another[i]);
-    }
-    if (hasOverflow) {
-      for (var i = lengthAnother; i < length; i++) {
-        overflow(this[i]);
-      }
-    }
-  }
-
-  void differenceIterateIndexable(
-    List<T> another,
-    IntersectorIndexable<T> mutual,
-    ConsumerIndexable<T> overflow,
-  ) {
-    final length = this.length;
-    final lengthAnother = another.length;
-    final hasOverflow = length > lengthAnother;
-
-    final boundary = hasOverflow ? lengthAnother : length;
-    for (var i = 0; i < boundary; i++) {
-      mutual(this[i], another[i], i);
-    }
-    if (hasOverflow) {
-      for (var i = lengthAnother; i < length; i++) {
-        overflow(this[i], i);
-      }
-    }
-  }
-
-  ///
-  /// [differenceFold]
-  /// [differenceFoldIndexable]
-  ///
-  S differenceFold<S>(
-    S initialValue,
-    List<T> another,
-    Companion2<S, T> combineMutual,
-    Companion<S, T> combineOverflow,
-  ) {
-    var result = initialValue;
-    differenceIterate(
-      another,
-      (v1, v2) => result = combineMutual(result, v1, v2),
-      (value) => result = combineOverflow(result, value),
-    );
-    return result;
-  }
-
-  S differenceFoldIndexable<S>(
-    S initialValue,
-    List<T> another,
-    Companion2Generator<S, T> combineMutual,
-    CompanionGenerator<S, T> combineOverflow,
-  ) {
-    var result = initialValue;
-    differenceIterateIndexable(
-      another,
-      (v1, v2, i) => result = combineMutual(result, v1, v2, i),
-      (value, i) => result = combineOverflow(result, value, i),
-    );
-    return result;
-  }
-
-  ///
   /// [difference]
   /// [differenceIndex]
   /// [differenceDetail]
   ///
-  List<T> difference(List<T> another) => differenceFold(
+  List<T> difference(Iterable<T> another) => differenceFold(
         [],
         another,
         (list, v1, v2) => list..addWhen(v1 != v2, v1),
         (list, another) => list..add(another),
       );
 
-  List<int> differenceIndex(List<T> another) => differenceFoldIndexable(
+  List<int> differenceIndex(Iterable<T> another) => differenceFoldIndexable(
         [],
         another,
         (value, e1, e2, index) => value..addWhen(e1 != e2, index),
@@ -495,7 +353,7 @@ extension ListExtension<T> on List<T> {
   /// [MapEntry.key] is the value in this instance that different with [another]
   /// [MapEntry.value] is the value in [another] that different with this instance
   ///
-  Map<int, MapEntry<T, T?>> differenceDetail(List<T> another) =>
+  Map<int, MapEntry<T, T?>> differenceDetail(Iterable<T> another) =>
       differenceFoldIndexable(
         {},
         another,
@@ -506,44 +364,36 @@ extension ListExtension<T> on List<T> {
       );
 
   ///
-  /// [mapByGenerate]
-  ///
-  List<E> mapByGenerate<E>(Generator<E> generator) {
-    final length = this.length;
-    return [for (var i = 0; i < length; i++) generator(i)];
-  }
-
-  ///
   /// [mapToList]
   /// [mapToListWith]
   /// [mapToListAccompany]
   ///
   List<E> mapToList<E>(Translator<T, E> toElement) =>
-      mapByGenerate((i) => toElement(this[i]));
+      mapToListByGenerate((i) => toElement(this[i]));
 
   List<E> mapToListWith<E>(
     List<E> another,
     Reducer<E> reducer,
     Translator<T, E> toElement,
   ) =>
-      mapByGenerate((index) => reducer(toElement(this[index]), another[index]));
+      mapToListByGenerate((index) => reducer(toElement(this[index]), another[index]));
 
   List<E> mapToListAccompany<E>(
     List<T> another,
     Reducer<T> reducer,
     Translator<T, E> toElement,
   ) =>
-      mapByGenerate((index) => toElement(reducer(this[index], another[index])));
+      mapToListByGenerate((index) => toElement(reducer(this[index], another[index])));
 
   ///
   /// [accordinglyAccompany]
   /// [accordinglyWith]
   ///
   List<T> accordinglyAccompany(List<T> another, Reducer<T> reducer) =>
-      mapByGenerate((i) => reducer(this[i], another[i]));
+      mapToListByGenerate((i) => reducer(this[i], another[i]));
 
   List<T> accordinglyWith<E>(List<E> another, Companion<T, E> companion) =>
-      mapByGenerate((i) => companion(this[i], another[i]));
+      mapToListByGenerate((i) => companion(this[i], another[i]));
 }
 
 ///
@@ -743,16 +593,9 @@ extension ListListComparableExtension<C extends Comparable> on List<List<C>> {
 }
 
 ///
-/// [forEachWithAddAll]
 /// [mergeAndRemoveThat], ...
 ///
 extension ListSetExtension<I> on List<Set<I>> {
-  ///
-  /// [forEachWithAddAll]
-  ///
-  void forEachWithAddAll(List<Set<I>> another) =>
-      forEachWith(another, (a, b) => a..addAll(b));
-
   ///
   /// [mergeAndRemoveThat]
   /// [mergeAndRemoveThis]

@@ -57,43 +57,20 @@ extension FListener on Listener {
 extension FPredicator on Predicator {
   static Predicator<DateTime> isSameDayWith(DateTime? day) =>
       (currentDay) => DateTimeExtension.isSameDay(currentDay, day);
+
+  static Predicator<T> isSameWith<T>(T another) => (value) => value == another;
 }
 
-extension FPredicatorCombiner on PredicateCombiner<num> {
-  // bool
-  static bool boolEqual(bool a, bool b) => a == b;
+extension FPredicatorCombiner on PredicateCombiner {
+  ///
+  /// [isEqual], [isNotEqual]
+  /// [alwaysTrue], [alwaysFalse]
+  /// [ternaryAlwaysTrue], [ternaryAlwaysFalse], [ternaryAlwaysNull]
+  ///
+  static bool isEqual<T>(T valueA, T valueB) => valueA == valueB;
 
-  static bool boolUnequal(bool a, bool b) => a != b;
+  static bool isNotEqual<T>(T valueA, T valueB) => valueA != valueB;
 
-  // num
-  static bool numEqual(num a, num b) => a == b;
-
-  static bool numIsALess(num a, num b) => a < b;
-
-  static bool numIsALarger(num a, num b) => a > b;
-
-  // int
-  static bool intEqual(int a, int b) => a == b;
-
-  static bool intIsALess(int a, int b) => a < b;
-
-  static bool intIsALarger(int a, int b) => a > b;
-
-  // double
-  static bool doubleEqual(double a, double b) => a == b;
-
-  static bool doubleIsALess(double a, double b) => a < b;
-
-  static bool doubleIsALarger(double a, double b) => a > b;
-
-  // entry key
-  static bool entryIsNumKeyLess<T>(MapEntry<num, T> a, MapEntry<num, T> b) =>
-      a.key < b.key;
-
-  static bool entryIsNumKeyLarger<T>(MapEntry<num, T> a, MapEntry<num, T> b) =>
-      a.key > b.key;
-
-  // always
   static bool alwaysTrue<T>(T a, T b) => true;
 
   static bool alwaysFalse<T>(T a, T b) => false;
@@ -104,12 +81,52 @@ extension FPredicatorCombiner on PredicateCombiner<num> {
 
   static bool? ternaryAlwaysNull<T>(T a, T b) => null;
 
-  // ternary equal, less, larger
-  static bool? ternaryIntEqualOrLessOrLarger(int a, int b) => switch (a - b) {
-        0 => true,
-        < 0 => false,
-        _ => null,
-      };
+  ///
+  /// [boolIsEqual], [boolIsNotEqual]
+  /// [numIsEqual], [numIsALess], [numIsALarger]
+  /// [intIsEqual], [intIsALess], [intIsALarger]
+  /// [doubleIsEqual], [doubleIsALess], [doubleIsALarger]
+  ///
+  static bool boolIsEqual(bool a, bool b) => a == b;
+
+  static bool boolIsNotEqual(bool a, bool b) => a != b;
+
+  static bool numIsEqual(num a, num b) => a == b;
+
+  static bool numIsALess(num a, num b) => a < b;
+
+  static bool numIsALarger(num a, num b) => a > b;
+
+  static bool intIsEqual(int a, int b) => a == b;
+
+  static bool intIsALess(int a, int b) => a < b;
+
+  static bool intIsALarger(int a, int b) => a > b;
+
+  static bool doubleIsEqual(double a, double b) => a == b;
+
+  static bool doubleIsALess(double a, double b) => a < b;
+
+  static bool doubleIsALarger(double a, double b) => a > b;
+
+  ///
+  /// [entryIsKeyEqual], [entryIsKeyNotEqual]
+  /// [entryIsKeyNumEqual], [entryIsKeyNumLess], [entryIsKeyNumLarger]
+  ///
+  static bool entryIsKeyEqual<K, V>(MapEntry<K, V> a, MapEntry<K, V> b) =>
+      a.key == b.key;
+
+  static bool entryIsKeyNotEqual<K, V>(MapEntry<K, V> a, MapEntry<K, V> b) =>
+      a.key != b.key;
+
+  static bool entryIsKeyNumEqual<V>(MapEntry<num, V> a, MapEntry<num, V> b) =>
+      a.key == b.key;
+
+  static bool entryIsKeyNumLess<V>(MapEntry<num, V> a, MapEntry<num, V> b) =>
+      a.key < b.key;
+
+  static bool entryIsKeyNumLarger<V>(MapEntry<num, V> a, MapEntry<num, V> b) =>
+      a.key > b.key;
 }
 
 ///
@@ -189,8 +206,7 @@ extension FMapper on Mapper {
   ///
   /// lerpOf
   ///
-  static OnLerp<T> lerp<T>(T begin, T end, OnLerp<T> transform) =>
-      (value) {
+  static OnLerp<T> lerp<T>(T begin, T end, OnLerp<T> transform) => (value) {
         if (value == 0) return begin;
         if (value == 1) return end;
         return transform(value);

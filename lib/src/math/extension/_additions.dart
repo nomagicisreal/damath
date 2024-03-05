@@ -41,6 +41,7 @@ extension ObjectExtension<T> on T {
 ///
 extension NullableExtension<T> on T? {
   bool get isNull => this == null;
+
   bool get isNotNull => this != null;
 
   ///
@@ -49,17 +50,19 @@ extension NullableExtension<T> on T? {
   ///
   S? nullOr<S>(S value) => this == null ? null : value;
 
-  S? nullOrTranslate<S>(Translator<T, S> value) =>
-      this == null ? null : value(this as T);
+  S? nullOrTranslate<S>(Translator<T, S> toValue) {
+    final value = this;
+    return value == null ? null : toValue(value);
+  }
 
   ///
   /// [translateOrDefault]
   /// [consumeIfNotNull]
   ///
   S translateOrDefault<S>(
-      Translator<T, S> translate,
-      Supplier<S> defaultValue,
-      ) {
+    Translator<T, S> translate,
+    Supplier<S> defaultValue,
+  ) {
     final value = this;
     return value == null ? defaultValue() : translate(value);
   }
@@ -728,7 +731,6 @@ extension DateTimeExtension on DateTime {
   static String parseTimestampOf(String string) =>
       DateTime.fromMillisecondsSinceEpoch(int.parse(string)).toIso8601String();
 }
-
 
 ///
 /// string
