@@ -75,6 +75,10 @@ extension NullableExtension<T> on T? {
   }
 }
 
+extension BoolExtension on bool {
+  String get toTOrF => this ? 'T' : 'F';
+}
+
 ///
 ///
 /// [squared], [isPositive]
@@ -84,9 +88,13 @@ extension NullableExtension<T> on T? {
 ///
 ///
 extension NumExtension on num {
-  num get squared => math.pow(this, 2);
+  bool get isPositiveOrZero => !isNegative;
 
   bool get isPositive => this > 0;
+
+  num get squared => math.pow(this, 2);
+
+  num powBy(num x) => math.pow(x, this);
 
   bool rangeIn(num min, num max) => this >= min && this <= max;
 
@@ -175,10 +183,6 @@ extension DoubleExtension on double {
 ///
 ///
 extension IntExtension on int {
-  bool get isPositiveOrZero => !isNegative;
-
-  bool get isPositive => !isNegative && this != 0;
-
   int get accumulate {
     assert(isPositiveOrZero, 'invalid accumulate integer: $this');
     int accelerator = 0;
@@ -310,9 +314,11 @@ extension IntExtension on int {
 
   ///
   ///
+  /// [combination]
   /// [binomialCoefficient], [_binomialCoefficient]
   ///
   ///
+  static int combination(int m, int n) => binomialCoefficient(m, n + 1);
 
   ///
   /// [binomialCoefficient]
@@ -400,6 +406,7 @@ extension IntExtension on int {
   /// [partition]
   /// [partitionOf]
   /// [partitionGroups]
+  /// [partitionGroupsToString]
   ///
   /// and these private methods are the implementation of those methods
   /// [_partition]
@@ -473,8 +480,11 @@ extension IntExtension on int {
       space: _partitionSpace<List<List<int>>>(m, n: n),
     );
     assert(groups.every((element) => element.length == n), 'runtime error');
-    return groups;
+    return groups..sortAccordingly();
   }
+
+  static String partitionGroupsToString(int m, int n) =>
+      partitionGroups(m, n).fold('', (a, b) => '$a \n $b');
 
   ///
   /// The "row" concept in here helps to calculate values in more efficient way. definition:

@@ -22,7 +22,9 @@
 ///
 ///
 /// [GraphAncestor]
-///   [Graph]
+///   [GraphVertex]
+///   [GraphEdge]
+///
 ///   [GraphMutable]
 ///
 ///
@@ -485,6 +487,8 @@ sealed class EdgeAncestor<T, S, V extends VertexAncestor<T?>> {
 
   EdgeAncestor(this._source, this._destination, this.weight);
 
+  String toStringIdentity();
+
   ///
   /// [contains]
   /// [containsBoth]
@@ -523,8 +527,10 @@ class EdgeNullable<T> extends EdgeAncestor<T, double?, VertexNullable<T>> {
   set destination(T? value) => super._destination.data = value;
 
   @override
-  String toString() =>
-      'EdgeNullable($weight:${_source.data}===${_destination.data})';
+  String toStringIdentity() => '$weight:${_source.data}===${_destination.data}';
+
+  @override
+  String toString() => 'EdgeNullable(${toStringIdentity()})';
 
   ///
   /// [translateToSource], [translateToDestination]
@@ -546,7 +552,7 @@ class EdgeNullable<T> extends EdgeAncestor<T, double?, VertexNullable<T>> {
 class Edge<T> extends EdgeAncestor<T, double, Vertex<T>> {
   // Edge._(super.source, super.destination, super.weight);
 
-  Edge(T source, T destination, [double weight = 1])
+  Edge(T source, T destination, [double weight = double.infinity])
       : super(Vertex(source), Vertex(destination), weight);
 
   T get source => _source.data;
@@ -558,7 +564,10 @@ class Edge<T> extends EdgeAncestor<T, double, Vertex<T>> {
   set destination(T value) => super._destination.data = value;
 
   @override
-  String toString() => 'Edge($weight:${_source.data}===${_destination.data})';
+  String toStringIdentity() => '$weight:${_source.data}===${_destination.data}';
+
+  @override
+  String toString() => 'Edge(${toStringIdentity()})';
 
   ///
   /// [translateToSource], [translateToDestination]
@@ -656,6 +665,13 @@ abstract class GraphAncestor<T, S, V extends VertexAncestor<T?>,
 
   Iterable<E> get edges;
 
+  String toStringIdentity() => '\n'
+      'Vertices: ${vertices.map((e) => e.data)}\n'
+      'Edges: ${edges.map((e) => e.toStringIdentity())}\n';
+
+  @override
+  String toString() => 'GraphAncestor(${toStringIdentity()})';
+
   ///
   /// [vertexGroupsFromEdges]
   /// [destinationsGroupBySources]
@@ -686,12 +702,24 @@ abstract class GraphAncestor<T, S, V extends VertexAncestor<T?>,
       );
 
   ///
-  /// [containsVertex], [containsEdge]
+  /// [containsVertex], [containsVerticesOnEdge], [containsAllVertices]
+  /// [containsEdge], [containsAllEdges], [containsEdgeForBoth]
   /// [weightFrom]
   ///
   bool containsVertex(V vertex) => vertices.contains(vertex);
 
+  bool containsVerticesOnEdge(E edge) =>
+      containsVertex(edge._source) && containsVertex(edge._destination);
+
+  bool containsAllVertices(Iterable<V> vertices) =>
+      this.vertices.containsAll(vertices);
+
   bool containsEdge(E edge) => edges.contains(edge);
+
+  bool containsEdgeForBoth(V source, V destination) =>
+      edges.any((edge) => edge.containsBoth(source, destination));
+
+  bool containsAllEdges(Iterable<E> edges) => this.edges.containsAll(edges);
 
   S weightFrom(V source, V destination) => edges.firstWhereMap(
         (edge) => edge.containsBoth(source, destination),
@@ -776,14 +804,37 @@ abstract class GraphAncestor<T, S, V extends VertexAncestor<T?>,
 }
 
 //
-class Graph<T> extends GraphAncestor<T, double, Vertex<T>, Edge<T>> {
+class GraphVertex<T> extends GraphAncestor<T, double, Vertex<T>, Edge<T>> {
   @override
-  final List<Edge<T>> edges;
+  final Set<Vertex<T>> vertices;
+
+  @override
+  final Set<Edge<T>> edges = {};
+
+  GraphVertex(this.vertices);
+
+  ///
+  /// Returns `true` if [edge] (or an equal value) was not yet in the [edges].
+  /// Otherwise returns `false` and the set is not changed. See also [Set.add]
+  ///
+  bool addEdgeForVertices(Edge<T> edge) {
+    if (containsVerticesOnEdge(edge)) return edges.add(edge);
+    throw DamathException(
+      'Edge.source(${edge._source}) or '
+      'Edge.destination(${edge._destination}) not in $vertices',
+    );
+  }
+}
+
+//
+class GraphEdge<T> extends GraphAncestor<T, double, Vertex<T>, Edge<T>> {
+  @override
+  final Set<Edge<T>> edges;
 
   @override
   Set<Vertex<T>> get vertices => edges.toVertices;
 
-  const Graph(this.edges);
+  GraphEdge(this.edges);
 }
 
 ///
@@ -791,7 +842,7 @@ class Graph<T> extends GraphAncestor<T, double, Vertex<T>, Edge<T>> {
 /// [createEdge], ...
 ///
 abstract class GraphMutable<T, S, V extends VertexAncestor<T>,
-E extends EdgeAncestor<T, S, V>> extends GraphAncestor<T, S, V, E> {
+    E extends EdgeAncestor<T, S, V>> extends GraphAncestor<T, S, V, E> {
   ///
   /// [createVertex], [addVertex]
   /// [createEdge], [addEdge],

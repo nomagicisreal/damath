@@ -9,8 +9,6 @@
 /// [Operator]
 ///
 ///
-/// [Combination]
-///
 ///
 /// [DurationFR]
 ///
@@ -22,8 +20,8 @@
 ///
 ///
 ///
-/// 
-/// 
+///
+///
 ///
 ///
 ///
@@ -43,14 +41,13 @@ part of damath_math;
 
 //
 mixin ComparableData<C extends Comparable, D extends ComparableData<C, D>>
-implements Comparable<D> {
+    implements Comparable<D> {
   bool operator >(D other) => Comparable.compare(this, other) == 1;
 
   bool operator <(D other) => Comparable.compare(this, other) == -1;
 
   static int compareReverse<C extends Comparable>(C a, C b) => b.compareTo(a);
 }
-
 
 ///
 ///
@@ -328,35 +325,6 @@ enum Operator {
         Operator.divide => (a) => a / b,
         Operator.modulus => (a) => a % b,
       };
-}
-
-///
-///
-///
-/// [Combination]
-///
-///
-///
-
-//
-class Combination {
-  final int m;
-  final int n;
-
-  const Combination(this.m, this.n) : assert(m >= 0 && n <= m);
-
-  int get c => IntExtension.binomialCoefficient(m, n + 1);
-
-  int get p => IntExtension.partition(m, n);
-
-  List<List<int>> get pGroups =>
-      IntExtension.partitionGroups(m, n)..sortAccordingly();
-
-  @override
-  String toString() => 'Combination(\n'
-      '($m, $n), c: $c\n'
-      'p: $p------${pGroups.fold('', (a, b) => '$a \n $b')}\n'
-      ')';
 }
 
 ///

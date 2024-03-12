@@ -7,7 +7,20 @@
 ///
 part of damath_math;
 
+///
+///
+///
 extension SetExtension<K> on Set<K> {
-  Map<K, V> valuingToMap<V>(Translator<K, V> valuing) =>
-      Map.fromIterables(this, map(valuing));
+  ///
+  /// [containsOr]
+  ///
+  void containsOr(K value, Consumer<Set<K>> action) =>
+      contains(value) ? null : action(this);
+
+  ///
+  /// [mapToMap]
+  ///
+  Map<K, V> mapToMap<V>(Translator<K, V> toValue) =>
+      Map.fromIterables(this, map(toValue));
+
 }

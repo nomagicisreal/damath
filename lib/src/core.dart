@@ -26,12 +26,12 @@
 typedef Listener = void Function();
 typedef Supplier<T> = T Function();
 typedef Consumer<T> = void Function(T value);
-typedef Intersector<T> = void Function(T v1, T v2);
-typedef Absorber<A, B> = void Function(A a, B b);
+typedef Intersector<A, B> = void Function(A a, B b);
 typedef Mapper<T> = T Function(T value);
-typedef Reducer<T> = T Function(T v1, T v2);
+typedef Reducer<T> = T Function(T current, T value);
+typedef Reducer2<T> = T Function(T current, T v1, T v2);
 typedef Companion<T, S> = T Function(T origin, S another);
-typedef Companion2<T, S> = T Function(T origin, S v1, S v2);
+typedef Companion2<T, A, B> = T Function(T origin, A a, B b);
 typedef Translator<T, S> = S Function(T value);
 typedef Combiner<T, S> = S Function(T v1, T v2);
 typedef Mixer<P, Q, S> = S Function(P p, Q q);
@@ -58,7 +58,7 @@ typedef Checker<T> = bool Function(int index, T value);
 ///
 /// indexable
 ///
-typedef IntersectorIndexable<T> = void Function(T v1, T v2, int index);
+typedef IntersectorIndexable<A, B> = void Function(A a, B b, int index);
 typedef ConsumerIndexable<T> = void Function(T value, int index);
 
 ///
@@ -67,9 +67,10 @@ typedef ConsumerIndexable<T> = void Function(T value, int index);
 typedef Generator<T> = T Function(int index);
 typedef Generator2D<T> = T Function(int i, int j);
 typedef CompanionGenerator<T, S> = T Function(T value, S element, int index);
-typedef Companion2Generator<T, S> = T Function(T value, S e1, S e2, int index);
+typedef Companion2Generator<T, A, B> = T Function(T value, A a, B b, int index);
 typedef TranslatorGenerator<T, S> = S Function(T value, int index);
-typedef ReducerGenerator<T> = T Function(T v1, T v2, int index);
+typedef ReducerGenerator<T> = T Function(T current, T value, int index);
+typedef Reducer2Generator<T> = T Function(T current, T v1, T v2, int index);
 
 ///
 /// differentiator

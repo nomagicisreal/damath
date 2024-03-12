@@ -23,6 +23,10 @@ extension MapEntryExtension<K, V> on MapEntry<K, V> {
 
 // entry iterable
 extension MapEntryIterableExtension<K, V> on Iterable<MapEntry<K, V>> {
+  Iterable<K> get keys => map((e) => e.key);
+
+  Iterable<V> get values => map((e) => e.value);
+
   Map<K, V> get toMap => Map.fromEntries(this);
 }
 
@@ -77,7 +81,7 @@ extension MapExtension<K, V> on Map<K, V> {
   /// add
   ///
   void addAllDifference(Set<K> keys, V Function(K key) valuing) =>
-      addAll(keys.difference(keysSet).valuingToMap(valuing));
+      addAll(keys.difference(keysSet).mapToMap(valuing));
 
   ///
   /// remove
@@ -114,10 +118,10 @@ extension MapExtension<K, V> on Map<K, V> {
   /// [mergeAs]
   ///
   Iterable<V> mergeAs(
-      Set<K> keys,
-      V Function(K key) valuing, {
-        Companion<V, K>? update,
-      }) sync* {
+    Set<K> keys,
+    V Function(K key) valuing, {
+    Companion<V, K>? update,
+  }) sync* {
     yield* removeFrom(keysDifferenceWith(keys));
     yield* updateFrom(keysIntersectionWith(keys), update ?? FCompanion.keep);
     addAllDifference(keys, valuing);
@@ -150,22 +154,22 @@ extension MapExtension<K, V> on Map<K, V> {
   /// [foldKeys], [foldValues]
   ///
   T fold<T>(
-      T initialValue,
-      Companion<T, MapEntry<K, V>> foldMap,
-      ) =>
+    T initialValue,
+    Companion<T, MapEntry<K, V>> foldMap,
+  ) =>
       entries.fold<T>(
         initialValue,
-            (previousValue, element) => foldMap(previousValue, element),
+        (previousValue, element) => foldMap(previousValue, element),
       );
 
   T foldWithIndex<T>(
-      T initialValue,
-      Fusionor<T, MapEntry<K, V>, int, T> fusionor,
-      ) {
+    T initialValue,
+    Fusionor<T, MapEntry<K, V>, int, T> fusionor,
+  ) {
     int index = -1;
     return entries.fold<T>(
       initialValue,
-          (previousValue, element) => fusionor(previousValue, element, ++index),
+      (previousValue, element) => fusionor(previousValue, element, ++index),
     );
   }
 
@@ -182,14 +186,8 @@ extension MapExtension<K, V> on Map<K, V> {
 
   V reduceValues(Reducer<V> reducing) => values.reduce(reducing);
 
-  S reduceTo<S>(Translator<MapEntry<K, V>, S> translator, Reducer<S> reducer) =>
-      entries.reduceTo(reducer, translator);
-
-  N reduceToNum<N extends num>({
-    required Reducer<N> reducer,
-    required Translator<MapEntry<K, V>, N> translator,
-  }) =>
-      entries.reduceToNum(reducer: reducer, translator: translator);
+  S reduceTo<S>(Translator<MapEntry<K, V>, S> toElement, Reducer<S> reducer) =>
+      entries.reduceTo(toElement, reducer);
 
   ///
   /// map

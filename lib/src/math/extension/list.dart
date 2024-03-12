@@ -18,7 +18,7 @@ part of damath_math;
 /// instance methods:
 /// [isFixed], ...
 ///
-/// [swap], ...
+/// [containsOr], ...
 /// [add2], ...
 /// [getOrDefault], ...
 /// [update], ...
@@ -102,23 +102,37 @@ extension ListExtension<T> on List<T> {
   }
 
   ///
-  /// [isFixed]
-  /// [isGrowable]
+  /// [_tryRemoveLastAndAdd]
+  /// [isFixed], [isGrowable]
+  /// [isImmutable], [isMutable]
   ///
-  bool get isFixed {
+  bool _tryRemoveLastAndAdd(Pattern pattern) {
     try {
       add(removeLast());
     } on UnsupportedError catch (e) {
-      return e.message == 'Cannot remove from a fixed-length list';
+      return e.message?.contains(pattern) ?? false;
     }
     return false;
   }
 
+  bool get isFixed => _tryRemoveLastAndAdd('fixed-length list');
+
   bool get isGrowable => !isFixed;
 
   ///
+  /// immutable list can be created by 'const' keyword or [List.unmodifiable]
+  ///
+  bool get isImmutable => _tryRemoveLastAndAdd('unmodifiable list');
+
+  bool get isMutable => !isImmutable;
+
+  ///
+  /// [containsOr]
   /// [swap]
   ///
+  void containsOr(T value, Consumer<List<T>> action) =>
+      contains(value) ? null : action(this);
+
   void swap(int iA, int iB) {
     final temp = this[iA];
     this[iA] = this[iB];
@@ -324,7 +338,8 @@ extension ListExtension<T> on List<T> {
         (list, v1, v2, index) => list..addWhen(v1 == v2, index),
       );
 
-  Map<int, T> intersectionDetail(Iterable<T> another) => intersectionFoldIndexable(
+  Map<int, T> intersectionDetail(Iterable<T> another) =>
+      intersectionFoldIndexable(
         {},
         another,
         (map, v1, v2, index) => map..putIfAbsentWhen(v1 == v2, index, () => v1),
@@ -376,14 +391,16 @@ extension ListExtension<T> on List<T> {
     Reducer<E> reducer,
     Translator<T, E> toElement,
   ) =>
-      mapToListByGenerate((index) => reducer(toElement(this[index]), another[index]));
+      mapToListByGenerate(
+          (index) => reducer(toElement(this[index]), another[index]));
 
   List<E> mapToListAccompany<E>(
     List<T> another,
     Reducer<T> reducer,
     Translator<T, E> toElement,
   ) =>
-      mapToListByGenerate((index) => toElement(reducer(this[index], another[index])));
+      mapToListByGenerate(
+          (index) => toElement(reducer(this[index], another[index])));
 
   ///
   /// [accordinglyAccompany]

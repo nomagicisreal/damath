@@ -159,7 +159,7 @@ extension FTimer on Timer {
   }
 
   static Timer sequencing(List<Duration> steps, List<Listener> listeners) =>
-      _sequence(steps.forEachCombine(listeners));
+      _sequence(steps.intersectionIterateCombine(listeners));
 }
 
 extension FTimerConsumer on Consumer<Timer> {

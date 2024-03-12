@@ -82,15 +82,11 @@ extension FPredicatorCombiner on PredicateCombiner {
   static bool? ternaryAlwaysNull<T>(T a, T b) => null;
 
   ///
-  /// [boolIsEqual], [boolIsNotEqual]
+  /// see [Propositioner] for predicating from [bool]
   /// [numIsEqual], [numIsALess], [numIsALarger]
   /// [intIsEqual], [intIsALess], [intIsALarger]
   /// [doubleIsEqual], [doubleIsALess], [doubleIsALarger]
   ///
-  static bool boolIsEqual(bool a, bool b) => a == b;
-
-  static bool boolIsNotEqual(bool a, bool b) => a != b;
-
   static bool numIsEqual(num a, num b) => a == b;
 
   static bool numIsALess(num a, num b) => a < b;
@@ -266,6 +262,7 @@ extension FTranslator on Translator {
 /// [intMax], [intMin]
 /// [doubleAdd], ...
 /// [intAdd], ...
+/// [stringLine]
 ///
 extension FReducer<N> on Reducer<N> {
   static const Reducer<double> doubleMax = math.max<double>;
@@ -292,6 +289,10 @@ extension FReducer<N> on Reducer<N> {
   static int intDivide(int v1, int v2) => v1 ~/ v2;
 
   static int intAddSquared(int v1, int v2) => v1 * v1 + v2 * v2;
+
+  static String stringLine(String v1, String v2) => '$v1\n$v2';
+  static String stringTab(String v1, String v2) => '$v1\t$v2';
+  static String stringComma(String v1, String v2) => '$v1, $v2';
 }
 
 extension FCompanion on Companion {
