@@ -140,15 +140,27 @@ extension FPredicatorCombiner on PredicateCombiner {
 extension FMapper on Mapper {
   static T keep<T>(T value) => value;
 
-  static Space3 keepSpace3(Space3 v) => v;
+  ///
+  /// [boolKeep], [boolReverse]
+  ///
+  static bool boolKeep(bool value) => value;
 
-  static double keepDouble(double value) => value;
+  static bool boolReverse(bool value) => !value;
 
   ///
-  /// [doubleOf], [doubleZero]
+  /// double
+  /// [doubleKeep], [doubleZero]
+  /// [doubleOnPlus], [doubleOnMinus], [doubleOnMultiply], [doubleOnDivide]
+  /// [doubleOnTimesFactor]
+  /// [doubleOnPeriod], [doubleOnPeriodSinByTimes], [doubleOnPeriodCosByTimes], [doubleOnPeriodTanByTimes]
+  ///
+  ///
+
+  ///
+  /// [doubleKeep], [doubleZero]
   /// [doubleOnPlus], [doubleOnMinus], [doubleOnMultiply], [doubleOnDivide]
   ///
-  static double doubleOf(double v) => v;
+  static double doubleKeep(double v) => v;
 
   static double doubleZero(double value) => 0;
 
@@ -198,6 +210,12 @@ extension FMapper on Mapper {
 
   static Mapper<double> doubleOnPeriodTanByTimes(int times) =>
       doubleOnPeriod(times.toDouble(), math.tan);
+
+  ///
+  /// space
+  /// [space3Keep]
+  ///
+  static Space3 space3Keep(Space3 v) => v;
 
   ///
   /// lerpOf
@@ -291,7 +309,9 @@ extension FReducer<N> on Reducer<N> {
   static int intAddSquared(int v1, int v2) => v1 * v1 + v2 * v2;
 
   static String stringLine(String v1, String v2) => '$v1\n$v2';
+
   static String stringTab(String v1, String v2) => '$v1\t$v2';
+
   static String stringComma(String v1, String v2) => '$v1, $v2';
 }
 

@@ -5,8 +5,11 @@
 /// [Tensor]
 ///   [TensorScalar]
 ///   [TensorVector]
-///     [TensorVector2D]
-///
+///     [TensorVectorDouble]
+///       [TensorVectorDouble2D]
+///     [TensorVectorString]
+///   [TensorMatrix]
+///   [TensorDataFrame]
 ///
 ///
 ///
@@ -134,78 +137,85 @@ class TensorScalar extends Tensor<double> {
 ///
 /// tensor vector
 ///
+///
+abstract class TensorVector<T> extends Tensor<List<T>> {
+  TensorVector(super.value);
+}
+
+///
+/// tensor vector
+///
 /// [length]
 /// [_computeAll], [_computeAllWith],
 ///
-/// [distanceSquared], [distance]
+/// [sumSquared], [distance]
 ///
-class TensorVector extends Tensor<List<double>> {
-  TensorVector(super.value) : assert(value.isFixed);
+class TensorVectorDouble extends TensorVector<double> {
+  TensorVectorDouble(super.value);
 
   int get length => value.length;
 
-  TensorVector _computeAll(Mapper<double> toValue) =>
-      TensorVector(List.of(value.mapToList(toValue), growable: false));
+  TensorVectorDouble _computeAll(Mapper<double> toValue) =>
+      TensorVectorDouble(List.of(value.mapToList(toValue)));
 
-  TensorVector _computeAllWith(TensorVector other, Reducer<double> toValue) =>
-      TensorVector(List.of(
-        value.accordinglyAccompany(other.value, toValue),
-        growable: false,
+  TensorVectorDouble _computeAllWith(TensorVectorDouble other, Reducer<double> toValue) =>
+      TensorVectorDouble(List.of(
+        value.accordinglyReduce(other.value, toValue),
       ));
 
   @override
   String toString() => 'TensorVector($value)';
 
   @override
-  bool isSpaceEqualWith(covariant TensorVector other) => length == other.length;
+  bool isSpaceEqualWith(covariant TensorVectorDouble other) => length == other.length;
 
   @override
   // ignore: hash_and_equals
-  bool operator ==(covariant TensorVector other) =>
+  bool operator ==(covariant TensorVectorDouble other) =>
       value.everyElementsAreEqualWith(other.value);
 
   @override
-  TensorVector operator +(covariant TensorVector other) {
+  TensorVectorDouble operator +(covariant TensorVectorDouble other) {
     assert(isSpaceEqualWith(other));
     return _computeAllWith(other, FReducer.doubleAdd);
   }
 
   @override
-  TensorVector operator -(covariant TensorVector other) {
+  TensorVectorDouble operator -(covariant TensorVectorDouble other) {
     assert(isSpaceEqualWith(other));
     return _computeAllWith(other, FReducer.doubleSubtract);
   }
 
   @override
-  TensorVector operator &(covariant TensorVector other) {
+  TensorVectorDouble operator &(covariant TensorVectorDouble other) {
     assert(isSpaceEqualWith(other));
     return _computeAllWith(other, FReducer.doubleMultiply);
   }
 
   @override
-  TensorVector operator -() => _computeAll((value) => -value);
+  TensorVectorDouble operator -() => _computeAll((value) => -value);
 
   @override
-  TensorVector operator *(double scale) =>
+  TensorVectorDouble operator *(double scale) =>
       _computeAll((value) => value * scale);
 
   @override
-  TensorVector operator /(double factor) =>
+  TensorVectorDouble operator /(double factor) =>
       _computeAll((value) => value / factor);
 
   @override
-  TensorVector operator %(double operand) =>
+  TensorVectorDouble operator %(double operand) =>
       _computeAll((value) => value % operand);
 
   @override
-  TensorVector operator ~/(double factor) =>
+  TensorVectorDouble operator ~/(double factor) =>
       _computeAll((value) => (value ~/ factor).toDouble());
 
   @override
-  TensorVector get round => _computeAll((value) => value.roundToDouble());
+  TensorVectorDouble get round => _computeAll((value) => value.roundToDouble());
 
   @override
-  double dotProductWith(covariant TensorVector other) =>
+  double dotProductWith(covariant TensorVectorDouble other) =>
       (this & other).value.sum;
 
   ///
@@ -214,9 +224,7 @@ class TensorVector extends Tensor<List<double>> {
 
   double operator [](int index) => value[index];
 
-  double get distanceSquared => value.reduce(FReducer.doubleAddSquared);
-
-  double get distance => math.sqrt(distanceSquared);
+  double get sumSquared => value.reduce(FReducer.doubleAddSquared);
 }
 
 ///
@@ -225,18 +233,42 @@ class TensorVector extends Tensor<List<double>> {
 /// [direction], [directionInAngle]
 /// [radianTo], [angleTo]
 ///
-class TensorVector2D extends TensorVector {
-  TensorVector2D(double x, double y) : super([x, y]);
+class TensorVectorDouble2D extends TensorVectorDouble {
+  TensorVectorDouble2D(double x, double y) : super([x, y]);
 
+  double get distance => math.sqrt(sumSquared);
   double get direction => math.atan2(value[1], value[0]);
 
   double get directionInAngle => Radian.angleOf(direction).roundToDouble();
 
-  double radianTo(TensorVector2D other) {
+  double radianTo(TensorVectorDouble2D other) {
     final r = math.acos(dotProductWith(other) / (distance * other.distance));
     return direction > other.direction ? -r : r;
   }
 
-  double angleTo(TensorVector2D other) =>
+  double angleTo(TensorVectorDouble2D other) =>
       Radian.angleOf(radianTo(other)).roundToDouble();
 }
+
+// ///
+// /// tensor vector string
+// ///
+// class TensorVectorString extends TensorVector<String> {
+//   TensorVectorString(super.value);
+// }
+//
+// ///
+// /// tensor matrix string
+// ///
+// class TensorMatrix<V> extends Tensor<List<List<V>>> {
+//   TensorMatrix(super.value);
+//
+//   // diagonal
+// }
+//
+// ///
+// /// tensor data frame
+// ///
+// class TensorDataFrame extends Tensor<List<TensorVector>> {
+//   TensorDataFrame(super.value);
+// }

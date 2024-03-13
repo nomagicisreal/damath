@@ -37,7 +37,6 @@
 ///
 part of damath_async;
 
-
 ///
 /// stream
 ///
@@ -76,7 +75,6 @@ extension IterableStreamSubscriptionsExtension on Iterable<StreamSubscription> {
   void cancelAll() => fold<void>(null, (_, stream) => stream.cancel());
 }
 
-
 //
 extension FStream<T> on Stream<T> {
   ///
@@ -98,9 +96,9 @@ extension FStream<T> on Stream<T> {
   ///
   ///
   static Stream<T> generateFromIterable<T>(
-      int count, {
-        Generator<T>? generator,
-      }) =>
+    int count, {
+    Generator<T>? generator,
+  }) =>
       Stream.fromIterable(Iterable.generate(count, generator));
 
   static Stream<int> intOf({
@@ -129,7 +127,6 @@ extension FStream<T> on Stream<T> {
   }
 }
 
-
 ///
 ///
 ///
@@ -144,10 +141,10 @@ extension FTimer on Timer {
   static final Timer zero = Timer(Duration.zero, FListener.none);
 
   static Timer _nest(
-      Duration duration,
-      Listener listener,
-      Iterable<MapEntry<Duration, Listener>> children,
-      ) =>
+    Duration duration,
+    Listener listener,
+    Iterable<MapEntry<Duration, Listener>> children,
+  ) =>
       Timer(duration, () {
         if (children.isNotEmpty) _sequence(children);
         listener();
@@ -158,8 +155,11 @@ extension FTimer on Timer {
     return _nest(first.key, first.value, elements.skip(1));
   }
 
-  static Timer sequencing(List<Duration> steps, List<Listener> listeners) =>
-      _sequence(steps.intersectionIterateCombine(listeners));
+  static Timer sequencing(
+    Iterable<Duration> steps,
+    Iterable<Listener> listeners,
+  ) =>
+      _sequence(steps.iterator.interYieldEntry(listeners.iterator));
 }
 
 extension FTimerConsumer on Consumer<Timer> {
@@ -179,9 +179,9 @@ extension FTimerConsumer on Consumer<Timer> {
   }
 
   static Consumer<Timer> periodicProcessPeriod(
-      int period,
-      Listener listener,
-      ) {
+    int period,
+    Listener listener,
+  ) {
     int count = 0;
     void listenIf(bool value) => value ? listener() : null;
     bool shouldListen() => count % period == 0;

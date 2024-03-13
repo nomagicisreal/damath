@@ -783,7 +783,7 @@ abstract class GraphAncestor<T, S, V extends VertexAncestor<T?>,
   List<V> _searchBreathFirst(V source) {
     final visited = <V>[source];
     for (var i = 0; i < visited.length; i++) {
-      destinationsFrom(visited[i]).conditionalConsume(
+      destinationsFrom(visited[i]).iterator.actionWhere(
         (destination) => visited.notContains(destination),
         (destination) => visited.add(destination),
       );
@@ -794,7 +794,7 @@ abstract class GraphAncestor<T, S, V extends VertexAncestor<T?>,
   List<V> _searchDepthFirst(V source) {
     final visited = <V>[source];
     while (visited.isNotEmpty) {
-      destinationsFrom(visited.removeLast()).conditionalConsume(
+      destinationsFrom(visited.removeLast()).iterator.actionWhere(
         (destination) => visited.notContains(destination),
         (destination) => visited.add(destination),
       );

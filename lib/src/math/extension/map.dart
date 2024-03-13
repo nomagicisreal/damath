@@ -21,13 +21,34 @@ extension MapEntryExtension<K, V> on MapEntry<K, V> {
   String join([String separator = '']) => '$key$separator$value';
 }
 
-// entry iterable
+///
+/// [keys], ...
+///
+/// [anyKeys], ...
+///
 extension MapEntryIterableExtension<K, V> on Iterable<MapEntry<K, V>> {
+  ///
+  /// [keys]
+  /// [values]
+  /// [toMap]
+  ///
   Iterable<K> get keys => map((e) => e.key);
 
   Iterable<V> get values => map((e) => e.value);
 
   Map<K, V> get toMap => Map.fromEntries(this);
+
+  ///
+  /// [anyKeys], [anyValues]
+  /// [everyKeys], [everyValues]
+  ///
+  bool anyKeys(Predicator<K> test) => any((e) => test(e.key));
+
+  bool anyValues(Predicator<V> test) => any((e) => test(e.value));
+
+  bool everyKeys(Predicator<K> test) => every((e) => test(e.key));
+
+  bool everyValues(Predicator<V> test) => every((e) => test(e.value));
 }
 
 ///
@@ -187,7 +208,7 @@ extension MapExtension<K, V> on Map<K, V> {
   V reduceValues(Reducer<V> reducing) => values.reduce(reducing);
 
   S reduceTo<S>(Translator<MapEntry<K, V>, S> toElement, Reducer<S> reducer) =>
-      entries.reduceTo(toElement, reducer);
+      entries.iterator.reduceTo(toElement, reducer);
 
   ///
   /// map

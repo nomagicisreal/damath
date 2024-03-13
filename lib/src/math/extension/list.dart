@@ -18,21 +18,18 @@ part of damath_math;
 /// instance methods:
 /// [isFixed], ...
 ///
-/// [containsOr], ...
 /// [add2], ...
-/// [getOrDefault], ...
-/// [update], ...
-/// [removeFirst], ...
+/// [indexesWhere], ...
 ///
 /// [fillUntil], ...
 /// [copy], ...
-/// [split], ...
+/// [splitBy], ...
 ///
 /// [intersection], ...
 /// [difference], ...
 ///
 /// [mapToList], ...
-/// [accordinglyAccompany], ...
+/// [accordinglyReduce], ...
 ///
 extension ListExtension<T> on List<T> {
   ///
@@ -80,19 +77,19 @@ extension ListExtension<T> on List<T> {
   ///
   /// [linking]
   ///
-  static List<R> linking<R, S, I>({
+  static List<S> linking<S, T, I>({
     required int totalStep,
-    required Generator<S> step,
+    required Generator<T> step,
     required Generator<I> interval,
-    required Sequencer<R, S, I> sequencer,
+    required Sequencer<S, T, I> sequencer,
   }) {
     final steps = List.generate(totalStep, step);
     final lengthIntervals = totalStep - 1;
     final intervals = List.generate(lengthIntervals, interval);
 
-    final result = <R>[];
+    final result = <S>[];
 
-    S previous = steps.first;
+    T previous = steps.first;
     for (var i = 0; i < lengthIntervals; i++) {
       final next = steps[i + 1];
       result.add(sequencer(previous, next, intervals[i])(i));
@@ -127,17 +124,29 @@ extension ListExtension<T> on List<T> {
   bool get isMutable => !isImmutable;
 
   ///
-  /// [containsOr]
   /// [swap]
   ///
-  void containsOr(T value, Consumer<List<T>> action) =>
-      contains(value) ? null : action(this);
-
   void swap(int iA, int iB) {
     final temp = this[iA];
     this[iA] = this[iB];
     this[iB] = temp;
   }
+
+  ///
+  /// add, update, get, remove
+  /// [add2], [add3], [add4], [add5]
+  /// [addNext]
+  /// [addFirstAndRemoveFirst], [addFirstAndRemoveFirstAndGet]
+  /// [addWhen], [addWhenNotNull]
+  /// [addAllIfEmpty], [addAllIfNotEmpty], [addAllWhen]
+  ///
+  /// [getOrDefault]
+  ///
+  /// [update], [updateWithMapper]
+  /// [updateAll], [updateAllWithMapper]
+  ///
+  /// [removeFirst], [removeWhereAndGet]
+  ///
 
   ///
   /// [add2], [add3], [add4], [add5]
@@ -163,6 +172,17 @@ extension ListExtension<T> on List<T> {
     ..add(v3)
     ..add(v4)
     ..add(v5);
+
+  ///
+  /// [addNext]
+  ///
+  bool addNext(T value) {
+    try {
+      add(value);
+      return true;
+    } catch (_) {}
+    return false;
+  }
 
   ///
   /// [addFirstAndRemoveFirst]
@@ -250,6 +270,56 @@ extension ListExtension<T> on List<T> {
   }
 
   ///
+  /// where
+  /// [indexesWhere]
+  /// [indexWhen], [indexesWhen]
+  ///
+
+  ///
+  /// [indexesWhere]
+  ///
+  Iterable<int> indexesWhere(
+    Predicator<T> test, [
+    int start = 0,
+    int? end,
+  ]) sync* {
+    final bound = end ?? length;
+    assert(start.rangeIn(0, length) && bound.rangeIn(start, length));
+    for (var i = start; i < bound; i++) {
+      if (test(this[i])) yield i;
+    }
+  }
+
+  ///
+  /// [indexWhen]
+  /// [indexesWhen]
+  ///
+  int indexWhen(Checker<T> check, [int start = 0, int? end]) {
+    final bound = end ?? length;
+    assert(start.rangeIn(0, length) && bound.rangeIn(start, length));
+    for (var i = start; i < bound; i++) {
+      if (check(i, this[i])) return i;
+    }
+    return -1;
+  }
+
+  Iterable<int> indexesWhen(Checker<T> check, [int start = 0, int? end]) sync* {
+    final bound = end ?? length;
+    assert(start.rangeIn(0, length) && bound.rangeIn(start, length));
+    for (var i = start; i < bound; i++) {
+      if (check(i, this[i])) yield i;
+    }
+  }
+
+  ///
+  /// fill, copy
+  /// [fillUntil]
+  ///
+  /// [copy], [copyFillUntil], [copyIntoOrder]
+  ///
+  ///
+
+  ///
   /// [fillUntil]
   ///
   void fillUntil(int length, T value) {
@@ -275,38 +345,52 @@ extension ListExtension<T> on List<T> {
   /// list.copyInOrder([2, 1, 0, 3]); // [4, 3, 2, 6]
   ///
   List<T> copyIntoOrder(Iterable<int> order) {
-    assert(Iterable.generate(length).isCombinationOf(order));
+    assert(Iterable.generate(length).isVariantTo(order));
     return [for (var i in order) this[i]];
   }
 
   ///
-  /// [split]
-  /// [splitTwo]
+  ///
+  /// split
+  /// [splitBy], [splitAt]
+  ///
+  ///
+  ///
+
+  ///
+  /// [splitBy]
+  /// [splitAt]
   ///
 
   ///
   /// list = [2, 3, 4, 6, 10, 3, 9];
   /// list.split(2); // [[2, 3], [4, 6], [10, 3], [9]]
   ///
-  List<List<T>> split(int count, [int? end]) {
+  List<List<T>> splitBy(int count, [int start = 0, int? end]) {
     final length = end ?? this.length;
-    assert(count <= length);
+    assert(start.rangeIn(0, length) && count.rangeIn(0, length));
 
     final list = <List<T>>[];
-    for (var i = 0; i < length; i += count) {
+    for (var i = start; i < length; i += count) {
       list.add(sublist(i, i + count < length ? i + count : length));
     }
     return list;
   }
 
-  ///
-  /// list = [2, 3, 4, 6, 10, 3, 9];
-  /// list.splitTwo(2); // [[2, 3], [4, 6, 10, 3, 9]]
-  ///
-  (List<T>, List<T>) splitTwo(int position, [int? end]) {
-    final length = this.length;
-    assert(position <= length);
-    return (sublist(0, position), sublist(position, end ?? length));
+  List<List<T>> splitAt(List<int> positions, [int start = 0, int? end]) {
+    final length = end ?? this.length;
+    assert(
+      start.rangeIn(0, length) &&
+          positions.isSorted() &&
+          positions.first >= start &&
+          positions.last <= length,
+    );
+    return positions.foldAccompany(
+      [],
+      start,
+      (result, interval, i) => result..add(sublist(i, interval)),
+      (i, interval, result) => interval,
+    );
   }
 
   ///
@@ -322,95 +406,36 @@ extension ListExtension<T> on List<T> {
   }
 
   ///
-  /// [intersection]
-  /// [intersectionIndex]
-  /// [intersectionDetail]
-  ///
-  List<T> intersection(Iterable<T> another) => intersectionFold(
-        [],
-        another,
-        (list, v1, v2) => list..addWhen(v1 == v2, v1),
-      );
-
-  List<int> intersectionIndex(Iterable<T> another) => intersectionFoldIndexable(
-        [],
-        another,
-        (list, v1, v2, index) => list..addWhen(v1 == v2, index),
-      );
-
-  Map<int, T> intersectionDetail(Iterable<T> another) =>
-      intersectionFoldIndexable(
-        {},
-        another,
-        (map, v1, v2, index) => map..putIfAbsentWhen(v1 == v2, index, () => v1),
-      );
-
-  ///
-  /// [difference]
-  /// [differenceIndex]
-  /// [differenceDetail]
-  ///
-  List<T> difference(Iterable<T> another) => differenceFold(
-        [],
-        another,
-        (list, v1, v2) => list..addWhen(v1 != v2, v1),
-        (list, another) => list..add(another),
-      );
-
-  List<int> differenceIndex(Iterable<T> another) => differenceFoldIndexable(
-        [],
-        another,
-        (value, e1, e2, index) => value..addWhen(e1 != e2, index),
-        (value, element, index) => value..add(index),
-      );
-
-  ///
-  /// [MapEntry.key] is the value in this instance that different with [another]
-  /// [MapEntry.value] is the value in [another] that different with this instance
-  ///
-  Map<int, MapEntry<T, T?>> differenceDetail(Iterable<T> another) =>
-      differenceFoldIndexable(
-        {},
-        another,
-        (value, e1, e2, index) =>
-            value..putIfAbsentWhen(e1 != e2, index, () => MapEntry(e1, e2)),
-        (value, element, index) =>
-            value..putIfAbsent(index, () => MapEntry(element, null)),
-      );
-
-  ///
   /// [mapToList]
   /// [mapToListWith]
   /// [mapToListAccompany]
   ///
   List<E> mapToList<E>(Translator<T, E> toElement) =>
-      mapToListByGenerate((i) => toElement(this[i]));
+      mirrored((i) => toElement(this[i]));
 
   List<E> mapToListWith<E>(
     List<E> another,
     Reducer<E> reducer,
     Translator<T, E> toElement,
   ) =>
-      mapToListByGenerate(
-          (index) => reducer(toElement(this[index]), another[index]));
+      mirrored((index) => reducer(toElement(this[index]), another[index]));
 
   List<E> mapToListAccompany<E>(
     List<T> another,
     Reducer<T> reducer,
     Translator<T, E> toElement,
   ) =>
-      mapToListByGenerate(
-          (index) => toElement(reducer(this[index], another[index])));
+      mirrored((index) => toElement(reducer(this[index], another[index])));
 
   ///
-  /// [accordinglyAccompany]
+  /// [accordinglyReduce]
   /// [accordinglyWith]
   ///
-  List<T> accordinglyAccompany(List<T> another, Reducer<T> reducer) =>
-      mapToListByGenerate((i) => reducer(this[i], another[i]));
+  List<T> accordinglyReduce(List<T> another, Reducer<T> reducer) =>
+      mirrored((i) => reducer(this[i], another[i]));
 
   List<T> accordinglyWith<E>(List<E> another, Companion<T, E> companion) =>
-      mapToListByGenerate((i) => companion(this[i], another[i]));
+      mirrored((i) => companion(this[i], another[i]));
 }
 
 ///
@@ -419,11 +444,66 @@ extension ListExtension<T> on List<T> {
 ///
 extension ListComparableExtension<C extends Comparable> on List<C> {
   ///
+  /// [copySorted]
+  ///
+  List<C> copySorted([bool increase = true]) => List.of(this)
+    ..sort(increase ? Comparable.compare : ComparableData.compareReverse);
+
+  ///
+  /// the [order] returns a list;
+  /// list index is the index of sorted list
+  /// list element is the index of current list. for example,
+  ///   list = [2, 3, 5, 1, 2];
+  ///   sorted = List.of(list)..sort(); // [1, 2, 2, 3, 5]
+  ///   order = list.order();           // [3, 0, 4, 1, 2]
+  ///
+  /// in the sample above,
+  ///   '3' (order[0]) in represent the position of '1' (sorted[0]) in 'list' is 3
+  ///   '0' (order[1]) in represent the position of '2' (sorted[1]) in 'list' is 0
+  ///   '4' (order[2]) in represent the position of '2' (sorted[2]) in 'list' is 4
+  ///   '1' (order[3]) in represent the position of '3' (sorted[3]) in 'list' is 1
+  ///   '2' (order[4]) in represent the position of '5' (sorted[4]) in 'list' is 2
+  ///
+  List<int> order([bool increase = true]) =>
+      copySorted(increase).iterator.mapToListByList(
+        [],
+        (vSorted, o) {
+          for (var iOld = 0; iOld < length; iOld++) {
+            if (vSorted == this[iOld]
+                ? o.containsThen(iOld, () => false, () => o.addNext(iOld))
+                : false) return iOld;
+          }
+          throw UnimplementedError('unreachable');
+        },
+      );
+
+  // ///
+  // /// [rank]
+  // ///
+  // /// [tieToMin] == null (average)
+  // /// [tieToMin] == true (min)
+  // /// [tieToMax] == false (max)
+  // ///
+  // List<double> rank([bool increase = true, bool? tieToMin]) {
+  //   final val = increase ? 1 : -1;
+  //   final Combiner<int, double> updater = tieToMin == null
+  //       ? (r, times) => (r * 2 + times) / times
+  //       : tieToMin
+  //           ? (r, times) => r.toDouble()
+  //           : (r, times) => r + times.toDouble();
+  //   final times = <C, int>{};
+  //   iterator.cumulativeWhere(
+  //     (v) => current.compareTo(v) == val,
+  //   );
+  //   // return map[];
+  // }
+
+  ///
   /// [isSorted]
   ///
-  bool isSorted([bool expectIncrease = true]) {
+  bool isSorted([bool increase = true]) {
     final length = this.length;
-    final invalid = expectIncrease ? 1 : -1;
+    final invalid = increase ? 1 : -1;
     C a = this[0];
     for (var i = 1; i < length; i++) {
       final b = this[i];
@@ -439,19 +519,19 @@ extension ListComparableExtension<C extends Comparable> on List<C> {
   ///   2. regarding current list as the mix of sorted sublists, merging sublists into bigger ones
   ///     (2 elements -> 4 elements -> 8 elements -> ... -> n elements)
   ///
-  /// when [isIncreasing] = true,
+  /// when [increasing] = true,
   /// it's means that when 'list item a' > 'list item b', element a should switch with b.
   /// see [_sortMerge] for full implementation.
   ///
-  void sortMerge([bool isIncreasing = true]) {
-    final increasing = isIncreasing ? 1 : -1;
+  void sortMerge([bool increasing = true]) {
+    final value = increasing ? 1 : -1;
     final length = this.length;
 
     final max = length.isEven ? length : length - 1;
     for (var start = 0; start < max; start += 2) {
       final a = this[start];
       final b = this[start + 1];
-      if (a.compareTo(b) == increasing) {
+      if (a.compareTo(b) == value) {
         this[start] = b;
         this[start + 1] = a;
       }
@@ -469,14 +549,14 @@ extension ListComparableExtension<C extends Comparable> on List<C> {
         replaceRange(
           start,
           end,
-          _sortMerge(sublist(start, i), sublist(i, end), isIncreasing),
+          _sortMerge(sublist(start, i), sublist(i, end), increasing),
         );
       }
       if (fixed > 0) {
         replaceRange(
           0,
           length,
-          _sortMerge(sublist(0, fixed), sublist(fixed, length), isIncreasing),
+          _sortMerge(sublist(0, fixed), sublist(fixed, length), increasing),
         );
       }
       sorted *= 2;
@@ -485,15 +565,15 @@ extension ListComparableExtension<C extends Comparable> on List<C> {
 
   ///
   /// before calling [_sortMerge], [listA] and [listB] must be sorted.
-  /// when [isIncreasing] = true,
+  /// when [increase] = true,
   /// it's means that when 'listA item a' < 'listB item b', result should add a before add b.
   ///
   static List<C> _sortMerge<C extends Comparable>(
     List<C> listA,
     List<C> listB, [
-    bool isIncrease = true,
+    bool increase = true,
   ]) {
-    final increase = isIncrease ? -1 : 1;
+    final value = increase ? -1 : 1;
     final result = <C>[];
     final lengthA = listA.length;
     final lengthB = listB.length;
@@ -502,7 +582,7 @@ extension ListComparableExtension<C extends Comparable> on List<C> {
     while (i < lengthA && j < lengthB) {
       final a = listA[i];
       final b = listB[j];
-      if (a.compareTo(b) == increase) {
+      if (a.compareTo(b) == value) {
         result.add(a);
         i++;
       } else {

@@ -6,7 +6,7 @@
 /// [PropositionComponent]
 ///   [Proposition]
 ///   [PropositionProduct]
-///   [PropositionComplex]
+///   [PropositionCompound]
 ///
 /// [TruthTable]
 ///
@@ -104,6 +104,15 @@ sealed class PropositionComponent {
 
   bool get value;
 
+  ///
+  /// [truthTable] is computed in binary.
+  /// See Also:
+  ///   [Proposition.truthTable]
+  ///   [PropositionProduct.truthTable]
+  ///   [PropositionCompound.truthTable]
+  ///
+  Iterable<bool> get truthTable;
+
   PropositionComponent operator -(); // negation
 
   PropositionComponent operate(
@@ -144,10 +153,13 @@ class Proposition extends PropositionComponent {
   @override
   final bool value;
 
+  @override
+  Iterable<bool> get truthTable => const [true, false];
+
   const Proposition(this.declarative, this.value);
 
   @override
-  int get hashCode => declarative.hashCode;
+  int get hashCode => Object.hash(declarative.hashCode, value.hashCode);
 
   @override
   bool operator ==(covariant Proposition other) => hashCode == other.hashCode;
@@ -180,6 +192,14 @@ class PropositionProduct extends PropositionComponent {
   final Propositioner reduce;
 
   @override
+  Iterable<bool> get truthTable => [
+        reduce(true, true),
+        reduce(true, false),
+        reduce(false, true),
+        reduce(false, false),
+      ];
+
+  @override
   String get declarative => '${reduce.name}[($p), ($q)]';
 
   PropositionProduct(this.p, this.reduce, this.q)
@@ -198,48 +218,83 @@ class PropositionProduct extends PropositionComponent {
   PropositionProduct operator -() => PropositionProduct(-p, reduce, -q);
 
   @override
-  PropositionComponent operate(
+  PropositionCompound operate(
     PropositionComponent other,
     Propositioner combine,
   ) =>
-      PropositionComplex([p, q, other], [reduce, combine]);
+      PropositionCompound([p, q, other], [reduce, combine]);
+
+  PropositionProduct copyWith({
+    Proposition? p,
+    Proposition? q,
+    Propositioner? reduce,
+  }) =>
+      PropositionProduct(p ?? this.p, reduce ?? this.reduce, q ?? this.q);
 }
 
 ///
 ///
 /// Proposition Complex
 /// [declarative], [value]
-/// [components], [operations]
+/// [_components], [_operations]
 ///
-///
-class PropositionComplex extends PropositionComponent {
-  ///
-  /// but for [PropositionComponent],
-  /// [operations] cannot record computed-hidden [value] for each operation
-  ///
-  final Iterable<PropositionComponent> components;
-  final Iterable<Propositioner> operations;
+class PropositionCompound extends PropositionComponent {
+  final List<PropositionComponent> _components;
+  final List<Propositioner> _operations;
 
   @override
-  String get declarative => components
-      .reduceFrom(
+  String get declarative => _components.iterator
+      .reduceToCombined(
         (p) => StringBuffer(p.declarative),
         (buffer, p) => buffer
           ..write('\n')
-          ..write(p is PropositionComplex ? '\t' : '')
+          ..write(p is PropositionCompound ? '\t' : '')
           ..write(p.declarative),
       )
       .toString();
 
   @override
-  bool get value => components.intersectionReduceTo(
-        operations,
+  bool get value => _components.iterator.leadThenInterFold(
+        0,
         (p) => p.value,
-        (oldValue, value, reduce) => reduce(oldValue, value),
+        _operations.iterator,
+        (value, p, combine) => combine(value, p.value),
       );
 
-  PropositionComplex(this.components, this.operations)
-      : assert(operations.length + 1 == components.length);
+  ///
+  /// [truthTable] for example, let [declarativesSet] = {'sun rise', 'sky shine', 'stay high'}
+  ///   [truthTable] comes from [_operations] respectively to the order below:
+  ///     'sun rise' == true, 'sky shine' == true, 'stay high' == true
+  ///     'sun rise' == true, 'sky shine' == true, 'stay high' == false
+  ///     'sun rise' == true, 'sky shine' == false, 'stay high' == true
+  ///     'sun rise' == true, 'sky shine' == false, 'stay high' == false
+  ///     'sun rise' == false, 'sky shine' == true, 'stay high' == true
+  ///     'sun rise' == false, 'sky shine' == true, 'stay high' == false
+  ///     'sun rise' == false, 'sky shine' == false, 'stay high' == true
+  ///     'sun rise' == false, 'sky shine' == false, 'stay high' == false
+  /// just the way binary code goes.
+  ///
+  @override
+  Iterable<bool> get truthTable {
+    // final declaratives = declarativesSet;
+    // final propositions = declaratives.map((d) => null);
+    throw UnimplementedError();
+  }
+
+  bool get isTautology => truthTable.every(FMapper.keep);
+
+  PropositionCompound(this._components, this._operations)
+      : assert(() {
+          // every propositions having same 'declarative', must have same 'value'
+          final ps = _components.groupBy((p) => p.declarative).values;
+          for (var list in ps) {
+            if (list.anyDifferent) return false;
+          }
+
+          return _components.isFixed &&
+              _operations.isFixed &&
+              _operations.length + 1 == _components.length;
+        }());
 
   // static String diagramBatch(
   //   PropositionComponent component,
@@ -261,21 +316,26 @@ class PropositionComplex extends PropositionComponent {
   String toString() => throw UnimplementedError();
 
   @override
-  PropositionComplex operator -() =>
-      PropositionComplex(components.map((p) => -p), operations);
+  PropositionCompound operator -() =>
+      PropositionCompound(_components.mapToList((p) => -p), _operations);
 
   @override
-  PropositionComplex operate(
+  PropositionCompound operate(
     PropositionComponent other,
     Propositioner combine,
   ) =>
-      PropositionComplex([...components, other], [...operations, combine]);
+      PropositionCompound([..._components, other], [..._operations, combine]);
 
   ///
   ///
   ///
   /// others
+  /// [forEachProposition], [forEachOperation]
+  /// [update]
   ///
+  /// [_foldPropositionsToSet]
+  /// [propositionsSet]
+  /// [declarativesSet]
   ///
   ///
 
@@ -283,115 +343,88 @@ class PropositionComplex extends PropositionComponent {
   /// [forEachProposition]
   /// [forEachOperation]
   ///
-  void forEachProposition(Consumer<PropositionComponent> consumer) {
-    for (var component in components) {
-      consumer(component);
+  void forEachProposition(Consumer<Proposition> consumer) {
+    void v;
+    for (var component in _components) {
+      v = switch (component) {
+        Proposition() => consumer(component),
+        PropositionProduct() => () {
+            consumer(component.p);
+            consumer(component.q);
+          }(),
+        PropositionCompound() => component.forEachProposition(consumer),
+      };
     }
+    return v;
   }
 
   void forEachOperation(Consumer<Propositioner> consumer) {
-    for (var component in operations) {
+    for (var component in _operations) {
       consumer(component);
     }
   }
 
   ///
-  /// [foldPropositions]
+  /// [update]
   ///
-  S foldPropositions<S>(
-    S initialValue,
-    Companion<S, PropositionComponent> combine,
-  ) =>
-      components.fold(initialValue, (v, component) => combine(v, component));
-
-  ///
-  /// [declarativesSet]
-  /// [propositionsSet]
-  ///
-  Set<String> get declarativesSet => foldPropositions(
-        {},
-        (set, p) => switch (p) {
-          Proposition() => set..add(p.declarative),
-          PropositionProduct() => set
-            ..add(p.p.declarative)
-            ..add(p.q.declarative),
-          PropositionComplex() => set..addAll(declarativesSet),
-        },
-      );
-
-  Set<Proposition> get propositionsSet => foldPropositions(
-        {},
-        (set, p) => switch (p) {
-          Proposition() => set..add(p),
-          PropositionProduct() => set
-            ..add(p.p)
-            ..add(p.q),
-          PropositionComplex() => set..addAll(propositionsSet),
-        },
-      );
-
-  ///
-  /// [updateAll]
-  ///
-  void updateAll(String declarative, bool value) {
-    throw UnimplementedError();
-  }
-  
-  TruthTable get truthTable {
-    // final table = TruthTable(declaratives, result);
-    throw UnimplementedError();
-  }
-}
-
-///
-/// [result] is computed by [declaratives] in binary. for example,
-///   [declaratives] = ['sun rise', 'sky shine', 'stay high']
-///   results is computed by:
-///     'sun rise' == true, 'sky shine' == true, 'stay high' == true
-///     'sun rise' == true, 'sky shine' == true, 'stay high' == false
-///     'sun rise' == true, 'sky shine' == false, 'stay high' == true
-///     'sun rise' == true, 'sky shine' == false, 'stay high' == false
-///     'sun rise' == false, 'sky shine' == true, 'stay high' == true
-///     'sun rise' == false, 'sky shine' == true, 'stay high' == false
-///     'sun rise' == false, 'sky shine' == false, 'stay high' == true
-///     'sun rise' == false, 'sky shine' == false, 'stay high' == false
-///
-///
-class TruthTable {
-  final Set<String> declaratives;
-  final int _result;
-
-  num get nCol => declaratives.length;
-
-  num get nRow => declaratives.length.powBy(2);
-
-  Iterable<bool> get result {
-    final result = <bool>[];
-
-    final length = nRow;
-    var value = _result;
-    for (var i = 0; i < length; i++) {
-      result.add(value.isEven);
-      value >>= 1;
+  void update(String declarative, bool toValue) {
+    void v;
+    for (var i = 0; i < _components.length; i++) {
+      final component = _components[i];
+      v = switch (component) {
+        Proposition() => () {
+            if (component.declarative == declarative) {
+              _components[i] = Proposition(declarative, toValue);
+            }
+          }(),
+        PropositionProduct() => () {
+            final pO = component.p;
+            final qO = component.q;
+            final pN = pO.declarative == declarative
+                ? Proposition(declarative, toValue)
+                : pO;
+            final qN = qO.declarative == declarative
+                ? Proposition(declarative, toValue)
+                : qO;
+            if (pN != pO || qN != qO) {
+              _components[i] = component.copyWith(p: pN, q: qN);
+            }
+          }(),
+        PropositionCompound() => component.update(declarative, toValue),
+      };
     }
-    return result;
+    return v;
   }
 
-  const TruthTable(this.declaratives, this._result);
+  ///
+  /// [_foldPropositionsToSet]
+  ///
+  Set<K> _foldPropositionsToSet<K>(
+    Translator<Proposition, K> toK,
+    Translator<PropositionCompound, Set<K>> toKSet,
+  ) =>
+      _components.fold(
+        {},
+        (set, component) => switch (component) {
+          Proposition() => set..add(toK(component)),
+          PropositionProduct() => set
+            ..add(toK(component.p))
+            ..add(toK(component.q)),
+          PropositionCompound() => set..addAll(toKSet(component)),
+        },
+      );
 
-  factory TruthTable.fromComplex(PropositionComplex complex) {
-    throw UnimplementedError();
-    // final declaratives = complex.declarativesSet;
-    // final children = declaratives.mapToMap((declarative) => true);
-    //
-    // var operations = complex.operations;
-    // var value = 0;
-    // final length = declaratives.length.powBy(2);
-    // for (var i = 0; i < length; i++) {
-    //   value += complex.value ? 1 : 0;
-    //   value <<= 1;
-    //   // result = PropositionResult(p, operations);
-    // }
-    // return TruthTable._(declaratives, value);
-  }
+  ///
+  /// [propositionsSet]
+  /// [declarativesSet]
+  ///
+  Set<Proposition> get propositionsSet => _foldPropositionsToSet(
+        FMapper.keep,
+        (value) => value.propositionsSet,
+      );
+
+  Set<String> get declarativesSet => _foldPropositionsToSet(
+        (p) => p.declarative,
+        (complex) => complex.declarativesSet,
+      );
 }

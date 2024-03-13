@@ -30,7 +30,7 @@ typedef Intersector<A, B> = void Function(A a, B b);
 typedef Mapper<T> = T Function(T value);
 typedef Reducer<T> = T Function(T current, T value);
 typedef Reducer2<T> = T Function(T current, T v1, T v2);
-typedef Companion<T, S> = T Function(T origin, S another);
+typedef Companion<T, E> = T Function(T origin, E another);
 typedef Companion2<T, A, B> = T Function(T origin, A a, B b);
 typedef Translator<T, S> = S Function(T value);
 typedef Combiner<T, S> = S Function(T v1, T v2);
@@ -51,7 +51,7 @@ typedef Sequencer<R, S, I> = Translator<int, R> Function(
 ///
 ///
 
-typedef Predicator<T> = bool Function(T a);
+typedef Predicator<T> = bool Function(T value);
 typedef PredicateCombiner<T> = bool Function(T v1, T v2);
 typedef Checker<T> = bool Function(int index, T value);
 
@@ -71,6 +71,8 @@ typedef Companion2Generator<T, A, B> = T Function(T value, A a, B b, int index);
 typedef TranslatorGenerator<T, S> = S Function(T value, int index);
 typedef ReducerGenerator<T> = T Function(T current, T value, int index);
 typedef Reducer2Generator<T> = T Function(T current, T v1, T v2, int index);
+typedef CombinerGenerator<T, S> = S Function(T v1, T v2, int index);
+typedef MixerGenerator<P, Q, S> = S Function(P p, Q q, int index);
 
 ///
 /// differentiator
