@@ -184,12 +184,13 @@ extension FSizingPath on SizingPath {
         ? FMapper.keep
         : (corners) => corners.map((cubics) => cubics * scale);
 
-    Path from(Iterable<CubicOffset> offsets) => scaled(offsets).foldByIndex(
-          Path(),
-          (path, points, index) => path
-            ..moveOrLineToPoint(points.a, index == 0)
-            ..cubicToPoint(points.b, points.c, points.d),
-        )..close();
+    Path from(Iterable<CubicOffset> offsets) =>
+        scaled(offsets).iterator.foldByIndex(
+              Path(),
+              (path, points, index) => path
+                ..moveOrLineToPoint(points.a, index == 0)
+                ..cubicToPoint(points.b, points.c, points.d),
+            )..close();
 
     return adjust == null
         ? (size) => from(points(size))

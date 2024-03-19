@@ -7,7 +7,8 @@
 ///   [Vertex]
 ///     [Node]
 ///     [NodeBinary]
-///       [NodeAvl]
+///       [NodeBinaryAvl]
+///       [NodeBinarySet]
 ///     [NodeTree]
 ///
 ///   [VertexComparable]
@@ -102,7 +103,7 @@ class VertexComparable<T extends Comparable> extends VertexAncestor<T>
 ///
 /// [Node]
 /// [NodeBinary]
-/// [NodeAvl]
+/// [NodeBinaryAvl]
 /// [NodeTree]
 ///
 ///
@@ -168,9 +169,9 @@ class Node<T> extends Vertex<T> {
 /// [climbFromLeftToRight], [climbFromRightToLeft]
 /// [leftest], [rightest]
 /// [depthLeft], [depthRight], [depth], [height]
-/// [relatives]
+/// [relativeNodes]
 /// [any], [contains]
-/// [isUniqueInRelatives]
+/// [everyDifferent]
 ///
 ///
 class NodeBinary<T> extends Vertex<T> {
@@ -277,11 +278,11 @@ class NodeBinary<T> extends Vertex<T> {
   int get height => depth + 1; // + current node
 
   ///
-  /// [relatives]
+  /// [relativeNodes]
   /// [any], [contains]
-  /// [isUniqueInRelatives]
+  /// [everyDifferent]
   ///
-  List<T> get relatives {
+  List<T> get relativeNodes {
     final list = <T>[];
     iterateFromLeftToRight(list.add);
     return list;
@@ -301,8 +302,8 @@ class NodeBinary<T> extends Vertex<T> {
 
   bool contains(T element) => any((a) => a == element);
 
-  bool get isUniqueInRelatives {
-    final values = this.relatives;
+  bool get everyDifferent {
+    final values = this.relativeNodes;
     return values.toSet().length == values.length;
   }
 }
@@ -317,16 +318,18 @@ class NodeBinary<T> extends Vertex<T> {
 /// [rotateLeftRight], [rotateRightLeft]
 ///
 ///
-class NodeAvl<T> extends NodeBinary<T> {
+class NodeBinaryAvl<T> extends NodeBinary<T> {
   @override
-  NodeAvl<T>? get left => super.left as NodeAvl<T>?;
+  NodeBinaryAvl<T>? get left => super.left as NodeBinaryAvl<T>?;
 
   @override
-  NodeAvl<T>? get right => super.right as NodeAvl<T>?;
+  NodeBinaryAvl<T>? get right => super.right as NodeBinaryAvl<T>?;
 
-  NodeAvl(super.data, {NodeAvl<T>? super.left, NodeAvl<T>? super.right});
+  NodeBinaryAvl(super.data,
+      {NodeBinaryAvl<T>? super.left, NodeBinaryAvl<T>? super.right});
 
-  NodeAvl.fromData(super.data, {super.left, super.right}) : super.fromData();
+  NodeBinaryAvl.fromData(super.data, {super.left, super.right})
+      : super.fromData();
 
   ///
   /// because [depthLeft] >= 0, [depthRight] >= 0,
@@ -342,39 +345,47 @@ class NodeAvl<T> extends NodeBinary<T> {
   /// [rotateLeft], [rotateRight]
   /// [rotateLeftRight], [rotateRightLeft]
   ///
-  NodeAvl<T> balance() => switch (balanceFactor) {
+  NodeBinaryAvl<T> balance() => switch (balanceFactor) {
         2 => left!.balanceFactor == -1 ? rotateLeftRight() : rotateRight(),
         -2 => right!.balanceFactor == 1 ? rotateRightLeft() : rotateLeft(),
         _ => this,
       };
 
-  NodeAvl<T> rotateLeft() {
+  NodeBinaryAvl<T> rotateLeft() {
     final pivot = right!;
     right = pivot.left;
     pivot.left = this;
     return pivot;
   }
 
-  NodeAvl<T> rotateRight() {
+  NodeBinaryAvl<T> rotateRight() {
     final pivot = left!;
     left = pivot.right;
     pivot.right = this;
     return pivot;
   }
 
-  NodeAvl<T> rotateLeftRight() {
+  NodeBinaryAvl<T> rotateLeftRight() {
     final left = this.left;
     if (left == null) return this;
     this.left = left.rotateLeft();
     return rotateRight();
   }
 
-  NodeAvl<T> rotateRightLeft() {
+  NodeBinaryAvl<T> rotateRightLeft() {
     final right = this.right;
     if (right == null) return this;
     this.right = right.rotateRight();
     return rotateLeft();
   }
+}
+
+///
+///
+///
+class NodeBinarySet<T> extends NodeBinary<T> {
+  NodeBinarySet(super.data, {super.left, super.right})
+      : assert(NodeBinary(data, left: left, right: right).everyDifferent);
 }
 
 ///
@@ -712,16 +723,16 @@ abstract class GraphAncestor<T, S, V extends VertexAncestor<T?>,
       containsVertex(edge._source) && containsVertex(edge._destination);
 
   bool containsAllVertices(Iterable<V> vertices) =>
-      this.vertices.containsAll(vertices);
+      this.vertices.iterator.containsAll(vertices.iterator);
 
   bool containsEdge(E edge) => edges.contains(edge);
 
   bool containsEdgeForBoth(V source, V destination) =>
       edges.any((edge) => edge.containsBoth(source, destination));
 
-  bool containsAllEdges(Iterable<E> edges) => this.edges.containsAll(edges);
+  bool containsAllEdges(Iterable<E> edges) => this.edges.iterator.containsAll(edges.iterator);
 
-  S weightFrom(V source, V destination) => edges.firstWhereMap(
+  S weightFrom(V source, V destination) => edges.iterator.firstWhereMap(
         (edge) => edge.containsBoth(source, destination),
         (edge) => edge.weight,
       );
@@ -737,12 +748,12 @@ abstract class GraphAncestor<T, S, V extends VertexAncestor<T?>,
   Iterable<E> edgesTo(V destination) =>
       edges.where((edge) => edge._destination == destination);
 
-  Iterable<V> destinationsFrom(V source) => edges.whereMap(
+  Iterable<V> destinationsFrom(V source) => edges.iterator.yieldingWhereTo(
         (edge) => edge._source == source,
         (edge) => edge._destination,
       );
 
-  Iterable<V> sourcesTo(V destination) => edges.whereMap(
+  Iterable<V> sourcesTo(V destination) => edges.iterator.yieldingWhereTo(
         (edge) => edge._destination == destination,
         (edge) => edge._source,
       );
@@ -784,9 +795,9 @@ abstract class GraphAncestor<T, S, V extends VertexAncestor<T?>,
     final visited = <V>[source];
     for (var i = 0; i < visited.length; i++) {
       destinationsFrom(visited[i]).iterator.actionWhere(
-        (destination) => visited.notContains(destination),
-        (destination) => visited.add(destination),
-      );
+            (destination) => visited.iterator.notContains(destination),
+            (destination) => visited.add(destination),
+          );
     }
     return visited;
   }
@@ -795,9 +806,9 @@ abstract class GraphAncestor<T, S, V extends VertexAncestor<T?>,
     final visited = <V>[source];
     while (visited.isNotEmpty) {
       destinationsFrom(visited.removeLast()).iterator.actionWhere(
-        (destination) => visited.notContains(destination),
-        (destination) => visited.add(destination),
-      );
+            (destination) => visited.iterator.notContains(destination),
+            (destination) => visited.add(destination),
+          );
     }
     return visited;
   }

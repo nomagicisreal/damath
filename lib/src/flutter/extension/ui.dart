@@ -607,3 +607,55 @@ extension PositionedExtension on Positioned {
           ? null
           : Rect.fromLTWH(left!, top!, width!, height!);
 }
+
+
+extension TransformExtension on Transform {
+  ///
+  ///
+  /// [translation2DFrom], [translation3DFrom] transfer from my space3 system:
+  /// x axis is [Direction3DIn6.left] -> [Direction3DIn6.right], radian start from [Direction3DIn6.back]
+  /// y axis is [Direction3DIn6.front] -> [Direction3DIn6.back], radian start from [Direction3DIn6.left]
+  /// z axis is [Direction3DIn6.bottom] -> [Direction3DIn6.top], radian start from [Direction3DIn6.right]
+  ///
+  /// to "dart space3 system" (like [Transform], [Matrix4], [Offset]], ...):
+  /// x axis is [Direction3DIn6.left] -> [Direction3DIn6.right], radian start from [Direction3DIn6.back] ?
+  /// y axis is [Direction3DIn6.top] -> [Direction3DIn6.bottom], radian start from [Direction3DIn6.left] ?
+  /// z axis is [Direction3DIn6.front] -> [Direction3DIn6.back], radian start from [Direction3DIn6.right]
+  ///
+  ///
+  /// See Also:
+  ///   * [Space2.fromDirection], [Space3.fromDirection]
+  ///   * [Direction], [Direction3DIn6]
+  ///
+  static Space2 translation2DFrom(Space2 p) => Space2(p.dx, -p.dy);
+  static Space3 translation3DFrom(Space3 p) => Space3(p.dx, -p.dz, -p.dy);
+
+  static Space3 rotation3DFrom(Space3 p) => throw UnimplementedError();
+
+  ///
+  /// [front] can be seen within {angleY(-90 ~ 90), angleX(-90 ~ 90)}
+  /// [left] can be seen within {angleY(0 ~ -180), angleZ(-90 ~ 90)}
+  /// [top] can be seen within {angleX(0 ~ 180), angleZ(-90 ~ 90)}
+  /// [back] can be seen while [front] not be seen.
+  /// [right] can be seen while [left] not be seen.
+  /// [bottom] can be seen while [top] not be seen.
+  ///
+  static List<Direction3DIn6> visibleFacesOf(Space3Radian radian) {
+    final r = radian.restrict180AbsAngle;
+    final rX = r.dx;
+    final rY = r.dy;
+    final rZ = r.dz;
+
+    return <Direction3DIn6>[
+      Radian.ifWithinAngle90_90N(rY) && Radian.ifWithinAngle90_90N(rX)
+          ? Direction3DIn6.front
+          : Direction3DIn6.back,
+      Radian.ifWithinAngle0_180N(rY) && Radian.ifWithinAngle90_90N(rZ)
+          ? Direction3DIn6.left
+          : Direction3DIn6.right,
+      Radian.ifWithinAngle0_180(rX) && Radian.ifWithinAngle90_90N(rZ)
+          ? Direction3DIn6.top
+          : Direction3DIn6.bottom,
+    ];
+  }
+}

@@ -244,7 +244,7 @@ class PropositionCompound extends PropositionComponent {
 
   @override
   String get declarative => _components.iterator
-      .reduceToCombined(
+      .reduceToInitialized(
         (p) => StringBuffer(p.declarative),
         (buffer, p) => buffer
           ..write('\n')

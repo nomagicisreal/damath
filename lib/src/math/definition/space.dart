@@ -91,6 +91,8 @@ class Space2 {
 
   double get direction => math.atan2(dy, dx);
 
+  double get directionInAngle => Radian.angleOf(direction).roundToDouble();
+
   double get distance => math.sqrt(distanceSquared);
 
   double get distanceSquared => dx * dx + dy * dy;
@@ -98,6 +100,11 @@ class Space2 {
   bool get isFinite => dx.isFinite && dy.isFinite;
 
   bool get isInfinite => dx.isInfinite && dy.isInfinite;
+
+  double radianTo(Space2 other) => other.direction - direction;
+
+  double angleTo(Space2 other) =>
+      Radian.angleOf(other.direction - direction).roundToDouble();
 }
 
 ///
@@ -153,8 +160,10 @@ class Space3 extends Space2 {
 
   Space3 get abs => Space3(dx.abs(), dy.abs(), dz.abs());
 
+  @override
   double get distanceSquared => dx * dx + dy * dy + dz * dz;
 
+  @override
   double get distance => math.sqrt(distanceSquared);
 
   double get volume => dx * dy * dz;
@@ -320,13 +329,10 @@ class Space3 extends Space2 {
   static const Space3 z100 = Space3(0, 0, 100);
 
   ///
-  /// it implement in 'my space3 system', not 'dart space3 system' ([Transform], [Matrix4], [Space2]], ...)
-  /// see the comment above [transferToTransformOf] to understand more.
+  /// it implement in 'my coordinate system', not 'dart coordinate system' ([Transform], [Matrix4], [Space2]], ...)
+  /// see also [TransformExtension]
   ///
-  factory Space3.fromDirection(
-    Space3Radian direction, [
-    double distance = 1,
-  ]) {
+  factory Space3.fromDirection(Space3Radian direction, [double distance = 1]) {
     final rX = direction.dx;
     final rY = direction.dy;
     final rZ = direction.dz;
@@ -340,25 +346,6 @@ class Space3 extends Space2 {
 
   static Space3 maxDistance(Space3 a, Space3 b) =>
       a.distance > b.distance ? a : b;
-
-  ///
-  ///
-  /// [Space3.transferToTransformOf] transfer from my space3 system:
-  /// x axis is [Direction3DIn6.left] -> [Direction3DIn6.right], radian start from [Direction3DIn6.back]
-  /// y axis is [Direction3DIn6.front] -> [Direction3DIn6.back], radian start from [Direction3DIn6.left]
-  /// z axis is [Direction3DIn6.bottom] -> [Direction3DIn6.top], radian start from [Direction3DIn6.right]
-  ///
-  /// to "dart space3 system" ([Transform], [Matrix4], [Space2]], ...):
-  /// x axis is [Direction3DIn6.left] -> [Direction3DIn6.right], radian start from [Direction3DIn6.back] ?
-  /// y axis is [Direction3DIn6.top] -> [Direction3DIn6.bottom], radian start from [Direction3DIn6.left] ?
-  /// z axis is [Direction3DIn6.front] -> [Direction3DIn6.back], radian start from [Direction3DIn6.right]
-  ///
-  ///
-  /// See Also:
-  ///   * [Coordinate2D.fromDirection], [Coordinate.fromDirection]
-  ///   * [Direction], [Direction3DIn6]
-  ///
-  static Space3 transferToTransformOf(Space3 p) => Space3(p.dx, -p.dz, -p.dy);
 }
 
 ///
@@ -371,9 +358,9 @@ class Space3 extends Space2 {
 
 ///
 ///
-/// [CoordinateRadian.circle], [CoordinateRadian.ofX], [CoordinateRadian.ofY], [CoordinateRadian.ofZ]; [CoordinateRadian.ofXY], [CoordinateRadian.ofYZ], [CoordinateRadian.ofXZ]
-/// [modulus90Angle], [modulus180Angle], [modulus360Angle]
-/// [zero], [angleX_1], [angleY_1], [angleZ_1]...
+/// [Space3Radian.circle], ...
+/// [modulus90Angle], ...
+/// [zero], ...
 ///
 class Space3Radian extends Space3 {
   const Space3Radian(super.dx, super.dy, super.dz);
@@ -523,6 +510,10 @@ class Space3Radian extends Space3 {
   static const angleZ_01 = Space3Radian.ofZ(Radian.angle_01);
   static const angleXYZ_01 = Space3Radian.circle(Radian.angle_01);
   static const angleXY_01 = Space3Radian.ofXY(Radian.angle_01);
+
+  List<Direction3DIn6> get visibleFaces {
+    throw UnimplementedError();
+  }
 }
 
 ///
@@ -604,7 +595,6 @@ sealed class Direction<D> {
   Space2 get toSpace2;
 
   Space3 get toSpace3;
-
 }
 
 sealed class Direction2D<D extends Direction2D<D>> implements Direction<D> {
@@ -616,7 +606,7 @@ sealed class Direction2D<D extends Direction2D<D>> implements Direction<D> {
   static const radian_topLeft = Radian.angle_225;
   static const radian_top = Radian.angle_270;
   static const radian_topRight = Radian.angle_315;
-  
+
   static const space_top = Space2(0, -1);
   static const space_left = Space2(-1, 0);
   static const space_right = Space2(1, 0);
@@ -654,11 +644,11 @@ enum Direction2DIn4 implements Direction2D<Direction2DIn4> {
   Space3 get toSpace3 => toDirection8.toSpace3;
 
   Direction2DIn8 get toDirection8 => switch (this) {
-    Direction2DIn4.left => Direction2DIn8.left,
-    Direction2DIn4.top => Direction2DIn8.top,
-    Direction2DIn4.right => Direction2DIn8.right,
-    Direction2DIn4.bottom => Direction2DIn8.bottom,
-  };
+        Direction2DIn4.left => Direction2DIn8.left,
+        Direction2DIn4.top => Direction2DIn8.top,
+        Direction2DIn4.right => Direction2DIn8.right,
+        Direction2DIn4.bottom => Direction2DIn8.bottom,
+      };
 }
 
 ///

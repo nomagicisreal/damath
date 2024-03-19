@@ -32,6 +32,8 @@ typedef Reducer<T> = T Function(T current, T value);
 typedef Reducer2<T> = T Function(T current, T v1, T v2);
 typedef Companion<T, E> = T Function(T origin, E another);
 typedef Companion2<T, A, B> = T Function(T origin, A a, B b);
+typedef CompanionReducer<T, E> = T Function(T current, E v1, E v2);
+typedef ReducerCompanion<T, E> = T Function(T v1, T v2, E another);
 typedef Translator<T, S> = S Function(T value);
 typedef Combiner<T, S> = S Function(T v1, T v2);
 typedef Mixer<P, Q, S> = S Function(P p, Q q);
@@ -52,7 +54,8 @@ typedef Sequencer<R, S, I> = Translator<int, R> Function(
 ///
 
 typedef Predicator<T> = bool Function(T value);
-typedef PredicateCombiner<T> = bool Function(T v1, T v2);
+typedef PredicatorCombiner<T> = bool Function(T v1, T v2);
+typedef PredicatorMixer<A, B> = bool Function(A a, B b);
 typedef Checker<T> = bool Function(int index, T value);
 
 ///

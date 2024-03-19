@@ -159,7 +159,7 @@ extension FTimer on Timer {
     Iterable<Duration> steps,
     Iterable<Listener> listeners,
   ) =>
-      _sequence(steps.iterator.interYieldEntry(listeners.iterator));
+      _sequence(steps.iterator.interYieldingEntry(listeners.iterator));
 }
 
 extension FTimerConsumer on Consumer<Timer> {

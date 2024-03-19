@@ -17,7 +17,6 @@ void main(List<String> arguments) {
   // print(result);
 
   final list = [1, 3, 1, 2, 6, 10, -1, 8];
-  print(list);
-  print(List.of(list)..sort());
-  print(list.order());
+  print((1, 2) == (1, 2));
+  print(list.iterator.cumulativeWhere((value) => value.isOdd));
 }

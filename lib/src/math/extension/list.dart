@@ -385,7 +385,7 @@ extension ListExtension<T> on List<T> {
           positions.first >= start &&
           positions.last <= length,
     );
-    return positions.foldAccompany(
+    return positions.iterator.foldAccompany(
       [],
       start,
       (result, interval, i) => result..add(sublist(i, interval)),
@@ -407,35 +407,46 @@ extension ListExtension<T> on List<T> {
 
   ///
   /// [mapToList]
-  /// [mapToListWith]
-  /// [mapToListAccompany]
+  /// [mapToListWith], [mapToListWithSame]
+  /// [mapToListTogether]
   ///
-  List<E> mapToList<E>(Translator<T, E> toElement) =>
-      mirrored((i) => toElement(this[i]));
+  List<E> mapToList<E>(Translator<T, E> toVal) =>
+      [for (var i = 0; i < length; i++) toVal(this[i])];
 
   List<E> mapToListWith<E>(
-    List<E> another,
-    Reducer<E> reducer,
-    Translator<T, E> toElement,
+    List<E> other,
+    Reducer<E> reducing,
+    Translator<T, E> toVal,
   ) =>
-      mirrored((index) => reducer(toElement(this[index]), another[index]));
+      [for (var i = 0; i < length; i++) reducing(toVal(this[i]), other[i])];
 
-  List<E> mapToListAccompany<E>(
-    List<T> another,
-    Reducer<T> reducer,
-    Translator<T, E> toElement,
+  List<E> mapToListWithSame<E>(
+    List<T> other,
+    Reducer<T> reducing,
+    Translator<T, E> toVal,
   ) =>
-      mirrored((index) => toElement(reducer(this[index], another[index])));
+      [for (var i = 0; i < length; i++) toVal(reducing(this[i], other[i]))];
+
+  List<S> mapToListTogether<S, E>(
+    List<E> other,
+    Reducer<S> reducing,
+    Translator<T, S> toVal,
+    Translator<E, S> toValOther,
+  ) =>
+      [
+        for (var i = 0; i < length; i++)
+          reducing(toVal(this[i]), toValOther(other[i])),
+      ];
 
   ///
   /// [accordinglyReduce]
-  /// [accordinglyWith]
+  /// [accordinglyCompanion]
   ///
-  List<T> accordinglyReduce(List<T> another, Reducer<T> reducer) =>
-      mirrored((i) => reducer(this[i], another[i]));
+  List<T> accordinglyReduce(List<T> other, Reducer<T> reducing) =>
+      [for (var i = 0; i < length; i++) reducing(this[i], other[i])];
 
-  List<T> accordinglyWith<E>(List<E> another, Companion<T, E> companion) =>
-      mirrored((i) => companion(this[i], another[i]));
+  List<T> accordinglyCompanion<E>(List<E> other, Companion<T, E> companion) =>
+      [for (var i = 0; i < length; i++) companion(this[i], other[i])];
 }
 
 ///
@@ -465,13 +476,13 @@ extension ListComparableExtension<C extends Comparable> on List<C> {
   ///   '2' (order[4]) in represent the position of '5' (sorted[4]) in 'list' is 2
   ///
   List<int> order([bool increase = true]) =>
-      copySorted(increase).iterator.mapToListByList(
+      copySorted(increase).iterator.yieldingToListByList(
         [],
         (vSorted, o) {
-          for (var iOld = 0; iOld < length; iOld++) {
-            if (vSorted == this[iOld]
-                ? o.containsThen(iOld, () => false, () => o.addNext(iOld))
-                : false) return iOld;
+          for (var i = 0; i < length; i++) {
+            if (vSorted == this[i]
+                ? o.iterator.containsThen(i, () => false, () => o.addNext(i))
+                : false) return i;
           }
           throw UnimplementedError('unreachable');
         },

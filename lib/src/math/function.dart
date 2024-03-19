@@ -61,7 +61,7 @@ extension FPredicator on Predicator {
   static Predicator<T> isSameWith<T>(T another) => (value) => value == another;
 }
 
-extension FPredicatorCombiner on PredicateCombiner {
+extension FPredicatorCombiner on PredicatorCombiner {
   ///
   /// [isEqual], [isNotEqual]
   /// [alwaysTrue], [alwaysFalse]
@@ -83,23 +83,17 @@ extension FPredicatorCombiner on PredicateCombiner {
 
   ///
   /// see [Propositioner] for predicating from [bool]
-  /// [numIsEqual], [numIsALess], [numIsALarger]
-  /// [intIsEqual], [intIsALess], [intIsALarger]
-  /// [doubleIsEqual], [doubleIsALess], [doubleIsALarger]
+  /// [numIsALess], [numIsALarger]
+  /// [intIsALess], [intIsALarger]
+  /// [doubleIsALess], [doubleIsALarger]
   ///
-  static bool numIsEqual(num a, num b) => a == b;
-
   static bool numIsALess(num a, num b) => a < b;
 
   static bool numIsALarger(num a, num b) => a > b;
 
-  static bool intIsEqual(int a, int b) => a == b;
-
   static bool intIsALess(int a, int b) => a < b;
 
   static bool intIsALarger(int a, int b) => a > b;
-
-  static bool doubleIsEqual(double a, double b) => a == b;
 
   static bool doubleIsALess(double a, double b) => a < b;
 
@@ -171,6 +165,8 @@ extension FMapper on Mapper {
   static Mapper<double> doubleOnMultiply(double value) => (v) => v * value;
 
   static Mapper<double> doubleOnDivide(double value) => (v) => v / value;
+  static Mapper<double> doubleOnDivideToInt(double value) => (v) => (v ~/ value).toDouble();
+  static Mapper<double> doubleOnModule(double value) => (v) => v % value;
 
   static Mapper<double> doubleOnOperate(Operator operator, double value) =>
       operator.doubleCompanion(value);
@@ -295,6 +291,8 @@ extension FReducer<N> on Reducer<N> {
   static double doubleMultiply(double v1, double v2) => v1 * v2;
 
   static double doubleDivide(double v1, double v2) => v1 / v2;
+  static double doubleDivideToInt(double v1, double v2) => (v1 ~/ v2).toDouble();
+  static double doubleModule(double v1, double v2) => v1 % v2;
 
   static double doubleAddSquared(double v1, double v2) => v1 * v1 + v2 * v2;
 

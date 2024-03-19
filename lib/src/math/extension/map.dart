@@ -207,17 +207,17 @@ extension MapExtension<K, V> on Map<K, V> {
 
   V reduceValues(Reducer<V> reducing) => values.reduce(reducing);
 
-  S reduceTo<S>(Translator<MapEntry<K, V>, S> toElement, Reducer<S> reducer) =>
-      entries.iterator.reduceTo(toElement, reducer);
+  S reduceTo<S>(Translator<MapEntry<K, V>, S> toVal, Reducer<S> reducer) =>
+      entries.iterator.reduceTo(toVal, reducer);
 
   ///
   /// map
   ///
-  Map<K, V> mapKeys(Mapper<K> toElement) =>
-      map((key, value) => MapEntry(toElement(key), value));
+  Map<K, V> mapKeys(Mapper<K> toVal) =>
+      map((key, value) => MapEntry(toVal(key), value));
 
-  Map<K, V> mapValues(Mapper<V> toElement) =>
-      map((key, value) => MapEntry(key, toElement(value)));
+  Map<K, V> mapValues(Mapper<V> toVal) =>
+      map((key, value) => MapEntry(key, toVal(value)));
 }
 
 extension MapKeyComparableExtension<K extends Comparable, V> on Map<K, V> {
