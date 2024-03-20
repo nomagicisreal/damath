@@ -720,5 +720,5 @@ extension ListSetExtension<I> on List<Set<I>> {
   }
 
   void mergeWhereAndRemoveAllAndAdd(Predicator<Set<I>> predicator) =>
-      add(removeWhereAndGet(predicator).merged);
+      add(removeWhereAndGet(predicator).iterator.merged);
 }

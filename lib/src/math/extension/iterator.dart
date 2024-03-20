@@ -13,7 +13,8 @@ part of damath_math;
 /// [actionWhere], ...
 /// [moveNextThen], ...
 ///
-/// [any], [every], ...
+/// [any]
+/// [every], ...
 ///
 /// [fold], ...
 /// [reduce], ...
@@ -67,37 +68,25 @@ extension IteratorExtension<I> on Iterator<I> {
 
   ///
   /// predication
-  /// [any], [every]
   /// [contains], [containsAll]
   /// [notContains], [notContainsAll]
   /// [containsThen]
   ///
-  /// [predicate1ToN], [predicateNToN]
-  /// [predicate1ToNBy], [predicateNToNBy]
-  /// [predicate1ToNByFirst]
+  /// [any], [every]
+  /// [till1ToN], [tillNToN]
+  /// [till1ToNBy], [tillNToNBy]
+  /// [till1ToNByFirst]
   ///
+  /// [anyEqual], [anyDifferent], [anyDifferentBy]
+  /// [anyDifferentByGroups], [anyEqualByGroups]
+  /// [anyDifferentByGroupsBool], [anyEqualByGroupsBool]
   ///
 
   ///
-  /// [any], [every]
   /// [contains], [containsAll]
   /// [notContains], [notContainsAll]
   /// [containsThen]
   ///
-  bool any(Predicator<I> test) {
-    while (moveNext()) {
-      if (test(current)) return true;
-    }
-    return false;
-  }
-
-  bool every(Predicator<I> test) {
-    while (moveNext()) {
-      if (!test(current)) return false;
-    }
-    return true;
-  }
-
   bool contains(I element) {
     while (moveNext()) {
       if (element == current) return true;
@@ -126,15 +115,24 @@ extension IteratorExtension<I> on Iterator<I> {
     return true;
   }
 
-  S containsThen<S>(I value, Supplier<S> onContained, Supplier<S> onNot) =>
-      contains(value) ? onContained() : onNot();
+  T containsThen<T>(I value, Supplier<T> ifContains, Supplier<T> ifAbsent) =>
+      contains(value) ? ifContains() : ifAbsent();
 
   ///
-  /// [predicate1ToN], [predicateNToN]
-  /// [predicate1ToNBy], [predicateNToNBy]
-  /// [predicate1ToNByFirst]
+  /// [any]
   ///
-  bool predicate1ToN(PredicatorCombiner<I> test) => moveNextThen(() {
+  bool any(Predicator<I> test) {
+    while (moveNext()) {
+      if (test(current)) return true;
+    }
+    return false;
+  }
+
+  ///
+  /// [till1ToN], [tillNToN]
+  /// [till1ToNBy], [tillNToNBy]
+  ///
+  bool till1ToN(PredicatorCombiner<I> test) => moveNextThen(() {
         var val = current;
         while (moveNext()) {
           if (test(val, current)) return true;
@@ -143,7 +141,7 @@ extension IteratorExtension<I> on Iterator<I> {
         return false;
       });
 
-  bool predicateNToN(PredicatorCombiner<I> test) => moveNextThen(() {
+  bool tillNToN(PredicatorCombiner<I> test) => moveNextThen(() {
         final list = <I>[current];
         while (moveNext()) {
           if (list.any((val) => test(val, current))) return true;
@@ -152,7 +150,7 @@ extension IteratorExtension<I> on Iterator<I> {
         return false;
       });
 
-  bool predicate1ToNBy<T>(
+  bool till1ToNBy<T>(
     Translator<I, T> toVal,
     PredicatorCombiner<T> test,
   ) =>
@@ -166,7 +164,7 @@ extension IteratorExtension<I> on Iterator<I> {
         return false;
       });
 
-  bool predicateNToNBy<T>(
+  bool tillNToNBy<T>(
     Translator<I, T> toVal,
     PredicatorCombiner<T> test,
   ) =>
@@ -180,7 +178,12 @@ extension IteratorExtension<I> on Iterator<I> {
         return false;
       });
 
-  bool predicate1ToNByFirst<T>(
+  ///
+  /// [till1ToNByFirst]
+  /// [tillNToNByGroupSet]
+  /// [tillNToNByGroup]
+  ///
+  bool till1ToNByFirst<T>(
     Translator<I, T> toVal,
     PredicatorCombiner<T> test,
   ) =>
@@ -191,6 +194,135 @@ extension IteratorExtension<I> on Iterator<I> {
         }
         return false;
       });
+
+  bool tillNToNByGroupSet<K, V>(
+    Translator<I, K> toKey,
+    Translator<I, V> toVal,
+    PredicatorFusionor<Map<K, Set<V>>, K, V> fusion,
+  ) =>
+      moveNextThen(() {
+        final map = <K, Set<V>>{
+          toKey(current): {toVal(current)}
+        };
+        while (moveNext()) {
+          if (fusion(map, toKey(current), toVal(current))) return true;
+        }
+        return false;
+      });
+
+  bool tillNToNByGroup<K, V>(
+    Translator<I, K> toKey,
+    Translator<I, V> toVal,
+    PredicatorFusionor<Map<K, V>, K, V> fusion,
+  ) =>
+      moveNextThen(() {
+        final map = <K, V>{toKey(current): toVal(current)};
+        while (moveNext()) {
+          if (fusion(map, toKey(current), toVal(current))) return true;
+        }
+        return false;
+      });
+
+  ///
+  /// [anyDifferent], [anyEqual]
+  /// [anyDifferentBy], [anyEqualBy]
+  ///
+  /// Instead of [IteratorExtension.tillNToN],
+  /// the reason why [anyDifferent], [anyDifferentBy] invoke [IteratorExtension.till1ToN]
+  /// is that when each elements passed by a [anyDifferent] call and not return true,
+  /// it indicates that the previous element is equal to current element.
+  /// it's redundant to check if the next element is equal to both of current element and previous element.
+  ///
+  bool get anyDifferent => till1ToN(FPredicatorCombiner.isNotEqual);
+
+  bool get anyEqual => tillNToN(FPredicatorCombiner.isEqual);
+
+  bool anyDifferentBy<T>(Translator<I, T> toId) =>
+      till1ToNBy(toId, FPredicatorCombiner.isNotEqual);
+
+  bool anyEqualBy<T>(Translator<I, T> toId) =>
+      tillNToNBy(toId, FPredicatorCombiner.isEqual);
+
+  ///
+  /// [anyDifferentByGroups], [anyEqualByGroups]
+  /// [anyDifferentByGroupsBool], [anyEqualByGroupsBool]
+  ///
+  /// sample 1:
+  ///   ```
+  ///   final list = <MapEntry<int, int>>[
+  ///       MapEntry(1, 20),
+  ///       MapEntry(1, 20),
+  ///       MapEntry(1, 30),
+  ///       MapEntry(2, 0),
+  ///   ];
+  ///   print(list.iterator.anyEqualByGroups(
+  ///     (value) => value.key,
+  ///     (value) => value.value,
+  ///   )); // true
+  ///   ```
+  ///   in the sample above, there are two group: group 1, group 2.
+  ///   the reason why [anyEqualByGroups] returns true is that
+  ///   group 1 elements--- {list[0].value, list[1].value, list[2].value}
+  ///   has same value--- list[0].value == list[1].value.
+  ///
+  /// sample 2:
+  ///   ```
+  ///   final list = <MapEntry<int, int>>[
+  ///       MapEntry(1, 20),
+  ///       MapEntry(1, 30),
+  ///       MapEntry(2, 30),
+  ///       MapEntry(3, 20),
+  ///   ];
+  ///   print(list.iterator.anyEqualByGroups(
+  ///     (value) => value.key,
+  ///     (value) => value.value,
+  ///   )); // false
+  ///   ```
+  ///   in the sample above, there are three group: group 1, group 2, group 3.
+  ///   the reason why [anyEqualByGroups] returns false is that
+  ///   each of the groups is identical on value
+  ///
+  /// the concept of [anyDifferentByGroups], [anyDifferentByGroupsBool], [anyEqualByGroupsBool]
+  /// are similar to [anyEqualByGroups].
+  ///
+
+  ///
+  bool anyDifferentByGroups<K, T>(
+    Translator<I, K> toKey,
+    Translator<I, T> toId,
+  ) =>
+      tillNToNByGroupSet<K, T>(
+        toKey,
+        toId,
+        FPredicatorFusionor.mapValueSetUpdateYet,
+      );
+
+  bool anyEqualByGroups<K, T>(Translator<I, K> toKey, Translator<I, T> toId) =>
+      tillNToNByGroupSet<K, T>(
+        toKey,
+        toId,
+        FPredicatorFusionor.mapValueSetUpdateExist,
+      );
+
+  bool anyDifferentByGroupsBool<K>(
+    Translator<I, K> toKey,
+    Translator<I, bool> toVal,
+  ) =>
+      tillNToNByGroup(
+        toKey,
+        toVal,
+        FPredicatorFusionor.mapValueBoolUpdateYet,
+      );
+
+  bool anyEqualByGroupsBool<K>(
+    Translator<I, K> toKey,
+    Translator<I, bool> toVal,
+  ) =>
+      tillNToNByGroup(
+        toKey,
+        toVal,
+        FPredicatorFusionor.mapValueBoolUpdateExist,
+      );
 
   ///
   /// first where
@@ -490,9 +622,8 @@ extension IteratorExtension<I> on Iterator<I> {
 
   ///
   /// [expand]
-  /// [expandByIndex]
-  /// [expandAccompany]
-  /// [expandTo]
+  /// [expandByIndex], [expandAccompany], [expandTo]
+  /// [expandWhere], [expandWhereTo]
   ///
   Iterable<I> expand(Translator<I, Iterable<I>> expanding) sync* {
     while (moveNext()) {
@@ -518,7 +649,26 @@ extension IteratorExtension<I> on Iterator<I> {
     }
   }
 
-  Iterable<T> expandTo<T>(Translator<I, Iterable<T>> expanding) sync* {
+  Iterable<S> expandTo<S>(Translator<I, Iterable<S>> expanding) sync* {
+    while (moveNext()) {
+      yield* expanding(current);
+    }
+  }
+
+  ///
+  Iterable<I> expandWhere(
+    Predicator<I> test,
+    Translator<I, Iterable<I>> expanding,
+  ) sync* {
+    while (moveNext()) {
+      yield* expanding(current);
+    }
+  }
+
+  Iterable<S> expandWhereTo<S>(
+    Predicator<I> test,
+    Translator<I, Iterable<S>> expanding,
+  ) sync* {
     while (moveNext()) {
       yield* expanding(current);
     }

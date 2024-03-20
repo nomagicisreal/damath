@@ -2,9 +2,9 @@
 ///
 /// this file contains:
 /// [FListener]
-/// [FPredicator], [FPredicatorCombiner]
+/// [FPredicator], [FPredicatorCombiner], [FPredicatorFusionor]
 /// [FMapper]
-/// [FGenerator], [FGeneratorOffset]
+/// [FGenerator]
 /// [FTranslator]
 /// [FReducer]
 /// [FCompanion]
@@ -122,6 +122,56 @@ extension FPredicatorCombiner on PredicatorCombiner {
 ///
 ///
 ///
+extension FPredicatorFusionor on PredicatorFusionor {
+
+  ///
+  /// [mapValueSetUpdateYet]
+  /// [mapValueSetUpdateNew]
+  /// [mapValueSetUpdateExist]
+  /// [mapValueSetUpdateKeep]
+  ///
+  // return true if not yet contained
+  static bool mapValueSetUpdateYet<K, V>(Map<K, Set<V>> map, K k, V v) =>
+      map.updateSet(k, v, false);
+
+  // return true if not yet contained or absent
+  static bool mapValueSetUpdateNew<K, V>(Map<K, Set<V>> map, K k, V v) =>
+      map.updateSet(k, v, true);
+
+  // return true if exist
+  static bool mapValueSetUpdateExist<K, V>(Map<K, Set<V>> map, K k, V v) =>
+      !map.updateSet(k, v, true);
+
+  // return true if exist or absent
+  static bool mapValueSetUpdateKeep<K, V>(Map<K, Set<V>> map, K k, V v) =>
+      !map.updateSet(k, v, false);
+
+  ///
+  /// [mapValueBoolUpdateYet]
+  /// [mapValueBoolUpdateNew]
+  /// [mapValueBoolUpdateExist]
+  /// [mapValueBoolUpdateKeep]
+  ///
+  // return true if not yet contained
+  static bool mapValueBoolUpdateYet<K>(Map<K, bool> map, K key, bool value) =>
+      map.updateBool(key, value, false);
+
+  // return true if not yet contained or absent
+  static bool mapValueBoolUpdateNew<K>(Map<K, bool> map, K key, bool value) =>
+      map.updateBool(key, value, true);
+
+  // return true if exist
+  static bool mapValueBoolUpdateExist<K>(Map<K, bool> map, K key, bool value) =>
+      !map.updateBool(key, value, true);
+
+  // return true if exist or absent
+  static bool mapValueBoolUpdateKeep<K>(Map<K, bool> map, K key, bool value) =>
+      !map.updateBool(key, value, false);
+}
+
+///
+///
+///
 ///
 ///
 /// mapper
@@ -165,7 +215,10 @@ extension FMapper on Mapper {
   static Mapper<double> doubleOnMultiply(double value) => (v) => v * value;
 
   static Mapper<double> doubleOnDivide(double value) => (v) => v / value;
-  static Mapper<double> doubleOnDivideToInt(double value) => (v) => (v ~/ value).toDouble();
+
+  static Mapper<double> doubleOnDivideToInt(double value) =>
+      (v) => (v ~/ value).toDouble();
+
   static Mapper<double> doubleOnModule(double value) => (v) => v % value;
 
   static Mapper<double> doubleOnOperate(Operator operator, double value) =>
@@ -291,7 +344,10 @@ extension FReducer<N> on Reducer<N> {
   static double doubleMultiply(double v1, double v2) => v1 * v2;
 
   static double doubleDivide(double v1, double v2) => v1 / v2;
-  static double doubleDivideToInt(double v1, double v2) => (v1 ~/ v2).toDouble();
+
+  static double doubleDivideToInt(double v1, double v2) =>
+      (v1 ~/ v2).toDouble();
+
   static double doubleModule(double v1, double v2) => v1 % v2;
 
   static double doubleAddSquared(double v1, double v2) => v1 * v1 + v2 * v2;

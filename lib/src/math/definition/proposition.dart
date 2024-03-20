@@ -8,13 +8,13 @@
 ///   [PropositionProduct]
 ///   [PropositionCompound]
 ///
-/// [TruthTable]
 ///
 ///
 ///
 ///
-///
-///
+/// [SetPropositionExtension]
+/// [SetPropositionProductExtension]
+/// [SetPropositionCompoundExtension]
 ///
 ///
 ///
@@ -140,6 +140,8 @@ sealed class PropositionComponent {
 
   PropositionComponent operator >>(PropositionComponent other) =>
       operate(other, Propositioner.dependence);
+
+  bool isConsistentWithin(Set<PropositionComponent> other);
 }
 
 ///
@@ -176,6 +178,10 @@ class Proposition extends PropositionComponent {
     Propositioner combine,
   ) =>
       PropositionProduct(this, combine, other);
+
+  @override
+  bool isConsistentWithin(covariant Set<Proposition> other) =>
+      other.isConsistent && {this, ...other}.isConsistent;
 }
 
 ///
@@ -224,6 +230,28 @@ class PropositionProduct extends PropositionComponent {
   ) =>
       PropositionCompound([p, q, other], [reduce, combine]);
 
+  @override
+  bool isConsistentWithin(covariant Set<PropositionProduct> other) {
+    if (!other.isConsistent) return false;
+    final p = this.p;
+    final q = this.q;
+    return {
+      p,
+      q,
+      ...other.iterator.expandWhereTo(
+        (product) =>
+            product.p == p ||
+            product.p == q ||
+            product.q == p ||
+            product.q == q,
+        (product) sync* {
+          yield product.p;
+          yield product.q;
+        },
+      )
+    }.isConsistent;
+  }
+
   PropositionProduct copyWith({
     Proposition? p,
     Proposition? q,
@@ -234,14 +262,36 @@ class PropositionProduct extends PropositionComponent {
 
 ///
 ///
-/// Proposition Complex
-/// [declarative], [value]
 /// [_components], [_operations]
+/// [declarative], [value]
+///
+/// [truthTable], [isTautology]
+///
+/// [forEachProposition], [forEachOperation]
+/// [update]
+/// [propositionsSet], [declarativesSet]
 ///
 class PropositionCompound extends PropositionComponent {
   final List<PropositionComponent> _components;
   final List<Propositioner> _operations;
 
+  PropositionCompound(this._components, this._operations)
+      : assert(() {
+          // every propositions having same 'declarative', must have same 'value'
+          final ps = _components.groupBy((p) => p.declarative).values;
+          for (var list in ps) {
+            if (list.iterator.anyDifferent) return false;
+          }
+
+          return _components.isFixed &&
+              _operations.isFixed &&
+              _operations.length + 1 == _components.length;
+        }());
+
+  ///
+  /// [declarative]
+  /// [value]
+  ///
   @override
   String get declarative => _components.iterator
       .reduceToInitialized(
@@ -260,6 +310,18 @@ class PropositionCompound extends PropositionComponent {
         _operations.iterator,
         (value, p, combine) => combine(value, p.value),
       );
+
+  @override
+  int get hashCode => declarative.hashCode;
+
+  @override
+  bool operator ==(covariant PropositionCompound other) =>
+      hashCode == other.hashCode;
+
+  ///
+  /// [truthTable]
+  /// [isTautology]
+  ///
 
   ///
   /// [truthTable] for example, let [declarativesSet] = {'sun rise', 'sky shine', 'stay high'}
@@ -283,18 +345,10 @@ class PropositionCompound extends PropositionComponent {
 
   bool get isTautology => truthTable.every(FMapper.keep);
 
-  PropositionCompound(this._components, this._operations)
-      : assert(() {
-          // every propositions having same 'declarative', must have same 'value'
-          final ps = _components.groupBy((p) => p.declarative).values;
-          for (var list in ps) {
-            if (list.anyDifferent) return false;
-          }
-
-          return _components.isFixed &&
-              _operations.isFixed &&
-              _operations.length + 1 == _components.length;
-        }());
+  ///
+  /// [toString]
+  /// [operate], ...
+  ///
 
   // static String diagramBatch(
   //   PropositionComponent component,
@@ -325,6 +379,19 @@ class PropositionCompound extends PropositionComponent {
     Propositioner combine,
   ) =>
       PropositionCompound([..._components, other], [..._operations, combine]);
+
+  @override
+  bool isConsistentWithin(covariant Set<PropositionCompound> other) {
+    if (!other.isConsistent) return false;
+    final set = propositionsSet;
+    return {
+      ...set,
+      ...other.iterator.expandWhereTo(
+        (value) => set.any((p) => value.propositionsSet.contains(p)),
+        (value) => value.propositionsSet,
+      ),
+    }.isConsistent;
+  }
 
   ///
   ///
@@ -428,3 +495,36 @@ class PropositionCompound extends PropositionComponent {
         (complex) => complex.declarativesSet,
       );
 }
+
+///
+///
+///
+///
+/// extensions
+///
+///
+///
+///
+///
+
+extension SetPropositionExtension on Set<Proposition> {
+  bool get isConsistent =>
+      iterator.anyDifferentByGroupsBool((p) => p.declarative, (p) => p.value);
+}
+
+extension SetPropositionProductExtension on Set<PropositionProduct> {
+  bool get isConsistent => iterator.fold<Set<Proposition>>(
+      {},
+      (set, value) => set
+        ..add(value.p)
+        ..add(value.q)).isConsistent;
+}
+
+extension SetPropositionCompoundExtension on Set<PropositionCompound> {
+  bool get isConsistent => iterator.fold<Set<Proposition>>(
+        {},
+        (set, compound) => set..addAll(compound.propositionsSet),
+      ).isConsistent;
+}
+
+

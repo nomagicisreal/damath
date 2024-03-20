@@ -241,7 +241,7 @@ abstract class TensorMatrix<T, V extends TensorVector<T>>
   ///
   TensorMatrix(super.value)
       : assert(
-          value.everyEqualBy((list) => list.length),
+          !value.iterator.anyDifferentBy((list) => list.length),
           _assertionMessage(value.mapToList((value) => value.length)),
         );
 

@@ -6,7 +6,7 @@
 ///
 /// [IterableExtension]
 /// [IterableIntExtension], [IterableDoubleExtension]
-/// [IterableIterableExtension], [IterableSetExtension]
+/// [IterableIterableExtension]
 ///
 ///
 /// about graph:
@@ -19,20 +19,18 @@ part of damath_math;
 
 ///
 /// static methods:
-/// [generateFrom], ...
 /// [fill], ...
+/// [generateFrom], ...
 ///
 /// instance getter and methods
-/// [notContains], ...
-/// [containsThen], ...
-/// [anyEqual]
-/// [everyEqual], ...
+/// [isVariantTo], ...
+/// [anyElementWith], ...
+/// [everyElementsWith], ...
+/// [append], ...
 ///
 /// [foldWith], ...
 /// [reduceWith], ...
 /// [expandWith], ...
-///
-/// [flat], ...
 ///
 /// [intersection], ...
 /// [difference], ...
@@ -46,8 +44,12 @@ extension IterableExtension<I> on Iterable<I> {
   static int toLength<I>(Iterable<I> iterable) => iterable.length;
 
   ///
+  /// [fill]
   /// [generateFrom]
   ///
+  static Iterable<I> fill<I>(int count, I value) =>
+      Iterable.generate(count, FGenerator.fill(value));
+
   static Iterable<I> generateFrom<I>(
     int count, [
     Generator<I>? generator,
@@ -61,48 +63,10 @@ extension IterableExtension<I> on Iterable<I> {
   }
 
   ///
-  /// [fill]
-  ///
-  static Iterable<I> fill<I>(int count, I value) =>
-      Iterable.generate(count, FGenerator.fill(value));
-
-  ///
   /// [isVariantTo]
   ///
   bool isVariantTo(Iterable<I> another) =>
       length == another.length && iterator.containsAll(another.iterator);
-
-  ///
-  /// any, every
-  /// [anyEqual], [anyDifferent], [anyDifferentBy]
-  /// [anyElementWith], [anyElementIsEqualWith], [anyElementIsDifferentWith]
-  /// [everyEqual], [everyDifferent], [everyDifferentBy]
-  /// [everyElementsWith], [everyElementsAreEqualWith], [everyElementsAreDifferentWith]
-  ///
-  ///
-
-  ///
-  /// [anyEqual]
-  /// [anyDifferent]
-  /// [anyDifferentBy]
-  /// [anyEqualBy]
-  ///
-  /// Instead of [IteratorExtension.predicateNToN],
-  /// the reason why [anyDifferent], [anyDifferentBy] invoke [IteratorExtension.predicate1ToN]
-  /// is that when each elements passed by a [anyDifferent] call and not return true,
-  /// it indicates that the previous element is equal to current element.
-  /// it's redundant to check if the next element is equal to both of current element and previous element.
-  ///
-  bool get anyDifferent =>
-      iterator.predicate1ToN(FPredicatorCombiner.isNotEqual);
-
-  bool get anyEqual => iterator.predicateNToN(FPredicatorCombiner.isEqual);
-
-  bool anyDifferentBy<T>(Translator<I, T> toId) =>
-      iterator.predicate1ToNBy(toId, FPredicatorCombiner.isNotEqual);
-
-  bool anyEqualBy<T>(Translator<I, T> toId) =>
-      !iterator.predicateNToNBy(toId, FPredicatorCombiner.isEqual);
 
   ///
   /// [anyElementWith]
@@ -121,18 +85,10 @@ extension IterableExtension<I> on Iterable<I> {
       anyElementWith(another, FPredicatorCombiner.isNotEqual);
 
   ///
-  /// [everyDifferent], [everyEqual]
-  /// [everyDifferentBy], [everyEqualBy]
-  /// [everyElementsWith], [everyElementsAreEqualWith], [everyElementsAreDifferentWith]
+  /// [everyElementsWith]
+  /// [everyElementsAreEqualWith]
+  /// [everyElementsAreDifferentWith]
   ///
-  bool get everyDifferent => !anyEqual;
-
-  bool get everyEqual => !anyDifferent;
-
-  bool everyDifferentBy<T>(Translator<I, T> toId) => !anyEqualBy(toId);
-
-  bool everyEqualBy<T>(Translator<I, T> toId) => !anyDifferentBy(toId);
-
   bool everyElementsWith<P>(Iterable<P> another, PredicatorMixer<I, P> test) {
     assert(length == another.length);
     return iterator.interEvery(another.iterator, test);
@@ -143,6 +99,20 @@ extension IterableExtension<I> on Iterable<I> {
 
   bool everyElementsAreDifferentWith(Iterable<I> another) =>
       !anyElementIsEqualWith(another);
+
+  ///
+  /// append
+  /// [append], [appendIterable]
+  ///
+  Iterable<I> append(I value) sync* {
+    yield* this;
+    yield value;
+  }
+
+  Iterable<I> appendIterable(Iterable<I> other) sync* {
+    yield* this;
+    yield* other;
+  }
 
   ///
   ///
@@ -356,10 +326,23 @@ extension IterableExtension<I> on Iterable<I> {
 }
 
 ///
-/// [sum]
+/// static methods:
+/// [sequence], ...
+///
+/// instance methods:
+/// [sum], ...
 ///
 extension IterableIntExtension on Iterable<int> {
-  int get sum => iterator.reduce(FReducer.intAdd);
+  static Iterable<int> sequence(int length, [int start = 1]) =>
+      Iterable.generate(length, (i) => start + i);
+
+  static Iterable<int> seq(int begin, int end) sync* {
+    for (var i = begin; i <= end; i++) {
+      yield i;
+    }
+  }
+
+  int get sum => reduce(FReducer.intAdd);
 }
 
 ///
@@ -423,17 +406,6 @@ extension IterableIterableExtension<I> on Iterable<Iterable<I>> {
       (value, e, eAnother) => value = e.foldWith(eAnother, value, fusionor),
     );
   }
-}
-
-///
-/// [merged]
-/// [forEachWithAddAll]
-///
-extension IterableSetExtension<I> on Iterable<Set<I>> {
-  Set<I> get merged => reduce((a, b) => a..addAll(b));
-
-  void forEachWithAddAll(List<Set<I>> another) =>
-      iterator.inter(another.iterator, (a, b) => a..addAll(b));
 }
 
 ///

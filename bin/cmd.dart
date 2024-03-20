@@ -16,7 +16,27 @@ void main(List<String> arguments) {
   // final result = (pF | -qF) > (pF & qF);
   // print(result);
 
-  final list = [1, 3, 1, 2, 6, 10, -1, 8];
-  print((1, 2) == (1, 2));
-  print(list.iterator.cumulativeWhere((value) => value.isOdd));
+  // final list = [1, 3, 1, 2, 6, 10, -1, 8];
+  // print((1, 2) == (1, 2));
+  // print(list.iterator.cumulativeWhere((value) => value.isOdd));
+
+  // final sets = <String, Set<int>>{
+  //   'A': {1, 2},
+  //   'B': {3, 4},
+  //   'C': {1, 4},
+  // };
+  // print(sets.updateSet('A', 5));
+  // print(sets.updateSet('B', 4));
+  // print(sets);
+
+  final list = <MapEntry<int, int>>[
+    MapEntry(1, 20),
+    MapEntry(1, 30),
+    MapEntry(2, 30),
+    MapEntry(3, 20),
+  ];
+  print(list.iterator.anyEqualByGroups(
+    (value) => value.value,
+    (value) => value.key,
+  ));
 }

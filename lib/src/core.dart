@@ -26,6 +26,7 @@
 typedef Listener = void Function();
 typedef Supplier<T> = T Function();
 typedef Consumer<T> = void Function(T value);
+typedef Absorber<T> = void Function(T v1, T v2);
 typedef Intersector<A, B> = void Function(A a, B b);
 typedef Mapper<T> = T Function(T value);
 typedef Reducer<T> = T Function(T current, T value);
@@ -56,6 +57,7 @@ typedef Sequencer<R, S, I> = Translator<int, R> Function(
 typedef Predicator<T> = bool Function(T value);
 typedef PredicatorCombiner<T> = bool Function(T v1, T v2);
 typedef PredicatorMixer<A, B> = bool Function(A a, B b);
+typedef PredicatorFusionor<O, P, Q> = bool Function(O o, P p, Q q);
 typedef Checker<T> = bool Function(int index, T value);
 
 ///
