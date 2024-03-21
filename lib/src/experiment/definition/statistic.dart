@@ -3,7 +3,7 @@
 /// this file contains:
 ///
 ///
-part of damath_math;
+part of damath_experiment;
 
 abstract interface class Statistics {
   const Statistics();

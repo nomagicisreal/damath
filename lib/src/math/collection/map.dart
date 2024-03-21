@@ -23,9 +23,8 @@ part of damath_math;
 /// [notContainsKey], ...
 /// [putIfAbsentWhen], ...
 ///
-/// [any], ...
-/// [every], ...
 /// [join], ...
+/// [any], ...
 /// [fold], ...
 /// [reduce], ...
 /// [mapKeys], ...
@@ -34,7 +33,7 @@ part of damath_math;
 /// [addAllDifference],
 /// [removeDifference], [removeIntersection]
 /// [updateDifference], [updateIntersection]
-/// [mergeAs]
+/// [migrateInto]
 ///
 extension MapExtension<K, V> on Map<K, V> {
   ///
@@ -98,10 +97,13 @@ extension MapExtension<K, V> on Map<K, V> {
   }
 
   ///
+  /// [putIfAbsentWhen]
   /// [putIfAbsentOr]
   /// [putIfAbsentThen]
-  /// [putIfAbsentWhen]
   ///
+  void putIfAbsentWhen(bool shouldPut, K key, Supplier<V> ifAbsent) =>
+      shouldPut ? putIfAbsent(key, ifAbsent) : null;
+
   void putIfAbsentOr(K key, Supplier<V> ifAbsent, Consumer<V> ifExist) {
     final value = this[key];
     value == null ? this[key] = ifAbsent() : ifExist(value);
@@ -121,9 +123,6 @@ extension MapExtension<K, V> on Map<K, V> {
       return ifExistThen(value);
     }
   }
-
-  void putIfAbsentWhen(bool shouldPut, K key, Supplier<V> ifAbsent) =>
-      shouldPut ? putIfAbsent(key, ifAbsent) : null;
 
   ///
   /// [updateThen]
@@ -167,25 +166,6 @@ extension MapExtension<K, V> on Map<K, V> {
   }
 
   ///
-  /// [any]
-  /// [anyKeys], [anyValues]
-  ///
-  /// [every]
-  /// [everyKeys], [everyValues]
-  ///
-  bool any(Predicator<MapEntry<K, V>> test) => entries.any(test);
-
-  bool anyKeys(Predicator<K> test) => keys.any(test);
-
-  bool anyValues(Predicator<V> test) => values.any(test);
-
-  bool every(Predicator<MapEntry<K, V>> test) => entries.every(test);
-
-  bool everyKeys(Predicator<K> test) => keys.every(test);
-
-  bool everyValues(Predicator<V> test) => values.every(test);
-
-  ///
   /// [join]
   /// [joinKeys]
   /// [joinValues]
@@ -198,13 +178,23 @@ extension MapExtension<K, V> on Map<K, V> {
   String joinValues([String separator = ', ']) => values.join(separator);
 
   ///
+  /// [any]
+  /// [anyKeys], [anyValues]
+  ///
+  bool any(Predicator<MapEntry<K, V>> test) => entries.any(test);
+
+  bool anyKeys(Predicator<K> test) => keys.any(test);
+
+  bool anyValues(Predicator<V> test) => values.any(test);
+
+  ///
   /// fold, reduce
   /// [fold], [foldKeys], [foldValues]
   /// [foldByIndex]
   ///
-  /// [reduceKeys], [reduceValues]
-  /// [reduceTo]
-  ///
+  /// [reduce], [reduceKeys], [reduceValues]
+  /// [reduceByIndex]
+  /// [reduceTo], [reduceToByIndex], [reduceToByIndexInitialized]
   ///
 
   ///
@@ -227,19 +217,13 @@ extension MapExtension<K, V> on Map<K, V> {
     T initialValue,
     CompanionGenerator<T, MapEntry<K, V>> companion, [
     int start = 0,
-  ]) {
-    var index = start - 1;
-    return entries.fold<T>(
-      initialValue,
-      (previousValue, element) => companion(previousValue, element, ++index),
-    );
-  }
+  ]) =>
+      entries.iterator.foldByIndex(initialValue, companion, start);
 
   ///
-  /// [reduce]
-  /// [reduceTo]
-  /// [reduceKeys]
-  /// [reduceValues]
+  /// [reduce], [reduceKeys], [reduceValues]
+  /// [reduceByIndex]
+  /// [reduceTo], [reduceToByIndex], [reduceToByIndexInitialized]
   ///
   MapEntry<K, V> reduce(Reducer<MapEntry<K, V>> reducing) =>
       entries.reduce(reducing);
@@ -248,8 +232,28 @@ extension MapExtension<K, V> on Map<K, V> {
 
   V reduceValues(Reducer<V> reducing) => values.reduce(reducing);
 
+  MapEntry<K, V> reduceByIndex(
+    ReducerGenerator<MapEntry<K, V>> reducing, [
+    int start = 0,
+  ]) =>
+      entries.iterator.reduceByIndex(reducing, start);
+
   S reduceTo<S>(Translator<MapEntry<K, V>, S> toVal, Reducer<S> reducer) =>
       entries.iterator.reduceTo(toVal, reducer);
+
+  S reduceToByIndex<S>(
+    Translator<MapEntry<K, V>, S> toVal,
+    ReducerGenerator<S> reducing, [
+    int start = 0,
+  ]) =>
+      entries.iterator.reduceToByIndex(toVal, reducing, start);
+
+  S reduceToByIndexInitialized<S>(
+    Translator<MapEntry<K, V>, S> toVal,
+    CompanionGenerator<S, MapEntry<K, V>> reducing, [
+    int start = 0,
+  ]) =>
+      entries.iterator.reduceToInitializedByIndex(toVal, reducing, start);
 
   ///
   /// [mapKeys]
@@ -294,20 +298,22 @@ extension MapExtension<K, V> on Map<K, V> {
       updateFrom(keysDifferenceWith(keys), updating);
 
   ///
-  /// [mergeAs]
+  /// [migrateInto]
   ///
-  Iterable<V> mergeAs(
+  Iterable<V> migrateInto(
     Set<K> keys,
-    Translator<K, V> valuing, {
+    Translator<K, V> valuing, [
     Companion<V, K>? update,
-  }) sync* {
+  ]) sync* {
     yield* removeFrom(keysDifferenceWith(keys));
     yield* updateFrom(keysIntersectionWith(keys), update ?? FCompanion.keep);
     addAllDifference(keys, valuing);
   }
 }
 
-// entry
+///
+/// entry
+///
 extension MapEntryExtension<K, V> on MapEntry<K, V> {
   MapEntry<V, K> get reversed => MapEntry(value, key);
 
@@ -315,33 +321,17 @@ extension MapEntryExtension<K, V> on MapEntry<K, V> {
 }
 
 ///
-/// [keys], ...
-///
-/// [anyKeys], ...
+/// iterable entry
 ///
 extension MapEntryIterableExtension<K, V> on Iterable<MapEntry<K, V>> {
   ///
-  /// [keys]
-  /// [values]
-  /// [toMap]
+  /// [toMap], [keys], [values]
   ///
+  Map<K, V> get toMap => Map.fromEntries(this);
   Iterable<K> get keys => map((e) => e.key);
 
   Iterable<V> get values => map((e) => e.value);
 
-  Map<K, V> get toMap => Map.fromEntries(this);
-
-  ///
-  /// [anyKeys], [anyValues]
-  /// [everyKeys], [everyValues]
-  ///
-  bool anyKeys(Predicator<K> test) => any((e) => test(e.key));
-
-  bool anyValues(Predicator<V> test) => any((e) => test(e.value));
-
-  bool everyKeys(Predicator<K> test) => every((e) => test(e.key));
-
-  bool everyValues(Predicator<V> test) => every((e) => test(e.value));
 }
 
 ///

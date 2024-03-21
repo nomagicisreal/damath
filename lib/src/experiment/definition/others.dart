@@ -2,11 +2,12 @@
 ///
 /// this file contains:
 ///
+///
+/// [Radian]
+///
 /// [Space2]
 /// [Space3]
 /// [Space3Radian]
-///
-/// [Vector3D]
 ///
 /// [Direction]
 ///   [Direction2D]
@@ -23,30 +24,185 @@
 ///
 ///
 ///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
+part of damath_experiment;
 // ignore_for_file: constant_identifier_names
-part of damath_math;
+
+///
+/// normally, 'positive radian' means counterclockwise in mathematical discussion,
+/// but means clockwise for flutter [Transform] widget and [Offset.direction], [Matrix4] class...
+/// See also [Direction], and the comment above [Coordinate.fromDirection]
+///
+/// [angle_001], [angle_01], ...
+/// [radianFromAngle], [radianFromRound], ...
+/// [complementaryOf], [supplementaryOf], ...
+///
+/// [ifWithinAngle90_90N], [ifOverAngle90_90N], ...
+/// [ifInQuadrant1], [ifInQuadrant2], [ifInQuadrant3], [ifInQuadrant4]
+/// [ifOnRight], [ifOnLeft], [ifOnTop], [ifOnBottom]
+///
+class Radian {
+  final double value;
+
+  const Radian(this.value);
+
+  Radian.fromAngle(double angle) : value = radianFromAngle(angle);
+
+  Radian.fromRound(double round) : value = radianFromAngle(round);
+
+  static const angle_001 = angle_1 * 0.01;
+  static const angle_01 = angle_1 * 0.1;
+  static const angle_1 = math.pi / 180;
+  static const angle_5 = math.pi / 36;
+  static const angle_10 = math.pi / 18;
+  static const angle_15 = math.pi / 12;
+  static const angle_20 = math.pi / 9;
+  static const angle_30 = math.pi / 6;
+  static const angle_40 = math.pi * 2 / 9;
+  static const angle_45 = math.pi / 4;
+  static const angle_50 = math.pi * 5 / 18;
+  static const angle_60 = math.pi / 3;
+  static const angle_70 = math.pi * 7 / 18;
+  static const angle_75 = math.pi * 5 / 12;
+  static const angle_80 = math.pi * 4 / 9;
+  static const angle_85 = math.pi * 17 / 36;
+  static const angle_90 = math.pi / 2;
+  static const angle_120 = math.pi * 2 / 3;
+  static const angle_135 = math.pi * 3 / 4;
+  static const angle_150 = math.pi * 5 / 6;
+  static const angle_180 = math.pi;
+  static const angle_225 = math.pi * 5 / 4;
+  static const angle_240 = math.pi * 4 / 3;
+  static const angle_270 = math.pi * 3 / 2;
+  static const angle_315 = math.pi * 7 / 4;
+  static const angle_360 = math.pi * 2;
+  static const angle_390 = math.pi * 13 / 6;
+  static const angle_420 = math.pi * 7 / 3;
+  static const angle_450 = math.pi * 5 / 2;
+
+  static double radianFromAngle(double angle) => angle * Radian.angle_1;
+
+  static double radianFromRound(double round) => round * Radian.angle_360;
+
+  static double angleOf(double radian) => radian / Radian.angle_1;
+
+  static double roundOf(double radian) => radian / Radian.angle_360;
+
+  static double modulus90AngleOf(double radian) => radian % Radian.angle_90;
+
+  static double modulus180AngleOf(double radian) => radian % Radian.angle_180;
+
+  static double modulus360AngleOf(double radian) => radian % Radian.angle_360;
+
+  ///
+  /// [complementaryOf], [supplementaryOf], [restrict180AbsForAngle]
+  ///
+  static double complementaryOf(double radian) {
+    assert(radian.rangeIn(0, Radian.angle_90));
+    return radianFromAngle(90 - angleOf(radian));
+  }
+
+  static double supplementaryOf(double radian) {
+    assert(radian.rangeIn(0, Radian.angle_180));
+    return radianFromAngle(180 - angleOf(radian));
+  }
+
+  static double restrict180AbsForAngle(double angle) {
+    final r = angle % 360;
+    return r >= Radian.angle_180 ? r - Radian.angle_360 : r;
+  }
+
+  ///
+  /// [ifWithinAngle90_90N], [ifOverAngle90_90N], [ifWithinAngle0_180], [ifWithinAngle0_180N]
+  ///
+  static bool ifWithinAngle90_90N(double radian) =>
+      radian.abs() < Radian.angle_90;
+
+  static bool ifOverAngle90_90N(double radian) =>
+      radian.abs() > Radian.angle_90;
+
+  static bool ifWithinAngle0_180(double radian) =>
+      radian > 0 && radian < Radian.angle_180;
+
+  static bool ifWithinAngle0_180N(double radian) =>
+      radian > -Radian.angle_180 && radian < 0;
+
+  ///
+  /// [ifInQuadrant1], [ifInQuadrant2], [ifInQuadrant3], [ifInQuadrant4]
+  ///
+  static bool ifInQuadrant1(double radian, {bool isInMathDiscussion = false}) {
+    final r = modulus360AngleOf(radian);
+    return isInMathDiscussion
+        ? r.within(0, Radian.angle_90) ||
+        r.within(-Radian.angle_360, -Radian.angle_270)
+        : r.within(Radian.angle_270, Radian.angle_360) ||
+        r.within(-Radian.angle_90, 0);
+  }
+
+  static bool ifInQuadrant2(double radian, {bool isInMathDiscussion = false}) {
+    final r = modulus360AngleOf(radian);
+    return isInMathDiscussion
+        ? r.within(Radian.angle_90, Radian.angle_180) ||
+        r.within(-Radian.angle_270, -Radian.angle_180)
+        : r.within(Radian.angle_180, Radian.angle_270) ||
+        r.within(-Radian.angle_180, -Radian.angle_90);
+  }
+
+  static bool ifInQuadrant3(double radian, {bool isInMathDiscussion = false}) {
+    final r = modulus360AngleOf(radian);
+    return isInMathDiscussion
+        ? r.within(Radian.angle_180, Radian.angle_270) ||
+        r.within(-Radian.angle_180, -Radian.angle_90)
+        : r.within(Radian.angle_90, Radian.angle_180) ||
+        r.within(-Radian.angle_270, -Radian.angle_180);
+  }
+
+  static bool ifInQuadrant4(double radian, {bool isInMathDiscussion = false}) {
+    final r = modulus360AngleOf(radian);
+    return isInMathDiscussion
+        ? r.within(Radian.angle_270, Radian.angle_360) ||
+        r.within(-Radian.angle_90, 0)
+        : r.within(0, Radian.angle_90) ||
+        r.within(-Radian.angle_360, -Radian.angle_270);
+  }
+
+  ///
+  /// [ifOnRight], [ifOnLeft], [ifOnTop], [ifOnBottom]
+  /// 'right' and 'left' are the same no matter in dart or in math
+  ///
+  static bool ifOnRight(double radian) =>
+      ifWithinAngle90_90N(modulus360AngleOf(radian));
+
+  static bool ifOnLeft(double radian) =>
+      ifOverAngle90_90N(modulus360AngleOf(radian));
+
+  static bool ifOnTop(double radian, {bool isInMathDiscussion = false}) {
+    final r = modulus360AngleOf(radian);
+    return isInMathDiscussion ? ifWithinAngle0_180(r) : ifWithinAngle0_180N(r);
+  }
+
+  static bool ifOnBottom(
+      double radian, {
+        bool isInMathDiscussion = false,
+      }) {
+    final r = modulus360AngleOf(radian);
+    return isInMathDiscussion ? ifWithinAngle0_180N(r) : ifWithinAngle0_180(r);
+  }
+}
 
 ///
 ///
 ///
 /// [Space2]
-///
+/// [Space3]
+/// [Space3Radian]
 ///
 ///
 
-//
+///
+///
+/// [dx], [dy]
+///
+///
 class Space2 {
   final double dx;
   final double dy;
@@ -106,15 +262,6 @@ class Space2 {
   double angleTo(Space2 other) =>
       Radian.angleOf(other.direction - direction).roundToDouble();
 }
-
-///
-///
-///
-/// [Space3]
-///
-///
-///
-
 ///
 /// [dz]
 /// [isNot3D], [isNegative]
@@ -153,10 +300,10 @@ class Space3 extends Space2 {
   Space3 get retainXZAsYX => Space3(dz, dx, 0);
 
   Space3 get roundup => Space3(
-        dx.roundToDouble(),
-        dy.roundToDouble(),
-        dz.roundToDouble(),
-      );
+    dx.roundToDouble(),
+    dy.roundToDouble(),
+    dz.roundToDouble(),
+  );
 
   Space3 get abs => Space3(dx.abs(), dy.abs(), dz.abs());
 
@@ -192,31 +339,31 @@ class Space3 extends Space2 {
 
   @override
   Space3 operator *(double operand) => Space3(
-        dx * operand,
-        dy * operand,
-        dz * operand,
-      );
+    dx * operand,
+    dy * operand,
+    dz * operand,
+  );
 
   @override
   Space3 operator /(double operand) => Space3(
-        dx / operand,
-        dy / operand,
-        dz / operand,
-      );
+    dx / operand,
+    dy / operand,
+    dz / operand,
+  );
 
   @override
   Space3 operator ~/(double operand) => Space3(
-        (dx ~/ operand).toDouble(),
-        (dy ~/ operand).toDouble(),
-        (dz ~/ operand).toDouble(),
-      );
+    (dx ~/ operand).toDouble(),
+    (dy ~/ operand).toDouble(),
+    (dz ~/ operand).toDouble(),
+  );
 
   @override
   Space3 operator %(double operand) => Space3(
-        dx % operand,
-        dy % operand,
-        dz % operand,
-      );
+    dx % operand,
+    dy % operand,
+    dz % operand,
+  );
 
   @override
   bool operator <(covariant Space3 other) => dz < other.dz && (super < other);
@@ -241,10 +388,10 @@ class Space3 extends Space2 {
 
   @override
   Space3 scale(
-    double scaleX,
-    double scaleY, {
-    double scaleZ = 0,
-  }) =>
+      double scaleX,
+      double scaleY, {
+        double scaleZ = 0,
+      }) =>
       Space3(dx * scaleX, dy * scaleY, dz * scaleZ);
 
   Space3 scaleCoordinate(Space3 scale) =>
@@ -252,10 +399,10 @@ class Space3 extends Space2 {
 
   @override
   Space3 translate(
-    double translateX,
-    double translateY, {
-    double translateZ = 0,
-  }) =>
+      double translateX,
+      double translateY, {
+        double translateZ = 0,
+      }) =>
       Space3(dx + translateX, dy + translateY, dz + translateZ);
 
   Space3 rotate(Space3Radian direction) =>
@@ -298,9 +445,9 @@ class Space3 extends Space2 {
         super(value, 0);
 
   //
-  Space3.fromCoordinate2D(Space2 Coordinate2D)
+  Space3.fromCoordinate2D(Space2 space2)
       : dz = 0,
-        super(Coordinate2D.dx, Coordinate2D.dy);
+        super(space2.dx, space2.dy);
 
   static const Space3 zero = Space3.cube(0);
   static const Space3 one = Space3.cube(1);
@@ -348,13 +495,6 @@ class Space3 extends Space2 {
       a.distance > b.distance ? a : b;
 }
 
-///
-///
-///
-/// [Space3Radian]
-///
-///
-///
 
 ///
 ///
@@ -399,43 +539,43 @@ class Space3Radian extends Space3 {
   /// getters
   ///
   Space3Radian get modulus90Angle => Space3Radian(
-        Radian.modulus90AngleOf(dx),
-        Radian.modulus90AngleOf(dy),
-        Radian.modulus90AngleOf(dz),
-      );
+    Radian.modulus90AngleOf(dx),
+    Radian.modulus90AngleOf(dy),
+    Radian.modulus90AngleOf(dz),
+  );
 
   Space3Radian get modulus180Angle => Space3Radian(
-        Radian.modulus180AngleOf(dx),
-        Radian.modulus180AngleOf(dy),
-        Radian.modulus180AngleOf(dz),
-      );
+    Radian.modulus180AngleOf(dx),
+    Radian.modulus180AngleOf(dy),
+    Radian.modulus180AngleOf(dz),
+  );
 
   Space3Radian get modulus360Angle => Space3Radian(
-        Radian.modulus360AngleOf(dx),
-        Radian.modulus360AngleOf(dy),
-        Radian.modulus360AngleOf(dz),
-      );
+    Radian.modulus360AngleOf(dx),
+    Radian.modulus360AngleOf(dy),
+    Radian.modulus360AngleOf(dz),
+  );
 
   Space3Radian get restrict180AbsAngle => Space3Radian(
-        Radian.restrict180AbsForAngle(dx),
-        Radian.restrict180AbsForAngle(dy),
-        Radian.restrict180AbsForAngle(dz),
-      );
+    Radian.restrict180AbsForAngle(dx),
+    Radian.restrict180AbsForAngle(dy),
+    Radian.restrict180AbsForAngle(dz),
+  );
 
   ///
   /// [complementary], [supplementary]
   ///
   Space3Radian get complementary => Space3Radian(
-        Radian.complementaryOf(dx),
-        Radian.complementaryOf(dy),
-        Radian.complementaryOf(dz),
-      );
+    Radian.complementaryOf(dx),
+    Radian.complementaryOf(dy),
+    Radian.complementaryOf(dz),
+  );
 
   Space3Radian get supplementary => Space3Radian(
-        Radian.supplementaryOf(dx),
-        Radian.supplementaryOf(dy),
-        Radian.supplementaryOf(dz),
-      );
+    Radian.supplementaryOf(dx),
+    Radian.supplementaryOf(dy),
+    Radian.supplementaryOf(dz),
+  );
 
   Space3 get toAngle =>
       Space3(Radian.angleOf(dx), Radian.angleOf(dy), Radian.angleOf(dz));
@@ -510,65 +650,23 @@ class Space3Radian extends Space3 {
   static const angleZ_01 = Space3Radian.ofZ(Radian.angle_01);
   static const angleXYZ_01 = Space3Radian.circle(Radian.angle_01);
   static const angleXY_01 = Space3Radian.ofXY(Radian.angle_01);
-
-  List<Direction3DIn6> get visibleFaces {
-    throw UnimplementedError();
-  }
 }
 
-///
-///
-///
-/// [Vector3D]
-///
-///
-///
-
-//
-class Vector3D {
-  final Space3Radian direction;
-  final double distance;
-
-  const Vector3D(this.direction, this.distance);
-
-  Space2 get toCoordinate2D => Space2.fromDirection(-direction.dy, distance);
-
-  Space3 get toCoordinate => Space3.fromDirection(
-        direction,
-        distance,
-      );
-
-  Vector3D rotated(Space3Radian d) => Vector3D(direction + d, distance);
-
-  @override
-  String toString() => "Vector($direction, $distance)";
-
-  static Vector3D lerp(Vector3D begin, Vector3D end, double t) => Vector3D(
-        begin.direction + (end.direction - begin.direction) * t,
-        begin.distance + (end.distance - begin.distance) * t,
-      );
-
-  static Translator<double, Vector3D> lerpOf(Vector3D begin, Vector3D end) {
-    final direction = end.direction - begin.direction;
-    final distance = end.distance - begin.distance;
-    final directionOf = FMapper.lerp<Space3Radian>(
-      begin.direction,
-      end.direction,
-      (t) => direction * t,
-    );
-    final distanceOf = FMapper.lerp<double>(
-      begin.distance,
-      end.distance,
-      (t) => distance * t,
-    );
-    return (t) => Vector3D(directionOf(t), distanceOf(t));
-  }
-}
 
 ///
 ///
+/// [Direction]
+///   [Direction2D]
+///     [Direction2DIn4]
+///     [Direction2DIn8]
+///   [Direction3D]
+///     [Direction3DIn6]
+///     [Direction3DIn14]
 ///
-/// [Direction], ...
+///
+
+///
+///
 ///
 /// [Direction3DIn6] and "dart direction" ([Transform], [Matrix4], [Space2] direction) are different.
 /// The radian discussion here, follows these rules:
@@ -582,11 +680,7 @@ class Vector3D {
 ///
 /// See Also:
 ///   * [KRadian]
-///   * [Space3.transferToTransformOf], [Coordinate.fromDirection]
 ///
-///
-///
-
 ///
 ///
 sealed class Direction<D> {
@@ -631,11 +725,11 @@ enum Direction2DIn4 implements Direction2D<Direction2DIn4> {
 
   @override
   Direction2DIn4 get flipped => switch (this) {
-        Direction2DIn4.left => Direction2DIn4.right,
-        Direction2DIn4.right => Direction2DIn4.left,
-        Direction2DIn4.top => Direction2DIn4.top,
-        Direction2DIn4.bottom => Direction2DIn4.bottom,
-      };
+    Direction2DIn4.left => Direction2DIn4.right,
+    Direction2DIn4.right => Direction2DIn4.left,
+    Direction2DIn4.top => Direction2DIn4.top,
+    Direction2DIn4.bottom => Direction2DIn4.bottom,
+  };
 
   @override
   Space2 get toSpace2 => toDirection8.toSpace2;
@@ -644,11 +738,11 @@ enum Direction2DIn4 implements Direction2D<Direction2DIn4> {
   Space3 get toSpace3 => toDirection8.toSpace3;
 
   Direction2DIn8 get toDirection8 => switch (this) {
-        Direction2DIn4.left => Direction2DIn8.left,
-        Direction2DIn4.top => Direction2DIn8.top,
-        Direction2DIn4.right => Direction2DIn8.right,
-        Direction2DIn4.bottom => Direction2DIn8.bottom,
-      };
+    Direction2DIn4.left => Direction2DIn8.left,
+    Direction2DIn4.top => Direction2DIn8.top,
+    Direction2DIn4.right => Direction2DIn8.right,
+    Direction2DIn4.bottom => Direction2DIn8.bottom,
+  };
 }
 
 ///
@@ -668,52 +762,52 @@ enum Direction2DIn8 implements Direction2D<Direction2DIn8> {
 
   @override
   Direction2DIn8 get flipped => switch (this) {
-        top => Direction2DIn8.bottom,
-        left => Direction2DIn8.right,
-        right => Direction2DIn8.left,
-        bottom => Direction2DIn8.top,
-        topLeft => Direction2DIn8.bottomRight,
-        topRight => Direction2DIn8.bottomLeft,
-        bottomLeft => Direction2DIn8.topRight,
-        bottomRight => Direction2DIn8.topLeft,
-      };
+    top => Direction2DIn8.bottom,
+    left => Direction2DIn8.right,
+    right => Direction2DIn8.left,
+    bottom => Direction2DIn8.top,
+    topLeft => Direction2DIn8.bottomRight,
+    topRight => Direction2DIn8.bottomLeft,
+    bottomLeft => Direction2DIn8.topRight,
+    bottomRight => Direction2DIn8.topLeft,
+  };
 
   @override
   Space2 get toSpace2 => switch (this) {
-        top => Direction2D.space_top,
-        left => Direction2D.space_left,
-        right => Direction2D.space_right,
-        bottom => Direction2D.space_bottom,
-        topLeft => Direction2D.space_topLeft,
-        topRight => Direction2D.space_topRight,
-        bottomLeft => Direction2D.space_bottomLeft,
-        bottomRight => Direction2D.space_bottomRight,
-      };
+    top => Direction2D.space_top,
+    left => Direction2D.space_left,
+    right => Direction2D.space_right,
+    bottom => Direction2D.space_bottom,
+    topLeft => Direction2D.space_topLeft,
+    topRight => Direction2D.space_topRight,
+    bottomLeft => Direction2D.space_bottomLeft,
+    bottomRight => Direction2D.space_bottomRight,
+  };
 
   @override
   Space3 get toSpace3 => switch (this) {
-        top => Direction3D.space_top,
-        left => Direction3D.space_left,
-        right => Direction3D.space_right,
-        bottom => Direction3D.space_bottom,
-        topLeft => Direction3D.space_topLeft,
-        topRight => Direction3D.space_topRight,
-        bottomLeft => Direction3D.space_bottomLeft,
-        bottomRight => Direction3D.space_bottomRight,
-      };
+    top => Direction3D.space_top,
+    left => Direction3D.space_left,
+    right => Direction3D.space_right,
+    bottom => Direction3D.space_bottom,
+    topLeft => Direction3D.space_topLeft,
+    topRight => Direction3D.space_topRight,
+    bottomLeft => Direction3D.space_bottomLeft,
+    bottomRight => Direction3D.space_bottomRight,
+  };
 
   bool get isDiagonal => switch (this) {
-        Direction2DIn8.left ||
-        Direction2DIn8.top ||
-        Direction2DIn8.right ||
-        Direction2DIn8.bottom =>
-          false,
-        Direction2DIn8.topLeft ||
-        Direction2DIn8.topRight ||
-        Direction2DIn8.bottomLeft ||
-        Direction2DIn8.bottomRight =>
-          true,
-      };
+    Direction2DIn8.left ||
+    Direction2DIn8.top ||
+    Direction2DIn8.right ||
+    Direction2DIn8.bottom =>
+    false,
+    Direction2DIn8.topLeft ||
+    Direction2DIn8.topRight ||
+    Direction2DIn8.bottomLeft ||
+    Direction2DIn8.bottomRight =>
+    true,
+  };
 
   double get scaleOnGrid => isDiagonal ? DoubleExtension.sqrt2 : 1;
 }
@@ -781,32 +875,32 @@ enum Direction3DIn6 implements Direction3D<Direction3DIn6> {
 
   @override
   Direction3DIn6 get flipped => switch (this) {
-        Direction3DIn6.left => Direction3DIn6.right,
-        Direction3DIn6.top => Direction3DIn6.bottom,
-        Direction3DIn6.right => Direction3DIn6.left,
-        Direction3DIn6.bottom => Direction3DIn6.top,
-        Direction3DIn6.front => Direction3DIn6.back,
-        Direction3DIn6.back => Direction3DIn6.front,
-      };
+    Direction3DIn6.left => Direction3DIn6.right,
+    Direction3DIn6.top => Direction3DIn6.bottom,
+    Direction3DIn6.right => Direction3DIn6.left,
+    Direction3DIn6.bottom => Direction3DIn6.top,
+    Direction3DIn6.front => Direction3DIn6.back,
+    Direction3DIn6.back => Direction3DIn6.front,
+  };
 
   @override
   Space2 get toSpace2 => switch (this) {
-        Direction3DIn6.left => Direction2D.space_left,
-        Direction3DIn6.top => Direction2D.space_top,
-        Direction3DIn6.right => Direction2D.space_right,
-        Direction3DIn6.bottom => Direction2D.space_bottom,
-        _ => throw UnimplementedError(),
-      };
+    Direction3DIn6.left => Direction2D.space_left,
+    Direction3DIn6.top => Direction2D.space_top,
+    Direction3DIn6.right => Direction2D.space_right,
+    Direction3DIn6.bottom => Direction2D.space_bottom,
+    _ => throw UnimplementedError(),
+  };
 
   @override
   Space3 get toSpace3 => switch (this) {
-        Direction3DIn6.left => Direction3D.space_left,
-        Direction3DIn6.top => Direction3D.space_top,
-        Direction3DIn6.right => Direction3D.space_right,
-        Direction3DIn6.bottom => Direction3D.space_bottom,
-        Direction3DIn6.front => Direction3D.space_front,
-        Direction3DIn6.back => Direction3D.space_back,
-      };
+    Direction3DIn6.left => Direction3D.space_left,
+    Direction3DIn6.top => Direction3D.space_top,
+    Direction3DIn6.right => Direction3D.space_right,
+    Direction3DIn6.bottom => Direction3D.space_bottom,
+    Direction3DIn6.front => Direction3D.space_front,
+    Direction3DIn6.back => Direction3D.space_back,
+  };
 }
 
 enum Direction3DIn14 implements Direction3D<Direction3DIn14> {
@@ -827,65 +921,65 @@ enum Direction3DIn14 implements Direction3D<Direction3DIn14> {
 
   @override
   Direction3DIn14 get flipped => switch (this) {
-        Direction3DIn14.left => Direction3DIn14.right,
-        Direction3DIn14.top => Direction3DIn14.bottom,
-        Direction3DIn14.right => Direction3DIn14.left,
-        Direction3DIn14.bottom => Direction3DIn14.top,
-        Direction3DIn14.front => Direction3DIn14.front,
-        Direction3DIn14.frontLeft => Direction3DIn14.frontLeft,
-        Direction3DIn14.frontTop => Direction3DIn14.frontTop,
-        Direction3DIn14.frontRight => Direction3DIn14.frontRight,
-        Direction3DIn14.frontBottom => Direction3DIn14.frontBottom,
-        Direction3DIn14.back => Direction3DIn14.back,
-        Direction3DIn14.backLeft => Direction3DIn14.backLeft,
-        Direction3DIn14.backTop => Direction3DIn14.backTop,
-        Direction3DIn14.backRight => Direction3DIn14.backRight,
-        Direction3DIn14.backBottom => Direction3DIn14.backBottom,
-      };
+    Direction3DIn14.left => Direction3DIn14.right,
+    Direction3DIn14.top => Direction3DIn14.bottom,
+    Direction3DIn14.right => Direction3DIn14.left,
+    Direction3DIn14.bottom => Direction3DIn14.top,
+    Direction3DIn14.front => Direction3DIn14.front,
+    Direction3DIn14.frontLeft => Direction3DIn14.frontLeft,
+    Direction3DIn14.frontTop => Direction3DIn14.frontTop,
+    Direction3DIn14.frontRight => Direction3DIn14.frontRight,
+    Direction3DIn14.frontBottom => Direction3DIn14.frontBottom,
+    Direction3DIn14.back => Direction3DIn14.back,
+    Direction3DIn14.backLeft => Direction3DIn14.backLeft,
+    Direction3DIn14.backTop => Direction3DIn14.backTop,
+    Direction3DIn14.backRight => Direction3DIn14.backRight,
+    Direction3DIn14.backBottom => Direction3DIn14.backBottom,
+  };
 
   @override
   Space2 get toSpace2 => switch (this) {
-        Direction3DIn14.left => Direction2D.space_left,
-        Direction3DIn14.top => Direction2D.space_top,
-        Direction3DIn14.right => Direction2D.space_right,
-        Direction3DIn14.bottom => Direction2D.space_bottom,
-        _ => throw UnimplementedError(),
-      };
+    Direction3DIn14.left => Direction2D.space_left,
+    Direction3DIn14.top => Direction2D.space_top,
+    Direction3DIn14.right => Direction2D.space_right,
+    Direction3DIn14.bottom => Direction2D.space_bottom,
+    _ => throw UnimplementedError(),
+  };
 
   @override
   Space3 get toSpace3 => switch (this) {
-        Direction3DIn14.left => Direction3D.space_left,
-        Direction3DIn14.top => Direction3D.space_top,
-        Direction3DIn14.right => Direction3D.space_right,
-        Direction3DIn14.bottom => Direction3D.space_bottom,
-        Direction3DIn14.front => Direction3D.space_front,
-        Direction3DIn14.frontLeft => Direction3D.space_frontLeft,
-        Direction3DIn14.frontTop => Direction3D.space_frontTop,
-        Direction3DIn14.frontRight => Direction3D.space_frontRight,
-        Direction3DIn14.frontBottom => Direction3D.space_frontBottom,
-        Direction3DIn14.back => Direction3D.space_back,
-        Direction3DIn14.backLeft => Direction3D.space_backLeft,
-        Direction3DIn14.backTop => Direction3D.space_backTop,
-        Direction3DIn14.backRight => Direction3D.space_backRight,
-        Direction3DIn14.backBottom => Direction3D.space_backBottom,
-      };
+    Direction3DIn14.left => Direction3D.space_left,
+    Direction3DIn14.top => Direction3D.space_top,
+    Direction3DIn14.right => Direction3D.space_right,
+    Direction3DIn14.bottom => Direction3D.space_bottom,
+    Direction3DIn14.front => Direction3D.space_front,
+    Direction3DIn14.frontLeft => Direction3D.space_frontLeft,
+    Direction3DIn14.frontTop => Direction3D.space_frontTop,
+    Direction3DIn14.frontRight => Direction3D.space_frontRight,
+    Direction3DIn14.frontBottom => Direction3D.space_frontBottom,
+    Direction3DIn14.back => Direction3D.space_back,
+    Direction3DIn14.backLeft => Direction3D.space_backLeft,
+    Direction3DIn14.backTop => Direction3D.space_backTop,
+    Direction3DIn14.backRight => Direction3D.space_backRight,
+    Direction3DIn14.backBottom => Direction3D.space_backBottom,
+  };
 
-  double get scaleOnGrid => switch (this) {
-        Direction3DIn14.left ||
-        Direction3DIn14.top ||
-        Direction3DIn14.right ||
-        Direction3DIn14.bottom ||
-        Direction3DIn14.front ||
-        Direction3DIn14.back =>
-          1,
-        Direction3DIn14.frontLeft ||
-        Direction3DIn14.frontTop ||
-        Direction3DIn14.frontRight ||
-        Direction3DIn14.frontBottom ||
-        Direction3DIn14.backLeft ||
-        Direction3DIn14.backTop ||
-        Direction3DIn14.backRight ||
-        Direction3DIn14.backBottom =>
-          DoubleExtension.sqrt2,
-      };
+  double get distance => switch (this) {
+    Direction3DIn14.left ||
+    Direction3DIn14.top ||
+    Direction3DIn14.right ||
+    Direction3DIn14.bottom ||
+    Direction3DIn14.front ||
+    Direction3DIn14.back =>
+    1,
+    Direction3DIn14.frontLeft ||
+    Direction3DIn14.frontTop ||
+    Direction3DIn14.frontRight ||
+    Direction3DIn14.frontBottom ||
+    Direction3DIn14.backLeft ||
+    Direction3DIn14.backTop ||
+    Direction3DIn14.backRight ||
+    Direction3DIn14.backBottom =>
+    DoubleExtension.sqrt2,
+  };
 }

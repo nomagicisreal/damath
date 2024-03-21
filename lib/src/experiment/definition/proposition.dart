@@ -35,7 +35,7 @@
 ///
 ///
 ///
-part of damath_math;
+part of damath_experiment;
 // ignore_for_file: constant_identifier_names
 
 ///
@@ -526,5 +526,4 @@ extension SetPropositionCompoundExtension on Set<PropositionCompound> {
         (set, compound) => set..addAll(compound.propositionsSet),
       ).isConsistent;
 }
-
 

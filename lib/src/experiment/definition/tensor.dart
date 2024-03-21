@@ -37,7 +37,7 @@
 ///
 ///
 ///
-part of damath_math;
+part of damath_experiment;
 
 ///
 ///

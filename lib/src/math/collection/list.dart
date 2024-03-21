@@ -13,7 +13,6 @@ part of damath_math;
 /// static methods:
 /// [generateFrom], ...
 /// [fill2D], ...
-/// [linking], ...
 ///
 /// instance methods:
 /// [isFixed], ...
@@ -38,12 +37,12 @@ extension ListExtension<T> on List<T> {
   static List<T> generateFrom<T>(
     int length,
     Generator<T> generator, {
-    int start = 1,
+    int begin = 1,
     bool growable = true,
   }) =>
       List.generate(
         length,
-        (index) => generator(index + start),
+        (index) => generator(index + begin),
         growable: growable,
       );
 
@@ -73,30 +72,6 @@ extension ListExtension<T> on List<T> {
 
   static List<List<T>> fill2DSquare<T>(int size, T value) =>
       fill2D(size, size, value);
-
-  ///
-  /// [linking]
-  ///
-  static List<S> linking<S, T, I>({
-    required int totalStep,
-    required Generator<T> step,
-    required Generator<I> interval,
-    required Sequencer<S, T, I> sequencer,
-  }) {
-    final steps = List.generate(totalStep, step);
-    final lengthIntervals = totalStep - 1;
-    final intervals = List.generate(lengthIntervals, interval);
-
-    final result = <S>[];
-
-    T previous = steps.first;
-    for (var i = 0; i < lengthIntervals; i++) {
-      final next = steps[i + 1];
-      result.add(sequencer(previous, next, intervals[i])(i));
-      previous = next;
-    }
-    return result;
-  }
 
   ///
   /// [_tryRemoveLastAndAdd]
@@ -272,7 +247,7 @@ extension ListExtension<T> on List<T> {
   ///
   /// where
   /// [indexesWhere]
-  /// [indexWhen], [indexesWhen]
+  /// [indexFirstWhen], [indexesWhen]
   ///
 
   ///
@@ -280,34 +255,42 @@ extension ListExtension<T> on List<T> {
   ///
   Iterable<int> indexesWhere(
     Predicator<T> test, [
-    int start = 0,
+    int begin = 0,
     int? end,
   ]) sync* {
     final bound = end ?? length;
-    assert(start.rangeIn(0, length) && bound.rangeIn(start, length));
-    for (var i = start; i < bound; i++) {
+    assert(begin.rangeIn(0, length) && bound.rangeIn(begin, length));
+    for (var i = begin; i < bound; i++) {
       if (test(this[i])) yield i;
     }
   }
 
   ///
-  /// [indexWhen]
+  /// [indexFirstWhen]
   /// [indexesWhen]
   ///
-  int indexWhen(Checker<T> check, [int start = 0, int? end]) {
+  int indexFirstWhen(
+    PredicatorGenerator<T> check, [
+    int begin = 0,
+    int? end,
+  ]) {
     final bound = end ?? length;
-    assert(start.rangeIn(0, length) && bound.rangeIn(start, length));
-    for (var i = start; i < bound; i++) {
-      if (check(i, this[i])) return i;
+    assert(length.constraints(begin, bound));
+    for (var i = begin; i < bound; i++) {
+      if (check(this[i], i)) return i;
     }
     return -1;
   }
 
-  Iterable<int> indexesWhen(Checker<T> check, [int start = 0, int? end]) sync* {
+  Iterable<int> indexesWhen(
+    PredicatorGenerator<T> test, [
+    int begin = 0,
+    int? end,
+  ]) sync* {
     final bound = end ?? length;
-    assert(start.rangeIn(0, length) && bound.rangeIn(start, length));
-    for (var i = start; i < bound; i++) {
-      if (check(i, this[i])) yield i;
+    assert(length.constraints(begin, bound));
+    for (var i = begin; i < bound; i++) {
+      if (test(this[i], i)) yield i;
     }
   }
 
@@ -315,7 +298,7 @@ extension ListExtension<T> on List<T> {
   /// fill, copy
   /// [fillUntil]
   ///
-  /// [copy], [copyFillUntil], [copyIntoOrder]
+  /// [copy], [copyAndFill], [copyByOrder]
   ///
   ///
 
@@ -330,21 +313,28 @@ extension ListExtension<T> on List<T> {
 
   ///
   /// [copy]
-  /// [copyFillUntil]
-  /// [copyIntoOrder]
+  /// [copyAndFill]
+  /// [copyByOrder]
   ///
   List<T> copy([bool growable = true]) => List.of(this, growable: growable);
 
-  List<T> copyFillUntil(int length, T value, [bool growable = true]) => [
+  List<T> copyAndFill(
+    int total,
+    T value, [
+    bool onTail = true,
+    bool growable = true,
+  ]) =>
+      [
+        if (!onTail) ...List.filled(total - length, value, growable: growable),
         ...this,
-        ...List.filled(length - this.length, value, growable: growable),
+        if (onTail) ...List.filled(total - length, value, growable: growable),
       ];
 
   ///
   /// list = [2, 3, 4, 6];
   /// list.copyInOrder([2, 1, 0, 3]); // [4, 3, 2, 6]
   ///
-  List<T> copyIntoOrder(Iterable<int> order) {
+  List<T> copyByOrder(Iterable<int> order) {
     assert(Iterable.generate(length).isVariantTo(order));
     return [for (var i in order) this[i]];
   }
@@ -366,28 +356,28 @@ extension ListExtension<T> on List<T> {
   /// list = [2, 3, 4, 6, 10, 3, 9];
   /// list.split(2); // [[2, 3], [4, 6], [10, 3], [9]]
   ///
-  List<List<T>> splitBy(int count, [int start = 0, int? end]) {
+  List<List<T>> splitBy(int count, [int begin = 0, int? end]) {
     final length = end ?? this.length;
-    assert(start.rangeIn(0, length) && count.rangeIn(0, length));
+    assert(begin.rangeIn(0, length) && count.rangeIn(0, length));
 
     final list = <List<T>>[];
-    for (var i = start; i < length; i += count) {
+    for (var i = begin; i < length; i += count) {
       list.add(sublist(i, i + count < length ? i + count : length));
     }
     return list;
   }
 
-  List<List<T>> splitAt(List<int> positions, [int start = 0, int? end]) {
+  List<List<T>> splitAt(List<int> positions, [int begin = 0, int? end]) {
     final length = end ?? this.length;
     assert(
-      start.rangeIn(0, length) &&
+      begin.rangeIn(0, length) &&
           positions.isSorted() &&
-          positions.first >= start &&
+          positions.first >= begin &&
           positions.last <= length,
     );
     return positions.iterator.foldAccompany(
       [],
-      start,
+      begin,
       (result, interval, i) => result..add(sublist(i, interval)),
       (i, interval, result) => interval,
     );
@@ -450,15 +440,23 @@ extension ListExtension<T> on List<T> {
 }
 
 ///
-/// [isSorted]
-/// [sortMerge], [sortPivot]
+/// static methods:
+/// [compareReverse]
+///
+/// instance methods:
+/// [copySorted], ...
+/// [order], ...
+/// [isSorted], ...
+/// [sortMerge], ...
 ///
 extension ListComparableExtension<C extends Comparable> on List<C> {
+  static int compareReverse<C extends Comparable>(C a, C b) => b.compareTo(a);
+
   ///
   /// [copySorted]
   ///
-  List<C> copySorted([bool increase = true]) => List.of(this)
-    ..sort(increase ? Comparable.compare : ComparableData.compareReverse);
+  List<C> copySorted([bool increase = true]) =>
+      List.of(this)..sort(increase ? Comparable.compare : compareReverse);
 
   ///
   /// the [order] returns a list;
@@ -539,12 +537,12 @@ extension ListComparableExtension<C extends Comparable> on List<C> {
     final length = this.length;
 
     final max = length.isEven ? length : length - 1;
-    for (var start = 0; start < max; start += 2) {
-      final a = this[start];
-      final b = this[start + 1];
+    for (var begin = 0; begin < max; begin += 2) {
+      final a = this[begin];
+      final b = this[begin + 1];
       if (a.compareTo(b) == value) {
-        this[start] = b;
-        this[start + 1] = a;
+        this[begin] = b;
+        this[begin + 1] = a;
       }
     }
     int sorted = 2;
@@ -552,15 +550,15 @@ extension ListComparableExtension<C extends Comparable> on List<C> {
     while (sorted * 2 <= length) {
       final target = sorted * 2;
       final fixed = length - length % target;
-      int start = 0;
+      int begin = 0;
 
-      for (; start < fixed; start += target) {
-        final i = start + sorted;
-        final end = start + target;
+      for (; begin < fixed; begin += target) {
+        final i = begin + sorted;
+        final end = begin + target;
         replaceRange(
-          start,
+          begin,
           end,
-          _sortMerge(sublist(start, i), sublist(i, end), increasing),
+          _sortMerge(sublist(begin, i), sublist(i, end), increasing),
         );
       }
       if (fixed > 0) {

@@ -29,14 +29,11 @@ void main(List<String> arguments) {
   // print(sets.updateSet('B', 4));
   // print(sets);
 
-  final list = <MapEntry<int, int>>[
-    MapEntry(1, 20),
-    MapEntry(1, 30),
-    MapEntry(2, 30),
-    MapEntry(3, 20),
-  ];
-  print(list.iterator.anyEqualByGroups(
-    (value) => value.value,
-    (value) => value.key,
+  final node = ListExtension.generateFrom(10, (index) => index * 10);
+  final interval = ListExtension.generateFrom(9, (index) => index);
+  print(node.interval
+    (
+    interval,
+    (v1, v2, other) => (v1 + v2) / 2 + other,
   ));
 }
