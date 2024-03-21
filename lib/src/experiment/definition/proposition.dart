@@ -527,3 +527,5 @@ extension SetPropositionCompoundExtension on Set<PropositionCompound> {
       ).isConsistent;
 }
 
+
+
