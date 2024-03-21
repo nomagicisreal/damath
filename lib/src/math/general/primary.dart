@@ -82,10 +82,9 @@ extension BoolExtension on bool {
 ///
 ///
 /// [squared], [isPositive]
-/// [rangeIn], [rangeFromMaxTo], [rangeFromMinTo], [within]
-/// [isLowerOrEqualTo], [isHigherOrEqualTo]
-/// [isLowerOneOrEqualTo], [isHigherOneOrEqualTo]
-///
+/// [rangeIn], ...
+/// [isLowerOrEqualTo], ...
+/// [constraints], ...
 ///
 extension NumExtension on num {
   bool get isPositiveOrZero => !isNegative;
@@ -96,6 +95,7 @@ extension NumExtension on num {
 
   num powBy(num x) => math.pow(x, this);
 
+  ///
   bool rangeIn(num min, num max) => this >= min && this <= max;
 
   bool rangeFromMaxTo(num max, num min) => this > min && this <= max;
@@ -104,6 +104,7 @@ extension NumExtension on num {
 
   bool within(num min, num max) => this > min && this < max;
 
+  ///
   bool isLowerOrEqualTo(num value) => this == value || this < value;
 
   bool isHigherOrEqualTo(num value) => this == value || this > value;
@@ -111,6 +112,10 @@ extension NumExtension on num {
   bool isLowerOneOrEqualTo(num value) => this == value || this + 1 == value;
 
   bool isHigherOneOrEqualTo(num value) => this == value || this == value + 1;
+
+  ///
+  bool constraints(int begin, int end, [int from = 0]) =>
+      begin.rangeIn(from, end) && end.rangeIn(begin, this);
 }
 
 ///

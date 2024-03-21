@@ -1,7 +1,30 @@
 ///
 ///
 /// this file contains:
-/// [FListener]
+/// [Consumer], [ConsumerIndexable]
+/// [Intersector], [IntersectorIndexable]
+/// [Supplier], [Generator]
+///
+/// [Mapper]
+/// [Reducer]
+/// [Collapser]
+/// [Companion]
+/// [Absorber]
+/// [Forcer]
+/// [Collector]
+/// [Linker]
+/// [Fusionor]
+/// [Translator]
+/// [Combiner]
+/// [Mixer]
+///
+/// [Predicator], [PredicatorCombiner], [PredicatorMixer], [PredicatorFusionor], [PredicatorGenerator]
+/// [Generator2D], [MapperGenerator], [ReducerGenerator], [CollapserGenerator], [CompanionGenerator], ...
+/// [Differentiator]
+/// [Lerper]
+///
+/// extensions:
+/// [FSupplier]
 /// [FPredicator], [FPredicatorCombiner], [FPredicatorFusionor]
 /// [FMapper]
 /// [FGenerator]
@@ -16,37 +39,85 @@
 ///
 ///
 ///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
 part of damath_math;
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names
 
 ///
 ///
-/// listener
-///
-///
-extension FListener on Listener {
-  static void none() {}
+typedef Consumer<T> = void Function(T value);
+typedef ConsumerIndexable<T> = void Function(T value, int index);
+typedef Intersector<A, B> = void Function(A a, B b);
+typedef IntersectorIndexable<A, B> = void Function(A a, B b, int index);
+typedef Supplier<S> = S Function();
+typedef Generator<S> = S Function(int index);
 
-  Future<void> delayed(Duration duration) => Future.delayed(duration, this);
+typedef Mapper<T> = T Function(T value);
+typedef Reducer<T> = T Function(T v1, T v2);
+typedef Collapser<T> = T Function(T v1, T v2, T v3);
+typedef Companion<T, E> = T Function(T value, E other);
+typedef Absorber<T, E> = T Function(T value, E e1, E e2);
+typedef Forcer<T, E> = T Function(T v1, T v2, E other);
+typedef Collector<T, A, B> = T Function(T value, A a, B b);
+
+typedef Linker<T, E, S> = S Function(T v1, T v2, E other);
+typedef Fusionor<P, Q, R, S> = S Function(P p, Q q, R r);
+typedef Translator<T, S> = S Function(T value);
+typedef Combiner<T, S> = S Function(T v1, T v2);
+typedef Mixer<A, B, S> = S Function(A a, B b);
+
+///
+/// predicator
+///
+typedef Predicator<T> = bool Function(T value);
+typedef PredicatorCombiner<T> = bool Function(T v1, T v2);
+typedef PredicatorMixer<A, B> = bool Function(A a, B b);
+typedef PredicatorFusionor<O, P, Q> = bool Function(O o, P p, Q q);
+typedef PredicatorGenerator<T> = bool Function(T value, int index);
+
+///
+/// supplier, generator
+///
+typedef Generator2D<S> = S Function(int i, int j);
+typedef MapperGenerator<T> = T Function(T value, int index);
+typedef ReducerGenerator<T> = T Function(T v1, T v2, int index);
+typedef CollapserGenerator<T> = T Function(T v1, T v2, T v3, int index);
+typedef CompanionGenerator<T, E> = T Function(T value, E other, int index);
+typedef AbsorberGenerator<T, E> = T Function(T value, E e1, E e2, int index);
+typedef ForcerGenerator<T, E> = T Function(T v1, T v2, E other, int index);
+typedef CollectorGenerator<T, A, B> = T Function(T value, A a, B b, int index);
+
+typedef LinkerGenerator<T, E, S> = S Function(T v1, T v2, E other, int index);
+typedef FusionorGenerator<P, Q, R, S> = S Function(P p, Q q, R r, int index);
+typedef TranslatorGenerator<T, S> = S Function(T value, int index);
+typedef CombinerGenerator<T, S> = S Function(T v1, T v2, int index);
+typedef MixerGenerator<A, B, S> = S Function(A a, B b, int index);
+
+///
+/// others
+///
+typedef Differentiator<A, B> = int Function(A a, B b);
+typedef Lerper<T> = T Function(double t);
+
+///
+///
+///
+///
+///
+/// extensions
+///
+///
+///
+///
+
+///
+/// supplier
+///
+extension FSupplier on Supplier {
+  ///
+  /// [iterableElement]
+  ///
+  static Supplier<Iterable<I>> iterableElement<I>(I value) => () sync* {
+        yield value;
+      };
 }
 
 ///
@@ -55,12 +126,32 @@ extension FListener on Listener {
 ///
 ///
 extension FPredicator on Predicator {
-  static Predicator<DateTime> isSameDayWith(DateTime? day) =>
-      (currentDay) => DateTimeExtension.isSameDay(currentDay, day);
+  ///
+  /// [alwaysTrue]
+  /// [alwaysFalse]
+  ///
+  static bool alwaysTrue<T>(T value) => true;
 
-  static Predicator<T> isSameWith<T>(T another) => (value) => value == another;
+  static bool alwaysFalse<T>(T value) => false;
+
+  ///
+  /// [sameWith]
+  /// [sameDayWith]
+  ///
+  static Predicator<T> sameWith<T>(T another) => (value) => value == another;
+
+  static Predicator<DateTime> sameDayWith(DateTime? day) =>
+      (currentDay) => DateTimeExtension.isSameDay(currentDay, day);
 }
 
+///
+/// [isEqual], ...
+/// [numIsALess], ...
+/// [entryIsKeyEqual], ...
+/// [iterableIsLengthEqual], ...
+///
+/// see [Propositioner] for predication combined from [bool]
+///
 extension FPredicatorCombiner on PredicatorCombiner {
   ///
   /// [isEqual], [isNotEqual]
@@ -82,7 +173,6 @@ extension FPredicatorCombiner on PredicatorCombiner {
   static bool? ternaryAlwaysNull<T>(T a, T b) => null;
 
   ///
-  /// see [Propositioner] for predicating from [bool]
   /// [numIsALess], [numIsALarger]
   /// [intIsALess], [intIsALarger]
   /// [doubleIsALess], [doubleIsALarger]
@@ -100,30 +190,44 @@ extension FPredicatorCombiner on PredicatorCombiner {
   static bool doubleIsALarger(double a, double b) => a > b;
 
   ///
-  /// [entryIsKeyEqual], [entryIsKeyNotEqual]
-  /// [entryIsKeyNumEqual], [entryIsKeyNumLess], [entryIsKeyNumLarger]
+  /// [entryIsKeyEqual], [entryIsKeyDifferent]
+  /// [entryIsKeyNumEqual], [entryIsKeyNumDifferent], [entryIsKeyNumLess], [entryIsKeyNumLarger]
   ///
   static bool entryIsKeyEqual<K, V>(MapEntry<K, V> a, MapEntry<K, V> b) =>
       a.key == b.key;
 
-  static bool entryIsKeyNotEqual<K, V>(MapEntry<K, V> a, MapEntry<K, V> b) =>
+  static bool entryIsKeyDifferent<K, V>(MapEntry<K, V> a, MapEntry<K, V> b) =>
       a.key != b.key;
 
   static bool entryIsKeyNumEqual<V>(MapEntry<num, V> a, MapEntry<num, V> b) =>
       a.key == b.key;
+
+  static bool entryIsKeyNumDifferent<V>(
+    MapEntry<num, V> a,
+    MapEntry<num, V> b,
+  ) =>
+      a.key != b.key;
 
   static bool entryIsKeyNumLess<V>(MapEntry<num, V> a, MapEntry<num, V> b) =>
       a.key < b.key;
 
   static bool entryIsKeyNumLarger<V>(MapEntry<num, V> a, MapEntry<num, V> b) =>
       a.key > b.key;
+
+  ///
+  /// [iterableIsLengthEqual], [iterableIsLengthDifferent]
+  ///
+  static bool iterableIsLengthEqual<A, B>(Iterable<A> a, Iterable<B> b) =>
+      a.length == b.length;
+
+  static bool iterableIsLengthDifferent<A, B>(Iterable<A> a, Iterable<B> b) =>
+      a.length != b.length;
 }
 
 ///
 ///
 ///
 extension FPredicatorFusionor on PredicatorFusionor {
-
   ///
   /// [mapValueSetUpdateYet]
   /// [mapValueSetUpdateNew]
@@ -170,17 +274,16 @@ extension FPredicatorFusionor on PredicatorFusionor {
 }
 
 ///
+/// [keep]
+/// [boolKeep], [boolReverse]
+/// [doubleKeep], ...
+///
+/// [iterableAppend], ...
+/// [listAdd], ...
+///
+/// [lerp]
 ///
 ///
-///
-///
-/// mapper
-///
-///
-///
-///
-///
-
 extension FMapper on Mapper {
   static T keep<T>(T value) => value;
 
@@ -221,9 +324,6 @@ extension FMapper on Mapper {
 
   static Mapper<double> doubleOnModule(double value) => (v) => v % value;
 
-  static Mapper<double> doubleOnOperate(Operator operator, double value) =>
-      operator.doubleCompanion(value);
-
   ///
   /// [doubleOnTimesFactor]
   /// [doubleOnPeriod]
@@ -247,7 +347,7 @@ extension FMapper on Mapper {
     Mapper<double> transform = math.sin,
   ]) {
     assert(transform == math.sin || transform == math.cos);
-    final times = Radian.angle_360 * period;
+    final times = math.pi * 2 * period;
     return lerp<double>(0, 1, (value) => transform(times * value));
   }
 
@@ -261,15 +361,22 @@ extension FMapper on Mapper {
       doubleOnPeriod(times.toDouble(), math.tan);
 
   ///
-  /// space
-  /// [space3Keep]
+  /// iterable
+  /// [iterableAppend]
   ///
-  static Space3 space3Keep(Space3 v) => v;
+  static Mapper<Iterable<I>> iterableAppend<I>(I value) =>
+      (iterable) => iterable.append(value);
+
+  ///
+  /// list
+  /// [listAdd]
+  ///
+  static Mapper<List<T>> listAdd<T>(T value) => (list) => list..add(value);
 
   ///
   /// lerpOf
   ///
-  static OnLerp<T> lerp<T>(T begin, T end, OnLerp<T> transform) => (value) {
+  static Lerper<T> lerp<T>(T begin, T end, Lerper<T> transform) => (value) {
         if (value == 0) return begin;
         if (value == 1) return end;
         return transform(value);
@@ -325,17 +432,21 @@ extension FTranslator on Translator {
 }
 
 ///
-/// [doubleMax], [doubleMin]
-/// [intMax], [intMin]
-/// [doubleAdd], ...
-/// [intAdd], ...
-/// [stringLine]
+/// [keepCurrent], [keepValue]
+/// [doubleMax], ...
+/// [intMax], ...
+/// [stringLine], ...
 ///
-extension FReducer<N> on Reducer<N> {
+extension FReducer on Reducer {
+  static T keepCurrent<T>(T current, T value) => current;
+
+  static T keepValue<T>(T current, T value) => value;
+
+  ///
+  /// double
+  ///
   static const Reducer<double> doubleMax = math.max<double>;
   static const Reducer<double> doubleMin = math.min<double>;
-  static const Reducer<int> intMax = math.max<int>;
-  static const Reducer<int> intMin = math.min<int>;
 
   static double doubleAdd(double v1, double v2) => v1 + v2;
 
@@ -352,6 +463,12 @@ extension FReducer<N> on Reducer<N> {
 
   static double doubleAddSquared(double v1, double v2) => v1 * v1 + v2 * v2;
 
+  ///
+  /// integer
+  ///
+  static const Reducer<int> intMax = math.max<int>;
+  static const Reducer<int> intMin = math.min<int>;
+
   static int intAdd(int v1, int v2) => v1 + v2;
 
   static int intSubtract(int v1, int v2) => v1 - v2;
@@ -362,6 +479,9 @@ extension FReducer<N> on Reducer<N> {
 
   static int intAddSquared(int v1, int v2) => v1 * v1 + v2 * v2;
 
+  ///
+  /// string
+  ///
   static String stringLine(String v1, String v2) => '$v1\n$v2';
 
   static String stringTab(String v1, String v2) => '$v1\t$v2';
@@ -369,6 +489,9 @@ extension FReducer<N> on Reducer<N> {
   static String stringComma(String v1, String v2) => '$v1, $v2';
 }
 
+///
+///
+///
 extension FCompanion on Companion {
   static T keep<T, S>(T origin, S another) => origin;
 }

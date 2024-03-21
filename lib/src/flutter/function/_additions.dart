@@ -37,7 +37,6 @@
 ///
 part of damath_flutter;
 
-
 ///
 /// [keepOffset], ...
 ///
@@ -98,8 +97,8 @@ extension FTextFormFieldValidator on TextFormFieldValidator {
 /// [from]
 ///
 ///
-extension FOnLerp<T> on OnLerp<T> {
-  static OnLerp<T> of<T>(T value) => (_) => value;
+extension FOnLerp<T> on Lerper<T> {
+  static Lerper<T> of<T>(T value) => (_) => value;
 
   ///
   ///
@@ -109,7 +108,7 @@ extension FOnLerp<T> on OnLerp<T> {
   ///   ...
   ///
   ///
-  static OnLerp<T> from<T>(T a, T b) => switch (a) {
+  static Lerper<T> from<T>(T a, T b) => switch (a) {
     Size _ => (t) => Size.lerp(a, b as Size, t)!,
     Rect _ => (t) => Rect.lerp(a, b as Rect, t)!,
     Color _ => (t) => Color.lerp(a, b as Color, t)!,
@@ -162,7 +161,7 @@ extension FOnLerp<T> on OnLerp<T> {
       _ => throw UnimplementedError(),
     },
     _ => Tween<T>(begin: a, end: b).transform,
-  } as OnLerp<T>;
+  } as Lerper<T>;
 }
 
 ///

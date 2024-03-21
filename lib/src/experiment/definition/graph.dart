@@ -1,7 +1,6 @@
 ///
 ///
 /// this file contains:
-///
 /// [VertexAncestor]
 ///   [VertexNullable]
 ///   [Vertex]
@@ -29,26 +28,14 @@
 ///   [GraphMutable]
 ///
 ///
+/// collection
+/// [IterableEdgeExtension]
 ///
 ///
 ///
 ///
 ///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-part of damath_math;
+part of damath_experiment;
 
 ///
 /// [VertexAncestor]
@@ -866,4 +853,28 @@ abstract class GraphMutable<T, S, V extends VertexAncestor<T>,
   E createEdge(E edge);
 
   E addEdge(E edge);
+}
+
+
+
+///
+///
+///
+/// collection
+///
+///
+///
+
+
+///
+/// [toVertices]
+///
+extension IterableEdgeExtension<T, S, V extends VertexAncestor<T?>>
+on Iterable<EdgeAncestor<T, S, V>> {
+  Set<V> get toVertices => fold(
+    {},
+        (set, edge) => set
+      ..add(edge._source)
+      ..add(edge._destination),
+  );
 }

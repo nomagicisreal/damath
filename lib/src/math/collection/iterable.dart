@@ -25,7 +25,6 @@ part of damath_math;
 /// instance getter and methods
 /// [isVariantTo], ...
 /// [anyElementWith], ...
-/// [everyElementsWith], ...
 /// [append], ...
 ///
 /// [foldWith], ...
@@ -34,6 +33,7 @@ part of damath_math;
 ///
 /// [intersection], ...
 /// [difference], ...
+/// [interval], ...
 ///
 /// [groupBy], ...
 /// [mirrored], ...
@@ -47,19 +47,20 @@ extension IterableExtension<I> on Iterable<I> {
   /// [fill]
   /// [generateFrom]
   ///
-  static Iterable<I> fill<I>(int count, I value) =>
-      Iterable.generate(count, FGenerator.fill(value));
+  static Iterable<I> fill<I>(int count, I value) sync* {
+    for (var i = 0; i < count; i++) {
+      yield value;
+    }
+  }
 
   static Iterable<I> generateFrom<I>(
-    int count, [
-    Generator<I>? generator,
+    int count,
+    Generator<I> generator, [
     int start = 1,
-  ]) {
-    if (generator == null && I != int) throw UnimplementedError();
-    return Iterable.generate(
-      count,
-      generator == null ? (i) => start + i as I : (i) => generator(start + i),
-    );
+  ]) sync* {
+    for (var i = start; i < count; i++) {
+      yield generator(i);
+    }
   }
 
   ///
@@ -85,31 +86,15 @@ extension IterableExtension<I> on Iterable<I> {
       anyElementWith(another, FPredicatorCombiner.isNotEqual);
 
   ///
-  /// [everyElementsWith]
-  /// [everyElementsAreEqualWith]
-  /// [everyElementsAreDifferentWith]
-  ///
-  bool everyElementsWith<P>(Iterable<P> another, PredicatorMixer<I, P> test) {
-    assert(length == another.length);
-    return iterator.interEvery(another.iterator, test);
-  }
-
-  bool everyElementsAreEqualWith(Iterable<I> another) =>
-      !anyElementIsDifferentWith(another);
-
-  bool everyElementsAreDifferentWith(Iterable<I> another) =>
-      !anyElementIsEqualWith(another);
-
-  ///
   /// append
-  /// [append], [appendIterable]
+  /// [append], [appendAll]
   ///
   Iterable<I> append(I value) sync* {
     yield* this;
     yield value;
   }
 
-  Iterable<I> appendIterable(Iterable<I> other) sync* {
+  Iterable<I> appendAll(Iterable<I> other) sync* {
     yield* this;
     yield* other;
   }
@@ -129,9 +114,9 @@ extension IterableExtension<I> on Iterable<I> {
   S foldWith<S, T>(
     Iterable<T> another,
     S initialValue,
-    Companion2<S, I, T> companion,
+    Collector<S, I, T> companion,
   ) {
-    assert(another.length == length);
+    assert(length == another.length);
     return iterator.interFold(initialValue, another.iterator, companion);
   }
 
@@ -140,7 +125,7 @@ extension IterableExtension<I> on Iterable<I> {
     Iterable<E> another,
     Companion<S, I> companion,
     Companion<S, E> companionAnother,
-    Reducer2<S> combine,
+    Collapser<S> combine,
   ) {
     assert(length == another.length);
     return iterator.interFold(
@@ -158,15 +143,16 @@ extension IterableExtension<I> on Iterable<I> {
   /// [reduceWith]
   /// [reduceTogether]
   ///
-  I reduceWith(Iterable<I> another, Reducer<I> initialize, Reducer2<I> mutual) {
-    assert(another.length == length);
+  I reduceWith(
+      Iterable<I> another, Reducer<I> initialize, Collapser<I> mutual) {
+    assert(length == another.length);
     return iterator.interReduce(another.iterator, initialize, mutual);
   }
 
   I reduceTogether(
     Iterable<I> another,
     Reducer<I> initialize,
-    Reducer2<I> reducer,
+    Collapser<I> reducer,
   ) {
     assert(length == another.length);
     return iterator.interReduce(another.iterator, initialize, reducer);
@@ -180,7 +166,7 @@ extension IterableExtension<I> on Iterable<I> {
     Iterable<E> another,
     Mixer<I, E, Iterable<I>> expanding,
   ) {
-    assert(another.length == length);
+    assert(length == another.length);
     return iterator.interExpand(another.iterator, expanding);
   }
 
@@ -209,18 +195,18 @@ extension IterableExtension<I> on Iterable<I> {
   /// [intersectionIndex]
   /// [intersectionDetail]
   ///
-  List<I> intersection(Iterable<I> another) => iterator.interFold(
-        [],
+  Iterable<I> intersection(Iterable<I> another) => iterator.interYieldingWhere(
         another.iterator,
-        (list, v1, v2) => list..addWhen(v1 == v2, v1),
+        FPredicatorCombiner.isEqual,
+        FReducer.keepCurrent,
       );
 
-  List<int> intersectionIndex(Iterable<I> another) =>
-      iterator.interFoldIndexable(
-        [],
+  Iterable<int> intersectionIndex(Iterable<I> another, [int start = 0]) =>
+      iterator.interYieldingIndexableWhere(
         another.iterator,
-        (list, v1, v2, index) => list..addWhen(v1 == v2, index),
-        0,
+        FPredicatorCombiner.isEqual,
+        (p, q, index) => index,
+        start,
       );
 
   Map<int, I> intersectionDetail(Iterable<I> another) =>
@@ -236,19 +222,21 @@ extension IterableExtension<I> on Iterable<I> {
   /// [differenceIndex]
   /// [differenceDetail]
   ///
-  List<I> difference(Iterable<I> another) => iterator.diffFold(
-        [],
+  Iterable<I> difference(Iterable<I> another) => iterator.diffYieldingWhere(
         another.iterator,
-        (list, v1, v2) => list..addWhen(v1 != v2, v1),
-        (list, another) => list..add(another),
+        FPredicatorCombiner.isNotEqual,
+        FPredicator.alwaysTrue,
+        FReducer.keepCurrent,
+        FMapper.keep,
       );
 
-  List<int> differenceIndex(Iterable<I> another, [int start = 0]) =>
-      iterator.diffFoldIndexable(
-        [],
+  Iterable<int> differenceIndex(Iterable<I> another, [int start = 0]) =>
+      iterator.diffYieldingIndexableWhere(
         another.iterator,
-        (value, e1, e2, index) => value..addWhen(e1 != e2, index),
-        (value, element, index) => value..add(index),
+        FPredicatorCombiner.isNotEqual,
+        FPredicator.alwaysTrue,
+        (p, q, index) => index,
+        (value, index) => index,
         start,
       );
 
@@ -260,23 +248,30 @@ extension IterableExtension<I> on Iterable<I> {
       iterator.diffFoldIndexable(
         {},
         another.iterator,
-        (value, e1, e2, index) =>
-            value..putIfAbsentWhen(e1 != e2, index, () => MapEntry(e1, e2)),
-        (value, element, index) =>
-            value..putIfAbsent(index, () => MapEntry(element, null)),
+        (map, e1, e2, index) =>
+            map..putIfAbsentWhen(e1 != e2, index, () => MapEntry(e1, e2)),
+        (map, e1, index) => map..putIfAbsent(index, () => MapEntry(e1, null)),
         0,
       );
 
   ///
+  /// [interval]
+  ///
+  Iterable<S> interval<T, S>(Iterable<T> another, Linker<I, T, S> link) {
+    assert(another.length + 1 == length);
+    return iterator.interval(another.iterator, link);
+  }
+
+  ///
   /// [groupBy]
   ///
-  Map<K, List<I>> groupBy<K>(Translator<I, K> toKey) => fold(
+  Map<K, Iterable<I>> groupBy<K>(Translator<I, K> toKey) => fold(
         {},
-        (map, item) => map
+        (map, value) => map
           ..update(
-            toKey(item),
-            (value) => value..add(item),
-            ifAbsent: () => [item],
+            toKey(value),
+            FMapper.iterableAppend(value),
+            ifAbsent: FSupplier.iterableElement(value),
           ),
       );
 
@@ -356,8 +351,8 @@ extension IterableDoubleExtension on Iterable<double> {
 
 ///
 /// [size]
-/// [toStringPadLeft], [toStringByMapJoin]
-/// [everyElementsLengthAreEqualWith]
+/// [toStringPadLeft], [toStringMapJoin]
+/// [anyElementsLengthIsDifferentWith]
 /// [foldWith2D]
 ///
 extension IterableIterableExtension<I> on Iterable<Iterable<I>> {
@@ -368,28 +363,24 @@ extension IterableIterableExtension<I> on Iterable<Iterable<I>> {
       iterator.reduceTo(IterableExtension.toLength, FReducer.intAdd);
 
   ///
+  /// [toStringMapJoin]
   /// [toStringPadLeft]
-  /// [toStringByMapJoin]
   ///
-  String toStringPadLeft(int space) => toStringByMapJoin(
-        (row) => row.map((e) => e.toString().padLeft(space)).toString(),
-      );
-
-  String toStringByMapJoin([
+  String toStringMapJoin([
     Translator<Iterable<I>, String>? mapper,
     String separator = "\n",
   ]) =>
       map(mapper ?? (e) => e.toString()).join(separator);
 
-  ///
-  /// [everyElementsLengthAreEqualWith]
-  ///
-  bool everyElementsLengthAreEqualWith<P>(Iterable<Iterable<P>> another) =>
-      length == another.length &&
-      everyElementsWith(
-        another,
-        (v1, v2) => v1.length == v2.length,
+  String toStringPadLeft(int space) => toStringMapJoin(
+        (row) => row.map((e) => e.toString().padLeft(space)).toString(),
       );
+
+  ///
+  /// [anyElementsLengthIsDifferentWith]
+  ///
+  bool anyElementsLengthIsDifferentWith<P>(Iterable<Iterable<P>> another) =>
+      anyElementWith(another, FPredicatorCombiner.iterableIsLengthDifferent);
 
   ///
   /// [foldWith2D]
@@ -397,36 +388,11 @@ extension IterableIterableExtension<I> on Iterable<Iterable<I>> {
   S foldWith2D<S, P>(
     Iterable<Iterable<P>> another,
     S initialValue,
-    Companion2<S, I, P> fusionor,
-  ) {
-    assert(everyElementsLengthAreEqualWith(another));
-    return foldWith(
-      another,
-      initialValue,
-      (value, e, eAnother) => value = e.foldWith(eAnother, value, fusionor),
-    );
-  }
-}
-
-///
-///
-///
-///
-/// graph
-///
-///
-///
-///
-
-///
-/// [toVertices]
-///
-extension IterableEdgeExtension<T, S, V extends VertexAncestor<T?>>
-    on Iterable<EdgeAncestor<T, S, V>> {
-  Set<V> get toVertices => fold(
-        {},
-        (set, edge) => set
-          ..add(edge._source)
-          ..add(edge._destination),
+    Collector<S, I, P> fusionor,
+  ) =>
+      foldWith(
+        another,
+        initialValue,
+        (value, e, eAnother) => value = e.foldWith(eAnother, value, fusionor),
       );
 }

@@ -13,9 +13,7 @@ part of damath_math;
 /// [actionWhere], ...
 /// [moveNextThen], ...
 ///
-/// [any]
-/// [every], ...
-///
+/// [any], ...
 /// [fold], ...
 /// [reduce], ...
 /// [yielding], ...
@@ -23,6 +21,7 @@ part of damath_math;
 ///
 /// [inter], ...
 /// [diff], ...
+/// [interval], ...
 /// [leadThen], ...
 ///
 /// [cumulativeWhere], ...
@@ -393,7 +392,9 @@ extension IteratorExtension<I> on Iterator<I> {
   ///
   /// reduce
   /// [reduce]
-  /// [reduceByIndex], [reduceAccompany], [reduceTo], [reduceToInitialized]
+  /// [reduceByIndex], [reduceAccompany]
+  /// [reduceTo], [reduceToByIndex]
+  /// [reduceToInitialized], [reduceToInitializedByIndex]
   ///
   /// yielding
   /// [yielding]
@@ -437,8 +438,8 @@ extension IteratorExtension<I> on Iterator<I> {
   S foldAccompany<R, S>(
     S initialValue,
     R initialElement,
-    Companion2<S, I, R> companion,
-    Companion2<R, I, S> after,
+    Collector<S, I, R> companion,
+    Collector<R, I, S> after,
   ) {
     var val = initialValue;
     var ele = initialElement;
@@ -461,10 +462,9 @@ extension IteratorExtension<I> on Iterator<I> {
 
   ///
   /// [reduce]
-  /// [reduceByIndex]
-  /// [reduceAccompany]
-  /// [reduceTo]
-  /// [reduceToInitialized]
+  /// [reduceByIndex], [reduceAccompany]
+  /// [reduceTo], [reduceToByIndex]
+  /// [reduceToInitialized], [reduceToInitializedByIndex]
   ///
   I reduce(Reducer<I> reducing) => moveNextThen(() {
         var val = current;
@@ -485,8 +485,8 @@ extension IteratorExtension<I> on Iterator<I> {
 
   I reduceAccompany<R>(
     R initialElement,
-    ReducerCompanion<I, R> reducing,
-    CompanionReducer<R, I> after,
+    Forcer<I, R> reducing,
+    Absorber<R, I> after,
   ) =>
       moveNextThen(() {
         var val = current;
@@ -498,6 +498,7 @@ extension IteratorExtension<I> on Iterator<I> {
         return val;
       });
 
+  ///
   T reduceTo<T>(Translator<I, T> toVal, Reducer<T> reducing) =>
       moveNextThen(() {
         var val = toVal(current);
@@ -507,14 +508,37 @@ extension IteratorExtension<I> on Iterator<I> {
         return val;
       });
 
-  T reduceToInitialized<T>(
-    Translator<I, T> initialize,
-    Companion<T, I> reducing,
-  ) =>
+  T reduceToByIndex<T>(
+    Translator<I, T> toVal,
+    ReducerGenerator<T> reducing, [
+    int start = 0,
+  ]) =>
       moveNextThen(() {
-        var val = initialize(current);
+        var val = toVal(current);
+        for (var i = start; moveNext(); i++) {
+          val = reducing(val, toVal(current), i);
+        }
+        return val;
+      });
+
+  T reduceToInitialized<T>(Translator<I, T> init, Companion<T, I> reducing) =>
+      moveNextThen(() {
+        var val = init(current);
         while (moveNext()) {
           val = reducing(val, current);
+        }
+        return val;
+      });
+
+  T reduceToInitializedByIndex<T>(
+    Translator<I, T> init,
+    CompanionGenerator<T, I> reducing, [
+    int start = 0,
+  ]) =>
+      moveNextThen(() {
+        var val = init(current);
+        for (var i = start; moveNext(); i++) {
+          val = reducing(val, current, i);
         }
         return val;
       });
@@ -678,17 +702,17 @@ extension IteratorExtension<I> on Iterator<I> {
   ///
   /// intersection
   /// [inter], [interIndexable]
-  ///
   /// [interAny], [interAnyTernary]
-  /// [interEvery], [interEveryTernary]
   ///
   /// [interYielding], [interExpand]
   /// [interYieldingWhere], [interExpandWhere]
   /// [interYieldingIndexable], [interExpandIndexable]
+  /// [interYieldingIndexableWhere], [interExpandIndexableWhere]
   /// [interYieldingEntry], [interExpandEntries]
   ///
   /// [interFold], [interFoldIndexable]
   /// [interReduceTo], [interReduceToIndexable]
+  /// [interReduceToInitialized], [interReduceToInitializedIndexable]
   /// [interReduce], [interReduceIndexable]
   ///
 
@@ -736,37 +760,15 @@ extension IteratorExtension<I> on Iterator<I> {
   }
 
   ///
-  /// [interEvery]
-  /// [interEveryTernary]
-  ///
-  bool interEvery<E>(Iterator<E> another, PredicatorMixer<I, E> test) {
-    while (moveNext() && another.moveNext()) {
-      if (!test(current, another.current)) return false;
-    }
-    return true;
-  }
-
-  bool interEveryTernary<E>(
-    Iterator<E> another,
-    Differentiator<I, E> differentiate, [
-    int except = 0,
-  ]) {
-    while (moveNext() && another.moveNext()) {
-      if (differentiate(current, another.current) != except) return false;
-    }
-    return true;
-  }
-
-  ///
-  /// [interYielding], [interExpand]
-  /// [interYieldingWhere], [interExpandWhere]
+  /// [interYielding]
+  /// [interExpand]
   ///
   Iterable<S> interYielding<E, S>(
     Iterator<E> another,
-    Mixer<I, E, S> combine,
+    Mixer<I, E, S> mixer,
   ) sync* {
     while (moveNext() && another.moveNext()) {
-      yield combine(current, another.current);
+      yield mixer(current, another.current);
     }
   }
 
@@ -779,10 +781,14 @@ extension IteratorExtension<I> on Iterator<I> {
     }
   }
 
+  ///
+  /// [interYieldingWhere]
+  /// [interExpandWhere]
+  ///
   Iterable<S> interYieldingWhere<E, S>(
     Iterator<E> another,
-    Mixer<I, E, S> mixer,
     PredicatorMixer<I, E> test,
+    Mixer<I, E, S> mixer,
   ) sync* {
     while (moveNext() && another.moveNext()) {
       if (test(current, another.current)) {
@@ -793,12 +799,12 @@ extension IteratorExtension<I> on Iterator<I> {
 
   Iterable<S> interExpandWhere<E, S>(
     Iterator<E> another,
-    Mixer<I, E, Iterable<S>> mixer,
     PredicatorMixer<I, E> test,
+    Mixer<I, E, Iterable<S>> expanding,
   ) sync* {
     while (moveNext() && another.moveNext()) {
       if (test(current, another.current)) {
-        yield* mixer(current, another.current);
+        yield* expanding(current, another.current);
       }
     }
   }
@@ -812,9 +818,8 @@ extension IteratorExtension<I> on Iterator<I> {
     MixerGenerator<I, E, S> combine,
     int start,
   ) sync* {
-    var i = start - 1;
-    while (moveNext() && another.moveNext()) {
-      yield combine(current, another.current, ++i);
+    for (var i = start; moveNext() && another.moveNext(); i++) {
+      yield combine(current, another.current, i);
     }
   }
 
@@ -823,9 +828,38 @@ extension IteratorExtension<I> on Iterator<I> {
     MixerGenerator<I, E, Iterable<S>> combine,
     int start,
   ) sync* {
-    var i = start - 1;
-    while (moveNext() && another.moveNext()) {
-      yield* combine(current, another.current, ++i);
+    for (var i = start; moveNext() && another.moveNext(); i++) {
+      yield* combine(current, another.current, i);
+    }
+  }
+
+  ///
+  /// [interYieldingIndexableWhere]
+  /// [interExpandIndexableWhere]
+  ///
+  Iterable<S> interYieldingIndexableWhere<E, S>(
+    Iterator<E> another,
+    PredicatorMixer<I, E> test,
+    MixerGenerator<I, E, S> mixer,
+    int start,
+  ) sync* {
+    for (var i = start; moveNext() && another.moveNext(); i++) {
+      if (test(current, another.current)) {
+        yield mixer(current, another.current, i);
+      }
+    }
+  }
+
+  Iterable<S> interExpandIndexableWhere<E, S>(
+    Iterator<E> another,
+    PredicatorMixer<I, E> test,
+    MixerGenerator<I, E, Iterable<S>> expanding,
+    int start,
+  ) sync* {
+    for (var i = start; moveNext() && another.moveNext(); i++) {
+      if (test(current, another.current)) {
+        yield* expanding(current, another.current, i);
+      }
     }
   }
 
@@ -855,7 +889,7 @@ extension IteratorExtension<I> on Iterator<I> {
   S interFold<E, S>(
     S initialValue,
     Iterator<E> another,
-    Companion2<S, I, E> mutual,
+    Collector<S, I, E> mutual,
   ) {
     var val = initialValue;
     while (moveNext() && another.moveNext()) {
@@ -867,72 +901,89 @@ extension IteratorExtension<I> on Iterator<I> {
   S interFoldIndexable<E, S>(
     S initialValue,
     Iterator<E> another,
-    Companion2Generator<S, I, E> mutual,
+    CollectorGenerator<S, I, E> mutual,
     int start,
   ) {
-    var i = start - 1;
-    return interFold(
-      initialValue,
-      another,
-      (value, a, b) => mutual(value, a, b, ++i),
-    );
+    var val = initialValue;
+    for (var i = start; moveNext() && another.moveNext(); i++) {
+      val = mutual(val, current, another.current, i);
+    }
+    return val;
   }
 
   ///
-  /// [interReduceTo]
-  /// [interReduceToIndexable]
+  /// [interReduceTo], [interReduceToIndexable]
+  /// [interReduceToInitialized], [interReduceToInitializedIndexable]
+  /// [interReduce], [interReduceIndexable]
   ///
   S interReduceTo<E, S>(
     Iterator<E> another,
-    Mixer<I, E, S> initialize,
-    Companion2<S, I, E> mutual,
+    Translator<I, S> toVal,
+    Translator<E, S> toValAnother,
+    Reducer<S> init,
+    Collapser<S> mutual,
   ) =>
       moveNextThenWith(another, () {
-        var val = initialize(current, another.current);
+        var val = init(toVal(current), toValAnother(another.current));
         while (moveNext() && another.moveNext()) {
-          val = mutual(val, current, another.current);
+          val = mutual(val, toVal(current), toValAnother(another.current));
         }
         return val;
       });
 
   S interReduceToIndexable<E, S>(
     Iterator<E> another,
-    MixerGenerator<I, E, S> initialize,
-    Companion2Generator<S, I, E> mutual,
+    Translator<I, S> toVal,
+    Translator<E, S> toValAnother,
+    Reducer<S> init,
+    CollapserGenerator<S> mutual,
     int start,
-  ) {
-    var i = start - 1;
-    return interReduceTo(
-      another,
-      (origin, another) => initialize(origin, another, ++i),
-      (o, value, e) => mutual(o, value, e, ++i),
-    );
-  }
-
-  ///
-  /// [interReduce]
-  /// [interReduceIndexable]
-  ///
-  I interReduce(
-    Iterator<I> another,
-    Reducer<I> initialize,
-    Reducer2<I> mutual,
   ) =>
-      interReduceTo(another, initialize, mutual);
+      moveNextThenWith(another, () {
+        var val = init(toVal(current), toValAnother(another.current));
+        for (var i = start + 1; moveNext() && another.moveNext(); i++) {
+          val = mutual(val, toVal(current), toValAnother(another.current), i);
+        }
+        return val;
+      });
+
+  S interReduceToInitialized<E, S>(
+    Iterator<E> another,
+    Mixer<I, E, S> init,
+    Collector<S, I, E> mutual,
+  ) =>
+      moveNextThenWith(another, () {
+        var val = init(current, another.current);
+        while (moveNext() && another.moveNext()) {
+          val = mutual(val, current, another.current);
+        }
+        return val;
+      });
+
+  S interReduceToInitializedIndexable<E, S>(
+    Iterator<E> another,
+    MixerGenerator<I, E, S> init,
+    CollectorGenerator<S, I, E> mutual,
+    int start,
+  ) =>
+      moveNextThenWith(another, () {
+        var val = init(current, another.current, start);
+        for (var i = start + 1; moveNext() && another.moveNext(); i++) {
+          val = mutual(val, current, another.current, i);
+        }
+        return val;
+      });
+
+  I interReduce(Iterator<I> another, Reducer<I> init, Collapser<I> mutual) =>
+      interReduceToInitialized(another, init, mutual);
 
   I interReduceIndexable(
     Iterator<I> another,
-    ReducerGenerator<I> initialize,
-    Reducer2Generator<I> mutual,
+    ReducerGenerator<I> init,
+    CollapserGenerator<I> mutual,
     int start,
-  ) {
-    var i = start - 1;
-    return interReduceTo(
-      another,
-      (origin, another) => initialize(origin, another, ++i),
-      (o, value, e) => mutual(o, value, e, ++i),
-    );
-  }
+  ) =>
+      interReduceToInitializedIndexable(another, init, mutual, start);
 
   ///
   /// difference
@@ -941,10 +992,11 @@ extension IteratorExtension<I> on Iterator<I> {
   /// [diffYielding], [diffExpand]
   /// [diffYieldingWhere], [diffExpandWhere]
   /// [diffYieldingIndexable], [diffExpandIndexable]
+  /// [diffYieldingIndexableWhere], [diffExpandIndexableWhere]
   /// [diffYieldingEntry], [diffExpandEntries]
   ///
   /// [diffFold], [diffFoldIndexable]
-  /// [diffReduceTo], [diffReduceToIndexable]
+  /// [diffReduceToInitialized], [diffReduceToInitializedIndexable]
   /// [diffReduce], [diffReduceIndexable]
   ///
 
@@ -1012,10 +1064,10 @@ extension IteratorExtension<I> on Iterator<I> {
 
   Iterable<S> diffYieldingWhere<E, S>(
     Iterator<E> another,
-    Mixer<I, E, S> mixer,
-    Translator<I, S> overflow,
     PredicatorMixer<I, E> test,
     Predicator<I> testOverflow,
+    Mixer<I, E, S> mixer,
+    Translator<I, S> overflow,
   ) sync* {
     while (another.moveNext()) {
       if (moveNext() && test(current, another.current)) {
@@ -1029,10 +1081,10 @@ extension IteratorExtension<I> on Iterator<I> {
 
   Iterable<S> diffExpandWhere<E, S>(
     Iterator<E> another,
-    Mixer<I, E, Iterable<S>> mixer,
-    Translator<I, Iterable<S>> overflow,
     PredicatorMixer<I, E> test,
     Predicator<I> testOverflow,
+    Mixer<I, E, Iterable<S>> mixer,
+    Translator<I, Iterable<S>> overflow,
   ) sync* {
     while (another.moveNext()) {
       if (moveNext() && test(current, another.current)) {
@@ -1077,6 +1129,46 @@ extension IteratorExtension<I> on Iterator<I> {
   }
 
   ///
+  /// [diffYieldingIndexableWhere]
+  /// [diffExpandIndexableWhere]
+  ///
+  Iterable<S> diffYieldingIndexableWhere<E, S>(
+    Iterator<E> another,
+    PredicatorMixer<I, E> test,
+    Predicator<I> testOverflow,
+    MixerGenerator<I, E, S> mixer,
+    TranslatorGenerator<I, S> overflow,
+    int start,
+  ) {
+    var i = start - 1;
+    return diffYieldingWhere(
+      another,
+      test,
+      testOverflow,
+      (p, q) => mixer(p, q, ++i),
+      (value) => overflow(value, ++i),
+    );
+  }
+
+  Iterable<S> diffExpandIndexableWhere<E, S>(
+    Iterator<E> another,
+    PredicatorMixer<I, E> test,
+    Predicator<I> testOverflow,
+    MixerGenerator<I, E, Iterable<S>> mixer,
+    TranslatorGenerator<I, Iterable<S>> overflow,
+    int start,
+  ) {
+    var i = start - 1;
+    return diffExpandWhere(
+      another,
+      test,
+      testOverflow,
+      (p, q) => mixer(p, q, ++i),
+      (value) => overflow(value, ++i),
+    );
+  }
+
+  ///
   /// [diffYieldingEntry]
   /// [diffExpandEntries]
   ///
@@ -1102,7 +1194,7 @@ extension IteratorExtension<I> on Iterator<I> {
   S diffFold<E, S>(
     S initialValue,
     Iterator<E> another,
-    Companion2<S, I, E> companion,
+    Collector<S, I, E> companion,
     Companion<S, I> overflow,
   ) {
     var val = initialValue;
@@ -1118,7 +1210,7 @@ extension IteratorExtension<I> on Iterator<I> {
   S diffFoldIndexable<E, S>(
     S initialValue,
     Iterator<E> another,
-    Companion2Generator<S, I, E> companion,
+    CollectorGenerator<S, I, E> companion,
     CompanionGenerator<S, I> overflow,
     int start,
   ) {
@@ -1132,17 +1224,17 @@ extension IteratorExtension<I> on Iterator<I> {
   }
 
   ///
-  /// [diffReduceTo]
-  /// [diffReduceToIndexable]
+  /// [diffReduceToInitialized], [diffReduceToInitializedIndexable]
+  /// [diffReduce], [diffReduceIndexable]
   ///
-  S diffReduceTo<E, S>(
+  S diffReduceToInitialized<E, S>(
     Iterator<E> another,
-    Mixer<I, E, S> initialize,
-    Companion2<S, I, E> mutual,
+    Mixer<I, E, S> init,
+    Collector<S, I, E> mutual,
     Companion<S, I> overflow,
   ) =>
       moveNextThenWith(another, () {
-        var val = initialize(current, another.current);
+        var val = init(current, another.current);
         while (another.moveNext()) {
           if (moveNext()) val = mutual(val, current, another.current);
         }
@@ -1152,63 +1244,76 @@ extension IteratorExtension<I> on Iterator<I> {
         return val;
       });
 
-  S diffReduceToIndexable<E, S>(
+  S diffReduceToInitializedIndexable<E, S>(
     Iterator<E> another,
-    MixerGenerator<I, E, S> initialize,
-    Companion2Generator<S, I, E> mutual,
+    MixerGenerator<I, E, S> init,
+    CollectorGenerator<S, I, E> mutual,
     CompanionGenerator<S, I> overflow,
     int start,
-  ) {
-    var i = start - 1;
-    return diffReduceTo(
-      another,
-      (origin, another) => initialize(origin, another, ++start),
-      (o, value, e) => mutual(o, value, e, ++i),
-      (current, value) => overflow(current, value, ++i),
-    );
-  }
+  ) =>
+      moveNextThenWith(another, () {
+        var i = start - 1;
+        var val = init(current, another.current, ++i);
+        while (another.moveNext()) {
+          if (moveNext()) val = mutual(val, current, another.current, ++i);
+        }
+        while (moveNext()) {
+          val = overflow(val, current, ++i);
+        }
+        return val;
+      });
 
-  ///
-  /// [diffReduce]
-  /// [diffReduceIndexable]
-  ///
   I diffReduce(
     Iterator<I> another,
-    Reducer<I> initialize,
-    Reducer2<I> mutual,
+    Reducer<I> init,
+    Collapser<I> mutual,
     Reducer<I> overflow,
   ) =>
-      diffReduceTo(another, initialize, mutual, overflow);
+      diffReduceToInitialized(another, init, mutual, overflow);
 
   I diffReduceIndexable(
     Iterator<I> another,
-    ReducerGenerator<I> initialize,
-    Reducer2Generator<I> mutual,
+    ReducerGenerator<I> init,
+    CollapserGenerator<I> mutual,
     ReducerGenerator<I> overflow,
     int start,
-  ) {
-    var i = start - 1;
-    return diffReduceTo(
-      another,
-      (origin, another) => initialize(origin, another, ++i),
-      (o, value, e) => mutual(o, value, e, ++i),
-      (origin, another) => overflow(origin, another, ++i),
-    );
-  }
+  ) =>
+      diffReduceToInitializedIndexable(another, init, mutual, overflow, start);
+
+  ///
+  /// [interval] for example:
+  ///   final node = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+  ///   final interval = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  ///   print(node.iterator.[interval]
+  ///   (
+  ///     interval,
+  ///     (v1, v2, other) => (v1 + v2) / 2 + other,
+  ///   ));
+  ///   // (16.0, 27.0, 38.0, 49.0, 60.0, 71.0, 82.0, 93.0, 104.0)
+  ///
+  Iterable<S> interval<T, S>(Iterator<T> another, Linker<I, T, S> link) =>
+      moveNextThen(
+        () sync* {
+          var previous = current;
+          while (moveNext() && another.moveNext()) {
+            yield link(previous, current, another.current);
+            previous = current;
+          }
+        },
+      );
 
   ///
   /// lead then
   /// [leadThen]
   /// [leadThenInterFold], [leadThenDiffFold]
-  /// [leadThenInterReduceTo], [leadThenDiffReduceTo]
   ///
 
   ///
   /// [leadThen]
   ///
-  S leadThen<S>(int from, Supplier<S> supply) {
-    for (var i = -1; i < from; i++) {
-      if (!moveNext()) throw UnsupportedError('invalid lead from: $from');
+  S leadThen<S>(int ahead, Supplier<S> supply) {
+    for (var i = -1; i < ahead; i++) {
+      if (!moveNext()) throw UnsupportedError('invalid lead ahead: $ahead');
     }
     return supply();
   }
@@ -1218,47 +1323,23 @@ extension IteratorExtension<I> on Iterator<I> {
   /// [leadThenDiffFold]
   ///
   S leadThenInterFold<E, S>(
-    int from,
-    Translator<I, S> initialize,
+    int ahead,
+    Translator<I, S> init,
     Iterator<E> another,
-    Companion2<S, I, E> mutual,
+    Collector<S, I, E> mutual,
   ) =>
-      leadThen(from, () => interFold(initialize(current), another, mutual));
+      leadThen(ahead, () => interFold(init(current), another, mutual));
 
   S leadThenDiffFold<E, S>(
-    int from,
-    Translator<I, S> initialize,
+    int ahead,
+    Translator<I, S> init,
     Iterator<E> another,
-    Companion2<S, I, E> mutual,
+    Collector<S, I, E> mutual,
     Companion<S, I> overflow,
   ) =>
       leadThen(
-        from,
-        () => diffFold(initialize(current), another, mutual, overflow),
-      );
-
-  ///
-  /// [leadThenInterReduceTo]
-  /// [leadThenDiffReduceTo]
-  ///
-  S leadThenInterReduceTo<E, S>(
-    int from,
-    Iterator<E> another,
-    Mixer<I, E, S> initialize,
-    Companion2<S, I, E> mutual,
-  ) =>
-      leadThen(from, () => interReduceTo(another, initialize, mutual));
-
-  S leadThenDiffReduceTo<E, S>(
-    int from,
-    Iterator<E> another,
-    Mixer<I, E, S> initialize,
-    Companion2<S, I, E> mutual,
-    Companion<S, I> overflow,
-  ) =>
-      leadThen(
-        from,
-        () => diffReduceTo(another, initialize, mutual, overflow),
+        ahead,
+        () => diffFold(init(current), another, mutual, overflow),
       );
 
   ///
