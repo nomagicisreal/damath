@@ -569,9 +569,9 @@ extension IntExtension on int {
             }
 
             elementOf = _partitionElementGenerator(
-              atFirst: FGenerator.fill2D(1),
-              atLast: FGenerator.fill2D(1),
-              atLastPrevious: FGenerator.fill2D(1),
+              atFirst: FGenerator.filled2D(1),
+              atLast: FGenerator.filled2D(1),
+              atLastPrevious: FGenerator.filled2D(1),
               instancesOf: instancesOf,
             );
 

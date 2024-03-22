@@ -388,36 +388,77 @@ extension FMapper on Mapper {
 /// generator
 ///
 /// static methods:
-/// [fill], ...
-/// [toDouble], ...
+/// [filled], ...
+/// [ofDouble], ...
 ///
 /// instance methods:
+/// [generate], ...
+///
 /// [foldTill], ...
 /// [reduceTill], ...
 ///
 /// [yieldingTill], ...
+/// [linkTill], ...
 ///
 ///
 extension FGenerator<T> on Generator<T> {
-  static Generator<T> fill<T>(T value) => (i) => value;
+  static Generator<T> filled<T>(T value) => (i) => value;
 
-  static Generator2D<T> fill2D<T>(T value) => (i, j) => value;
+  static Generator2D<T> filled2D<T>(T value) => (i, j) => value;
 
-  static double toDouble(int index) => index.toDouble();
+  static double ofDouble(int index) => index.toDouble();
 
+  ///
+  /// [generate]
+  /// [generateToList]
+  ///
+  Iterable<T> generate(int length, [int start = 0]) sync* {
+    for (var i = start; i < length; i++) {
+      yield this(i);
+    }
+  }
+
+  List<T> generateToList(int length, [int start = 0]) =>
+      [for (var i = start; i < length; i++) this(i)];
+
+  ///
+  /// fold, reduce
+  /// [foldTill]
+  /// [foldCollectTill]
+  ///
+  ///
+  /// [reduceTill]
+  ///
+  ///
+  ///
 
   ///
   /// [foldTill]
-  /// [reduceTill]
   ///
   S foldTill<S>(int length, S initialValue, Companion<S, T> companion) {
     var val = initialValue;
-    for (var i = 0 ; i < length; i++) {
-      val = companion(val, this(0));
+    for (var i = 0; i < length; i++) {
+      val = companion(val, this(i));
     }
     return val;
   }
 
+  S foldCollectTill<E, S>(
+    int length,
+    Generator<E> another,
+    S initialValue,
+    Collector<S, T, E> collect,
+  ) {
+    var val = initialValue;
+    for (var i = 0; i < length; i++) {
+      val = collect(val, this(i), another(i));
+    }
+    return val;
+  }
+
+  ///
+  /// [reduceTill]
+  ///
   T reduceTill(int length, Reducer<T> reducing) {
     var val = this(0);
     for (var i = 1; i < length; i++) {
@@ -428,7 +469,7 @@ extension FGenerator<T> on Generator<T> {
 
   ///
   /// [yieldingTill]
-  /// [yieldingIntervalTill], [yieldingLinkTill]
+  /// [yieldingIntervalTill]
   ///
   Iterable<T> yieldingTill(int length, [int start = 0]) sync* {
     for (var i = start; i < length; i++) {
@@ -437,25 +478,44 @@ extension FGenerator<T> on Generator<T> {
   }
 
   Iterable<T> yieldingIntervalTill(int length, Reducer<T> reducing) sync* {
-    var previous = this(0);
+    var val = this(0);
     for (var i = 1; i < length; i++) {
       final current = this(i);
-      yield reducing(previous, current);
-      previous = current;
+      yield reducing(val, current);
+      val = current;
     }
   }
 
-  Iterable<S> yieldingLinkTill<E, S>(
+  ///
+  /// [linkTill]
+  /// [linkToListTill]
+  ///
+  Iterable<S> linkTill<E, S>(
     int length,
     Generator<E> interval,
-    Linker<T, E, S> linker,
+    Linker<T, E, S> link,
   ) sync* {
-    var previous = this(0);
+    var val = this(0);
     for (var i = 1; i < length; i++) {
       final current = this(i);
-      yield linker(previous, current, interval(i));
-      previous = current;
+      yield link(val, current, interval(i - 1));
+      val = current;
     }
+  }
+
+  List<S> linkToListTill<E, S>(
+    int length,
+    Generator<E> interval,
+    Linker<T, E, S> link,
+  ) {
+    var list = <S>[];
+    var val = this(0);
+    for (var i = 1; i < length; i++) {
+      final current = this(i);
+      list.add(link(val, current, interval(i - 1)));
+      val = current;
+    }
+    return list;
   }
 }
 
