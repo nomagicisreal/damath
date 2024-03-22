@@ -385,25 +385,78 @@ extension FMapper on Mapper {
 
 ///
 ///
-///
-///
-///
-///
-///
 /// generator
 ///
+/// static methods:
+/// [fill], ...
+/// [toDouble], ...
+///
+/// instance methods:
+/// [foldTill], ...
+/// [reduceTill], ...
+///
+/// [yieldingTill], ...
 ///
 ///
-///
-///
-///
-///
-extension FGenerator on Generator {
+extension FGenerator<T> on Generator<T> {
   static Generator<T> fill<T>(T value) => (i) => value;
+
+  static Generator2D<T> fill2D<T>(T value) => (i, j) => value;
 
   static double toDouble(int index) => index.toDouble();
 
-  static Generator2D<T> fill2D<T>(T value) => (i, j) => value;
+
+  ///
+  /// [foldTill]
+  /// [reduceTill]
+  ///
+  S foldTill<S>(int length, S initialValue, Companion<S, T> companion) {
+    var val = initialValue;
+    for (var i = 0 ; i < length; i++) {
+      val = companion(val, this(0));
+    }
+    return val;
+  }
+
+  T reduceTill(int length, Reducer<T> reducing) {
+    var val = this(0);
+    for (var i = 1; i < length; i++) {
+      val = reducing(val, this(i));
+    }
+    return val;
+  }
+
+  ///
+  /// [yieldingTill]
+  /// [yieldingIntervalTill], [yieldingLinkTill]
+  ///
+  Iterable<T> yieldingTill(int length, [int start = 0]) sync* {
+    for (var i = start; i < length; i++) {
+      yield this(i);
+    }
+  }
+
+  Iterable<T> yieldingIntervalTill(int length, Reducer<T> reducing) sync* {
+    var previous = this(0);
+    for (var i = 1; i < length; i++) {
+      final current = this(i);
+      yield reducing(previous, current);
+      previous = current;
+    }
+  }
+
+  Iterable<S> yieldingLinkTill<E, S>(
+    int length,
+    Generator<E> interval,
+    Linker<T, E, S> linker,
+  ) sync* {
+    var previous = this(0);
+    for (var i = 1; i < length; i++) {
+      final current = this(i);
+      yield linker(previous, current, interval(i));
+      previous = current;
+    }
+  }
 }
 
 ///
