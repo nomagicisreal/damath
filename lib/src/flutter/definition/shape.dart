@@ -37,7 +37,6 @@
 ///
 part of damath_flutter;
 
-
 ///
 ///
 ///
@@ -50,42 +49,44 @@ part of damath_flutter;
 
 //
 abstract class RegularPolygon {
-  static double radianCornerOf(int n) => (n - 2) * Radian.angle_180 / n;
+  static double radianCornerOf(int n) => (n - 2) * SpaceRadian.angle_180 / n;
 
   static double lengthSideOf(
-      int n,
-      double radiusCircumscribed, [
-        int roundUp = 0,
-      ]) =>
+    int n,
+    double radiusCircumscribed, [
+    int roundUp = 0,
+  ]) =>
       radiusCircumscribed *
-          math.sin(Radian.angle_180 / n).roundUpTo(roundUp) *
-          2;
+      math.sin(SpaceRadian.angle_180 / n).roundUpTo(roundUp) *
+      2;
 
   static List<Offset> cornersOf(
-      int n,
-      double radiusCircumscribedCircle, {
-        Size? size,
-      }) {
-    final step = Radian.angle_360 / n;
+    int n,
+    double radiusCircumscribedCircle, {
+    Size? size,
+  }) {
+    final step = SpaceRadian.angle_360 / n;
     final center = size?.center(Offset.zero) ?? Offset.zero;
     return List.generate(
       n,
-          (i) => center + Offset.fromDirection(step * i, radiusCircumscribedCircle),
+      (i) => center + Offset.fromDirection(step * i, radiusCircumscribedCircle),
       growable: false,
     );
   }
 
   static double inscribedCircleRadiusOf(
-      int n,
-      num radiusCircumscribedCircle,
-      double radianCorner,
-      ) =>
+    int n,
+    num radiusCircumscribedCircle,
+    double radianCorner,
+  ) =>
       switch (n) {
         3 => radiusCircumscribedCircle / 2,
         4 => radiusCircumscribedCircle * DoubleExtension.sqrt1_2,
         6 => radiusCircumscribedCircle * DoubleExtension.sqrt3 / 2,
         _ => radiusCircumscribedCircle *
-            math.sin(Radian.radianFromAngle(Radian.angleOf(radianCorner) / 2)),
+            math.sin(RotationUnit.radianFromAngle(
+              RotationUnit.angleFromRadian(radianCorner) / 2,
+            )),
       };
 
   /// properties
@@ -99,22 +100,23 @@ abstract class RegularPolygon {
 
   double get radianSideSide => radianCornerOf(n);
 
-  double get radianCornerSideCenter => Radian.angle_90;
+  double get radianCornerSideCenter => SpaceRadian.angle_90;
 
-  double get radianCornerCenterSide => Radian.angle_180 / n;
+  double get radianCornerCenterSide => SpaceRadian.angle_180 / n;
 
-  double get radianSideCornerCenter => Radian.angle_90 - radianCornerCenterSide;
+  double get radianSideCornerCenter =>
+      SpaceRadian.angle_90 - radianCornerCenterSide;
 
   double get radiusInscribedCircle => inscribedCircleRadiusOf(
-    n,
-    radiusCircumscribedCircle,
-    radianSideSide,
-  );
+        n,
+        radiusCircumscribedCircle,
+        radianSideSide,
+      );
 
   const RegularPolygon(
-      this.n, {
-        required this.radiusCircumscribedCircle,
-      });
+    this.n, {
+    required this.radiusCircumscribedCircle,
+  });
 }
 
 sealed class RRegularPolygon extends RegularPolygon {
@@ -128,12 +130,12 @@ sealed class RRegularPolygon extends RegularPolygon {
       cubicPointsMapper(cubicPointsForEachCorners).values;
 
   const RRegularPolygon(
-      super.n, {
-        required this.cornerRadius,
-        required this.cornerAdjust,
-        required this.cubicPointsMapper,
-        required super.radiusCircumscribedCircle,
-      });
+    super.n, {
+    required this.cornerRadius,
+    required this.cornerAdjust,
+    required this.cubicPointsMapper,
+    required super.radiusCircumscribedCircle,
+  });
 }
 
 ///
@@ -154,35 +156,35 @@ class RRegularPolygonCubicOnEdge extends RRegularPolygon {
   final double timesForEdge;
 
   const RRegularPolygonCubicOnEdge(
-      super.n, {
-        this.timesForEdge = 0,
-        super.cornerRadius = 0,
-        super.cubicPointsMapper = _cubicPointsMapper,
-        super.cornerAdjust = CubicOffset.companionSizeAdjustCenter,
-        required super.radiusCircumscribedCircle,
-      });
+    super.n, {
+    this.timesForEdge = 0,
+    super.cornerRadius = 0,
+    super.cubicPointsMapper = _cubicPointsMapper,
+    super.cornerAdjust = CubicOffset.companionSizeAdjustCenter,
+    required super.radiusCircumscribedCircle,
+  });
 
   // [cornerPrevious, controlPointA, controlPointB, cornerNext]
   static Map<Offset, CubicOffset> _cubicPointsMapper(
-      Map<Offset, CubicOffset> points,
-      ) =>
+    Map<Offset, CubicOffset> points,
+  ) =>
       points.mapValues((value) => value.mapXY(FMapperMaterial.cubic_0231));
 
   RRegularPolygonCubicOnEdge.from(
-      RRegularPolygonCubicOnEdge polygon, {
-        double timesForEdge = 0,
-        Translator<RRegularPolygonCubicOnEdge, double>? cornerRadius,
-        Mapper<Map<Offset, CubicOffset>> cubicPointsMapper = _cubicPointsMapper,
-        Companion<CubicOffset, Size> cornerAdjust =
-            CubicOffset.companionSizeAdjustCenter,
-      }) : this(
-    polygon.n,
-    timesForEdge: timesForEdge,
-    cornerRadius: cornerRadius?.call(polygon) ?? 0,
-    cubicPointsMapper: cubicPointsMapper,
-    cornerAdjust: cornerAdjust,
-    radiusCircumscribedCircle: polygon.radiusCircumscribedCircle,
-  );
+    RRegularPolygonCubicOnEdge polygon, {
+    double timesForEdge = 0,
+    Translator<RRegularPolygonCubicOnEdge, double>? cornerRadius,
+    Mapper<Map<Offset, CubicOffset>> cubicPointsMapper = _cubicPointsMapper,
+    Companion<CubicOffset, Size> cornerAdjust =
+        CubicOffset.companionSizeAdjustCenter,
+  }) : this(
+          polygon.n,
+          timesForEdge: timesForEdge,
+          cornerRadius: cornerRadius?.call(polygon) ?? 0,
+          cubicPointsMapper: cubicPointsMapper,
+          cornerAdjust: cornerAdjust,
+          radiusCircumscribedCircle: polygon.radiusCircumscribedCircle,
+        );
 
   @override
   Map<Offset, CubicOffset> get cubicPointsForEachCorners =>
@@ -192,18 +194,18 @@ class RRegularPolygonCubicOnEdge extends RRegularPolygon {
       );
 
   Iterable<CubicOffset> cubicPointsOf(
-      double cornerRadius,
-      double timesForEdge,
-      ) =>
+    double cornerRadius,
+    double timesForEdge,
+  ) =>
       cubicPointsMapper(cubicPointsForEachCornersOf(
         timesForEdgeUnitOf(cornerRadius),
         timesForEdge,
       )).values;
 
   Map<Offset, CubicOffset> cubicPointsForEachCornersOf(
-      double timesForEdgeUnit,
-      double timesForEdge,
-      ) =>
+    double timesForEdgeUnit,
+    double timesForEdge,
+  ) =>
       corners.asMap().map((index, current) {
         // offset from current corner to previous corner
         final previous = OffsetExtension.parallelOffsetUnitOf(
@@ -230,7 +232,7 @@ class RRegularPolygonCubicOnEdge extends RRegularPolygon {
       });
 
   double timesForEdgeUnitOf(double cornerRadius) =>
-      cornerRadius * math.tan(Radian.angle_180 / n);
+      cornerRadius * math.tan(SpaceRadian.angle_180 / n);
 
   ///
   ///
@@ -238,20 +240,20 @@ class RRegularPolygonCubicOnEdge extends RRegularPolygon {
   ///
   ///
   List<double> get stepsOfCornerRadius => [
-    double.negativeInfinity,
-    0, // no radius (cause a normal regular polygon)
-    stepCornerRadiusInscribedCircle,
-    stepCornerRadiusFragmentFitCorner(),
-    stepCornerRadiusArcCrossCenter(),
-    double.infinity,
-  ];
+        double.negativeInfinity,
+        0, // no radius (cause a normal regular polygon)
+        stepCornerRadiusInscribedCircle,
+        stepCornerRadiusFragmentFitCorner(),
+        stepCornerRadiusArcCrossCenter(),
+        double.infinity,
+      ];
 
   static List<double> get stepsOfEdgeTimes => [
-    double.negativeInfinity,
-    0,
-    1,
-    double.infinity,
-  ];
+        double.negativeInfinity,
+        0,
+        1,
+        double.infinity,
+      ];
 
   ///
   /// the 'Pa' in below discussion, treats as every corner in [corners], and also,
@@ -304,22 +306,22 @@ class RRegularPolygonCubicOnEdge extends RRegularPolygon {
   /// and P(0.5 - cornerOffset) is too complex to compute. there is two approximate value for triangle and square.
   ///
   double stepCornerRadiusArcCrossCenter([double inset = 0]) => switch (n) {
-    3 => radiusCircumscribedCircle * 1.2 - inset,
-    4 => radiusCircumscribedCircle * 2.6 - inset,
-    _ => ((radiusCircumscribedCircle - inset) *
-        math.cos(radianCornerCenterSide)) /
-        (1 - math.cos(radianCornerCenterSide)),
-  };
+        3 => radiusCircumscribedCircle * 1.2 - inset,
+        4 => radiusCircumscribedCircle * 2.6 - inset,
+        _ => ((radiusCircumscribedCircle - inset) *
+                math.cos(radianCornerCenterSide)) /
+            (1 - math.cos(radianCornerCenterSide)),
+      };
 }
 
 abstract class RsRegularPolygon extends RRegularPolygon {
   final List<Radius> cornerRadiusList;
 
   const RsRegularPolygon(
-      super.n, {
-        required this.cornerRadiusList,
-        required super.cornerAdjust,
-        required super.cubicPointsMapper,
-        required super.radiusCircumscribedCircle,
-      }) : super(cornerRadius: 0);
+    super.n, {
+    required this.cornerRadiusList,
+    required super.cornerAdjust,
+    required super.cubicPointsMapper,
+    required super.radiusCircumscribedCircle,
+  }) : super(cornerRadius: 0);
 }

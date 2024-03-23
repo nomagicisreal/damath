@@ -259,7 +259,7 @@ extension IterableExtension<I> on Iterable<I> {
   ///
   Iterable<S> interval<T, S>(Iterable<T> another, Linker<I, T, S> link) {
     assert(another.length + 1 == length);
-    return iterator.interval(another.iterator, link);
+    return iterator.intervalBy(another.iterator, link);
   }
 
   ///
@@ -341,15 +341,6 @@ extension IterableIntExtension on Iterable<int> {
 }
 
 ///
-/// [sum], [sumSquared]
-///
-extension IterableDoubleExtension on Iterable<double> {
-  double get sum => iterator.reduce(FReducer.doubleAdd);
-
-  double get sumSquared => iterator.reduce(FReducer.doubleAddSquared);
-}
-
-///
 /// [size]
 /// [toStringPadLeft], [toStringMapJoin]
 /// [anyElementsLengthIsDifferentWith]
@@ -395,4 +386,28 @@ extension IterableIterableExtension<I> on Iterable<Iterable<I>> {
         initialValue,
         (value, e, eAnother) => value = e.foldWith(eAnother, value, fusionor),
       );
+}
+
+
+///
+///
+///
+extension IterableDoubleExtension on Iterable<double> {
+  double get standardDeviation {
+    var length = 0;
+    var total = 0.0;
+
+    for (var value in this) {
+      total += value;
+      length++;
+    }
+    final mean = total / length;
+
+    var sum = 0.0;
+    for (var value in this) {
+      sum += (value - mean).squared;
+      length++;
+    }
+    return sum / length;
+  }
 }

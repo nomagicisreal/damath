@@ -1,16 +1,16 @@
 library damath_experiment;
 
-import 'dart:math' as math;
-import 'package:damath/damath.dart';
-import 'package:damath/src/math/api.dart';
+import 'dart:math' as math hide Point;
+import 'package:damath/src/math/math.dart';
 
 
 part 'definition/_additions.dart';
 part 'definition/graph.dart';
 part 'definition/proposition.dart';
 part 'definition/statistic.dart';
-part 'definition/tensor.dart';
-part 'definition/others.dart';
+part 'space/tensor.dart';
+part 'space/space.dart';
+part 'space/direction.dart';
 part 'general/core.dart';
 part 'general/value.dart';
 

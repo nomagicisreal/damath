@@ -2,11 +2,6 @@
 ///
 /// this file contains:
 ///
-/// [DoubleMaterialExtension]
-/// [CurveExtension]
-///
-/// [ColorExtension]
-///
 ///
 /// [FocusManagerExtension], [FocusNodeExtension]
 /// [GlobalKeyExtension]
@@ -35,99 +30,13 @@
 ///
 ///
 ///
+///
+///
+///
+///
+///
 part of damath_flutter;
 
-///
-///
-/// double
-///
-///
-
-//
-extension DoubleMaterialExtension on double {
-  Radius get toCircularRadius => Radius.circular(this);
-
-  double get clampPositive => ui.clampDouble(this, 0.0, double.infinity);
-
-  double get clampNegative => ui.clampDouble(this, double.negativeInfinity, 0);
-}
-
-///
-///
-/// curve
-///
-///
-
-//
-extension CurveExtension on Curve {
-  Curve flippedOrThis(bool shouldFlip) => shouldFlip ? flipped : this;
-
-  Interval interval(double begin, double end, [bool shouldFlip = false]) =>
-      Interval(begin, end, curve: flippedOrThis(shouldFlip));
-}
-
-///
-///
-///
-/// color
-///
-///
-///
-
-///
-/// [plusARGB], [minusARGB], [multiplyARGB], [divideARGB],
-/// [plusAllRGB], [minusAllRGB], [multiplyAllRGB], [divideAllRGB],
-/// [operateWithValue]
-///
-extension ColorExtension on Color {
-  Color plusARGB(int alpha, int red, int green, int blue) => Color.fromARGB(
-        this.alpha + alpha,
-        this.red + red,
-        this.green + green,
-        this.blue + blue,
-      );
-
-  Color minusARGB(int alpha, int red, int green, int blue) => Color.fromARGB(
-        this.alpha - alpha,
-        this.red - red,
-        this.green - green,
-        this.blue - blue,
-      );
-
-  Color multiplyARGB(int alpha, int red, int green, int blue) => Color.fromARGB(
-        this.alpha * alpha,
-        this.red * red,
-        this.green * green,
-        this.blue * blue,
-      );
-
-  Color divideARGB(int alpha, int red, int green, int blue) => Color.fromARGB(
-        this.alpha ~/ alpha,
-        this.red ~/ red,
-        this.green ~/ green,
-        this.blue ~/ blue,
-      );
-
-  Color plusAllRGB(int value) =>
-      Color.fromARGB(alpha, red + value, green + value, blue + value);
-
-  Color minusAllRGB(int value) =>
-      Color.fromARGB(alpha, red - value, green - value, blue - value);
-
-  Color multiplyAllRGB(int value) =>
-      Color.fromARGB(alpha, red * value, green * value, blue * value);
-
-  Color divideAllRGB(int value) =>
-      Color.fromARGB(alpha, red ~/ value, green ~/ value, blue ~/ value);
-
-  Color operateWithValue(Operator operator, int value) => switch (operator) {
-        Operator.plus => plusARGB(0, value, value, value),
-        Operator.minus => minusARGB(0, value, value, value),
-        Operator.multiply => multiplyARGB(1, value, value, value),
-        Operator.divide => divideARGB(1, value, value, value),
-        Operator.modulus => throw UnimplementedError(),
-      };
-}
 
 ///
 /// focus manager, focus node, global key

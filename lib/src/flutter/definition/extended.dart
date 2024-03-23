@@ -1,12 +1,31 @@
 ///
 ///
 /// this file contains:
-///
 /// [Painting], [Clipping]
 ///
 /// [Curving], [CurveFR]
 ///
 /// [CubicOffset]
+///
+///
+/// [IconAction]
+///   [IterableIconAction]
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///
 ///
 ///
 ///
@@ -17,25 +36,6 @@
 ///
 ///
 part of damath_flutter;
-
-
-
-///
-///
-///
-///
-///
-///
-///
-/// classes
-///
-///
-///
-///
-///
-///
-///
-///
 
 ///
 ///
@@ -389,7 +389,7 @@ class CurveFR {
   ]) =>
       CurveFR(
         forward.interval(begin, end, flipForward),
-        reverse.flippedOrThis(flipReverse),
+        reverse.flippedWhen(flipReverse),
       );
 
   CurveFR intervalReverse(
@@ -399,7 +399,7 @@ class CurveFR {
     bool flipReverse = false,
   ]) =>
       CurveFR(
-        forward.flippedOrThis(flipForward),
+        forward.flippedWhen(flipForward),
         reverse.interval(begin, end, flipReverse),
       );
 
@@ -425,7 +425,7 @@ class CurveFR {
   ]) =>
       CurveFR(
         reverse.interval(begin, end, flipForward),
-        forward.flippedOrThis(flipReverse),
+        forward.flippedWhen(flipReverse),
       );
 
   CurveFR invertIntervalReverse(
@@ -435,7 +435,7 @@ class CurveFR {
     bool flipReverse = false,
   ]) =>
       CurveFR(
-        reverse.flippedOrThis(flipForward),
+        reverse.flippedWhen(flipForward),
         forward.interval(begin, end, flipReverse),
       );
 }
@@ -496,4 +496,38 @@ class CubicOffset {
       CubicOffset.fromPoints(
         cubicOffset.points.adjustCenterFor(size).toList(),
       );
+}
+
+///
+/// icon action
+///
+class IconAction {
+  final Icon icon;
+  final VoidCallback action;
+
+  const IconAction(this.icon, this.action);
+
+  double dimensionFrom(BuildContext context) =>
+      icon.size ?? context.theme.iconTheme.size ?? 24.0;
+
+  Widget buildBy(Mixer<Icon, VoidCallback, Widget> mixer) =>
+      mixer(icon, action);
+}
+
+///
+///
+extension IterableIconAction on Iterable<IconAction> {
+  List<Widget> build(MixerGenerator<Icon, VoidCallback, Widget> mixer) =>
+      iterator.foldByIndex(
+        [],
+        (widgets, iconAction, index) => widgets
+          ..add(iconAction.buildBy(
+            (icon, action) => mixer(icon, action, index),
+          )),
+      );
+
+  double maxRadiusFrom(BuildContext context, [double defaultSize = 24]) {
+    final size = context.themeIcon.size ?? defaultSize;
+    return iterator.reduceTo((i) => i.icon.size ?? size, math.max);
+  }
 }

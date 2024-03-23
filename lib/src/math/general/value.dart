@@ -1,6 +1,7 @@
 ///
 ///
 /// this file contains:
+/// [VFuture]
 /// [KDuration]
 /// [VRandom]
 ///
@@ -10,6 +11,13 @@
 ///
 ///
 part of damath_math;
+
+///
+/// future
+///
+extension VFuture on Future {
+  static final Future<void> zero = Future.delayed(Duration.zero);
+}
 
 ///
 /// duration

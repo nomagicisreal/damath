@@ -21,6 +21,7 @@ part of damath_math;
 ///
 /// [inter], ...
 /// [diff], ...
+///
 /// [interval], ...
 /// [leadThen], ...
 ///
@@ -1281,22 +1282,41 @@ extension IteratorExtension<I> on Iterator<I> {
       diffReduceToInitializedIndexable(another, init, mutual, overflow, start);
 
   ///
-  /// [interval] for example:
+  /// interval
+  /// [interval]
+  /// [intervalBy]
+  ///
+  ///
+
+  ///
+  /// [interval]
+  /// [intervalBy]
+  ///
+  Iterable<I> interval(Reducer<I> reducing) => moveNextThen(() sync* {
+        var previous = current;
+        while (moveNext()) {
+          yield reducing(previous, current);
+          previous = current;
+        }
+      });
+
+  ///
+  /// [intervalBy] for example:
   ///   final node = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
   ///   final interval = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-  ///   print(node.iterator.[interval]
+  ///   print(node.iterator.[intervalBy]
   ///   (
   ///     interval,
   ///     (v1, v2, other) => (v1 + v2) / 2 + other,
   ///   ));
   ///   // (16.0, 27.0, 38.0, 49.0, 60.0, 71.0, 82.0, 93.0, 104.0)
   ///
-  Iterable<S> interval<T, S>(Iterator<T> another, Linker<I, T, S> link) =>
+  Iterable<S> intervalBy<T, S>(Iterator<T> interval, Linker<I, T, S> link) =>
       moveNextThen(
         () sync* {
           var previous = current;
-          while (moveNext() && another.moveNext()) {
-            yield link(previous, current, another.current);
+          while (moveNext() && interval.moveNext()) {
+            yield link(previous, current, interval.current);
             previous = current;
           }
         },
@@ -1373,4 +1393,33 @@ extension IteratorExtension<I> on Iterator<I> {
         },
         FReducer.intAdd,
       );
+}
+
+///
+///
+/// double
+///
+///
+///
+/// [sum], ...
+///
+extension IteratorDoubleExtension on Iterator<double> {
+  double get sum => reduce(FReducer.doubleAdd);
+
+  double get sumSquared => reduce(FReducer.doubleAddSquared);
+
+  double get norm => math.sqrt(sumSquared);
+
+  ///
+  ///
+  ///
+  double get mean {
+    var total = 0.0;
+    var length = 0;
+    while (moveNext()) {
+      total += current;
+      length++;
+    }
+    return total / length;
+  }
 }

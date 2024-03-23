@@ -31,11 +31,7 @@
 /// [FTranslator]
 /// [FReducer]
 /// [FCompanion]
-///
-///
-///
-///
-///
+/// [FLerper]
 ///
 ///
 ///
@@ -348,7 +344,7 @@ extension FMapper on Mapper {
   ]) {
     assert(transform == math.sin || transform == math.cos);
     final times = math.pi * 2 * period;
-    return lerp<double>(0, 1, (value) => transform(times * value));
+    return FLerper.clamp((value) => transform(times * value), 0.0, 1.0);
   }
 
   static Mapper<double> doubleOnPeriodSinByTimes(int times) =>
@@ -372,15 +368,6 @@ extension FMapper on Mapper {
   /// [listAdd]
   ///
   static Mapper<List<T>> listAdd<T>(T value) => (list) => list..add(value);
-
-  ///
-  /// lerpOf
-  ///
-  static Lerper<T> lerp<T>(T begin, T end, Lerper<T> transform) => (value) {
-        if (value == 0) return begin;
-        if (value == 1) return end;
-        return transform(value);
-      };
 }
 
 ///
@@ -397,7 +384,6 @@ extension FMapper on Mapper {
 /// [foldTill], ...
 /// [reduceTill], ...
 ///
-/// [yieldingTill], ...
 /// [linkTill], ...
 ///
 ///
@@ -420,6 +406,27 @@ extension FGenerator<T> on Generator<T> {
 
   List<T> generateToList(int length, [int start = 0]) =>
       [for (var i = start; i < length; i++) this(i)];
+
+  ///
+  /// [yielding]
+  /// [yieldingToList]
+  ///
+  Iterable<E> yielding<E>(
+    int length,
+    Translator<T, E> toVal, [
+    int start = 0,
+  ]) sync* {
+    for (var i = start; i < length; i++) {
+      yield toVal(this(i));
+    }
+  }
+
+  List<E> yieldingToList<E>(
+    int length,
+    Translator<T, E> toVal, [
+    int start = 0,
+  ]) =>
+      [for (var i = start; i < length; i++) toVal(this(i))];
 
   ///
   /// fold, reduce
@@ -465,25 +472,6 @@ extension FGenerator<T> on Generator<T> {
       val = reducing(val, this(i));
     }
     return val;
-  }
-
-  ///
-  /// [yieldingTill]
-  /// [yieldingIntervalTill]
-  ///
-  Iterable<T> yieldingTill(int length, [int start = 0]) sync* {
-    for (var i = start; i < length; i++) {
-      yield this(i);
-    }
-  }
-
-  Iterable<T> yieldingIntervalTill(int length, Reducer<T> reducing) sync* {
-    var val = this(0);
-    for (var i = 1; i < length; i++) {
-      final current = this(i);
-      yield reducing(val, current);
-      val = current;
-    }
   }
 
   ///
@@ -607,4 +595,31 @@ extension FReducer on Reducer {
 ///
 extension FCompanion on Companion {
   static T keep<T, S>(T origin, S another) => origin;
+}
+
+///
+///
+///
+extension FLerper on Lerper {
+  static Lerper<T> of<T>(T value) => (_) => value;
+
+  ///
+  /// [clamp]
+  /// [clampZeroTo1], [clampPositive], [clampNegative]
+  ///
+  static Lerper<T> clamp<T>(
+    Lerper<T> transform,
+    double lowerLimit,
+    double upperLimit,
+  ) =>
+      (value) => transform(value.clampDouble(lowerLimit, upperLimit));
+
+  static Lerper<T> clampZeroTo1<T>(Lerper<T> transform) =>
+      (value) => transform(value.clampZeroTo1);
+
+  static Lerper<T> clampPositive<T>(Lerper<T> transform) =>
+      (value) => transform(value.clampPositive);
+
+  static Lerper<T> clampNegative<T>(Lerper<T> transform) =>
+      (value) => transform(value.clampNegative);
 }

@@ -1,6 +1,8 @@
-import 'package:damath/src/math/api.dart';
+// import 'dart:math';
 
-void main(List<String> arguments) {
+// import 'package:damath/src/experiment/experiment.dart';
+
+void main(List<String> arguments) async {
   // const d1 = 'the computer is complex';
   // const d2 = 'the computer is easy';
   // final pT = Proposition(d1, true);
@@ -19,21 +21,18 @@ void main(List<String> arguments) {
   // final list = [1, 3, 1, 2, 6, 10, -1, 8];
   // print((1, 2) == (1, 2));
   // print(list.iterator.cumulativeWhere((value) => value.isOdd));
+}
 
-  // final sets = <String, Set<int>>{
-  //   'A': {1, 2},
-  //   'B': {3, 4},
-  //   'C': {1, 4},
-  // };
-  // print(sets.updateSet('A', 5));
-  // print(sets.updateSet('B', 4));
-  // print(sets);
 
-  final node = ListExtension.generateFrom(10, (index) => index * 10);
-  final interval = ListExtension.generateFrom(9, (index) => index);
-  print(node.interval
-    (
-    interval,
-    (v1, v2, other) => (v1 + v2) / 2 + other,
-  ));
+void watching() {
+  final watch = Stopwatch();
+  print('start');
+
+  watch.start();
+  watch.reset();
+
+  watch.start();
+  watch.reset();
+
+  print('end');
 }

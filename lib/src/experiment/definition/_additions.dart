@@ -8,7 +8,7 @@
 ///
 /// [Operator]
 ///
-/// [Vector3D]
+/// [Spherical]
 ///
 ///
 ///
@@ -37,7 +37,7 @@ part of damath_experiment;
 ///
 ///
 mixin ComparableData<C extends Comparable, D extends ComparableData<C, D>>
-implements Comparable<D> {
+    implements Comparable<D> {
   bool operator >(D other) => Comparable.compare(this, other) == 1;
 
   bool operator <(D other) => Comparable.compare(this, other) == -1;
@@ -100,8 +100,6 @@ class DurationFR {
   static const min1 = DurationFR.constant(KDuration.min1);
 }
 
-
-
 ///
 ///
 ///
@@ -121,7 +119,7 @@ enum Operator {
         Operator.divide => '/',
         Operator.modulus => '%',
       };
-  
+
   String get latex => switch (this) {
         Operator.plus => r'+',
         Operator.minus => r'-',
@@ -190,7 +188,6 @@ enum Operator {
   ///
   /// mapper
   ///
-
   Mapper<double> doubleMapperOf(double value) => switch (this) {
         Operator.plus => (a) => a + value,
         Operator.minus => (a) => a - value,
@@ -198,60 +195,5 @@ enum Operator {
         Operator.divide => (a) => a / value,
         Operator.modulus => (a) => a % value,
       };
-}
-
-extension Space3RadianExtension on Space3Radian {
-  List<Direction3DIn6> get visibleFaces {
-    throw UnimplementedError();
-  }
-}
-
-///
-///
-///
-/// [Vector3D]
-///
-///
-///
-
-//
-class Vector3D {
-  final Space3Radian direction;
-  final double distance;
-
-  const Vector3D(this.direction, this.distance);
-
-  Space2 get toCoordinate2D => Space2.fromDirection(-direction.dy, distance);
-
-  Space3 get toCoordinate => Space3.fromDirection(
-    direction,
-    distance,
-  );
-
-  Vector3D rotated(Space3Radian d) => Vector3D(direction + d, distance);
-
-  @override
-  String toString() => "Vector($direction, $distance)";
-
-  static Vector3D lerp(Vector3D begin, Vector3D end, double t) => Vector3D(
-    begin.direction + (end.direction - begin.direction) * t,
-    begin.distance + (end.distance - begin.distance) * t,
-  );
-
-  static Translator<double, Vector3D> lerpOf(Vector3D begin, Vector3D end) {
-    final direction = end.direction - begin.direction;
-    final distance = end.distance - begin.distance;
-    final directionOf = FMapper.lerp<Space3Radian>(
-      begin.direction,
-      end.direction,
-          (t) => direction * t,
-    );
-    final distanceOf = FMapper.lerp<double>(
-      begin.distance,
-      end.distance,
-          (t) => distance * t,
-    );
-    return (t) => Vector3D(directionOf(t), distanceOf(t));
-  }
 }
 

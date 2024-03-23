@@ -83,7 +83,7 @@ extension BoolExtension on bool {
 ///
 /// [squared], [isPositive]
 /// [rangeIn], ...
-/// [isLowerOrEqualTo], ...
+/// [isLowerOneOrEqualTo], ...
 /// [constraints], ...
 ///
 extension NumExtension on num {
@@ -91,23 +91,18 @@ extension NumExtension on num {
 
   bool get isPositive => this > 0;
 
-  num get squared => math.pow(this, 2);
+  num get squared => this * this;
 
   num powBy(num x) => math.pow(x, this);
 
   ///
-  bool rangeIn(num min, num max) => this >= min && this <= max;
+  bool rangeIn(num lower, num upper) => this >= lower && this <= upper;
 
-  bool rangeFromMaxTo(num max, num min) => this > min && this <= max;
+  bool rangeFromMaxTo(num max, num lower) => this > lower && this <= max;
 
-  bool rangeFromMinTo(num min, num max) => this >= min && this < max;
+  bool rangeFromMinTo(num min, num upper) => this >= min && this < upper;
 
   bool within(num min, num max) => this > min && this < max;
-
-  ///
-  bool isLowerOrEqualTo(num value) => this == value || this < value;
-
-  bool isHigherOrEqualTo(num value) => this == value || this > value;
 
   bool isLowerOneOrEqualTo(num value) => this == value || this + 1 == value;
 
@@ -120,12 +115,13 @@ extension NumExtension on num {
 
 ///
 ///
+/// statics:
 /// [sqrt2], ...
-/// [isNearlyInt]
+/// [proximateInfinityOf], ...
 ///
-/// [proximateInfinityOf], [proximateNegativeInfinityOf]
-/// [infinity2_31], ...
-/// [filterInfinity]
+/// instances:
+/// [filterInfinity], ...
+/// [isNearlyInt], ...
 ///
 ///
 extension DoubleExtension on double {
@@ -145,7 +141,7 @@ extension DoubleExtension on double {
   static const double sqrt1_10 = 0.31622776601683794;
 
   ///
-  /// infinity usages
+  /// [proximateInfinityOf], [proximateNegativeInfinityOf]
   ///
   static double proximateInfinityOf(double precision) =>
       1.0 / math.pow(0.1, precision);
@@ -153,28 +149,49 @@ extension DoubleExtension on double {
   static double proximateNegativeInfinityOf(double precision) =>
       -1.0 / math.pow(0.1, precision);
 
-  static final double infinity2_31 = proximateInfinityOf(2.31);
-  static final double infinity3_2 = proximateInfinityOf(3.2);
-
-  static double squareRootOf(List<double> values, Reducer<double> reducer) =>
-      math.sqrt(values.reduce(reducer));
-
-  bool get isNearlyInt => (ceil() - this) <= 0.01;
-
+  ///
+  /// [filterInfinity]
+  /// [roundUpTo]
+  /// [clampDouble]
+  ///
   double filterInfinity(double precision) => switch (this) {
-        double.infinity => proximateInfinityOf(precision),
-        double.negativeInfinity => proximateNegativeInfinityOf(precision),
-        _ => this,
-      };
+    double.infinity => proximateInfinityOf(precision),
+    double.negativeInfinity => proximateNegativeInfinityOf(precision),
+    _ => this,
+  };
 
   double roundUpTo(int digit) {
     final value = math.pow(10, digit);
     return (this * value).roundToDouble() / value;
   }
+
+  double clampDouble(double lowerLimit, double upperLimit) {
+    if (this < lowerLimit) return lowerLimit;
+    if (this > upperLimit) return upperLimit;
+    if (isNaN) return upperLimit;
+    return this;
+  }
+
+  ///
+  /// [isNearlyInt]
+  /// [squared], [squareRoot]
+  /// [clampPositive], [clampNegative], [clampZeroTo1]
+  ///
+  bool get isNearlyInt => (ceil() - this) <= 0.01;
+
+  double get squared => this * this;
+
+  double get squareRoot => math.sqrt(this);
+
+  double get clampPositive => clampDouble(0, double.infinity);
+
+  double get clampNegative => clampDouble(double.negativeInfinity, 0);
+  double get clampZeroTo1 => clampDouble(0, 1);
+
+
 }
 
 ///
-/// instance methods, getters:
 /// [isPositive]
 /// [accumulate], [factorial]
 /// [digit], [digitFirst]
