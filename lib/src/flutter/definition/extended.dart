@@ -168,7 +168,7 @@ class Clipping extends CustomClipper<Path> {
 /// [Curving.tanPeriodOf]
 ///
 class Curving extends Curve {
-  final Mapper<double> mapper;
+  final Applier<double> mapper;
 
   const Curving(this.mapper);
 
@@ -483,11 +483,11 @@ class CubicOffset {
         Cubic(y.a * scale, y.b * scale, y.c * scale, y.d * scale),
       );
 
-  CubicOffset mapXY(Mapper<Cubic> mapper) => CubicOffset(mapper(x), mapper(y));
+  CubicOffset mapXY(Applier<Cubic> mapper) => CubicOffset(mapper(x), mapper(y));
 
-  CubicOffset mapX(Mapper<Cubic> mapper) => CubicOffset(mapper(x), y);
+  CubicOffset mapX(Applier<Cubic> mapper) => CubicOffset(mapper(x), y);
 
-  CubicOffset mapY(Mapper<Cubic> mapper) => CubicOffset(x, mapper(y));
+  CubicOffset mapY(Applier<Cubic> mapper) => CubicOffset(x, mapper(y));
 
   static CubicOffset companionSizeAdjustCenter(
     CubicOffset cubicOffset,

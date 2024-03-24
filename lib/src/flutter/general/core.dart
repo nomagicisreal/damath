@@ -8,7 +8,7 @@
 /// [PaintFrom], [PaintingPath], [Painter]
 /// [RectBuilder]
 ///
-/// [Lerper], [OnAnimate], [OnAnimatePath], [OnAnimateMatrix4]
+/// [OnAnimate], [OnAnimatePath], [OnAnimateMatrix4]
 ///
 ///
 /// [WidgetParentBuilder]
@@ -67,7 +67,7 @@ typedef RectBuilder = Rect Function(BuildContext context);
 ///
 typedef OnAnimate<T, S> = S Function(double t, T value);
 typedef OnAnimatePath<T> = SizingPath Function(double t, T value);
-typedef OnAnimateMatrix4 = Companion<Matrix4, Points3>;
+typedef OnAnimateMatrix4 = Companion<Matrix4, Point3>;
 
 
 ///
@@ -152,7 +152,7 @@ extension WWidgetBuilder on WidgetBuilder {
     );
   }
 
-  static Mapper<Widget> deviateBuilderOf(Alignment alignment) {
+  static Applier<Widget> deviateBuilderOf(Alignment alignment) {
     final x = alignment.x;
     final y = alignment.y;
     Row rowOf(List<Widget> children) => Row(

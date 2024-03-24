@@ -5,4 +5,4 @@ import 'package:damath/src/math/math.dart';
 
 part 'general/core.dart';
 part 'general/extension.dart';
-part 'general/definition.dart';
+part 'general/beats.dart';

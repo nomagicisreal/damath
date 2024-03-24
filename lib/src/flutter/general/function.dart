@@ -39,60 +39,69 @@ part of damath_flutter;
 ///
 /// [lerperFrom]
 ///
-Lerper<T> lerperFrom<T>(T a, T b) => switch (a) {
-  Size _ => (t) => Size.lerp(a, b as Size, t)!,
-  Rect _ => (t) => Rect.lerp(a, b as Rect, t)!,
-  Color _ => (t) => Color.lerp(a, b as Color, t)!,
-  Spherical _ => (t) => Spherical.lerp(a, b as Spherical, t),
-  EdgeInsets _ => (t) => EdgeInsets.lerp(a, b as EdgeInsets?, t)!,
-  RelativeRect _ => (t) => RelativeRect.lerp(a, b as RelativeRect?, t)!,
-  AlignmentGeometry _ => (t) =>
-  AlignmentGeometry.lerp(a, b as AlignmentGeometry?, t)!,
-  SizingPath _ => throw ArgumentError(
-    'Use BetweenPath instead of Between<SizingPath>',
-  ),
-  Decoration _ => switch (a) {
-    BoxDecoration _ => b is BoxDecoration && a.shape == b.shape
-        ? (t) => BoxDecoration.lerp(a, b, t)!
-        : throw UnimplementedError('BoxShape should not be interpolated'),
-    ShapeDecoration _ => switch (b) {
-      ShapeDecoration _ => a.shape == b.shape
-          ? (t) => ShapeDecoration.lerp(a, b, t)!
-          : switch (a.shape) {
-        CircleBorder _ || RoundedRectangleBorder _ => switch (
-        b.shape) {
-          CircleBorder _ || RoundedRectangleBorder _ => (t) =>
-          Decoration.lerp(a, b, t)!,
-          _ => throw UnimplementedError(
-            "'$a shouldn't be interpolated to $b'",
+Lerper<T> lerperFrom<T>(T begin, T end) {
+  try {
+    return FLerper.from(begin, end);
+  } on DamathException catch (e) {
+    if (e.message == DamathException.pass) {
+      return switch (begin) {
+        Size _ => (t) => Size.lerp(begin, end as Size, t)!,
+        Rect _ => (t) => Rect.lerp(begin, end as Rect, t)!,
+        Color _ => (t) => Color.lerp(begin, end as Color, t)!,
+        EdgeInsets _ => (t) => EdgeInsets.lerp(begin, end as EdgeInsets?, t)!,
+        RelativeRect _ => (t) =>
+            RelativeRect.lerp(begin, end as RelativeRect?, t)!,
+        AlignmentGeometry _ => (t) =>
+            AlignmentGeometry.lerp(begin, end as AlignmentGeometry?, t)!,
+        SizingPath _ => throw ArgumentError(
+            'Use BetweenPath instead of Between<SizingPath>',
           ),
-        },
-        _ => throw UnimplementedError(
-          "'$a shouldn't be interpolated to $b'",
-        ),
-      },
-      _ => throw UnimplementedError(),
-    },
-    _ => throw UnimplementedError(),
-  },
-  ShapeBorder _ => switch (a) {
-    BoxBorder _ => switch (b) {
-      BoxBorder _ => (t) => BoxBorder.lerp(a, b, t)!,
-      _ => throw UnimplementedError(),
-    },
-    InputBorder _ => switch (b) {
-      InputBorder _ => (t) => ShapeBorder.lerp(a, b, t)!,
-      _ => throw UnimplementedError(),
-    },
-    OutlinedBorder _ => switch (b) {
-      OutlinedBorder _ => (t) => OutlinedBorder.lerp(a, b, t)!,
-      _ => throw UnimplementedError(),
-    },
-    _ => throw UnimplementedError(),
-  },
-  _ => Tween<T>(begin: a, end: b).transform,
-} as Lerper<T>;
-
+        Decoration _ => switch (begin) {
+            BoxDecoration _ => end is BoxDecoration && begin.shape == end.shape
+                ? (t) => BoxDecoration.lerp(begin, end, t)!
+                : throw UnimplementedError(
+                    'BoxShape should not be interpolated'),
+            ShapeDecoration _ => switch (end) {
+                ShapeDecoration _ => begin.shape == end.shape
+                    ? (t) => ShapeDecoration.lerp(begin, end, t)!
+                    : switch (begin.shape) {
+                        CircleBorder _ || RoundedRectangleBorder _ => switch (
+                              end.shape) {
+                            CircleBorder _ || RoundedRectangleBorder _ => (t) =>
+                                Decoration.lerp(begin, end, t)!,
+                            _ => throw UnimplementedError(
+                                "'$begin shouldn't be interpolated to $end'",
+                              ),
+                          },
+                        _ => throw UnimplementedError(
+                            "'$begin shouldn't be interpolated to $end'",
+                          ),
+                      },
+                _ => throw UnimplementedError(),
+              },
+            _ => throw UnimplementedError(),
+          },
+        ShapeBorder _ => switch (begin) {
+            BoxBorder _ => switch (end) {
+                BoxBorder _ => (t) => BoxBorder.lerp(begin, end, t)!,
+                _ => throw UnimplementedError(),
+              },
+            InputBorder _ => switch (end) {
+                InputBorder _ => (t) => ShapeBorder.lerp(begin, end, t)!,
+                _ => throw UnimplementedError(),
+              },
+            OutlinedBorder _ => switch (end) {
+                OutlinedBorder _ => (t) => OutlinedBorder.lerp(begin, end, t)!,
+                _ => throw UnimplementedError(),
+              },
+            _ => throw UnimplementedError(),
+          },
+        _ => Tween<T>(begin: begin, end: end).transform,
+      } as Lerper<T>;
+    }
+    rethrow;
+  }
+}
 
 ///
 ///
@@ -111,7 +120,7 @@ extension CurveExtension on Curve {
 ///
 /// [keepOffset], ...
 ///
-extension FMapperMaterial on Mapper {
+extension FMapperMaterial on Applier {
   ///
   /// keep
   ///
@@ -154,7 +163,6 @@ extension FTextFormFieldValidator on TextFormFieldValidator {
           value == null || value.isEmpty ? validationFailedMessage : null;
 }
 
-
 ///
 /// instance methods for [Matrix4]
 /// [getPerspective]
@@ -186,20 +194,20 @@ extension FOnAnimateMatrix4 on Matrix4 {
   ///
   /// [translateOf], [rotateOf], [scaledOf]
   ///
-  void translateOf(Points3 space3) =>
+  void translateOf(Point3 space3) =>
       translate(v64.Vector3(space3.dx, space3.dy, space3.dz));
 
-  void rotateOf(Points3 space3) => this
+  void rotateOf(Point3 space3) => this
     ..rotateX(space3.dx)
     ..rotateY(space3.dy)
     ..rotateZ(space3.dz);
 
-  Matrix4 scaledOf(Points3 space3) => scaled(space3.dx, space3.dy, space3.dz);
+  Matrix4 scaledOf(Point3 space3) => scaled(space3.dx, space3.dy, space3.dz);
 
   ///
   /// [rotateOn]
   ///
-  void rotateOn(Points3 space3, double radian) =>
+  void rotateOn(Point3 space3, double radian) =>
       rotate(v64.Vector3(space3.dx, space3.dy, space3.dz), radian);
 
   ///
@@ -207,40 +215,40 @@ extension FOnAnimateMatrix4 on Matrix4 {
   /// statics
   ///
   ///
-  static Matrix4 translating(Matrix4 matrix4, Points3 value) =>
+  static Matrix4 translating(Matrix4 matrix4, Point3 value) =>
       matrix4.identityPerspective..translateOf(value);
 
-  static Matrix4 rotating(Matrix4 matrix4, Points3 value) =>
+  static Matrix4 rotating(Matrix4 matrix4, Point3 value) =>
       matrix4..setRotation((Matrix4.identity()..rotateOf(value)).getRotation());
 
-  static Matrix4 scaling(Matrix4 matrix4, Points3 value) =>
+  static Matrix4 scaling(Matrix4 matrix4, Point3 value) =>
       matrix4.scaledOf(value);
 
 // with mapper
-  static OnAnimateMatrix4 mapTranslating(Mapper<Points3> mapper) =>
+  static OnAnimateMatrix4 mapTranslating(Applier<Point3> mapper) =>
       (matrix4, value) => matrix4
         ..identityPerspective
         ..translateOf(mapper(value));
 
-  static OnAnimateMatrix4 mapRotating(Mapper<Points3> mapper) =>
+  static OnAnimateMatrix4 mapRotating(Applier<Point3> mapper) =>
       (matrix4, value) => matrix4
         ..setRotation(
             (Matrix4.identity()..rotateOf(mapper(value))).getRotation());
 
-  static OnAnimateMatrix4 mapScaling(Mapper<Points3> mapper) =>
+  static OnAnimateMatrix4 mapScaling(Applier<Point3> mapper) =>
       (matrix4, value) => matrix4.scaledOf(mapper(value));
 
   // with fixed value
-  static OnAnimateMatrix4 fixedTranslating(Points3 fixed) =>
+  static OnAnimateMatrix4 fixedTranslating(Point3 fixed) =>
       (matrix4, value) => matrix4
         ..identityPerspective
         ..translateOf(value + fixed);
 
-  static OnAnimateMatrix4 fixedRotating(Points3 fixed) =>
+  static OnAnimateMatrix4 fixedRotating(Point3 fixed) =>
       (matrix4, value) => matrix4
         ..setRotation(
             (Matrix4.identity()..rotateOf(fixed + value)).getRotation());
 
-  static OnAnimateMatrix4 fixedScaling(Points3 fixed) =>
+  static OnAnimateMatrix4 fixedScaling(Point3 fixed) =>
       (matrix4, value) => matrix4.scaledOf(value + fixed);
 }

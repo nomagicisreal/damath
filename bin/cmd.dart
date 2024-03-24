@@ -1,6 +1,6 @@
-// import 'dart:math';
-
+// import 'dart:math' as math;
 // import 'package:damath/src/experiment/experiment.dart';
+// import 'package:damath/src/math/math.dart';
 
 void main(List<String> arguments) async {
   // const d1 = 'the computer is complex';
@@ -18,11 +18,9 @@ void main(List<String> arguments) async {
   // final result = (pF | -qF) > (pF & qF);
   // print(result);
 
-  // final list = [1, 3, 1, 2, 6, 10, -1, 8];
-  // print((1, 2) == (1, 2));
-  // print(list.iterator.cumulativeWhere((value) => value.isOdd));
-}
+  // watching();
 
+}
 
 void watching() {
   final watch = Stopwatch();
@@ -36,3 +34,4 @@ void watching() {
 
   print('end');
 }
+

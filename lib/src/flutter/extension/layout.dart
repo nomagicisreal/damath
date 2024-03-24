@@ -61,27 +61,30 @@ extension SizeExtension on Size {
 
 ///
 /// instance methods:
-/// [directionTo]
-/// [distanceTo], [distanceHalfTo]
-/// [middleTo],
+/// [fromPoint], ...
+/// [parallelUnitOf], ...
 /// ...
 ///
 extension OffsetExtension on Offset {
   ///
-  /// [fromSpace2]
-  /// [fromDirection]
+  /// [fromPoint]
+  /// [unitFromDirection]
   ///
-  static Offset fromSpace2(Points2 space2) => Offset(space2.dx, space2.dy);
+  static Offset fromPoint(Point point) => switch (point) {
+        Point2() => Offset(point.dx, point.dy),
+        Point3() => throw UnimplementedError(),
+      };
 
-  static Offset fromDirection(Direction direction) =>
-      fromSpace2(direction.toSpace2);
+  static Offset unitFromDirection(Direction direction) => switch (direction) {
+        Direction2D() => fromPoint(Point2.unitFromDirection(direction)),
+        Direction3D() => throw UnimplementedError(),
+      };
 
   ///
   ///
   /// static methods:
   ///
   ///
-  static Offset square(double value) => Offset(value, value);
 
   ///
   /// [parallelUnitOf]
@@ -151,7 +154,7 @@ extension OffsetExtension on Offset {
   double distanceHalfTo(Offset p) => (p - this).distance / 2;
 
   double directionPerpendicular({bool counterclockwise = true}) =>
-      direction + SpaceRadian.angle_90 * (counterclockwise ? 1 : -1);
+      direction + Radian.angle_90 * (counterclockwise ? 1 : -1);
 
   ///
   /// [isAtBottomRightOf], [isAtTopLeftOf]
@@ -270,15 +273,15 @@ extension AlignmentExtension on Alignment {
   }
 
   (double, double) get radianBoundaryForSide => switch (this) {
-        Alignment.center => (0, SpaceRadian.angle_360),
-        Alignment.centerLeft => (-SpaceRadian.angle_90, SpaceRadian.angle_90),
-        Alignment.centerRight => (SpaceRadian.angle_90, SpaceRadian.angle_270),
-        Alignment.topCenter => (0, SpaceRadian.angle_180),
-        Alignment.topLeft => (0, SpaceRadian.angle_90),
-        Alignment.topRight => (SpaceRadian.angle_90, SpaceRadian.angle_180),
-        Alignment.bottomCenter => (SpaceRadian.angle_180, SpaceRadian.angle_360),
-        Alignment.bottomLeft => (SpaceRadian.angle_270, SpaceRadian.angle_360),
-        Alignment.bottomRight => (SpaceRadian.angle_180, SpaceRadian.angle_270),
+        Alignment.center => (0, Radian.angle_360),
+        Alignment.centerLeft => (-Radian.angle_90, Radian.angle_90),
+        Alignment.centerRight => (Radian.angle_90, Radian.angle_270),
+        Alignment.topCenter => (0, Radian.angle_180),
+        Alignment.topLeft => (0, Radian.angle_90),
+        Alignment.topRight => (Radian.angle_90, Radian.angle_180),
+        Alignment.bottomCenter => (Radian.angle_180, Radian.angle_360),
+        Alignment.bottomLeft => (Radian.angle_270, Radian.angle_360),
+        Alignment.bottomRight => (Radian.angle_180, Radian.angle_270),
         _ => throw UnimplementedError(),
       };
 
@@ -337,7 +340,7 @@ extension IterableOffsetExtension on Iterable<Offset> {
     return map((p) => p + center);
   }
 
-  static Mapper<Iterable<Offset>> mapperScaling(double scale) => scale == 1
+  static Applier<Iterable<Offset>> mapperScaling(double scale) => scale == 1
       ? FMapperMaterial.keepOffsetIterable
       : (points) => points.scaling(scale);
 
@@ -630,9 +633,9 @@ extension TransformExtension on Transform {
   ///
   /// [translateSpace2], [translateSpace3], ...
   ///
-  static Points2 translateSpace2(Points2 p) => Points2(p.dx, -p.dy);
+  static Point2 translateSpace2(Point2 p) => Point2(p.dx, -p.dy);
 
-  static Points3 translateSpace3(Points3 p) => Points3(p.dx, -p.dz, -p.dy);
+  static Point3 translateSpace3(Point3 p) => Point3(p.dx, -p.dz, -p.dy);
 
   ///
   ///
@@ -650,14 +653,14 @@ extension TransformExtension on Transform {
   static bool ifInQuadrant(double radian, int quadrant) {
     final r = RotationUnit.radianModulus360Angle(radian);
     return switch (quadrant) {
-      1 => r.within(SpaceRadian.angle_270, SpaceRadian.angle_360) ||
-          r.within(-SpaceRadian.angle_90, 0),
-      2 => r.within(SpaceRadian.angle_180, SpaceRadian.angle_270) ||
-          r.within(-SpaceRadian.angle_180, -SpaceRadian.angle_90),
-      3 => r.within(SpaceRadian.angle_90, SpaceRadian.angle_180) ||
-          r.within(-SpaceRadian.angle_270, -SpaceRadian.angle_180),
-      4 => r.within(0, SpaceRadian.angle_90) ||
-          r.within(-SpaceRadian.angle_360, -SpaceRadian.angle_270),
+      1 => r.within(Radian.angle_270, Radian.angle_360) ||
+          r.within(-Radian.angle_90, 0),
+      2 => r.within(Radian.angle_180, Radian.angle_270) ||
+          r.within(-Radian.angle_180, -Radian.angle_90),
+      3 => r.within(Radian.angle_90, Radian.angle_180) ||
+          r.within(-Radian.angle_270, -Radian.angle_180),
+      4 => r.within(0, Radian.angle_90) ||
+          r.within(-Radian.angle_360, -Radian.angle_270),
       _ => throw UnimplementedError(),
     };
   }
@@ -817,7 +820,7 @@ extension FSizingPath on SizingPath {
     double scale, {
     Companion<CubicOffset, Size>? adjust,
   }) {
-    final Mapper<Iterable<CubicOffset>> scaled = scale == 1
+    final Applier<Iterable<CubicOffset>> scaled = scale == 1
         ? FMapper.keep
         : (corners) => corners.map((cubics) => cubics * scale);
 
@@ -965,7 +968,7 @@ extension FSizingPath on SizingPath {
   }) {
     final tipA = rootA.direct(direction, length);
     final rootB = rootA.direct(
-      direction + SpaceRadian.angle_90 * (clockwise ? 1 : -1),
+      direction + Radian.angle_90 * (clockwise ? 1 : -1),
       width,
     );
     final tipB = rootB.direct(direction, length);
@@ -1009,7 +1012,7 @@ extension FSizingPath on SizingPath {
 
   static SizingPath trapeziumSymmetry({
     required SizingOffset topLeftMargin,
-    required Mapper<Size> body,
+    required Applier<Size> body,
     required SizingDouble bodyShortest,
     Direction2DIn4 shortestSide = Direction2DIn4.top,
   }) =>
@@ -1175,7 +1178,7 @@ extension FRectBuilder on RectBuilder {
 ///
 ///
 extension FExtruding2D on Extruding2D {
-  static Translator<double, Rect> directOnSize({
+  static Mapper<double, Rect> directOnSize({
     required Rect rect,
     required Direction2D direction,
     required double width,
@@ -1188,14 +1191,14 @@ extension FExtruding2D on Extruding2D {
         timesOrPlus: timesOrPlus,
       );
 
-  static Translator<double, Rect> directOnWidth({
+  static Mapper<double, Rect> directOnWidth({
     required Rect rect,
     required Direction2D direction,
     required double width,
   }) =>
       fromRectDirection(rect, direction).translateOnWidth(width);
 
-  static Translator<double, Rect> directByDimension({
+  static Mapper<double, Rect> directByDimension({
     required Rect rect,
     required Direction2D direction,
     required double dimension,
@@ -1270,7 +1273,7 @@ extension FExtruding2D on Extruding2D {
   /// when [timesOrPlus] == true, its means that extruding value will be multiplied on [height]
   /// when [timesOrPlus] == false, its means that extruding value will be added on [height]
   ///
-  Translator<double, Rect> translateOnSize(
+  Mapper<double, Rect> translateOnSize(
     double width,
     double height, {
     bool timesOrPlus = true,
@@ -1279,10 +1282,10 @@ extension FExtruding2D on Extruding2D {
     return (value) => this(width, calculating(value));
   }
 
-  Translator<double, Rect> translateOnWidth(double width) =>
+  Mapper<double, Rect> translateOnWidth(double width) =>
       translateOnSize(width, 0, timesOrPlus: false);
 
-  Translator<double, Rect> translateOfDimension(
+  Mapper<double, Rect> translateOfDimension(
     double dimension, {
     bool timesOrPlus = true,
   }) =>

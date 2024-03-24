@@ -49,7 +49,7 @@ part of damath_flutter;
 
 //
 abstract class RegularPolygon {
-  static double radianCornerOf(int n) => (n - 2) * SpaceRadian.angle_180 / n;
+  static double radianCornerOf(int n) => (n - 2) * Radian.angle_180 / n;
 
   static double lengthSideOf(
     int n,
@@ -57,7 +57,7 @@ abstract class RegularPolygon {
     int roundUp = 0,
   ]) =>
       radiusCircumscribed *
-      math.sin(SpaceRadian.angle_180 / n).roundUpTo(roundUp) *
+      math.sin(Radian.angle_180 / n).roundUpTo(roundUp) *
       2;
 
   static List<Offset> cornersOf(
@@ -65,7 +65,7 @@ abstract class RegularPolygon {
     double radiusCircumscribedCircle, {
     Size? size,
   }) {
-    final step = SpaceRadian.angle_360 / n;
+    final step = Radian.angle_360 / n;
     final center = size?.center(Offset.zero) ?? Offset.zero;
     return List.generate(
       n,
@@ -100,12 +100,12 @@ abstract class RegularPolygon {
 
   double get radianSideSide => radianCornerOf(n);
 
-  double get radianCornerSideCenter => SpaceRadian.angle_90;
+  double get radianCornerSideCenter => Radian.angle_90;
 
-  double get radianCornerCenterSide => SpaceRadian.angle_180 / n;
+  double get radianCornerCenterSide => Radian.angle_180 / n;
 
   double get radianSideCornerCenter =>
-      SpaceRadian.angle_90 - radianCornerCenterSide;
+      Radian.angle_90 - radianCornerCenterSide;
 
   double get radiusInscribedCircle => inscribedCircleRadiusOf(
         n,
@@ -121,7 +121,7 @@ abstract class RegularPolygon {
 
 sealed class RRegularPolygon extends RegularPolygon {
   final double cornerRadius;
-  final Mapper<Map<Offset, CubicOffset>> cubicPointsMapper;
+  final Applier<Map<Offset, CubicOffset>> cubicPointsMapper;
   final Companion<CubicOffset, Size> cornerAdjust;
 
   Map<Offset, CubicOffset> get cubicPointsForEachCorners;
@@ -173,8 +173,8 @@ class RRegularPolygonCubicOnEdge extends RRegularPolygon {
   RRegularPolygonCubicOnEdge.from(
     RRegularPolygonCubicOnEdge polygon, {
     double timesForEdge = 0,
-    Translator<RRegularPolygonCubicOnEdge, double>? cornerRadius,
-    Mapper<Map<Offset, CubicOffset>> cubicPointsMapper = _cubicPointsMapper,
+    Mapper<RRegularPolygonCubicOnEdge, double>? cornerRadius,
+    Applier<Map<Offset, CubicOffset>> cubicPointsMapper = _cubicPointsMapper,
     Companion<CubicOffset, Size> cornerAdjust =
         CubicOffset.companionSizeAdjustCenter,
   }) : this(
@@ -232,7 +232,7 @@ class RRegularPolygonCubicOnEdge extends RRegularPolygon {
       });
 
   double timesForEdgeUnitOf(double cornerRadius) =>
-      cornerRadius * math.tan(SpaceRadian.angle_180 / n);
+      cornerRadius * math.tan(Radian.angle_180 / n);
 
   ///
   ///

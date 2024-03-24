@@ -8,9 +8,6 @@
 ///
 /// [Operator]
 ///
-/// [Spherical]
-///
-///
 ///
 ///
 ///
@@ -55,17 +52,33 @@ class DurationFR {
       : forward = duration,
         reverse = duration;
 
+  ///
+  ///
+  /// constants
+  ///
+  ///
   static const DurationFR zero = DurationFR.constant(Duration.zero);
+  static const milli100 = DurationFR.constant(KMath.durationMilli100);
+  static const milli300 = DurationFR.constant(KMath.durationMilli300);
+  static const milli500 = DurationFR.constant(KMath.durationMilli500);
+  static const milli800 = DurationFR.constant(KMath.durationMilli800);
+  static const second1 = DurationFR.constant(KMath.durationSecond1);
+  static const second2 = DurationFR.constant(KMath.durationSecond2);
+  static const second3 = DurationFR.constant(KMath.durationSecond3);
+  static const second4 = DurationFR.constant(KMath.durationSecond4);
+  static const second5 = DurationFR.constant(KMath.durationSecond5);
+  static const second6 = DurationFR.constant(KMath.durationSecond6);
+  static const second7 = DurationFR.constant(KMath.durationSecond7);
+  static const second8 = DurationFR.constant(KMath.durationSecond8);
+  static const second9 = DurationFR.constant(KMath.durationSecond9);
+  static const second10 = DurationFR.constant(KMath.durationSecond10);
+  static const min1 = DurationFR.constant(KMath.durationMin1);
 
-  DurationFR operator ~/(int value) =>
-      DurationFR(forward ~/ value, reverse ~/ value);
-
-  DurationFR operator +(Duration value) =>
-      DurationFR(forward + value, reverse + value);
-
-  DurationFR operator -(Duration value) =>
-      DurationFR(forward - value, reverse - value);
-
+  ///
+  ///
+  /// implementation for [Object]
+  ///
+  ///
   @override
   int get hashCode => Object.hash(forward, reverse);
 
@@ -73,31 +86,27 @@ class DurationFR {
   bool operator ==(covariant DurationFR other) => hashCode == other.hashCode;
 
   @override
-  String toString() => 'DurationFR(forward: $forward, reverse:$reverse)';
+  String toString() => 'DurationFR(f: $forward, r:$reverse)';
 
   ///
-  /// constants
   ///
+  ///
+  ///
+  DurationFR operator +(DurationFR other) =>
+      DurationFR(forward + other.forward, reverse + other.reverse);
 
-  static const milli100 = DurationFR.constant(KDuration.milli100);
-  static const milli300 = DurationFR.constant(KDuration.milli300);
-  static const milli500 = DurationFR.constant(KDuration.milli500);
-  static const milli800 = DurationFR.constant(KDuration.milli800);
-  static const milli1500 = DurationFR.constant(KDuration.milli1500);
-  static const milli2500 = DurationFR.constant(KDuration.milli2500);
-  static const second1 = DurationFR.constant(KDuration.second1);
-  static const second2 = DurationFR.constant(KDuration.second2);
-  static const second3 = DurationFR.constant(KDuration.second3);
-  static const second4 = DurationFR.constant(KDuration.second4);
-  static const second5 = DurationFR.constant(KDuration.second5);
-  static const second6 = DurationFR.constant(KDuration.second6);
-  static const second7 = DurationFR.constant(KDuration.second7);
-  static const second8 = DurationFR.constant(KDuration.second8);
-  static const second9 = DurationFR.constant(KDuration.second9);
-  static const second10 = DurationFR.constant(KDuration.second10);
-  static const second20 = DurationFR.constant(KDuration.second20);
-  static const second30 = DurationFR.constant(KDuration.second30);
-  static const min1 = DurationFR.constant(KDuration.min1);
+  DurationFR operator -(DurationFR other) =>
+      DurationFR(forward - other.forward, reverse - other.reverse);
+
+  DurationFR operator &(Duration value) =>
+      DurationFR(forward + value, reverse + value);
+
+  DurationFR operator ^(Duration value) =>
+      DurationFR(forward - value, reverse - value);
+
+  DurationFR operator ~/(int value) =>
+      DurationFR(forward ~/ value, reverse ~/ value);
+
 }
 
 ///
@@ -188,7 +197,7 @@ enum Operator {
   ///
   /// mapper
   ///
-  Mapper<double> doubleMapperOf(double value) => switch (this) {
+  Applier<double> doubleMapperOf(double value) => switch (this) {
         Operator.plus => (a) => a + value,
         Operator.minus => (a) => a - value,
         Operator.multiply => (a) => a * value,
@@ -196,4 +205,3 @@ enum Operator {
         Operator.modulus => (a) => a % value,
       };
 }
-

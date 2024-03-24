@@ -113,7 +113,7 @@ extension MapExtension<K, V> on Map<K, V> {
     K key,
     Supplier<V> ifAbsent,
     Supplier<T> ifAbsentThen,
-    Translator<V, T> ifExistThen,
+    Mapper<V, T> ifExistThen,
   ) {
     final value = this[key];
     if (value == null) {
@@ -130,7 +130,7 @@ extension MapExtension<K, V> on Map<K, V> {
   ///
   T updateThen<T>(
     K key,
-    Mapper<V> ifExist,
+    Applier<V> ifExist,
     Supplier<T> ifExistThen,
     Supplier<V> ifAbsent,
     Supplier<T> ifAbsentThen,
@@ -145,7 +145,7 @@ extension MapExtension<K, V> on Map<K, V> {
     }
   }
 
-  V? updateIfNotNull(K? key, Mapper<V> ifExist, {Supplier<V>? ifAbsent}) =>
+  V? updateIfNotNull(K? key, Applier<V> ifExist, {Supplier<V>? ifAbsent}) =>
       key == null ? null : update(key, ifExist, ifAbsent: ifAbsent);
 
   ///
@@ -238,18 +238,18 @@ extension MapExtension<K, V> on Map<K, V> {
   ]) =>
       entries.iterator.reduceByIndex(reducing, start);
 
-  S reduceTo<S>(Translator<MapEntry<K, V>, S> toVal, Reducer<S> reducer) =>
+  S reduceTo<S>(Mapper<MapEntry<K, V>, S> toVal, Reducer<S> reducer) =>
       entries.iterator.reduceTo(toVal, reducer);
 
   S reduceToByIndex<S>(
-    Translator<MapEntry<K, V>, S> toVal,
+    Mapper<MapEntry<K, V>, S> toVal,
     ReducerGenerator<S> reducing, [
     int start = 0,
   ]) =>
       entries.iterator.reduceToByIndex(toVal, reducing, start);
 
   S reduceToByIndexInitialized<S>(
-    Translator<MapEntry<K, V>, S> toVal,
+    Mapper<MapEntry<K, V>, S> toVal,
     CompanionGenerator<S, MapEntry<K, V>> reducing, [
     int start = 0,
   ]) =>
@@ -259,10 +259,10 @@ extension MapExtension<K, V> on Map<K, V> {
   /// [mapKeys]
   /// [mapValues]
   ///
-  Map<K, V> mapKeys(Mapper<K> toVal) =>
+  Map<K, V> mapKeys(Applier<K> toVal) =>
       map((key, value) => MapEntry(toVal(key), value));
 
-  Map<K, V> mapValues(Mapper<V> toVal) =>
+  Map<K, V> mapValues(Applier<V> toVal) =>
       map((key, value) => MapEntry(key, toVal(value)));
 
   ///
@@ -302,7 +302,7 @@ extension MapExtension<K, V> on Map<K, V> {
   ///
   Iterable<V> migrateInto(
     Set<K> keys,
-    Translator<K, V> valuing, [
+    Mapper<K, V> valuing, [
     Companion<V, K>? update,
   ]) sync* {
     yield* removeFrom(keysDifferenceWith(keys));

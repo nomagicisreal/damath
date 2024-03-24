@@ -467,8 +467,8 @@ class PropositionCompound extends PropositionComponent {
   /// [_foldPropositionsToSet]
   ///
   Set<K> _foldPropositionsToSet<K>(
-    Translator<Proposition, K> toK,
-    Translator<PropositionCompound, Set<K>> toKSet,
+    Mapper<Proposition, K> toK,
+    Mapper<PropositionCompound, Set<K>> toKSet,
   ) =>
       _components.fold(
         {},
@@ -526,6 +526,4 @@ extension SetPropositionCompoundExtension on Set<PropositionCompound> {
         (set, compound) => set..addAll(compound.propositionsSet),
       ).isConsistent;
 }
-
-
 

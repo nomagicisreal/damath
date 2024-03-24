@@ -297,7 +297,7 @@ extension BuildContextExtension on BuildContext {
     String? message, {
     bool isCenter = true,
     bool showWhetherMessageIsNull = false,
-    Duration duration = KDuration.second1,
+    Duration duration = KMath.durationSecond1,
     Color? backgroundColor,
     SnackBarBehavior behavior = SnackBarBehavior.floating,
   }) {

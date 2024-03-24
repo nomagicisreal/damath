@@ -355,9 +355,9 @@ extension KOffsetPermutation4 on List<Offset> {
       p2103(list)..addFirstAndRemoveFirst();
 }
 
-extension KMapperCubicPointsPermutation on Mapper<Map<Offset, List<Offset>>> {
-  static const Mapper<Map<Offset, List<Offset>>> p0231 = _0231;
-  static const Mapper<Map<Offset, List<Offset>>> p1230 = _1230;
+extension KMapperCubicPointsPermutation on Applier<Map<Offset, List<Offset>>> {
+  static const Applier<Map<Offset, List<Offset>>> p0231 = _0231;
+  static const Applier<Map<Offset, List<Offset>>> p1230 = _1230;
 
   static Map<Offset, List<Offset>> _0231(Map<Offset, List<Offset>> points) =>
       points.map(
@@ -375,7 +375,7 @@ extension KMapperCubicPointsPermutation on Mapper<Map<Offset, List<Offset>>> {
         ),
       );
 
-  static Mapper<Map<Offset, List<Offset>>> of(Mapper<List<Offset>> mapper) =>
+  static Applier<Map<Offset, List<Offset>>> of(Applier<List<Offset>> mapper) =>
       (points) => points
           .map((points, cubicPoints) => MapEntry(points, mapper(cubicPoints)));
 }
@@ -629,7 +629,7 @@ extension VRandomMaterial on Material {
   ///
   /// material
   ///
-  static Color get colorPrimary => Colors.primaries[VRandom.intTo(18)];
+  static Color get colorPrimary => Colors.primaries[KMath.randomIntTo(18)];
 
   static final List<FloatingActionButtonLocation> _fabLocations = [
     FloatingActionButtonLocation.startTop,
@@ -645,6 +645,6 @@ extension VRandomMaterial on Material {
   ];
 
   static FloatingActionButtonLocation get fabLocation =>
-      _fabLocations[VRandom.intTo(10)];
+      _fabLocations[KMath.randomIntTo(10)];
 }
 

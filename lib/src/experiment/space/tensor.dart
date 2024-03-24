@@ -114,7 +114,7 @@ class TensorVectorDouble extends TensorVector<double> {
   /// [_computeAll]
   /// [_computeAllWith]
   ///
-  List<double> _computeAll(Mapper<double> toValue) => value.mapToList(toValue);
+  List<double> _computeAll(Applier<double> toValue) => value.mapToList(toValue);
 
   List<double> _computeAllWith(List<double> other, Reducer<double> toValue) =>
       value.accordinglyReduce(other, toValue);
@@ -252,7 +252,7 @@ abstract class TensorMatrix<T, V extends TensorVector<T>>
   ///
   /// [_computeAll], [_computeAllWith]
   ///
-  List<V> _computeAll(Mapper<V> toValue) => value.mapToList(toValue);
+  List<V> _computeAll(Applier<V> toValue) => value.mapToList(toValue);
 
   List<V> _computeAllWith(TensorMatrix<T, V> other, Reducer<V> toValue) =>
       value.accordinglyReduce(other.value, toValue);

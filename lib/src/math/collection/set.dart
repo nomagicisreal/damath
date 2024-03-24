@@ -16,7 +16,7 @@ extension SetExtension<K> on Set<K> {
   ///
   /// [mapToMap]
   ///
-  Map<K, V> mapToMap<V>(Translator<K, V> toValue) =>
+  Map<K, V> mapToMap<V>(Mapper<K, V> toValue) =>
       Map.fromIterables(this, map(toValue));
 }
 

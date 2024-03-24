@@ -2,18 +2,17 @@
 ///
 /// this file contains:
 ///
+/// [RotationUnit]
+///
 /// [Space]
-///   [SpaceRadian]
+///   [Radian]
 ///     [Radian2]
 ///     [Radian3]
 ///
-///   [SpacePoint]
-///     [Points2]
-///     [Points3]
+///   [Point]
+///     [Point2]
+///     [Point3]
 ///
-///
-///
-/// [Spherical]
 ///
 ///
 ///
@@ -28,6 +27,74 @@
 part of damath_experiment;
 // ignore_for_file: constant_identifier_names
 
+
+///
+/// [radianFromAngle], ...
+/// [radianComplementary], ...
+/// [radianIfWithinAngle90_90N], ...
+///
+enum RotationUnit {
+  radian,
+  angle,
+  round;
+
+  ///
+  ///
+  /// static methods
+  ///
+  ///
+  static double radianFromAngle(double angle) => angle * Radian.angle_1;
+
+  static double radianFromRound(double round) => round * Radian.angle_360;
+
+  static double angleFromRadian(double radian) => radian / Radian.angle_1;
+
+  static double roundFromRadian(double radian) => radian / Radian.angle_360;
+
+  static double radianModulus90Angle(double radian) => radian % Radian.angle_90;
+
+  static double radianModulus180Angle(double radian) =>
+      radian % Radian.angle_180;
+
+  static double radianModulus360Angle(double radian) =>
+      radian % Radian.angle_360;
+
+  ///
+  /// [radianComplementary], [radianSupplementary], [radianRestrict180Angle]
+  ///
+  static double radianComplementary(double radian) {
+    assert(radian.rangeIn(0, Radian.angle_90));
+    return radianFromAngle(90 - angleFromRadian(radian));
+  }
+
+  static double radianSupplementary(double radian) {
+    assert(radian.rangeIn(0, Radian.angle_180));
+    return radianFromAngle(180 - angleFromRadian(radian));
+  }
+
+  static double radianRestrict180Angle(double angle) {
+    final r = angle % 360;
+    return r >= Radian.angle_180 ? r - Radian.angle_360 : r;
+  }
+
+  ///
+  /// [radianIfWithinAngle90_90N], [radianIfOverAngle90_90N], [radianIfWithinAngle0_180], [radianIfWithinAngle0_180N]
+  ///
+  static bool radianIfWithinAngle90_90N(double radian) =>
+      radian.abs() < Radian.angle_90;
+
+  static bool radianIfOverAngle90_90N(double radian) =>
+      radian.abs() > Radian.angle_90;
+
+  static bool radianIfWithinAngle0_180(double radian) =>
+      radian > 0 && radian < Radian.angle_180;
+
+  static bool radianIfWithinAngle0_180N(double radian) =>
+      radian > -Radian.angle_180 && radian < 0;
+}
+
+
+
 ///
 ///
 /// [Space] is similar to [Tensor]
@@ -36,38 +103,23 @@ part of damath_experiment;
 abstract interface class Space {
   const Space();
 
-  @override
-  int get hashCode;
-
-  @override
-  bool operator ==(covariant Space other);
-
-  @override
-  String toString() => toStringAsFixed(1);
-
-  String toStringAsFixed(int digit);
-
-  bool get isFinite;
-
-  bool get isInfinite;
-
-  bool get isPositive;
-
-  bool get isNegative;
-
   Space operator -();
 
+  ///
+  /// To take a double value as argument, instead of [other] that typed as [Space].
+  /// Use [Record], see also [IteratorDoubleExtension], [RecordXYExtension], [RecordXYZExtension], ...
+  ///
   Space operator +(Space other);
 
   Space operator -(Space other);
 
-  Space operator *(double operand);
+  Space operator *(Space other);
 
-  Space operator /(double operand);
+  Space operator /(Space other);
 
-  Space operator %(double operand);
+  Space operator %(Space other);
 
-  Space operator ~/(double operand);
+  Space operator ~/(Space other);
 
   bool operator <(Space other);
 
@@ -87,16 +139,17 @@ abstract interface class Space {
 /// [cos], ... (getters)
 /// [azimuthalIn], ... (methods)
 ///
-abstract interface class SpaceRadian<R> implements Space {
+abstract interface class Radian<R> implements Space {
   final double rAzimuthal;
 
-  const SpaceRadian(this.rAzimuthal);
+  const Radian(this.rAzimuthal);
 
   ///
   ///
   /// constants
   ///
   ///
+  static const zero = 0.0;
   static const angle_1 = math.pi / 180;
   static const angle_5 = math.pi / 36;
   static const angle_10 = math.pi / 18;
@@ -125,36 +178,31 @@ abstract interface class SpaceRadian<R> implements Space {
   static const angle_420 = math.pi * 7 / 3;
   static const angle_450 = math.pi * 5 / 2;
 
+  static const right = 0;
+  static const bottomRight = Radian.angle_45;
+  static const bottom = Radian.angle_90;
+  static const bottomLeft = Radian.angle_135;
+  static const left = Radian.angle_180;
+  static const topLeft = Radian.angle_225;
+  static const top = Radian.angle_270;
+  static const topRight = Radian.angle_315;
+
   ///
   ///
   /// implementation for [Space]
   ///
   ///
   @override
-  bool operator <(covariant SpaceRadian other) => rAzimuthal < other.rAzimuthal;
+  bool operator <(covariant Radian other) => rAzimuthal < other.rAzimuthal;
 
   @override
-  bool operator <=(covariant SpaceRadian other) =>
-      rAzimuthal <= other.rAzimuthal;
+  bool operator <=(covariant Radian other) => rAzimuthal <= other.rAzimuthal;
 
   @override
-  bool operator >(covariant SpaceRadian other) => rAzimuthal > other.rAzimuthal;
+  bool operator >(covariant Radian other) => rAzimuthal > other.rAzimuthal;
 
   @override
-  bool operator >=(covariant SpaceRadian other) =>
-      rAzimuthal >= other.rAzimuthal;
-
-  @override
-  bool get isFinite => rAzimuthal.isFinite;
-
-  @override
-  bool get isInfinite => rAzimuthal.isInfinite;
-
-  @override
-  bool get isNegative => rAzimuthal.isNegative;
-
-  @override
-  bool get isPositive => rAzimuthal.isPositive;
+  bool operator >=(covariant Radian other) => rAzimuthal >= other.rAzimuthal;
 
   ///
   ///
@@ -206,14 +254,14 @@ abstract interface class SpaceRadian<R> implements Space {
   bool azimuthalInQuadrant(int quadrant) {
     final r = RotationUnit.radianModulus360Angle(rAzimuthal);
     return switch (quadrant) {
-      1 => r.within(0, SpaceRadian.angle_90) ||
-          r.within(-SpaceRadian.angle_360, -SpaceRadian.angle_270),
-      2 => r.within(SpaceRadian.angle_90, SpaceRadian.angle_180) ||
-          r.within(-SpaceRadian.angle_270, -SpaceRadian.angle_180),
-      3 => r.within(SpaceRadian.angle_180, SpaceRadian.angle_270) ||
-          r.within(-SpaceRadian.angle_180, -SpaceRadian.angle_90),
-      4 => r.within(SpaceRadian.angle_270, SpaceRadian.angle_360) ||
-          r.within(-SpaceRadian.angle_90, 0),
+      1 => r.within(0, Radian.angle_90) ||
+          r.within(-Radian.angle_360, -Radian.angle_270),
+      2 => r.within(Radian.angle_90, Radian.angle_180) ||
+          r.within(-Radian.angle_270, -Radian.angle_180),
+      3 => r.within(Radian.angle_180, Radian.angle_270) ||
+          r.within(-Radian.angle_180, -Radian.angle_90),
+      4 => r.within(Radian.angle_270, Radian.angle_360) ||
+          r.within(-Radian.angle_90, 0),
       _ => throw DamathException('un defined quadrant: $quadrant for $this'),
     };
   }
@@ -221,24 +269,35 @@ abstract interface class SpaceRadian<R> implements Space {
 
 ///
 ///
-/// [toStringAsFixed], ... (implementation for [Space])
+/// [toString], ... (implementation for [Object])
+/// [-], ... (implementation for [Space])
 ///
 /// [azimuthalOnRight], ... (getters)
 /// [azimuthalInQuadrant], ... (methods)
 ///
 ///
-class Radian2 extends SpaceRadian<double> {
+class Radian2 extends Radian<double> {
   const Radian2(super.rAzimuthal);
+
+  ///
+  ///
+  /// implementation for [Object]
+  ///
+  ///
+  @override
+  String toString() => 'Radian2(${rAzimuthal.toStringAsFixed(1)})';
+
+  @override
+  int get hashCode => rAzimuthal.hashCode;
+
+  @override
+  bool operator ==(covariant Radian2 other) => hashCode == other.hashCode;
 
   ///
   ///
   /// implementation for [Space]
   ///
   ///
-  @override
-  String toStringAsFixed(int digit) =>
-      'Radian2(${rAzimuthal.toStringAsFixed(digit)})';
-
   @override
   Radian2 operator -() => Radian2(-rAzimuthal);
 
@@ -251,17 +310,20 @@ class Radian2 extends SpaceRadian<double> {
       Radian2(rAzimuthal - other.rAzimuthal);
 
   @override
-  Radian2 operator *(double operand) => Radian2(rAzimuthal * operand);
+  Radian2 operator *(covariant Radian2 other) =>
+      Radian2(rAzimuthal * other.rAzimuthal);
 
   @override
-  Radian2 operator /(double operand) => Radian2(rAzimuthal / operand);
+  Radian2 operator /(covariant Radian2 other) =>
+      Radian2(rAzimuthal / other.rAzimuthal);
 
   @override
-  Radian2 operator %(double operand) => Radian2(rAzimuthal % operand);
+  Radian2 operator %(covariant Radian2 other) =>
+      Radian2(rAzimuthal % other.rAzimuthal);
 
   @override
-  Radian2 operator ~/(double operand) =>
-      Radian2((rAzimuthal ~/ operand).toDouble());
+  Radian2 operator ~/(covariant Radian2 other) =>
+      Radian2((rAzimuthal ~/ other.rAzimuthal).toDouble());
 }
 
 ///
@@ -269,14 +331,21 @@ class Radian2 extends SpaceRadian<double> {
 /// [Radian3.polar1], ... (constructors)
 /// [zero], ... (constants)
 ///
-/// [toStringAsFixed], ...(implementations for [Space])
+/// [toString], ...(implementations for [Object])
+/// [-], ...(implementations for [Space])
+/// [&], ...(operation)
+///
+/// [toRecord], ...(getters)
 ///
 ///
-class Radian3 extends SpaceRadian<Radian3> {
+class Radian3 extends Radian<Radian3> {
   ///
   /// the rotation of [rPolar] ranges in 0 ~ π, start from [Direction3DIn6.top] to [Direction3DIn6.bottom]
   ///
   final double rPolar;
+
+  static bool validate(double rPolar) =>
+      rPolar < 0 || rPolar > Radian.angle_180;
 
   ///
   ///
@@ -284,32 +353,31 @@ class Radian3 extends SpaceRadian<Radian3> {
   ///
   ///
   const Radian3(super.rAzimuthal, this.rPolar)
-      : assert(rPolar >= 0 && rPolar <= SpaceRadian.angle_180);
+      : assert(
+          rPolar >= 0 && rPolar <= Radian.angle_180,
+        );
 
-  const Radian3.polar1(super.rAzimuthal) : rPolar = SpaceRadian.angle_1;
+  const Radian3.polar1(double rAzimuthal) : this(rAzimuthal, Radian.angle_1);
 
-  const Radian3.polar10(super.rAzimuthal) : rPolar = SpaceRadian.angle_10;
+  const Radian3.polar10(double rAzimuthal) : this(rAzimuthal, Radian.angle_10);
 
-  const Radian3.polar15(super.rAzimuthal) : rPolar = SpaceRadian.angle_15;
+  const Radian3.polar15(double rAzimuthal) : this(rAzimuthal, Radian.angle_15);
 
-  const Radian3.polar30(super.rAzimuthal) : rPolar = SpaceRadian.angle_30;
+  const Radian3.polar30(double rAzimuthal) : this(rAzimuthal, Radian.angle_30);
 
-  const Radian3.polar90(super.rAzimuthal) : rPolar = SpaceRadian.angle_90;
+  const Radian3.polar90(double rAzimuthal) : this(rAzimuthal, Radian.angle_90);
 
-  const Radian3.polar180(super.rAzimuthal) : rPolar = SpaceRadian.angle_180;
+  const Radian3.azimuthal1(double rPolar) : this(Radian.angle_1, rPolar);
 
-  const Radian3.azimuthal1(double rPolar) : this(SpaceRadian.angle_1, rPolar);
+  const Radian3.azimuthal10(double rPolar) : this(Radian.angle_10, rPolar);
 
-  const Radian3.azimuthal10(double rPolar) : this(SpaceRadian.angle_10, rPolar);
+  const Radian3.azimuthal15(double rPolar) : this(Radian.angle_15, rPolar);
 
-  const Radian3.azimuthal15(double rPolar) : this(SpaceRadian.angle_15, rPolar);
+  const Radian3.azimuthal30(double rPolar) : this(Radian.angle_30, rPolar);
 
-  const Radian3.azimuthal30(double rPolar) : this(SpaceRadian.angle_30, rPolar);
+  const Radian3.azimuthal90(double rPolar) : this(Radian.angle_90, rPolar);
 
-  const Radian3.azimuthal90(double rPolar) : this(SpaceRadian.angle_90, rPolar);
-
-  const Radian3.azimuthal180(double rPolar)
-      : this(SpaceRadian.angle_180, rPolar);
+  const Radian3.azimuthal180(double rPolar) : this(Radian.angle_180, rPolar);
 
   ///
   ///
@@ -320,14 +388,23 @@ class Radian3 extends SpaceRadian<Radian3> {
 
   ///
   ///
-  /// implementations for [Space]
+  /// implementations for [Object]
   ///
   ///
   @override
-  String toStringAsFixed(int digit) => 'Radian3('
-      '${rAzimuthal.toStringAsFixed(digit)}, '
-      '${rPolar.toStringAsFixed(digit)})';
+  String toString() => 'Radian3${(rAzimuthal, rPolar).toStringAsFixed(1)}';
 
+  @override
+  int get hashCode => rAzimuthal.hashCode;
+
+  @override
+  bool operator ==(covariant Radian2 other) => hashCode == other.hashCode;
+
+  ///
+  ///
+  /// implementations for [Space]
+  ///
+  ///
   @override
   Radian3 operator -() => Radian3(-rAzimuthal, -rPolar);
 
@@ -340,121 +417,33 @@ class Radian3 extends SpaceRadian<Radian3> {
       Radian3(rAzimuthal - other.rAzimuthal, rPolar - other.rPolar);
 
   @override
-  Radian3 operator *(double operand) => Radian3(rAzimuthal * operand, rPolar);
+  Radian3 operator *(covariant Radian3 other) =>
+      Radian3(rAzimuthal * other.rAzimuthal, rPolar * other.rPolar);
 
   @override
-  Radian3 operator /(double operand) => Radian3(rAzimuthal / operand, rPolar);
+  Radian3 operator /(covariant Radian3 other) =>
+      Radian3(rAzimuthal / other.rAzimuthal, rPolar / other.rPolar);
 
   @override
-  Radian3 operator %(double operand) => Radian3(rAzimuthal % operand, rPolar);
+  Radian3 operator %(covariant Radian3 other) =>
+      Radian3(rAzimuthal % other.rAzimuthal, rPolar % other.rPolar);
 
   @override
-  Radian3 operator ~/(double operand) =>
-      Radian3((rAzimuthal ~/ operand).toDouble(), rPolar);
-
-  @override
-  bool get isFinite => super.isFinite && rPolar.isFinite;
-
-  @override
-  bool get isInfinite => super.isInfinite && rPolar.isInfinite;
-
-  @override
-  bool get isNegative => super.isNegative && rPolar.isNegative;
-
-  @override
-  bool get isPositive => super.isPositive && rPolar.isPositive;
+  Radian3 operator ~/(covariant Radian3 other) => Radian3(
+        (rAzimuthal ~/ other.rAzimuthal).toDouble(),
+        (rPolar ~/ other.rPolar).toDouble(),
+      );
 
   ///
   ///
+  /// operation
   ///
+  ///
+  Radian3 operator &(double rAzimuthal) =>
+      Radian3(this.rAzimuthal + rAzimuthal, rPolar);
+
   Radian3 operator ^(double rPolar) =>
       Radian3(rAzimuthal, this.rPolar + rPolar);
-
-  double get cosPhi => math.cos(rPolar);
-
-  double get sinPhi => math.sin(rPolar);
-
-}
-
-///
-/// [dx], [dy]
-///
-/// [SpacePoint.square], ...(constructors)
-/// [maxDistance], ...(static methods)
-///
-/// [hasFinite], ...(getters)
-/// [scale], ...(methods)
-///
-abstract class SpacePoint<R extends SpaceRadian> implements Space {
-  final double dx;
-  final double dy;
-
-  ///
-  ///
-  /// constructors
-  ///
-  ///
-  const SpacePoint(this.dx, this.dy);
-
-  const SpacePoint.square(double value) : this(value, value);
-
-  const SpacePoint.ofX(double dx) : this(dx, 0);
-
-  const SpacePoint.ofY(double dy) : this(0, dy);
-
-  ///
-  ///
-  /// static methods
-  ///
-  ///
-  static S maxDistance<S extends SpacePoint>(S a, S b) =>
-      a.distance > b.distance ? a : b;
-
-  static S maxDirection<S extends SpacePoint>(S a, S b) =>
-      a.direction > b.direction ? a : b;
-
-  static S minDistance<S extends SpacePoint>(S a, S b) =>
-      a.distance < b.distance ? a : b;
-
-  static S minDirection<S extends SpacePoint>(S a, S b) =>
-      a.direction < b.direction ? a : b;
-
-  ///
-  ///
-  /// implementations for [Space]
-  ///
-  ///
-  @override
-  bool operator <(covariant SpacePoint other) => dx < other.dx && dy < other.dy;
-
-  @override
-  bool operator <=(covariant SpacePoint other) =>
-      dx <= other.dx && dy <= other.dy;
-
-  @override
-  bool operator >(covariant SpacePoint other) => dx > other.dx && dy > other.dy;
-
-  @override
-  bool operator >=(covariant SpacePoint other) =>
-      dx >= other.dx && dy >= other.dy;
-
-  @override
-  bool operator ==(covariant SpacePoint other) => hashCode == other.hashCode;
-
-  @override
-  int get hashCode => Object.hash(dx, dy);
-
-  @override
-  bool get isFinite => dx.isFinite && dy.isFinite;
-
-  @override
-  bool get isInfinite => dx.isInfinite && dy.isInfinite;
-
-  @override
-  bool get isPositive => dx.isPositive && dy.isPositive;
-
-  @override
-  bool get isNegative => dx.isNegative && dy.isNegative;
 
   ///
   ///
@@ -463,103 +452,68 @@ abstract class SpacePoint<R extends SpaceRadian> implements Space {
   ///
 
   ///
-  /// [hasFinite], [hasInfinite], [hasNegative], [hasPositive]
-  /// [distance], [volume]
-  /// [abs], [roundup], [unit]
+  /// [toRecord]
+  /// [cosPhi], [sinPhi]
   ///
-  bool get hasFinite => dx.isFinite || dy.isFinite;
+  (double, double) get toRecord => (rAzimuthal, rPolar);
 
-  bool get hasInfinite => dx.isInfinite || dy.isInfinite;
+  double get cosPhi => math.cos(rPolar);
 
-  bool get hasNegative => dx.isNegative || dy.isNegative;
-
-  bool get hasPositive => dx.isPositive || dy.isPositive;
-
-  double get volume => dx * dy;
-
-  double get distance => math.sqrt(dx * dx + dy * dy);
-
-  Space get abs;
-
-  Space get roundup;
-
-  Space get unit;
+  double get sinPhi => math.sin(rPolar);
 
   ///
+  /// [Direction3DIn6.front] can be seen within {angleY(-90 ~ 90), angleX(-90 ~ 90)}
+  /// [Direction3DIn6.left] can be seen within {angleY(0 ~ -180), angleZ(-90 ~ 90)}
+  /// [Direction3DIn6.top] can be seen within {angleX(0 ~ 180), angleZ(-90 ~ 90)}
+  /// [Direction3DIn6.back] can be seen while [Direction3DIn6.front] not be seen.
+  /// [Direction3DIn6.right] can be seen while [Direction3DIn6.left] not be seen.
+  /// [Direction3DIn6.bottom] can be seen while [Direction3DIn6.top] not be seen.
   ///
-  /// methods
-  ///
-  ///
+  List<Direction3DIn6> get visibleFaces {
+    throw UnimplementedError();
+    // final r = radian.restrict180AbsAngle;
+    // final rX = r.dx;
+    // final rY = r.dy;
+    // final rZ = r.dz;
 
-  ///
-  /// [scale], [translate]
-  /// [distanceTo], [distanceHalfTo]
-  /// [middleTo],
-  ///
-  Space scale(Space s);
-
-  Space translate(Space t);
-
-  double distanceTo(Space p);
-
-  double distanceHalfTo(Space p);
-
-  Space middleTo(Space p);
-
-  ///
-  /// [direction]
-  /// [radianTo], [directionTo]
-  /// [rotate]
-  ///
-  R get direction;
-
-  R directionTo(SpacePoint p);
-
-  R radianTo(SpacePoint p);
-
-  SpacePoint rotate(R radian);
+    // return <Direction3DIn6>[
+    //   Radian.ifWithinAngle90_90N(rY) && Radian.ifWithinAngle90_90N(rX)
+    //       ? Direction3DIn6.front
+    //       : Direction3DIn6.back,
+    //   Radian.ifWithinAngle0_180N(rY) && Radian.ifWithinAngle90_90N(rZ)
+    //       ? Direction3DIn6.left
+    //       : Direction3DIn6.right,
+    //   Radian.ifWithinAngle0_180(rX) && Radian.ifWithinAngle90_90N(rZ)
+    //       ? Direction3DIn6.top
+    //       : Direction3DIn6.bottom,
+    // ];
+  }
 }
 
 ///
 ///
-/// [Space2.square], ... (constructor)
-/// [zero], ... (constants)
-///
-/// [toStringAsFixed], ...(implementations for [Space])
-/// [distanceTo], ...(implementations for [SpacePoint])
-/// [direction], ...(implementations for [_SpaceDirectable2])
+/// [dx], [dy]
+/// [Point.square], ...(constructors)
+/// [toRecord], ...(getters)
+/// [middleTo], ...(methods)
 ///
 ///
-class Points2 extends SpacePoint<Radian2> {
+sealed class Point implements Space {
+  final double dx;
+  final double dy;
+
   ///
   ///
   /// constructors
   ///
   ///
-  const Points2(super.dx, super.dy);
+  const Point(this.dx, this.dy);
 
-  const Points2.square(super.value) : super.square();
+  const Point.square(double value) : this(value, value);
 
-  const Points2.ofX(super.dx) : super.ofX();
+  const Point.ofX(double dx) : this(dx, 0);
 
-  const Points2.ofY(super.dy) : super.ofY();
-
-  Points2.fromDirection(double direction, [double distance = 1])
-      : super(
-          distance * math.cos(direction),
-          distance * math.sin(direction),
-        );
-
-  /// see also [Points2.direction]
-  ///
-
-  ///
-  ///
-  /// constants
-  ///
-  ///
-  static const Points2 zero = Points2(0.0, 0.0);
-  static const Points2 one = Points2(1.0, 1.0);
+  const Point.ofY(double dy) : this(0, dy);
 
   ///
   ///
@@ -567,167 +521,199 @@ class Points2 extends SpacePoint<Radian2> {
   ///
   ///
   @override
-  String toStringAsFixed(int digit) =>
-      'Space2(${dx.toStringAsFixed(digit)}, ${dy.toStringAsFixed(digit)})';
+  bool operator <(covariant Point other) => dx < other.dx && dy < other.dy;
 
   @override
-  Points2 operator -() => Points2(-dx, -dy);
+  bool operator <=(covariant Point other) => dx <= other.dx && dy <= other.dy;
 
   @override
-  Points2 operator +(covariant Points2 other) =>
-      Points2(dx + other.dx, dy + other.dy);
+  bool operator >(covariant Point other) => dx > other.dx && dy > other.dy;
 
   @override
-  Points2 operator -(covariant Points2 other) =>
-      Points2(dx - other.dx, dy - other.dy);
-
-  @override
-  Points2 operator *(double operand) => Points2(dx * operand, dy * operand);
-
-  @override
-  Points2 operator /(double operand) => Points2(dx / operand, dy / operand);
-
-  @override
-  Points2 operator %(double operand) => Points2(dx % operand, dy % operand);
-
-  @override
-  Points2 operator ~/(double operand) =>
-      Points2((dx ~/ operand).toDouble(), (dy ~/ operand).toDouble());
-
-  @override
-  Points2 scale(covariant Points2 s) => Points2(dx * s.dx, dy * s.dy);
-
-  @override
-  Points2 translate(covariant Points2 t) => Points2(dx + t.dx, dy + t.dy);
-
-  @override
-  Space get abs => Points2(dx.abs(), dy.abs());
-
-  @override
-  Points2 get roundup => Points2(dx.roundToDouble(), dy.roundToDouble());
-
-  @override
-  Points2 get unit => this / distance;
+  bool operator >=(covariant Point other) => dx >= other.dx && dy >= other.dy;
 
   ///
+  /// [toRecord]
   ///
-  /// implementation for [SpacePoint]
-  ///
-  ///
-  @override
-  double distanceTo(covariant Points2 p) => (p - this).distance;
-
-  @override
-  double distanceHalfTo(covariant Points2 p) => (p - this).distance / 2;
-
-  @override
-  Points2 middleTo(covariant Points2 p) => (p + this) / 2;
+  Record get toRecord;
 
   ///
+  /// [middleTo]
   ///
-  /// implementation for [_SpaceDirectable2]
-  ///
-  ///
-
-  ///
-  /// the rotation of [Space2.fromDirection], [Points2.direction], [Points2.rotate] follows:
-  /// the axis [Direction3DIn6.back] -> [Direction3DIn6.front], and its start from [Direction3DIn6.right]; thus,
-  /// [direction] = atan2(dy, dx).
-  ///
-  /// the code belows prove the execution time of '[rotate] by matrix' is less than 'rotate by [direction]'
-  /// ```
-  /// double angleOf(MapEntry<double, double> entry) =>
-  ///     Radian.angleOf(atan2(entry.value, entry.key)).roundToDouble();
-  ///
-  /// double rotateByDirection(MapEntry<double, double> p) {
-  ///   MapEntry<double, double> from(double direction) =>
-  ///       MapEntry(cos(direction), sin(direction));
-  ///
-  ///   for (var i = 0; i < 1e8; i++) {
-  ///     p = from(atan2(p.value, p.key) + Radian.angle_10);
-  ///   }
-  ///   return angleOf(p);
-  /// }
-  ///
-  /// double rotateByMatrix(MapEntry<double, double> p) {
-  ///   MapEntry<double, double> from(double dx, double dy, double rotation) {
-  ///     final c = cos(rotation);
-  ///     final s = sin(rotation);
-  ///     return MapEntry(dx * c - dy * s, dx * s + dy * c);
-  ///   }
-  ///
-  ///   for (var i = 0; i < 1e8; i++) {
-  ///     p = from(p.key, p.value, Radian.angle_10);
-  ///   }
-  ///   return angleOf(p);
-  /// }
-  ///
-  /// final watch = Stopwatch();
-  /// final entry = MapEntry(sqrt(3), sqrt(4));
-  ///
-  /// watch.start();
-  /// print('by matrix: ${rotateByMatrix(entry)}------${watch.elapsed}'); // -31.0------0:00:00.763498
-  /// watch.reset();
-  /// watch.start();
-  /// print('by direct: ${rotateByDirection(entry)}------${watch.elapsed}'); // -31.0------0:00:04.573989
-  /// watch.reset();
-  /// ```
-  ///
-  /// When the rotation begin,
-  ///   the vector parallel to x axis projects on both x axis and y axis.      ( cos, sin)
-  ///   the vector parallel to y axis projects on both x axis and y axis, too. (-sin, cos)
-  ///   therefore, the matrix multiplication be like:
-  ///     [ cos, -sin ] [ dx ]
-  ///     [ sin,  cos ] [ dy ]
-  ///
-  /// To rotate a 2d vector, it's necessary to rotate the vector parallel all the axis:
-  /// [Points2.rotate] needs to implement full matrix multiplication:
-  ///   [Points2.dx] = [dx] * cos(radian) - [dy] * sin(radian);
-  ///   [Points2.dy] = [dx] * sin(radian) + [dy] * cos(radian);
-  ///
-  /// To create a 2d vector, it's sufficient to take (d, 0) as a unit vector:
-  /// [Points2.fromDirection] can only implement part of matrix multiplication:
-  ///   [Points2.dx] = d * cos(radian); // 0 * sin(radian) = 0
-  ///   [Points2.dy] = d * sin(radian); // 0 * cos(radian) = 0
-  ///
-  @override
-  Radian2 get direction => Radian2(math.atan2(dy, dx));
-
-  @override
-  Radian2 directionTo(covariant Points2 p) => (p - this).direction;
-
-  @override
-  Radian2 radianTo(covariant Points2 p) => p.direction - direction;
-
-  @override
-  Points2 rotate(covariant Radian2 radian) {
-    final c = radian.cos;
-    final s = radian.sin;
-    return Points2(dx * c - dy * s, dx * s + dy * c);
-  }
+  Point middleTo(Point p);
 }
 
 ///
-/// notice that the translation of [Points3] follows the axis by [double.infinity] -> [double.negativeInfinity],
-/// which means:
-///   [Points3.dx] is getting bigger to [Direction3DIn6.back], getting lower to [Direction3DIn6.front]
-///   [Points3.dy] is getting bigger to [Direction3DIn6.right], getting lower to [Direction3DIn6.left],
-///   [Points3.dz] is getting bigger to [Direction3DIn6.top], getting lower to [Direction3DIn6.bottom]
-/// see also [Points3.rotate], [Space3.fromDirection] for direction
 ///
-///
-/// [Points3.cube], ... (constructor)
-/// [Points3.fromDirection], ... (factories)
+/// [Point2.square], ... (constructor)
 /// [zero], ... (constants)
 ///
-/// [toStringAsFixed], ...(implementations for [Space])
-/// [distanceTo], ...(implementations for [SpacePoint])
+/// [toString], ...(implementations for [Object])
+/// [-], ...(implementations for [Space])
+/// [toRecord], ...(implementations for [Point])
 ///
+/// [...nothing...], ...()
+///
+class Point2 extends Point {
+  ///
+  ///
+  /// constructors
+  ///
+  ///
+  const Point2(super.dx, super.dy);
+
+  const Point2.square(super.value) : super.square();
+
+  const Point2.ofX(super.dx) : super.ofX();
+
+  const Point2.ofY(super.dy) : super.ofY();
+
+  Point2.fromDirection(double direction, [double distance = 1])
+      : super(
+          distance * math.cos(direction),
+          distance * math.sin(direction),
+        );
+
+  ///
+  ///
+  /// constructors
+  ///
+  ///
+  factory Point2.unitFromDirection(Direction2D direction) {
+    final d8 = switch (direction) {
+      Direction2DIn4() => direction.toDirection8,
+      Direction2DIn8() => direction,
+    };
+    return switch (d8) {
+      Direction2DIn8.top => Point2.top,
+      Direction2DIn8.left => Point2.left,
+      Direction2DIn8.right => Point2.right,
+      Direction2DIn8.bottom => Point2.bottom,
+      Direction2DIn8.topLeft => Point2.topLeft,
+      Direction2DIn8.topRight => Point2.topRight,
+      Direction2DIn8.bottomLeft => Point2.bottomLeft,
+      Direction2DIn8.bottomRight => Point2.bottomRight,
+    };
+  }
+
+  ///
+  /// the rotation of
+  ///   1. [RecordDouble2Extension.direction], [RecordDouble2Extension.rotate]
+  ///   2. [Point2.fromDirection]
+  /// follows the axis [Direction3DIn6.back] -> [Direction3DIn6.front],
+  /// and the rotation on axis starts from [Direction3DIn6.right].
+  ///
+  /// the implementation of [Point2.fromDirection] is let (d, 0) be the unit vector,
+  /// then [RecordDouble2Extension.rotate] the unit vector as follows:
+  ///   [Point2.dx] = d * cos(radian); // 0 * sin(radian) = 0
+  ///   [Point2.dy] = d * sin(radian); // 0 * cos(radian) = 0
+  ///
+  ///
+
+  ///
+  ///
+  /// constants
+  ///
+  ///
+  static const Point2 zero = Point2(0.0, 0.0);
+  static const Point2 one = Point2(1.0, 1.0);
+
+  static const top = Point2(0, -1);
+  static const left = Point2(-1, 0);
+  static const right = Point2(1, 0);
+  static const bottom = Point2(0, 1);
+  static const center = Point2.zero;
+  static const topLeft = Point2.square(-math.sqrt1_2);
+  static const topRight = Point2(math.sqrt1_2, -math.sqrt1_2);
+  static const bottomLeft = Point2(-math.sqrt1_2, math.sqrt1_2);
+  static const bottomRight = Point2.square(math.sqrt1_2);
+
+  ///
+  ///
+  /// implementations for [Object]
+  ///
+  ///
+  @override
+  String toString() => 'Point2${(dx, dy).toStringAsFixed(1)}';
+
+  @override
+  int get hashCode => Object.hash(dx, dy);
+
+  @override
+  bool operator ==(covariant Point2 other) => hashCode == other.hashCode;
+
+  ///
+  ///
+  /// implementations for [Space]
+  ///
+  ///
+  @override
+  Point2 operator -() => Point2(-dx, -dy);
+
+  @override
+  Point2 operator +(covariant Point2 other) =>
+      Point2(dx + other.dx, dy + other.dy);
+
+  @override
+  Point2 operator -(covariant Point2 other) =>
+      Point2(dx - other.dx, dy - other.dy);
+
+  @override
+  Point2 operator *(covariant Point2 other) =>
+      Point2(dx * other.dx, dy * other.dy);
+
+  @override
+  Point2 operator /(covariant Point2 other) =>
+      Point2(dx / other.dx, dy / other.dy);
+
+  @override
+  Point2 operator %(covariant Point2 other) =>
+      Point2(dx % other.dx, dy % other.dy);
+
+  @override
+  Point2 operator ~/(covariant Point2 other) =>
+      Point2((dx ~/ other.dx).toDouble(), (dy ~/ other.dy).toDouble());
+
+  ///
+  ///
+  /// implementation for [Point]
+  ///
+  ///
+
+  ///
+  /// ([dx], [dy]) can be treated as [Record] to use the getters, functions in [RecordDouble2Extension]
+  ///
+  @override
+  (double, double) get toRecord => (dx, dy);
+
+  @override
+  Point2 middleTo(covariant Point2 p) => (p + this) / Point2.square(2);
+}
+
+///
+/// notice that the translation of [Point3] follows the axis by [double.infinity] -> [double.negativeInfinity],
+/// which means:
+///   [Point3.dx] is getting bigger to [Direction3DIn6.back], getting lower to [Direction3DIn6.front]
+///   [Point3.dy] is getting bigger to [Direction3DIn6.right], getting lower to [Direction3DIn6.left],
+///   [Point3.dz] is getting bigger to [Direction3DIn6.top], getting lower to [Direction3DIn6.bottom]
+/// see also [Point3.rotate], [Space3.fromDirection] for direction
+///
+///
+/// [Point3.cube], ... (constructor)
+/// [Point3.fromDirection], ... (factories)
+/// [zero], ... (constants)
+///
+/// [toString], ...(implementations for [Object])
+/// [-], ...(implementations for [Space])
+/// [distanceTo], ...(implementations for [Point])
+///
+/// [...nothing...], ...(static methods)
 /// [withoutXY], ... (getters)
 /// [rotateX], ... (methods)
 ///
+/// to compute efficiently without creating a class, see [RecordXYZExtension]
 ///
-class Points3 extends SpacePoint<Radian3> {
+class Point3 extends Point {
   final double dz;
 
   ///
@@ -735,31 +721,31 @@ class Points3 extends SpacePoint<Radian3> {
   /// constructors
   ///
   ///
-  const Points3(super.dx, super.dy, this.dz);
+  const Point3(super.dx, super.dy, this.dz);
 
-  const Points3.ofX(super.dx)
+  const Point3.ofX(super.dx)
       : dz = 0,
         super.ofX();
 
-  const Points3.ofY(super.dy)
+  const Point3.ofY(super.dy)
       : dz = 0,
         super.ofY();
 
-  const Points3.ofZ(this.dz) : super.square(0);
+  const Point3.ofZ(this.dz) : super.square(0);
 
-  const Points3.cube(super.value)
+  const Point3.cube(super.value)
       : dz = value,
         super.square();
 
-  const Points3.ofXY(super.value)
+  const Point3.ofXY(super.value)
       : dz = 0,
         super.square();
 
-  const Points3.ofYZ(double value)
+  const Point3.ofYZ(double value)
       : dz = value,
         super(0, value);
 
-  const Points3.ofXZ(double value)
+  const Point3.ofXZ(double value)
       : dz = value,
         super(value, 0);
 
@@ -768,13 +754,50 @@ class Points3 extends SpacePoint<Radian3> {
   /// factories
   ///
   ///
-  factory Points3.fromDirection(Radian3 direction, [double distance = 1]) {
+  factory Point3.fromDirection(Radian3 direction, [double distance = 1]) {
     final s = direction.sinPhi * distance;
-    return Points3(
+    return Point3(
       s * direction.cos,
       s * direction.sin,
       direction.cosPhi * distance,
     );
+  }
+
+  factory Point3.unitFromDirection(Direction3D direction) {
+    final d27 = switch (direction) {
+      Direction3DIn6() => direction.to3DIn27,
+      Direction3DIn14() => direction.to3DIn27,
+      Direction3DIn27() => direction,
+    };
+    return switch (d27) {
+      Direction3DIn27.center => Point3.center,
+      Direction3DIn27.left => Point3.left,
+      Direction3DIn27.top => Point3.top,
+      Direction3DIn27.right => Point3.right,
+      Direction3DIn27.bottom => Point3.bottom,
+      Direction3DIn27.front => Point3.front,
+      Direction3DIn27.back => Point3.back,
+      Direction3DIn27.topLeft => Point3.topLeft,
+      Direction3DIn27.bottomRight => Point3.bottomRight,
+      Direction3DIn27.frontRight => Point3.frontRight,
+      Direction3DIn27.frontBottom => Point3.frontBottom,
+      Direction3DIn27.backLeft => Point3.backLeft,
+      Direction3DIn27.backTop => Point3.backTop,
+      Direction3DIn27.topRight => Point3.topRight,
+      Direction3DIn27.frontTop => Point3.frontTop,
+      Direction3DIn27.bottomLeft => Point3.bottomLeft,
+      Direction3DIn27.frontLeft => Point3.frontLeft,
+      Direction3DIn27.backRight => Point3.backRight,
+      Direction3DIn27.backBottom => Point3.backBottom,
+      Direction3DIn27.frontTopLeft => Point3.frontTopLeft,
+      Direction3DIn27.frontTopRight => Point3.frontTopRight,
+      Direction3DIn27.frontBottomLeft => Point3.frontBottomLeft,
+      Direction3DIn27.backTopRight => Point3.backTopRight,
+      Direction3DIn27.backBottomLeft => Point3.backBottomLeft,
+      Direction3DIn27.backBottomRight => Point3.backBottomRight,
+      Direction3DIn27.frontBottomRight => Point3.frontBottomRight,
+      Direction3DIn27.backTopLeft => Point3.backTopLeft,
+    };
   }
 
   ///
@@ -782,11 +805,76 @@ class Points3 extends SpacePoint<Radian3> {
   /// constants
   ///
   ///
-  static const Points3 zero = Points3.cube(0);
-  static const Points3 one = Points3.cube(1);
-  static const Points3 x1 = Points3.ofX(1);
-  static const Points3 y1 = Points3.ofY(1);
-  static const Points3 z1 = Points3.ofZ(1);
+  static const Point3 zero = Point3.cube(0);
+  static const Point3 one = Point3.cube(1);
+
+  static const center = Point3.zero;
+  static const left = Point3.ofX(-1);
+  static const top = Point3.ofY(-1);
+  static const right = Point3.ofX(1);
+  static const bottom = Point3.ofY(1);
+  static const front = Point3.ofZ(1);
+  static const back = Point3.ofZ(-1);
+
+  static const topLeft = Point3.ofXY(-math.sqrt1_2);
+  static const bottomRight = Point3.ofXY(math.sqrt1_2);
+  static const frontRight = Point3.ofXZ(math.sqrt1_2);
+  static const frontBottom = Point3.ofYZ(math.sqrt1_2);
+  static const backLeft = Point3.ofXZ(-math.sqrt1_2);
+  static const backTop = Point3.ofYZ(-math.sqrt1_2);
+  static const topRight = Point3(math.sqrt1_2, -math.sqrt1_2, 0);
+  static const frontTop = Point3(0, -math.sqrt1_2, math.sqrt1_2);
+  static const bottomLeft = Point3(-math.sqrt1_2, math.sqrt1_2, 0);
+  static const frontLeft = Point3(-math.sqrt1_2, 0, math.sqrt1_2);
+  static const backRight = Point3(math.sqrt1_2, 0, -math.sqrt1_2);
+  static const backBottom = Point3(0, math.sqrt1_2, -math.sqrt1_2);
+
+  static const frontTopLeft = Point3(
+    -DoubleExtension.sqrt1_3,
+    -DoubleExtension.sqrt1_3,
+    DoubleExtension.sqrt1_3,
+  );
+  static const frontTopRight = Point3(
+    DoubleExtension.sqrt1_3,
+    -DoubleExtension.sqrt1_3,
+    DoubleExtension.sqrt1_3,
+  );
+  static const frontBottomLeft = Point3(
+    -DoubleExtension.sqrt1_3,
+    DoubleExtension.sqrt1_3,
+    DoubleExtension.sqrt1_3,
+  );
+  static const backTopRight = Point3(
+    DoubleExtension.sqrt1_3,
+    -DoubleExtension.sqrt1_3,
+    -DoubleExtension.sqrt1_3,
+  );
+  static const backBottomLeft = Point3(
+    -DoubleExtension.sqrt1_3,
+    DoubleExtension.sqrt1_3,
+    -DoubleExtension.sqrt1_3,
+  );
+  static const backBottomRight = Point3(
+    DoubleExtension.sqrt1_3,
+    DoubleExtension.sqrt1_3,
+    -DoubleExtension.sqrt1_3,
+  );
+  static const frontBottomRight = Point3.cube(DoubleExtension.sqrt1_3);
+  static const backTopLeft = Point3.cube(-DoubleExtension.sqrt1_3);
+
+  ///
+  ///
+  /// implementations for [Object]
+  ///
+  ///
+  @override
+  String toString() => 'Point3${(dx, dy, dz).toStringAsFixed(1)}';
+
+  @override
+  bool operator ==(covariant Point3 other) => super == other && dz == other.dz;
+
+  @override
+  int get hashCode => Object.hash(dx, dy, dz);
 
   ///
   ///
@@ -794,173 +882,66 @@ class Points3 extends SpacePoint<Radian3> {
   ///
   ///
   @override
-  String toStringAsFixed(int digit) => 'Space3('
-      '${dx.toStringAsFixed(digit)}, '
-      '${dy.toStringAsFixed(digit)}, '
-      '${dz.toStringAsFixed(digit)})';
+  Point3 operator -() => Point3(-dx, -dy, -dz);
 
   @override
-  Points3 operator -() => Points3(-dx, -dy, -dz);
+  Point3 operator +(covariant Point3 other) =>
+      Point3(dx + other.dx, dy + other.dy, dz + other.dz);
 
   @override
-  Points3 operator +(covariant Points3 other) =>
-      Points3(dx + other.dx, dy + other.dy, dz + other.dz);
+  Point3 operator -(covariant Point3 other) =>
+      Point3(dx - other.dx, dy - other.dy, dz - other.dz);
 
   @override
-  Points3 operator -(covariant Points3 other) =>
-      Points3(dx - other.dx, dy - other.dy, dz - other.dz);
+  Point3 operator *(covariant Point3 other) =>
+      Point3(dx * other.dx, dy * other.dy, dz * other.dz);
 
   @override
-  Points3 operator *(double operand) =>
-      Points3(dx * operand, dy * operand, dz * operand);
+  Point3 operator /(covariant Point3 other) =>
+      Point3(dx / other.dx, dy / other.dy, dz / other.dz);
 
   @override
-  Points3 operator /(double operand) =>
-      Points3(dx / operand, dy / operand, dz / operand);
-
-  @override
-  Points3 operator %(double operand) =>
-      Points3(dx % operand, dy % operand, dz % operand);
+  Point3 operator %(covariant Point3 other) =>
+      Point3(dx % other.dx, dy % other.dy, dz % other.dz);
 
   ///
   ///
-  /// implementations for [SpacePoint]
+  /// implementations for [Point]
   ///
   ///
   @override
-  bool operator <(covariant Points3 other) => super < other && dz < other.dz;
+  bool operator <(covariant Point3 other) => super < other && dz < other.dz;
 
   @override
-  bool operator >(covariant Points3 other) => super > other && dz > other.dz;
+  bool operator >(covariant Point3 other) => super > other && dz > other.dz;
 
   @override
-  bool operator <=(covariant Points3 other) => super <= other && dz <= other.dz;
+  bool operator <=(covariant Point3 other) => super <= other && dz <= other.dz;
 
   @override
-  bool operator >=(covariant Points3 other) => super >= other && dz >= other.dz;
+  bool operator >=(covariant Point3 other) => super >= other && dz >= other.dz;
 
   @override
-  bool operator ==(covariant Points3 other) => super == other && dz == other.dz;
-
-  @override
-  int get hashCode => Object.hash(dx, dy, dz);
-
-  @override
-  Points3 operator ~/(double operand) => Points3(
-        (dx ~/ operand).toDouble(),
-        (dy ~/ operand).toDouble(),
-        (dz ~/ operand).toDouble(),
+  Point3 operator ~/(covariant Point3 other) => Point3(
+        (dx ~/ other.dx).toDouble(),
+        (dy ~/ other.dy).toDouble(),
+        (dz ~/ other.dz).toDouble(),
       );
 
-  @override
-  Points3 scale(covariant Points3 s) =>
-      Points3(dx * s.dx, dy * s.dy, dz * s.dz);
-
-  @override
-  Points3 translate(covariant Points3 t) =>
-      Points3(dx + t.dx, dy + t.dy, dz + t.dz);
-
-  @override
-  Points3 get abs => Points3(dx.abs(), dy.abs(), dz.abs());
-
-  @override
-  Points3 get roundup =>
-      Points3(dx.roundToDouble(), dy.roundToDouble(), dz.roundToDouble());
-
-  @override
-  Points3 get unit => this / distance;
-
   ///
   ///
-  /// implementations for [SpacePoint]
+  /// implementations for [Point]
   ///
   ///
-  @override
-  bool get isFinite => super.isFinite && dz.isFinite;
-
-  @override
-  bool get isInfinite => super.isInfinite && dz.isInfinite;
-
-  @override
-  bool get isPositive => super.isPositive && dz.isPositive;
-
-  @override
-  bool get isNegative => super.isNegative && dz.isNegative;
-
-  @override
-  bool get hasFinite => super.hasFinite || dz.isFinite;
-
-  @override
-  bool get hasInfinite => super.hasInfinite || dz.isInfinite;
-
-  @override
-  bool get hasPositive => super.hasPositive || dz.isPositive;
-
-  @override
-  bool get hasNegative => super.hasNegative || dz.isNegative;
-
-  @override
-  double get distance => math.sqrt(dx.squared + dy.squared + dz.squared);
-
-  @override
-  double get volume => super.volume * dz;
-
-  @override
-  double distanceTo(covariant Points3 p) => (p - this).distance;
-
-  @override
-  double distanceHalfTo(covariant Points3 p) => (p - this).distance / 2;
-
-  @override
-  Points3 middleTo(covariant Points3 p) => (p - this) / 2;
 
   ///
-  /// spherical coordinates:
-  ///   r^2 = x^2 + 𝑦^2 + 𝑧^2
-  ///   θ = atan(dy/dx)
-  ///   φ = acos(dz/ r)
-  /// that is, [direction] = (θ, φ)
+  /// ([dx], [dy], [dz]) can be treated as [Record] to use the getters, functions in [RecordDouble3Extension]
   ///
   @override
-  Radian3 get direction =>
-      Radian3(math.atan2(dy, dx), math.acos(dz / distance));
+  (double, double, double) get toRecord => (dx, dy, dz);
 
   @override
-  Radian3 radianTo(covariant Points3 p) => p.direction - direction;
-
-  @override
-  Radian3 directionTo(covariant Points3 p) => (p - this).direction;
-
-  ///
-  /// let [dx], [dy], [dz] represent the [Points3] properties before [rotate] finished.
-  /// let [Points3.dx], [Points3.dy], [Points3.dz] represent the result of [rotate].
-  /// let rP, rA represent the origin state of polar and azimuthal.
-  /// let rP', rA' represent the [radian] rotation of polar and azimuthal.
-  /// which means "rP + rP'", "rA + rA'" are the rotated rotation of polar and azimuthal.
-  ///
-  /// when rA' grows,
-  ///     [ cos(rA'), -sin(rA') ] [ dx ]
-  ///     [ sin(rA'),  cos(rA') ] [ dy ]
-  ///
-  /// when rP' grows from 0 ~ π,
-  ///   the vector can be separate into the one that parallel to z axis, and the one that parallel to xy plane.
-  ///   the one that parallel to z axis directly effect the result [Points3.dz] without consideration of rA'.
-  ///   [Points3.dz] = cos(rP + rP')
-  ///
-  ///   the one that parallel to xy plane projects a positive distance on xy plane, sin(rP + rP'),
-  ///   which is also [Points3.dx] * sec(rA + rA'), [Points3.dy] * csc(rA + rA').
-  ///   [Points3.dx] = sin(rP + rP') / sec(rA + rA')
-  ///   [Points3.dx] = sin(rP + rP') / csc(rA + rA')
-  ///
-  /// the direct way to compute is to calculating rP + rP', rA + rA' to get the result,
-  /// but it's not the best way to do so;
-  /// that's the reason why [Points2.rotate] not invoke [Points2.fromDirection]
-  ///
-  @override
-  Points3 rotate(covariant Radian3 radian) {
-    // ?
-    return Points3.fromDirection(direction + radian, distance);
-  }
+  Point3 middleTo(covariant Point3 p) => (p - this) / Point3.cube(2);
 
   ///
   ///
@@ -979,113 +960,13 @@ class Points3 extends SpacePoint<Radian3> {
 
   bool get withoutXZ => dx == 0 && dz == 0;
 
-  Points3 get retainXY => Points3(dx, dy, 0);
+  Point3 get retainXY => Point3(dx, dy, 0);
 
-  Points3 get retainYZAsXY => Points3(dy, dz, 0);
+  Point3 get retainYZAsXY => Point3(dy, dz, 0);
 
-  Points3 get retainXZAsXY => Points3(dx, dz, 0);
+  Point3 get retainXZAsXY => Point3(dx, dz, 0);
 
-  Points3 get retainYZAsYX => Points3(dz, dy, 0);
+  Point3 get retainYZAsYX => Point3(dz, dy, 0);
 
-  Points3 get retainXZAsYX => Points3(dz, dx, 0);
-
-  ///
-  ///
-  /// methods
-  ///
-  ///
-
-  ///
-  /// the rotation of [Points3] follows:
-  ///   z axis is [Direction3DIn6.top] -> [Direction3DIn6.bottom], radian start from [Direction3DIn6.right]
-  ///   y axis is [Direction3DIn6.right] -> [Direction3DIn6.left], radian start from [Direction3DIn6.front]
-  ///   x axis is [Direction3DIn6.back] -> [Direction3DIn6.front], radian start from [Direction3DIn6.top], thus,
-  ///
-  /// When rotate on x axis,
-  ///   the vector parallel to y axis will project on both y axis and z axis.      ( cos, sin)
-  ///   the vector parallel to z axis will project on both y axis and z axis, too. (-sin, cos)
-  ///   therefore, the matrix multiplication be like:
-  ///     [  1,   0,   0 ]  [ dx ]
-  ///     [  0, cos,-sin ]  [ dy ]
-  ///     [  0, sin, cos ]  [ dz ]
-  /// When rotate on y axis,
-  ///   the vector parallel to x axis will project on both x axis and z axis.      ( cos,-sin)
-  ///   the vector parallel to z axis will project on both x axis and z axis, too. ( sin, cos)
-  ///   therefore, the matrix multiplication be like:
-  ///     [ cos,  0, sin ]  [ dx ]
-  ///     [  0,   1,   0 ]  [ dy ]
-  ///     [-sin,  0, cos ]  [ dz ]
-  /// When rotate on z axis,
-  ///   the vector parallel to x axis will project on both x axis and y axis.      ( cos, sin)
-  ///   the vector parallel to y axis will project on both x axis and y axis, too. (-sin, cos)
-  ///   therefore, the matrix multiplication be like:
-  ///     [ cos,-sin,  0 ]  [ dx ]
-  ///     [ sin, cos,  0 ]  [ dy ]
-  ///     [  0,    0,  1 ]  [ dz ]
-  /// because the priority of rotations on x axis, y axis, z axis influence each other,
-  /// it better not to rotate by them all together at [Points3.rotate].
-  ///   [rotateX] do the rotation only for x axis:
-  ///     [Points3.dx] = [dx]
-  ///     [Points3.dy] = [dy] * cos(rx) - [dz] * sin(rx)
-  ///     [Points3.dz] = [dy] * sin(rx) + [dz] * cos(rx)
-  ///   [rotateY] do the rotation only for y axis:
-  ///     [Points3.dx] = [dx] * cos(ry) + [dz] * sin(ry)
-  ///     [Points3.dy] = [dy]
-  ///     [Points3.dz] = [dz] * cos(ry) - [dx] * sin(ry)
-  ///   [rotateZ] do the rotation only for z axis:
-  ///     [Points3.dx] = [dx] * cos(rz) - [dy] * sin(rz)
-  ///     [Points3.dy] = [dx] * sin(rz) + [dy] * cos(rz)
-  ///     [Points3.dz] = [dz]
-  ///
-  ///
-  Points3 rotateX(Radian2 radian) {
-    final c = radian.cos;
-    final s = radian.sin;
-    return Points3(dx, dy * c - dz * s, dy * s + dz * c);
-  }
-
-  Points3 rotateY(Radian2 radian) {
-    final c = radian.cos;
-    final s = radian.sin;
-    return Points3(dx * c + dz * s, dy, dz * c * c - dx * s);
-  }
-
-  Points3 rotateZ(Radian2 radian) {
-    final c = radian.cos;
-    final s = radian.sin;
-    return Points3(dx * c + dy * s, dx * s + dy * c, dz);
-  }
-}
-
-
-///
-///
-///
-///
-class Spherical {
-  final Radian3 direction;
-  final double distance;
-
-  const Spherical(this.direction, this.distance);
-
-  Points2 get toSpace2 => Points2.fromDirection(direction.rAzimuthal, distance);
-
-  Points3 get toSpace3 => Points3.fromDirection(direction, distance);
-
-  Spherical rotated(Radian3 d) => Spherical(direction + d, distance);
-
-  @override
-  String toString() =>
-      "Spherical(${direction.rAzimuthal}, ${direction.rPolar}, $distance)";
-
-  static Spherical lerp(Spherical begin, Spherical end, double t) => Spherical(
-    begin.direction + (end.direction - begin.direction) * t,
-    begin.distance + (end.distance - begin.distance) * t,
-  );
-
-  static Translator<double, Spherical> lerpOf(Spherical begin, Spherical end) {
-    final direction = end.direction - begin.direction;
-    final distance = end.distance - begin.distance;
-    return (t) => Spherical(direction * t, distance * t);
-  }
+  Point3 get retainXZAsYX => Point3(dz, dx, 0);
 }

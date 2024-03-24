@@ -5,7 +5,7 @@
 /// [Intersector], [IntersectorIndexable]
 /// [Supplier], [Generator]
 ///
-/// [Mapper]
+/// [Applier]
 /// [Reducer]
 /// [Collapser]
 /// [Companion]
@@ -14,7 +14,7 @@
 /// [Collector]
 /// [Linker]
 /// [Fusionor]
-/// [Translator]
+/// [Mapper]
 /// [Combiner]
 /// [Mixer]
 ///
@@ -46,7 +46,7 @@ typedef IntersectorIndexable<A, B> = void Function(A a, B b, int index);
 typedef Supplier<S> = S Function();
 typedef Generator<S> = S Function(int index);
 
-typedef Mapper<T> = T Function(T value);
+typedef Applier<T> = T Function(T value);
 typedef Reducer<T> = T Function(T v1, T v2);
 typedef Collapser<T> = T Function(T v1, T v2, T v3);
 typedef Companion<T, E> = T Function(T value, E other);
@@ -56,7 +56,7 @@ typedef Collector<T, A, B> = T Function(T value, A a, B b);
 
 typedef Linker<T, E, S> = S Function(T v1, T v2, E other);
 typedef Fusionor<P, Q, R, S> = S Function(P p, Q q, R r);
-typedef Translator<T, S> = S Function(T value);
+typedef Mapper<T, S> = S Function(T value);
 typedef Combiner<T, S> = S Function(T v1, T v2);
 typedef Mixer<A, B, S> = S Function(A a, B b);
 
@@ -280,7 +280,7 @@ extension FPredicatorFusionor on PredicatorFusionor {
 /// [lerp]
 ///
 ///
-extension FMapper on Mapper {
+extension FMapper on Applier {
   static T keep<T>(T value) => value;
 
   ///
@@ -307,18 +307,18 @@ extension FMapper on Mapper {
 
   static double doubleZero(double value) => 0;
 
-  static Mapper<double> doubleOnPlus(double value) => (v) => v + value;
+  static Applier<double> doubleOnPlus(double value) => (v) => v + value;
 
-  static Mapper<double> doubleOnMinus(double value) => (v) => v - value;
+  static Applier<double> doubleOnMinus(double value) => (v) => v - value;
 
-  static Mapper<double> doubleOnMultiply(double value) => (v) => v * value;
+  static Applier<double> doubleOnMultiply(double value) => (v) => v * value;
 
-  static Mapper<double> doubleOnDivide(double value) => (v) => v / value;
+  static Applier<double> doubleOnDivide(double value) => (v) => v / value;
 
-  static Mapper<double> doubleOnDivideToInt(double value) =>
+  static Applier<double> doubleOnDivideToInt(double value) =>
       (v) => (v ~/ value).toDouble();
 
-  static Mapper<double> doubleOnModule(double value) => (v) => v % value;
+  static Applier<double> doubleOnModule(double value) => (v) => v % value;
 
   ///
   /// [doubleOnTimesFactor]
@@ -327,10 +327,10 @@ extension FMapper on Mapper {
   ///   [doubleOnPeriodCosByTimes]
   ///   [doubleOnPeriodTanByTimes]
   ///
-  static Mapper<double> doubleOnTimesFactor(
+  static Applier<double> doubleOnTimesFactor(
     double times,
     double factor, [
-    Mapper<double> transform = math.sin,
+    Applier<double> transform = math.sin,
   ]) {
     assert(times.isFinite && factor.isFinite);
     return (value) => transform(times * value) * factor;
@@ -338,36 +338,36 @@ extension FMapper on Mapper {
 
   // sin period: (0 ~ 1 ~ 0 ~ -1 ~ 0)
   // cos period: (1 ~ 0 ~ -1 ~ 0 ~ 1)
-  static Mapper<double> doubleOnPeriod(
+  static Applier<double> doubleOnPeriod(
     double period, [
-    Mapper<double> transform = math.sin,
+    Applier<double> transform = math.sin,
   ]) {
     assert(transform == math.sin || transform == math.cos);
     final times = math.pi * 2 * period;
     return FLerper.clamp((value) => transform(times * value), 0.0, 1.0);
   }
 
-  static Mapper<double> doubleOnPeriodSinByTimes(int times) =>
+  static Applier<double> doubleOnPeriodSinByTimes(int times) =>
       doubleOnPeriod(times.toDouble(), math.sin);
 
-  static Mapper<double> doubleOnPeriodCosByTimes(int times) =>
+  static Applier<double> doubleOnPeriodCosByTimes(int times) =>
       doubleOnPeriod(times.toDouble(), math.cos);
 
-  static Mapper<double> doubleOnPeriodTanByTimes(int times) =>
+  static Applier<double> doubleOnPeriodTanByTimes(int times) =>
       doubleOnPeriod(times.toDouble(), math.tan);
 
   ///
   /// iterable
   /// [iterableAppend]
   ///
-  static Mapper<Iterable<I>> iterableAppend<I>(I value) =>
+  static Applier<Iterable<I>> iterableAppend<I>(I value) =>
       (iterable) => iterable.append(value);
 
   ///
   /// list
   /// [listAdd]
   ///
-  static Mapper<List<T>> listAdd<T>(T value) => (list) => list..add(value);
+  static Applier<List<T>> listAdd<T>(T value) => (list) => list..add(value);
 }
 
 ///
@@ -413,7 +413,7 @@ extension FGenerator<T> on Generator<T> {
   ///
   Iterable<E> yielding<E>(
     int length,
-    Translator<T, E> toVal, [
+    Mapper<T, E> toVal, [
     int start = 0,
   ]) sync* {
     for (var i = start; i < length; i++) {
@@ -423,7 +423,7 @@ extension FGenerator<T> on Generator<T> {
 
   List<E> yieldingToList<E>(
     int length,
-    Translator<T, E> toVal, [
+    Mapper<T, E> toVal, [
     int start = 0,
   ]) =>
       [for (var i = start; i < length; i++) toVal(this(i))];
@@ -524,19 +524,23 @@ extension FGenerator<T> on Generator<T> {
 ///
 ///
 ///
-extension FTranslator on Translator {
-  static Translator<int, bool> oddOrEvenCheckerAs(int value) =>
+extension FTranslator on Mapper {
+  static Mapper<int, bool> oddOrEvenCheckerAs(int value) =>
       value.isOdd ? (v) => v.isOdd : (v) => v.isEven;
 
-  static Translator<int, bool> oddOrEvenCheckerOpposite(int value) =>
+  static Mapper<int, bool> oddOrEvenCheckerOpposite(int value) =>
       value.isOdd ? (v) => v.isEven : (v) => v.isOdd;
 }
 
+///
 ///
 /// [keepCurrent], [keepValue]
 /// [doubleMax], ...
 /// [intMax], ...
 /// [stringLine], ...
+/// [iteratorDoubleDistanceMax], ...
+/// [recordDouble2DirectionMax], ...
+///
 ///
 extension FReducer on Reducer {
   static T keepCurrent<T>(T current, T value) => current;
@@ -546,8 +550,9 @@ extension FReducer on Reducer {
   ///
   /// double
   ///
-  static const Reducer<double> doubleMax = math.max<double>;
-  static const Reducer<double> doubleMin = math.min<double>;
+  static double doubleMax(double v1, double v2) => math.max(v1, v2);
+
+  static double doubleMin(double v1, double v2) => math.min(v1, v2);
 
   static double doubleAdd(double v1, double v2) => v1 + v2;
 
@@ -562,13 +567,17 @@ extension FReducer on Reducer {
 
   static double doubleModule(double v1, double v2) => v1 % v2;
 
+  // chained operation
   static double doubleAddSquared(double v1, double v2) => v1 * v1 + v2 * v2;
+
+  static double doubleSubtractThenHalf(double v1, double v2) => (v1 - v2) / 2;
 
   ///
   /// integer
   ///
-  static const Reducer<int> intMax = math.max<int>;
-  static const Reducer<int> intMin = math.min<int>;
+  static int intMax(int v1, int v2) => math.max(v1, v2);
+
+  static int intMin(int v1, int v2) => math.min(v1, v2);
 
   static int intAdd(int v1, int v2) => v1 + v2;
 
@@ -588,6 +597,36 @@ extension FReducer on Reducer {
   static String stringTab(String v1, String v2) => '$v1\t$v2';
 
   static String stringComma(String v1, String v2) => '$v1, $v2';
+
+  ///
+  /// iterator
+  ///
+  static Iterator<double> iteratorDoubleDistanceMax(
+    Iterator<double> a,
+    Iterator<double> b,
+  ) =>
+      a.distance > b.distance ? a : b;
+
+  static Iterator<double> iteratorDoubleDistanceMin(
+    Iterator<double> a,
+    Iterator<double> b,
+  ) =>
+      a.distance < b.distance ? a : b;
+
+  ///
+  /// record
+  ///
+  static (double, double) recordDouble2DirectionMax(
+    (double, double) a,
+    (double, double) b,
+  ) =>
+      a.direction > b.direction ? a : b;
+
+  static (double, double) recordDouble2DirectionMin(
+    (double, double) a,
+    (double, double) b,
+  ) =>
+      a.direction < b.direction ? a : b;
 }
 
 ///
@@ -622,4 +661,11 @@ extension FLerper on Lerper {
 
   static Lerper<T> clampNegative<T>(Lerper<T> transform) =>
       (value) => transform(value.clampNegative);
+
+  ///
+  /// [from]
+  ///
+  static Mapper<double, T> from<T>(T begin, T end) => switch (begin) {
+        _ => throw DamathException(DamathException.pass),
+      };
 }

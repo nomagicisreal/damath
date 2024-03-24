@@ -17,7 +17,7 @@ abstract class StatisticsForDataframe extends Statistics {
   const StatisticsForDataframe();
 }
 
-// mean, median, mode
+// median, mode
 // measures of variation
 //      - range, interquaretile range
 //      - variance, standard deviation, deviations from mean)

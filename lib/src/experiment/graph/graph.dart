@@ -109,7 +109,7 @@ class Node<T> extends Vertex<T> {
   Node(super.data, [this.another]);
 
   Node.fromData(super.data, [T? another])
-      : another = another.nullOrTranslate((value) => Node(value));
+      : another = another.nullOrMap((value) => Node(value));
 
   ///
   /// [isLinked]
@@ -168,8 +168,8 @@ class NodeBinary<T> extends Vertex<T> {
   NodeBinary(super.data, {this.left, this.right});
 
   NodeBinary.fromData(super.data, {T? left, T? right})
-      : left = left.nullOrTranslate((value) => NodeBinary(value)),
-        right = right.nullOrTranslate((value) => NodeBinary(value));
+      : left = left.nullOrMap((value) => NodeBinary(value)),
+        right = right.nullOrMap((value) => NodeBinary(value));
 
   static String stringDiagramOf<E>(
     NodeBinary<E>? node, [
@@ -276,13 +276,12 @@ class NodeBinary<T> extends Vertex<T> {
   }
 
   bool any(Predicator<T> test) {
-    const pass = 'pass';
     try {
       iterateFromLeftToRight((value) {
-        if (test(value)) throw DamathException(pass);
+        if (test(value)) throw DamathException(DamathException.pass);
       });
     } on DamathException catch (e) {
-      return e.message == pass;
+      return e.message == DamathException.pass;
     }
     return false;
   }
@@ -676,8 +675,8 @@ abstract class GraphAncestor<T, S, V extends VertexAncestor<T?>,
   /// [sourcesGroupByDestinations]
   ///
   Map<K, List<D>> vertexGroupsFromEdges<K, D>(
-    Translator<E, K> edgeToKey,
-    Translator<E, D> edgeToValue,
+    Mapper<E, K> edgeToKey,
+    Mapper<E, D> edgeToValue,
   ) =>
       edges.fold(
         {},
@@ -735,12 +734,12 @@ abstract class GraphAncestor<T, S, V extends VertexAncestor<T?>,
   Iterable<E> edgesTo(V destination) =>
       edges.where((edge) => edge._destination == destination);
 
-  Iterable<V> destinationsFrom(V source) => edges.iterator.yieldingWhereTo(
+  Iterable<V> destinationsFrom(V source) => edges.iterator.yieldingToWhere(
         (edge) => edge._source == source,
         (edge) => edge._destination,
       );
 
-  Iterable<V> sourcesTo(V destination) => edges.iterator.yieldingWhereTo(
+  Iterable<V> sourcesTo(V destination) => edges.iterator.yieldingToWhere(
         (edge) => edge._destination == destination,
         (edge) => edge._source,
       );

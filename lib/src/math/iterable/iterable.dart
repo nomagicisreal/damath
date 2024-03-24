@@ -5,12 +5,9 @@
 /// [IteratorExtension]
 ///
 /// [IterableExtension]
-/// [IterableIntExtension], [IterableDoubleExtension]
 /// [IterableIterableExtension]
 ///
 ///
-/// about graph:
-/// [IterableEdgeExtension]
 ///
 ///
 ///
@@ -167,17 +164,17 @@ extension IterableExtension<I> on Iterable<I> {
     Mixer<I, E, Iterable<I>> expanding,
   ) {
     assert(length == another.length);
-    return iterator.interExpand(another.iterator, expanding);
+    return iterator.interExpandTo(another.iterator, expanding);
   }
 
   Iterable<I> expandTogether<E>(
     Iterable<E> another,
-    Translator<I, Iterable<I>> expanding,
-    Translator<E, Iterable<I>> expandingAnother,
+    Mapper<I, Iterable<I>> expanding,
+    Mapper<E, Iterable<I>> expandingAnother,
     Reducer<Iterable<I>> combine,
   ) {
     assert(length == another.length);
-    return iterator.interExpand(
+    return iterator.interExpandTo(
       another.iterator,
       (p, q) => combine(expanding(p), expandingAnother(q)),
     );
@@ -195,14 +192,14 @@ extension IterableExtension<I> on Iterable<I> {
   /// [intersectionIndex]
   /// [intersectionDetail]
   ///
-  Iterable<I> intersection(Iterable<I> another) => iterator.interYieldingWhere(
+  Iterable<I> intersection(Iterable<I> another) => iterator.interYieldingToWhere(
         another.iterator,
         FPredicatorCombiner.isEqual,
         FReducer.keepCurrent,
       );
 
   Iterable<int> intersectionIndex(Iterable<I> another, [int start = 0]) =>
-      iterator.interYieldingIndexableWhere(
+      iterator.interYieldingToIndexableWhere(
         another.iterator,
         FPredicatorCombiner.isEqual,
         (p, q, index) => index,
@@ -222,7 +219,7 @@ extension IterableExtension<I> on Iterable<I> {
   /// [differenceIndex]
   /// [differenceDetail]
   ///
-  Iterable<I> difference(Iterable<I> another) => iterator.diffYieldingWhere(
+  Iterable<I> difference(Iterable<I> another) => iterator.diffYieldingToWhere(
         another.iterator,
         FPredicatorCombiner.isNotEqual,
         FPredicator.alwaysTrue,
@@ -231,7 +228,7 @@ extension IterableExtension<I> on Iterable<I> {
       );
 
   Iterable<int> differenceIndex(Iterable<I> another, [int start = 0]) =>
-      iterator.diffYieldingIndexableWhere(
+      iterator.diffYieldingToIndexableWhere(
         another.iterator,
         FPredicatorCombiner.isNotEqual,
         FPredicator.alwaysTrue,
@@ -265,7 +262,7 @@ extension IterableExtension<I> on Iterable<I> {
   ///
   /// [groupBy]
   ///
-  Map<K, Iterable<I>> groupBy<K>(Translator<I, K> toKey) => fold(
+  Map<K, Iterable<I>> groupBy<K>(Mapper<I, K> toKey) => fold(
         {},
         (map, value) => map
           ..update(
@@ -320,25 +317,6 @@ extension IterableExtension<I> on Iterable<I> {
       iterator.yieldingTo(another.iterator.yieldingToEntriesByKey);
 }
 
-///
-/// static methods:
-/// [sequence], ...
-///
-/// instance methods:
-/// [sum], ...
-///
-extension IterableIntExtension on Iterable<int> {
-  static Iterable<int> sequence(int length, [int start = 1]) =>
-      Iterable.generate(length, (i) => start + i);
-
-  static Iterable<int> seq(int begin, int end) sync* {
-    for (var i = begin; i <= end; i++) {
-      yield i;
-    }
-  }
-
-  int get sum => reduce(FReducer.intAdd);
-}
 
 ///
 /// [size]
@@ -358,7 +336,7 @@ extension IterableIterableExtension<I> on Iterable<Iterable<I>> {
   /// [toStringPadLeft]
   ///
   String toStringMapJoin([
-    Translator<Iterable<I>, String>? mapper,
+    Mapper<Iterable<I>, String>? mapper,
     String separator = "\n",
   ]) =>
       map(mapper ?? (e) => e.toString()).join(separator);
@@ -389,25 +367,3 @@ extension IterableIterableExtension<I> on Iterable<Iterable<I>> {
 }
 
 
-///
-///
-///
-extension IterableDoubleExtension on Iterable<double> {
-  double get standardDeviation {
-    var length = 0;
-    var total = 0.0;
-
-    for (var value in this) {
-      total += value;
-      length++;
-    }
-    final mean = total / length;
-
-    var sum = 0.0;
-    for (var value in this) {
-      sum += (value - mean).squared;
-      length++;
-    }
-    return sum / length;
-  }
-}

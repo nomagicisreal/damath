@@ -331,12 +331,12 @@ extension WColoredBox on ColoredBox {
 extension WTransform on Transform {
   static Transform transformFromDirection(
       Direction3DIn6 direction, {
-        Points3 initialRadian = Points3.zero,
+        Point3 initialRadian = Point3.zero,
         double zDeep = 100,
         required Widget child,
       }) {
     Matrix4 instance() => Matrix4.identity();
-    return initialRadian == Points3.zero
+    return initialRadian == Point3.zero
         ? switch (direction) {
       Direction3DIn6.front => Transform(
         transform: instance(),
@@ -345,27 +345,27 @@ extension WTransform on Transform {
       ),
       Direction3DIn6.back => Transform(
         alignment: Alignment.center,
-        transform: instance()..translateOf(Points3.ofZ(-zDeep)),
+        transform: instance()..translateOf(Point3.ofZ(-zDeep)),
         child: child,
       ),
       Direction3DIn6.left => Transform(
         alignment: Alignment.centerLeft,
-        transform: instance()..rotateY(SpaceRadian.angle_90),
+        transform: instance()..rotateY(Radian.angle_90),
         child: child,
       ),
       Direction3DIn6.right => Transform(
         alignment: Alignment.centerRight,
-        transform: instance()..rotateY(-SpaceRadian.angle_90),
+        transform: instance()..rotateY(-Radian.angle_90),
         child: child,
       ),
       Direction3DIn6.top => Transform(
         alignment: Alignment.topCenter,
-        transform: instance()..rotateX(-SpaceRadian.angle_90),
+        transform: instance()..rotateX(-Radian.angle_90),
         child: child,
       ),
       Direction3DIn6.bottom => Transform(
         alignment: Alignment.bottomCenter,
-        transform: instance()..rotateX(SpaceRadian.angle_90),
+        transform: instance()..rotateX(Radian.angle_90),
         child: child,
       ),
     }

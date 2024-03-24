@@ -206,7 +206,7 @@ extension ListExtension<T> on List<T> {
   ///
   void update(int index, T value) => this[index] = value;
 
-  void updateWithMapper(int index, Mapper<T> mapper) =>
+  void updateWithMapper(int index, Applier<T> mapper) =>
       this[index] = mapper(this[index]);
 
   ///
@@ -220,7 +220,7 @@ extension ListExtension<T> on List<T> {
     }
   }
 
-  void updateAllWithMapper(Mapper<T> mapper) {
+  void updateAllWithMapper(Applier<T> mapper) {
     final length = this.length;
     for (var i = 0; i < length; i++) {
       this[i] = mapper(this[i]);
@@ -400,28 +400,28 @@ extension ListExtension<T> on List<T> {
   /// [mapToListWith], [mapToListWithSame]
   /// [mapToListTogether]
   ///
-  List<E> mapToList<E>(Translator<T, E> toVal) =>
+  List<E> mapToList<E>(Mapper<T, E> toVal) =>
       [for (var i = 0; i < length; i++) toVal(this[i])];
 
   List<E> mapToListWith<E>(
     List<E> other,
     Reducer<E> reducing,
-    Translator<T, E> toVal,
+    Mapper<T, E> toVal,
   ) =>
       [for (var i = 0; i < length; i++) reducing(toVal(this[i]), other[i])];
 
   List<E> mapToListWithSame<E>(
     List<T> other,
     Reducer<T> reducing,
-    Translator<T, E> toVal,
+    Mapper<T, E> toVal,
   ) =>
       [for (var i = 0; i < length; i++) toVal(reducing(this[i], other[i]))];
 
   List<S> mapToListTogether<S, E>(
     List<E> other,
     Reducer<S> reducing,
-    Translator<T, S> toVal,
-    Translator<E, S> toValOther,
+    Mapper<T, S> toVal,
+    Mapper<E, S> toValOther,
   ) =>
       [
         for (var i = 0; i < length; i++)

@@ -45,7 +45,7 @@ part of damath_flutter;
 extension GeneratorOffsetExtension on Generator<Offset> {
   List<Widget> yieldingPositionedTranslated(
     int length, {
-    required Mapper<Offset> translation,
+    required Applier<Offset> translation,
     required Widget child,
     FilterQuality? filterQuality,
     bool transformHitTests = true,
