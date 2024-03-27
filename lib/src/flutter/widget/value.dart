@@ -123,12 +123,12 @@ extension WListView on ListView {
 ///
 ///
 extension WIcon on Icon {
-  static IconData iconDataOf(Operator operator) => switch (operator) {
-    Operator.plus => Icons.add,
-    Operator.minus => Icons.remove,
-    Operator.multiply => CupertinoIcons.multiply,
-    Operator.divide => CupertinoIcons.divide,
-    Operator.modulus => CupertinoIcons.percent,
+  static IconData iconDataOf(Latex operator) => switch (operator) {
+    Latex.plus => Icons.add,
+    Latex.minus => Icons.remove,
+    Latex.multiply => CupertinoIcons.multiply,
+    Latex.divide => CupertinoIcons.divide,
+    Latex.modulus => CupertinoIcons.percent,
   };
 }
 

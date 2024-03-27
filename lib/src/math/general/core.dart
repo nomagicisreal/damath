@@ -26,7 +26,7 @@
 /// extensions:
 /// [FSupplier]
 /// [FPredicator], [FPredicatorCombiner], [FPredicatorFusionor]
-/// [FMapper]
+/// [FApplier]
 /// [FGenerator]
 /// [FTranslator]
 /// [FReducer]
@@ -225,70 +225,59 @@ extension FPredicatorCombiner on PredicatorCombiner {
 ///
 extension FPredicatorFusionor on PredicatorFusionor {
   ///
-  /// [mapValueSetUpdateYet]
-  /// [mapValueSetUpdateNew]
-  /// [mapValueSetUpdateExist]
-  /// [mapValueSetUpdateKeep]
+  /// [mapValueInputYet]
+  /// [mapValueInputNew]
+  /// [mapValueInputExist]
+  /// [mapValueInputKeep]
   ///
   // return true if not yet contained
-  static bool mapValueSetUpdateYet<K, V>(Map<K, Set<V>> map, K k, V v) =>
-      map.updateSet(k, v, false);
+  static bool mapValueInputYet<K, V>(Map<K, V> map, K key, V value) =>
+      map.input(key, value, false);
 
   // return true if not yet contained or absent
-  static bool mapValueSetUpdateNew<K, V>(Map<K, Set<V>> map, K k, V v) =>
-      map.updateSet(k, v, true);
+  static bool mapValueInputNew<K>(Map<K, bool> map, K key, bool value) =>
+      map.input(key, value, true);
 
   // return true if exist
-  static bool mapValueSetUpdateExist<K, V>(Map<K, Set<V>> map, K k, V v) =>
-      !map.updateSet(k, v, true);
+  static bool mapValueInputExist<K>(Map<K, bool> map, K key, bool value) =>
+      !map.input(key, value, true);
 
   // return true if exist or absent
-  static bool mapValueSetUpdateKeep<K, V>(Map<K, Set<V>> map, K k, V v) =>
-      !map.updateSet(k, v, false);
+  static bool mapValueInputKeep<K>(Map<K, bool> map, K key, bool value) =>
+      !map.input(key, value, false);
 
   ///
-  /// [mapValueBoolUpdateYet]
-  /// [mapValueBoolUpdateNew]
-  /// [mapValueBoolUpdateExist]
-  /// [mapValueBoolUpdateKeep]
+  /// [mapValueSetInputYet]
+  /// [mapValueSetInputNew]
+  /// [mapValueSetInputExist]
+  /// [mapValueSetInputKeep]
   ///
   // return true if not yet contained
-  static bool mapValueBoolUpdateYet<K>(Map<K, bool> map, K key, bool value) =>
-      map.updateBool(key, value, false);
+  static bool mapValueSetInputYet<K, V>(Map<K, Set<V>> map, K k, V v) =>
+      map.inputSet(k, v, false);
 
   // return true if not yet contained or absent
-  static bool mapValueBoolUpdateNew<K>(Map<K, bool> map, K key, bool value) =>
-      map.updateBool(key, value, true);
+  static bool mapValueSetInputNew<K, V>(Map<K, Set<V>> map, K k, V v) =>
+      map.inputSet(k, v, true);
 
   // return true if exist
-  static bool mapValueBoolUpdateExist<K>(Map<K, bool> map, K key, bool value) =>
-      !map.updateBool(key, value, true);
+  static bool mapValueSetInputExist<K, V>(Map<K, Set<V>> map, K k, V v) =>
+      !map.inputSet(k, v, true);
 
   // return true if exist or absent
-  static bool mapValueBoolUpdateKeep<K>(Map<K, bool> map, K key, bool value) =>
-      !map.updateBool(key, value, false);
+  static bool mapValueSetInputKeep<K, V>(Map<K, Set<V>> map, K k, V v) =>
+      !map.inputSet(k, v, false);
 }
 
 ///
 /// [keep]
-/// [boolKeep], [boolReverse]
 /// [doubleKeep], ...
 ///
 /// [iterableAppend], ...
 /// [listAdd], ...
 ///
-/// [lerp]
-///
-///
-extension FMapper on Applier {
+extension FApplier on Applier {
   static T keep<T>(T value) => value;
-
-  ///
-  /// [boolKeep], [boolReverse]
-  ///
-  static bool boolKeep(bool value) => value;
-
-  static bool boolReverse(bool value) => !value;
 
   ///
   /// double
@@ -315,10 +304,10 @@ extension FMapper on Applier {
 
   static Applier<double> doubleOnDivide(double value) => (v) => v / value;
 
+  static Applier<double> doubleOnModule(double value) => (v) => v % value;
+
   static Applier<double> doubleOnDivideToInt(double value) =>
       (v) => (v ~/ value).toDouble();
-
-  static Applier<double> doubleOnModule(double value) => (v) => v % value;
 
   ///
   /// [doubleOnTimesFactor]
@@ -538,6 +527,7 @@ extension FTranslator on Mapper {
 /// [doubleMax], ...
 /// [intMax], ...
 /// [stringLine], ...
+/// [durationAdd], ...
 /// [iteratorDoubleDistanceMax], ...
 /// [recordDouble2DirectionMax], ...
 ///
@@ -562,10 +552,10 @@ extension FReducer on Reducer {
 
   static double doubleDivide(double v1, double v2) => v1 / v2;
 
+  static double doubleModule(double v1, double v2) => v1 % v2;
+
   static double doubleDivideToInt(double v1, double v2) =>
       (v1 ~/ v2).toDouble();
-
-  static double doubleModule(double v1, double v2) => v1 % v2;
 
   // chained operation
   static double doubleAddSquared(double v1, double v2) => v1 * v1 + v2 * v2;
@@ -597,6 +587,12 @@ extension FReducer on Reducer {
   static String stringTab(String v1, String v2) => '$v1\t$v2';
 
   static String stringComma(String v1, String v2) => '$v1, $v2';
+
+  ///
+  /// duration
+  ///
+  static Duration durationAdd(Duration v1, Duration v2) => v1 + v2;
+  static Duration durationSubtract(Duration v1, Duration v2) => v1 - v2;
 
   ///
   /// iterator

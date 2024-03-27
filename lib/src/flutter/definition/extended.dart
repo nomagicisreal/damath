@@ -173,13 +173,13 @@ class Curving extends Curve {
   const Curving(this.mapper);
 
   Curving.sinPeriodOf(int times)
-      : mapper = FMapper.doubleOnPeriodSinByTimes(times);
+      : mapper = FApplier.doubleOnPeriodSinByTimes(times);
 
   Curving.cosPeriodOf(int times)
-      : mapper = FMapper.doubleOnPeriodCosByTimes(times);
+      : mapper = FApplier.doubleOnPeriodCosByTimes(times);
 
   Curving.tanPeriodOf(int times)
-      : mapper = FMapper.doubleOnPeriodTanByTimes(times);
+      : mapper = FApplier.doubleOnPeriodTanByTimes(times);
 
   @override
   double transformInternal(double t) => mapper(t);

@@ -2,115 +2,14 @@
 ///
 /// this file contains:
 ///
-/// [NullableExtension]
-///
-///
 /// [NumExtension]
 /// [DoubleExtension]
 /// [IntExtension]
 ///
 ///
-/// [DurationExtension]
-/// [DateTimeExtension]
-///
-/// [StringExtension]
-/// [MatchExtension]
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
 ///
 part of damath_math;
 
-abstract interface class KMath {
-  const KMath();
-
-  static const durationMilli1 = Duration(milliseconds: 1);
-  static const durationMilli5 = Duration(milliseconds: 5);
-  static const durationMilli10 = Duration(milliseconds: 10);
-  static const durationMilli100 = Duration(milliseconds: 100);
-  static const durationMilli200 = Duration(milliseconds: 200);
-  static const durationMilli300 = Duration(milliseconds: 300);
-  static const durationMilli400 = Duration(milliseconds: 400);
-  static const durationMilli500 = Duration(milliseconds: 500);
-  static const durationMilli600 = Duration(milliseconds: 600);
-  static const durationMilli700 = Duration(milliseconds: 700);
-  static const durationMilli800 = Duration(milliseconds: 800);
-  static const durationMilli900 = Duration(milliseconds: 900);
-  static const durationSecond1 = Duration(seconds: 1);
-  static const durationSecond2 = Duration(seconds: 2);
-  static const durationSecond3 = Duration(seconds: 3);
-  static const durationSecond4 = Duration(seconds: 4);
-  static const durationSecond5 = Duration(seconds: 5);
-  static const durationSecond6 = Duration(seconds: 6);
-  static const durationSecond7 = Duration(seconds: 7);
-  static const durationSecond8 = Duration(seconds: 8);
-  static const durationSecond9 = Duration(seconds: 9);
-  static const durationSecond10 = Duration(seconds: 10);
-  static const durationMin1 = Duration(minutes: 1);
-  static const durationMin2 = Duration(minutes: 2);
-  static const durationMin3 = Duration(minutes: 3);
-  static const durationMin4 = Duration(minutes: 4);
-  static const durationMin5 = Duration(minutes: 5);
-
-  static bool get randomBinary => math.Random().nextBool();
-
-  static double get randomDoubleIn1 => math.Random().nextDouble();
-
-  static int randomIntTo(int max) => math.Random().nextInt(max);
-
-  static double randomDoubleOf(int max, [int digit = 1]) =>
-      (math.Random().nextInt(max) * 0.1.powBy(digit)).toDouble();
-}
-
-///
-/// nullable
-///
-extension NullableExtension<T> on T? {
-  bool get isNull => this == null;
-
-  bool get isNotNull => this != null;
-
-  ///
-  /// [nullOr]
-  /// [nullOrMap]
-  ///
-  S? nullOr<S>(S value) => this == null ? null : value;
-
-  S? nullOrMap<S>(Mapper<T, S> toValue) {
-    final value = this;
-    return value == null ? null : toValue(value);
-  }
-
-  ///
-  /// [mapNotNullOr]
-  /// [consumeNotNull]
-  ///
-  S mapNotNullOr<S>(
-    Mapper<T, S> toVal,
-    Supplier<S> ifNull,
-  ) {
-    final value = this;
-    return value == null ? ifNull() : toVal(value);
-  }
-
-  void consumeNotNull(Consumer<T> consumer) {
-    final value = this;
-    if (value != null) {
-      consumer(value);
-    }
-  }
-}
-
-extension BoolExtension on bool {
-  String get toStringTOrF => this ? 'T' : 'F';
-}
 
 ///
 ///
@@ -188,10 +87,10 @@ extension DoubleExtension on double {
   /// [clampDouble]
   ///
   double filterInfinity(double precision) => switch (this) {
-        double.infinity => proximateInfinityOf(precision),
-        double.negativeInfinity => proximateNegativeInfinityOf(precision),
-        _ => this,
-      };
+    double.infinity => proximateInfinityOf(precision),
+    double.negativeInfinity => proximateNegativeInfinityOf(precision),
+    _ => this,
+  };
 
   double roundUpTo(int digit) {
     final value = math.pow(10, digit);
@@ -224,58 +123,27 @@ extension DoubleExtension on double {
 }
 
 ///
-/// [isPositive]
-/// [accumulate], [factorial]
-/// [digit], [digitFirst]
-///
 /// static methods:
 /// [accumulation]
 /// [fibonacci]
 /// [pascalTriangle]
-/// [binomialCoefficient]
-/// [partition], [partitionOf], [partitionGroups]
+/// [binomialCoefficient], [combination]
+/// [partition], [partitionAllFor], [partitionGroups]
+///
+/// instance getters, methods:
+/// [accumulated], ...
+/// [paritySame], ...
+/// [digit], ...
 ///
 ///
 extension IntExtension on int {
-  int get accumulate {
-    assert(isPositiveOrZero, 'invalid accumulate integer: $this');
-    int accelerator = 0;
-    for (var i = 1; i <= this; i++) {
-      accelerator += i;
-    }
-    return accelerator;
-  }
-
-  int get factorial {
-    assert(isPositive, 'invalid factorial integer: $this');
-    int accelerator = 1;
-    for (var i = 1; i <= this; i++) {
-      accelerator *= i;
-    }
-    return accelerator;
-  }
-
-  int digit([int carry = 10]) {
-    int value = abs();
-    int d = 0;
-    for (var i = 1; i < value; i *= carry, d++) {}
-    return d;
-  }
-
-  int digitFirst([int carry = 10]) {
-    final value = math.pow(carry, digit(carry) - 1).toInt();
-    int i = 0;
-    for (; value * i < this; i++) {}
-    return i - 1;
-  }
-
   ///
   /// [1, 3, 6, 10, 15, ...]
   ///
   static List<int> accumulation(int end, {int start = 0}) {
     final list = <int>[];
     for (int i = start; i <= end; i++) {
-      list.add(i.accumulate);
+      list.add(i.accumulated);
     }
     return list;
   }
@@ -333,28 +201,28 @@ extension IntExtension on int {
   /// ...
   ///
   static List<List<int>> pascalTriangle(
-    int n,
-    int k, {
-    int rowStart = 0,
-    bool isColumnEndAtK = true,
-  }) {
+      int n,
+      int k, {
+        int rowStart = 0,
+        bool isColumnEndAtK = true,
+      }) {
     assert(
-      n > 0 && k > 0 && k <= n + 1 && rowStart < 4,
-      throw ArgumentError('($n, $k)'),
+    n > 0 && k > 0 && k <= n + 1 && rowStart < 4,
+    throw ArgumentError('($n, $k)'),
     );
 
     final rowEnd = n + 1 - rowStart;
     final columnEndOf =
-        isColumnEndAtK ? (i) => i + rowStart < k ? i + 1 : k : (i) => i + 1;
+    isColumnEndAtK ? (i) => i + rowStart < k ? i + 1 : k : (i) => i + 1;
 
     final array = ListExtension.generate2D<int>(
       rowEnd,
       k,
-      (i, j) => j == 0 || j == i + rowStart
+          (i, j) => j == 0 || j == i + rowStart
           ? 1
           : j == 1 || j == i + rowStart - 1
-              ? i + rowStart
-              : 0,
+          ? i + rowStart
+          : 0,
     );
 
     for (int i = 4 - rowStart; i < rowEnd; i++) {
@@ -382,14 +250,14 @@ extension IntExtension on int {
   ///
   static int binomialCoefficient(int n, int k) {
     assert(
-      n > 0 && k > 0 && k <= n + 1,
-      throw ArgumentError('binomial coefficient for ($n, $k)'),
+    n > 0 && k > 0 && k <= n + 1,
+    throw ArgumentError('binomial coefficient for ($n, $k)'),
     );
     return k == 1 || k == n + 1
         ? 1
         : k == 2 || k == n
-            ? n
-            : _binomialCoefficient(n, k);
+        ? n
+        : _binomialCoefficient(n, k);
   }
 
   ///
@@ -458,7 +326,7 @@ extension IntExtension on int {
   ///
   /// Generally, these methods return the possible partition of an integer [m],
   /// [partition]
-  /// [partitionOf]
+  /// [partitionAllFor]
   /// [partitionGroups]
   /// [partitionGroupsToString]
   ///
@@ -483,14 +351,14 @@ extension IntExtension on int {
   ///
   static int partition(int m, int n) {
     assert(
-      m.isPositiveOrZero && n <= m,
-      'it is impossible to partition $m into $n group',
+    m.isPositiveOrZero && n <= m,
+    'it is impossible to partition $m into $n group',
     );
     return _partition(m, n, space: _partitionSpace<int>(m, n: n));
   }
 
   ///
-  /// [partitionOf] return the possible partitions for an integer [m],
+  /// [partitionAllFor] return the possible partitions for an integer [m],
   /// and each group must not be empty.
   ///
   /// for example, when [m] = 5, this function return 7 because there are 7 possible partition for 5:
@@ -502,12 +370,12 @@ extension IntExtension on int {
   /// (2, 1, 1, 1)
   /// (1, 1, 1, 1, 1)
   ///
-  static int partitionOf(int m) {
+  static int partitionAllFor(int m) {
     assert(m.isPositiveOrZero, 'it is impossible to partition $m');
     final pSpace = _partitionSpace<int>(m);
     return Iterable.generate(
       m,
-      (i) => _partition<int>(m, i + 1, space: pSpace),
+          (i) => _partition<int>(m, i + 1, space: pSpace),
     ).reduce((p1, p2) => p1 + p2);
   }
 
@@ -525,8 +393,8 @@ extension IntExtension on int {
   ///
   static List<List<int>> partitionGroups(int m, int n) {
     assert(
-      m.isPositiveOrZero && n <= m,
-      'it is impossible to partition $m into $n group',
+    m.isPositiveOrZero && n <= m,
+    'it is impossible to partition $m into $n group',
     );
     final groups = _partition(
       m,
@@ -585,7 +453,7 @@ extension IntExtension on int {
   /// with those "floor", we can get the answer of ([m] = 10, [n] = 4).
   ///
   /// [_partition] implementation is based on the discussion above
-  /// [_partitionSpace] for [space] helps to prevent invoking [elementOf] in [_partition] redundantly.
+  /// [_partitionSpace] for [operatable] helps to prevent invoking [elementOf] in [_partition] redundantly.
   /// [_partitionElementGenerator] is the generator to find row element
   /// [_partitionSearchOnFloor] is a way to find out where a row element comes from
   ///
@@ -594,95 +462,95 @@ extension IntExtension on int {
   ///
   ///
   static P _partition<P>(
-    int m,
-    int n, {
-    required List<List<P>> space,
-  }) =>
+      int m,
+      int n, {
+        required List<List<P>> space,
+      }) =>
       switch (space) {
         List<List<int>>() => () {
-            final partitionSpace = space as List<List<int>>;
-            late final Reducer<int> elementOf;
+          final partitionSpace = space as List<List<int>>;
+          late final Reducer<int> elementOf;
 
-            int instancesOf(int i, int j) {
-              int sum = 1;
-              _partitionSearchOnFloor<int>(
-                i,
-                j,
-                space: partitionSpace,
-                elementOf: elementOf,
-                predicate: (p) => p == 1,
-                consume: (p) => sum += p,
-                trailing: (_) => sum++,
-              );
-              return sum;
-            }
-
-            elementOf = _partitionElementGenerator(
-              atFirst: FGenerator.filled2D(1),
-              atLast: FGenerator.filled2D(1),
-              atLastPrevious: FGenerator.filled2D(1),
-              instancesOf: instancesOf,
+          int instancesOf(int i, int j) {
+            int sum = 1;
+            _partitionSearchOnFloor<int>(
+              i,
+              j,
+              space: partitionSpace,
+              elementOf: elementOf,
+              predicate: (p) => p == 1,
+              consume: (p) => sum += p,
+              trailing: (_) => sum++,
             );
+            return sum;
+          }
 
-            return elementOf(m, n);
-          }(),
+          elementOf = _partitionElementGenerator(
+            atFirst: FGenerator.filled2D(1),
+            atLast: FGenerator.filled2D(1),
+            atLastPrevious: FGenerator.filled2D(1),
+            instancesOf: instancesOf,
+          );
+
+          return elementOf(m, n);
+        }(),
         List<List<Iterable<List<int>>>>() => () {
-            final partitionSpace = space as List<List<Iterable<List<int>>>>;
-            late final Generator2D<Iterable<List<int>>> elementOf;
+          final partitionSpace = space as List<List<Iterable<List<int>>>>;
+          late final Generator2D<Iterable<List<int>>> elementOf;
 
-            print('($m, $n)');
+          print('($m, $n)');
 
-            List<int> firstOf(int n) => [n];
-            List<int> lastOf(int n) => List.filled(n, 1, growable: true);
-            List<int> lastPreviousOf(int n) => [2, ...List.filled(n - 2, 1)];
+          List<int> firstOf(int n) => [n];
+          List<int> lastOf(int n) => List.filled(n, 1, growable: true);
+          List<int> lastPreviousOf(int n) => [2, ...List.filled(n - 2, 1)];
 
-            Iterable<List<int>> instancesOf(int i, int j) {
-              final instances = [firstOf(i)];
-              _partitionSearchOnFloor<Iterable<List<int>>>(
-                i,
-                j,
-                space: partitionSpace,
-                elementOf: elementOf,
-                predicate: (p) => p.isEmpty,
-                consume: (p) => instances.addAll(p),
-                trailing: (current) => instances.add(
-                  (current == i ? lastOf(i) : lastPreviousOf(i)),
-                ),
-              );
-              return instances;
-            }
-
-            elementOf = _partitionElementGenerator(
-              atFirst: (i, j) => [firstOf(i)],
-              atLast: (i, j) => [lastOf(j)],
-              atLastPrevious: (i, j) => [lastPreviousOf(j)],
-              instancesOf: (i, j) {
-                final instances = instancesOf(i, j);
-                final result = <List<int>>[];
-                for (var instance in instances) {
-                  result.add([
-                    ...instance.map((element) => element + 1),
-                    ...Iterable.generate(j - instance.length, (_) => 1),
-                  ]);
-                }
-                return result;
-              },
+          Iterable<List<int>> instancesOf(int i, int j) {
+            final instances = [firstOf(i)];
+            _partitionSearchOnFloor<Iterable<List<int>>>(
+              i,
+              j,
+              space: partitionSpace,
+              elementOf: elementOf,
+              predicate: (p) => p.isEmpty,
+              consume: (p) => instances.addAll(p),
+              trailing: (current) => instances.add(
+                (current == i ? lastOf(i) : lastPreviousOf(i)),
+              ),
             );
+            return instances;
+          }
 
-            return elementOf(m, n);
-          }(),
+          elementOf = _partitionElementGenerator(
+            atFirst: (i, j) => [firstOf(i)],
+            atLast: (i, j) => [lastOf(j)],
+            atLastPrevious: (i, j) => [lastPreviousOf(j)],
+            instancesOf: (i, j) {
+              final instances = instancesOf(i, j);
+              final result = <List<int>>[];
+              for (var instance in instances) {
+                result.add([
+                  ...instance.map((element) => element + 1),
+                  ...Iterable.generate(j - instance.length, (_) => 1),
+                ]);
+              }
+              return result;
+            },
+          );
+
+          return elementOf(m, n);
+        }(),
         _ => throw UnimplementedError(),
       } as P;
 
   ///
-  /// [_partitionSpace] specify how much space a [_partition] needs.
+  /// [_partitionSpace] specify how much operatable a [_partition] needs.
   /// with predicator, it can prevent calculation for the same value in [_partitionSearchOnFloor].
   /// the values inside [List]<[List]<[P]>> will update during the loop if:
   ///   [P] == [int] && element is 1
   ///   [P] == [int] && element is empty
   ///
-  /// the return space row must start from row(4) to row(i), correspond to list[0] to list[i-4]
-  /// the return space column must start from row(i)(2) to row(i)(j), correspond to list[i][0] to list[i][j-2]
+  /// the return operatable row must start from row(4) to row(i), correspond to list[0] to list[i-4]
+  /// the return operatable column must start from row(i)(2) to row(i)(j), correspond to list[i][0] to list[i][j-2]
   ///
   /// instead of [List.filled], using [List.generate] prevents shared instance for list
   ///
@@ -691,10 +559,10 @@ extension IntExtension on int {
     final Generator<P> generator = P == int
         ? (_) => 1 as P
         : (P == List<List<int>>)
-            ? (_) => <List<int>>[] as P
-            : throw UnimplementedError(
-                'generic type must be int or Iterable<List<int>>, current: $P',
-              );
+        ? (_) => <List<int>>[] as P
+        : throw UnimplementedError(
+      'generic type must be int or Iterable<List<int>>, current: $P',
+    );
     return List.generate(
       spaceRow,
       n == null
@@ -711,7 +579,7 @@ extension IntExtension on int {
     required Generator2D<T> atLastPrevious,
     required Generator2D<T> instancesOf,
   }) =>
-      (i, j) {
+          (i, j) {
         if (j == 1) return atFirst(i, j);
         if (j == i) return atLast(i, j);
         if (j == i - 1) return atLastPrevious(i, j);
@@ -721,20 +589,20 @@ extension IntExtension on int {
   ///
   ///
   static void _partitionSearchOnFloor<P>(
-    int i,
-    int j, {
-    required List<List<P>> space,
-    required Generator2D<P> elementOf,
-    required Predicator<P> predicate,
-    required void Function(P instance) consume,
-    required void Function(int current) trailing,
-  }) {
+      int i,
+      int j, {
+        required List<List<P>> space,
+        required Generator2D<P> elementOf,
+        required Predicator<P> predicate,
+        required void Function(P instance) consume,
+        required void Function(int current) trailing,
+      }) {
     final min = math.min(i, j);
     final bound = min == i
         ? math.max(1, min - 2)
         : min == i - 1
-            ? min - 1
-            : min;
+        ? min - 1
+        : min;
     for (var k = 2; k <= bound; k++) {
       P p = space[i - 4][k - 2];
       if (predicate(p)) p = space[i - 4][k - 2] = elementOf(i, k);
@@ -744,89 +612,50 @@ extension IntExtension on int {
       trailing(current);
     }
   }
-}
 
-///
-/// duration
-///
-extension DurationExtension on Duration {
-  String toStringDayMinuteSecond({String splitter = ':'}) {
-    final dayMinuteSecond = toString().substring(0, 7);
-    return splitter == ":"
-        ? dayMinuteSecond
-        : dayMinuteSecond.splitMapJoin(RegExp(':'), onMatch: (_) => splitter);
+  ///
+  /// [accumulated], [factorial]
+  ///
+  int get accumulated {
+    assert(isPositiveOrZero, 'invalid accumulate integer: $this');
+    int accelerator = 0;
+    for (var i = 1; i <= this; i++) {
+      accelerator += i;
+    }
+    return accelerator;
   }
-}
 
-///
-/// datetime
-///
-extension DateTimeExtension on DateTime {
-  static bool isSameDay(DateTime? a, DateTime? b) => a == null || b == null
-      ? false
-      : a.year == b.year && a.month == b.month && a.day == b.day;
-
-  String get date => toString().split(' ').first; // $y-$m-$d
-
-  String get time => toString().split(' ').last; // $h:$min:$sec.$ms$us
-
-  int get monthDays => switch (month) {
-        1 => 31,
-        2 => year % 4 == 0
-            ? year % 100 == 0
-                ? year % 400 == 0
-                    ? 29
-                    : 28
-                : 29
-            : 28,
-        3 => 31,
-        4 => 30,
-        5 => 31,
-        6 => 30,
-        7 => 31,
-        8 => 31,
-        9 => 30,
-        10 => 31,
-        11 => 30,
-        12 => 31,
-        _ => throw UnimplementedError(),
-      };
-
-  static String parseTimestampOf(String string) =>
-      DateTime.fromMillisecondsSinceEpoch(int.parse(string)).toIso8601String();
-}
-
-///
-/// string
-///
-extension StringExtension on String {
-  String get lowercaseFirstChar => replaceFirstMapped(
-      RegExp(r'[A-Z]'), (match) => match.group0.toLowerCase());
-
-  MapEntry<String, String> get splitByFirstSpace {
-    late final String key;
-    final value = replaceFirstMapped(RegExp(r'\w '), (match) {
-      key = match.group0.trim();
-      return '';
-    });
-    return MapEntry(key, value);
+  int get factorial {
+    assert(isPositive, 'invalid factorial integer: $this');
+    int accelerator = 1;
+    for (var i = 1; i <= this; i++) {
+      accelerator *= i;
+    }
+    return accelerator;
   }
 
   ///
-  /// camel, underscore usage
+  /// [paritySame], [parityOpposite]
   ///
+  bool paritySame(int other) => isEven && other.isEven || isOdd && other.isOdd;
 
-  String get fromUnderscoreToCamelBody => splitMapJoin(RegExp(r'_[a-z]'),
-      onMatch: (match) => match.group0[1].toUpperCase());
+  bool parityOpposite(int other) =>
+      isEven && other.isOdd || isOdd && other.isEven;
 
-  String get fromCamelToUnderscore =>
-      lowercaseFirstChar.splitMapJoin(RegExp(r'[a-z][A-Z]'), onMatch: (match) {
-        final s = match.group0;
-        return '${s[0]}_${s[1].toLowerCase()}';
-      });
-}
+  ///
+  /// [digit], [leadingValue]
+  ///
+  int digit([int carry = 10]) {
+    var value = abs();
+    var d = 0;
+    for (var i = 1; i < value; i *= carry, d++) {}
+    return d;
+  }
 
-/// match
-extension MatchExtension on Match {
-  String get group0 => group(0)!;
+  int leadingValue([int carry = 10]) {
+    final digit = math.pow(carry, this.digit(carry) - 1);
+    var i = 2;
+    for (; digit * i < this; i++) {}
+    return i - 1;
+  }
 }

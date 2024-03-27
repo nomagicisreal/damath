@@ -2,14 +2,39 @@
 ///
 /// this file contains:
 ///
+/// [IteratorBoolExtension]
 /// [IteratorDoubleExtension]
-///
 ///
 /// [IterableDoubleExtension]
 /// [IterableIntExtension]
 ///
 ///
 part of damath_math;
+
+///
+/// static methods:
+/// [_keep], ...
+///
+/// instance getters, methods:
+/// [isSatisfiable], ...
+///
+///
+extension IteratorBoolExtension on Iterator<bool> {
+  static bool _keep(bool value) => value;
+
+  static bool _reverse(bool value) => !value;
+
+  ///
+  /// [isSatisfiable], [isTautology], [isContradiction], [isContingency]
+  ///
+  bool get isSatisfiable => any(_keep);
+
+  bool get isTautology => !any(_reverse);
+
+  bool get isContradiction => !any(_keep);
+
+  bool get isContingency => existDifferent;
+}
 
 ///
 ///
@@ -55,10 +80,10 @@ extension IteratorDoubleExtension on Iterator<double> {
     }
     return total / length;
   }
+
   double get sum => reduce(FReducer.doubleAdd);
 
-    double get sumSquared => reduce(FReducer.doubleAddSquared);
-
+  double get sumSquared => reduce(FReducer.doubleAddSquared);
 
   ///
   /// [distance], [volume]
@@ -75,7 +100,7 @@ extension IteratorDoubleExtension on Iterator<double> {
 
   ///
   /// [abs], [rounded], [roundUpTo]
-  /// [scale], [translate]
+  /// [operatePlus], [operateSubtract], [operateMultiply], [operateDivide], [operateDivideToInt]
   ///
   Iterable<double> get abs => yieldingApply((v) => v.abs());
 
@@ -83,9 +108,16 @@ extension IteratorDoubleExtension on Iterator<double> {
 
   Iterable<double> roundUpTo(int d) => yieldingApply((v) => v.roundUpTo(d));
 
-  Iterable<double> scale(int s) => yieldingApply((v) => v * s);
+  Iterable<double> operatePlus(int v) => yieldingApply((o) => o + v);
 
-  Iterable<double> translate(int t) => yieldingApply((v) => v * t);
+  Iterable<double> operateSubtract(int v) => yieldingApply((o) => o - v);
+
+  Iterable<double> operateMultiply(int v) => yieldingApply((o) => o * v);
+
+  Iterable<double> operateDivide(int v) => yieldingApply((o) => o / v);
+
+  Iterable<double> operateDivideToInt(int v) =>
+      yieldingApply((o) => (o ~/ v).toDouble());
 
   ///
   ///
@@ -128,29 +160,64 @@ extension IterableDoubleExtension on Iterable<double> {
   }
 
   ///
-  /// [standardUnit], [standardDeviation]
+  /// [standardUnit]
   ///
   Iterable<double> get standardUnit {
     final distance = iterator.distance;
     return iterator.yieldingApply((value) => value / distance);
   }
 
-  double get standardDeviation {
-    var length = 0;
+  ///
+  /// [analyzing]
+  ///
+  /// see also [IteratorDoubleExtension.mean]
+  ///
+  Iterable<double> analyzing([
+    bool requireLength = true,
+    bool requireMean = true,
+    bool requireStandardDeviation = true,
+    bool? requireTScores, // t scores or z scores
+  ]) sync* {
+    /// length, µ
+    var length = 0.0;
     var total = 0.0;
-
     for (var value in this) {
       total += value;
       length++;
     }
     final mean = total / length;
+    if (requireLength) yield length;
+    if (requireMean) yield mean;
 
+    ///
+    /// standard deviation
+    ///
     var sum = 0.0;
     for (var value in this) {
       sum += (value - mean).squared;
-      length++;
     }
-    return sum / length;
+    final standardDeviation = sum / length;
+    if (requireStandardDeviation) {
+      yield standardDeviation;
+    }
+
+    ///
+    /// scores
+    ///
+    // requireTScores.expandTo((value) {
+    //
+    // });
+    if (requireTScores != null) {
+      if (requireTScores) {
+        for (var value in this) {
+          yield ((value - mean) / standardDeviation) * 10 + 50; // t scores
+        }
+      } else {
+        for (var value in this) {
+          yield (value - mean) / standardDeviation; // z scores
+        }
+      }
+    }
   }
 }
 

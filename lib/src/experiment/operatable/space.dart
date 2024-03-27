@@ -4,14 +4,13 @@
 ///
 /// [RotationUnit]
 ///
-/// [Space]
-///   [Radian]
-///     [Radian2]
-///     [Radian3]
+/// [Radian]
+///   [Radian2]
+///   [Radian3]
 ///
-///   [Point]
-///     [Point2]
-///     [Point3]
+/// [Point]
+///   [Point2]
+///   [Point3]
 ///
 ///
 ///
@@ -25,8 +24,6 @@
 ///
 ///
 part of damath_experiment;
-// ignore_for_file: constant_identifier_names
-
 
 ///
 /// [radianFromAngle], ...
@@ -93,53 +90,20 @@ enum RotationUnit {
       radian > -Radian.angle_180 && radian < 0;
 }
 
-
-
-///
-///
-/// [Space] is similar to [Tensor]
-///
-///
-abstract interface class Space {
-  const Space();
-
-  Space operator -();
-
-  ///
-  /// To take a double value as argument, instead of [other] that typed as [Space].
-  /// Use [Record], see also [IteratorDoubleExtension], [RecordXYExtension], [RecordXYZExtension], ...
-  ///
-  Space operator +(Space other);
-
-  Space operator -(Space other);
-
-  Space operator *(Space other);
-
-  Space operator /(Space other);
-
-  Space operator %(Space other);
-
-  Space operator ~/(Space other);
-
-  bool operator <(Space other);
-
-  bool operator >(Space other);
-
-  bool operator <=(Space other);
-
-  bool operator >=(Space other);
-}
-
 ///
 /// normally, 'positive radian' means counterclockwise in mathematical discussion,
 ///
 /// [angle_1], ... (constants)
-/// [isFinite], ... (implementation for [Space])
+/// [compareTo], ...(implementation for [Operatable])
 ///
 /// [cos], ... (getters)
 /// [azimuthalIn], ... (methods)
 ///
-abstract interface class Radian<R> implements Space {
+abstract interface class Radian extends Operatable
+    with
+        OperatableDirectable,
+        OperatableComparable<Radian>,
+        OperatableScalable {
   final double rAzimuthal;
 
   const Radian(this.rAzimuthal);
@@ -189,20 +153,11 @@ abstract interface class Radian<R> implements Space {
 
   ///
   ///
-  /// implementation for [Space]
+  /// implementation for [Operatable]
   ///
   ///
   @override
-  bool operator <(covariant Radian other) => rAzimuthal < other.rAzimuthal;
-
-  @override
-  bool operator <=(covariant Radian other) => rAzimuthal <= other.rAzimuthal;
-
-  @override
-  bool operator >(covariant Radian other) => rAzimuthal > other.rAzimuthal;
-
-  @override
-  bool operator >=(covariant Radian other) => rAzimuthal >= other.rAzimuthal;
+  int compareTo(Radian other) => rAzimuthal.compareTo(other.rAzimuthal);
 
   ///
   ///
@@ -276,7 +231,7 @@ abstract interface class Radian<R> implements Space {
 /// [azimuthalInQuadrant], ... (methods)
 ///
 ///
-class Radian2 extends Radian<double> {
+class Radian2 extends Radian {
   const Radian2(super.rAzimuthal);
 
   ///
@@ -320,10 +275,6 @@ class Radian2 extends Radian<double> {
   @override
   Radian2 operator %(covariant Radian2 other) =>
       Radian2(rAzimuthal % other.rAzimuthal);
-
-  @override
-  Radian2 operator ~/(covariant Radian2 other) =>
-      Radian2((rAzimuthal ~/ other.rAzimuthal).toDouble());
 }
 
 ///
@@ -338,7 +289,7 @@ class Radian2 extends Radian<double> {
 /// [toRecord], ...(getters)
 ///
 ///
-class Radian3 extends Radian<Radian3> {
+class Radian3 extends Radian {
   ///
   /// the rotation of [rPolar] ranges in 0 ~ π, start from [Direction3DIn6.top] to [Direction3DIn6.bottom]
   ///
@@ -428,12 +379,6 @@ class Radian3 extends Radian<Radian3> {
   Radian3 operator %(covariant Radian3 other) =>
       Radian3(rAzimuthal % other.rAzimuthal, rPolar % other.rPolar);
 
-  @override
-  Radian3 operator ~/(covariant Radian3 other) => Radian3(
-        (rAzimuthal ~/ other.rAzimuthal).toDouble(),
-        (rPolar ~/ other.rPolar).toDouble(),
-      );
-
   ///
   ///
   /// operation
@@ -498,7 +443,12 @@ class Radian3 extends Radian<Radian3> {
 /// [middleTo], ...(methods)
 ///
 ///
-sealed class Point implements Space {
+sealed class Point extends Operatable
+    with
+        OperatableDirectable,
+        OperatableComparable<Point>,
+        OperatableScalable,
+        OperatableStepable {
   final double dx;
   final double dy;
 
@@ -517,9 +467,12 @@ sealed class Point implements Space {
 
   ///
   ///
-  /// implementations for [Space]
+  /// implementations for [Operatable]
   ///
   ///
+  @override
+  int compareTo(Point other) => throw OperatableComparable.error();
+
   @override
   bool operator <(covariant Point other) => dx < other.dx && dy < other.dy;
 
@@ -711,7 +664,7 @@ class Point2 extends Point {
 /// [withoutXY], ... (getters)
 /// [rotateX], ... (methods)
 ///
-/// to compute efficiently without creating a class, see [RecordXYZExtension]
+/// to compute efficiently without creating a class, see [RecordDouble3Extension]
 ///
 class Point3 extends Point {
   final double dz;

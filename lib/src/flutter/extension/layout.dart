@@ -37,7 +37,6 @@
 ///
 ///
 part of damath_flutter;
-// ignore_for_file: use_string_in_part_of_directives
 
 ///
 ///
@@ -821,7 +820,7 @@ extension FSizingPath on SizingPath {
     Companion<CubicOffset, Size>? adjust,
   }) {
     final Applier<Iterable<CubicOffset>> scaled = scale == 1
-        ? FMapper.keep
+        ? FApplier.keep
         : (corners) => corners.map((cubics) => cubics * scale);
 
     Path from(Iterable<CubicOffset> offsets) =>

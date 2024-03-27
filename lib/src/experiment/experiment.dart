@@ -4,13 +4,13 @@ import 'dart:math' as math hide Point;
 import 'package:damath/src/math/math.dart';
 
 
-part 'definition/_additions.dart';
+part 'general/u_algorithm.dart';
+part 'general/u_graph.dart';
+part 'general/u_polynomial.dart';
 part 'graph/graph.dart';
-part 'definition/proposition.dart';
-part 'definition/statistic.dart';
-part 'space/tensor.dart';
-part 'space/space.dart';
-part 'general/core.dart';
-part 'general/value.dart';
-
-
+part 'operatable/tensor.dart';
+part 'operatable/space.dart';
+part 'operatable/latex.dart';
+part 'proof/proposition.dart';
+part 'proof/statistic.dart';
+part 'proof/proof.dart';

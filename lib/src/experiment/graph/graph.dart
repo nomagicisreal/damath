@@ -75,9 +75,13 @@ class Vertex<T> extends VertexAncestor<T> {
 }
 
 //
-class VertexComparable<T extends Comparable> extends VertexAncestor<T>
-    with ComparableData<T, VertexComparable<T>> {
-  VertexComparable(super.data);
+class VertexComparable<T extends Comparable> extends Operatable
+    with OperatableComparable<VertexComparable<T>>
+    implements VertexAncestor<T> {
+  @override
+  T data;
+
+  VertexComparable(this.data);
 
   @override
   String toString() => 'VertexComparable($data)';
@@ -716,7 +720,8 @@ abstract class GraphAncestor<T, S, V extends VertexAncestor<T?>,
   bool containsEdgeForBoth(V source, V destination) =>
       edges.any((edge) => edge.containsBoth(source, destination));
 
-  bool containsAllEdges(Iterable<E> edges) => this.edges.iterator.containsAll(edges.iterator);
+  bool containsAllEdges(Iterable<E> edges) =>
+      this.edges.iterator.containsAll(edges.iterator);
 
   S weightFrom(V source, V destination) => edges.iterator.firstWhereMap(
         (edge) => edge.containsBoth(source, destination),
@@ -854,8 +859,6 @@ abstract class GraphMutable<T, S, V extends VertexAncestor<T>,
   E addEdge(E edge);
 }
 
-
-
 ///
 ///
 ///
@@ -864,16 +867,15 @@ abstract class GraphMutable<T, S, V extends VertexAncestor<T>,
 ///
 ///
 
-
 ///
 /// [toVertices]
 ///
 extension IterableEdgeExtension<T, S, V extends VertexAncestor<T?>>
-on Iterable<EdgeAncestor<T, S, V>> {
+    on Iterable<EdgeAncestor<T, S, V>> {
   Set<V> get toVertices => fold(
-    {},
+        {},
         (set, edge) => set
-      ..add(edge._source)
-      ..add(edge._destination),
-  );
+          ..add(edge._source)
+          ..add(edge._destination),
+      );
 }

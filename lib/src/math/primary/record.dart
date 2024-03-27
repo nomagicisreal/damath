@@ -3,7 +3,7 @@
 /// this file contains:
 ///
 /// [RecordXYExtension]
-/// [RecordXYZExtension]
+/// [RecordDouble3Extension]
 ///
 ///
 ///
@@ -100,7 +100,7 @@ extension RecordDouble2Extension on (double, double) {
 /// [toStringAsFixed], ...
 ///
 ///
-extension RecordXYZExtension on (double, double, double) {
+extension RecordDouble3Extension on (double, double, double) {
   ///
   /// [direction]
   /// [rotate]

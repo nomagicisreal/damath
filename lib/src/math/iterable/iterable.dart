@@ -224,7 +224,7 @@ extension IterableExtension<I> on Iterable<I> {
         FPredicatorCombiner.isNotEqual,
         FPredicator.alwaysTrue,
         FReducer.keepCurrent,
-        FMapper.keep,
+        FApplier.keep,
       );
 
   Iterable<int> differenceIndex(Iterable<I> another, [int start = 0]) =>
@@ -267,7 +267,7 @@ extension IterableExtension<I> on Iterable<I> {
         (map, value) => map
           ..update(
             toKey(value),
-            FMapper.iterableAppend(value),
+            FApplier.iterableAppend(value),
             ifAbsent: FSupplier.iterableElement(value),
           ),
       );

@@ -22,6 +22,7 @@ part of damath_math;
 /// [iteratorKeys], ...
 /// [notContainsKey], ...
 /// [putIfAbsentWhen], ...
+/// [input], ...
 ///
 /// [join], ...
 /// [any], ...
@@ -166,6 +167,24 @@ extension MapExtension<K, V> on Map<K, V> {
   }
 
   ///
+  /// when calling [input], there are three conditions:
+  ///   1. value set absent: return [absentReturn]
+  ///   2. [value] has exist in value set: return `false`
+  ///   3. [value] not yet contained in value set: return `true`
+  /// see also [MapValueSetExtension.inputSet], [Set.add]
+  ///
+  bool input(K key, V value, [bool absentReturn = true]) {
+    var vOld = this[key];
+    if (vOld == null) {
+      this[key] = value;
+      return absentReturn;
+    }
+    if (vOld == value) return false;
+    this[key] = value;
+    return true;
+  }
+
+  ///
   /// [join]
   /// [joinKeys]
   /// [joinValues]
@@ -269,7 +288,7 @@ extension MapExtension<K, V> on Map<K, V> {
   /// [addAllDifference]
   ///
   void addAllDifference(Set<K> keys, V Function(K key) valuing) =>
-      addAll(keys.difference(keysSet).mapToMap(valuing));
+      addAll(keys.difference(keysSet).toMap(valuing));
 
   ///
   /// [keysIntersectionWith], [keysDifferenceWith]
@@ -328,10 +347,10 @@ extension MapEntryIterableExtension<K, V> on Iterable<MapEntry<K, V>> {
   /// [toMap], [keys], [values]
   ///
   Map<K, V> get toMap => Map.fromEntries(this);
+
   Iterable<K> get keys => map((e) => e.key);
 
   Iterable<V> get values => map((e) => e.value);
-
 }
 
 ///
@@ -350,38 +369,15 @@ extension MapKeyComparableExtension<K extends Comparable, V> on Map<K, V> {
 ///
 ///
 ///
-extension MapValueBoolExtension<K> on Map<K, bool> {
-  ///
-  /// when calling [updateBool], there are three conditions:
-  ///   1. value absent: return [absentReturn]
-  ///   2. [value] is equal to value in map: return `false`
-  ///   3. [value] is different to value in map: return `true`
-  /// see also [MapValueSetExtension.updateSet], [Set.add]
-  ///
-  bool updateBool(K key, bool value, [bool absentReturn = true]) {
-    var vOld = this[key];
-    if (vOld == null) {
-      this[key] = value;
-      return absentReturn;
-    }
-    if (vOld == value) return false;
-    this[key] = value;
-    return true;
-  }
-}
-
-///
-///
-///
 extension MapValueSetExtension<K, V> on Map<K, Set<V>> {
   ///
-  /// when calling [updateSet], there are three conditions:
+  /// when calling [inputSet], there are three conditions:
   ///   1. value set absent: return [absentReturn]
   ///   2. [value] has exist in value set: return `false`
   ///   3. [value] not yet contained in value set: return `true`
-  /// see also [Set.add], [MapValueBoolExtension.updateBool]
+  /// see also [Set.add], [MapExtension.input]
   ///
-  bool updateSet(K key, V value, [bool absentReturn = true]) {
+  bool inputSet(K key, V value, [bool absentReturn = true]) {
     var set = this[key];
     if (set == null) {
       this[key] = {value};

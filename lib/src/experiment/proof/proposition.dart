@@ -5,7 +5,7 @@
 ///
 /// [PropositionComponent]
 ///   [Proposition]
-///   [PropositionProduct]
+///   [Proposition2]
 ///   [PropositionCompound]
 ///
 ///
@@ -13,13 +13,13 @@
 ///
 ///
 /// [SetPropositionExtension]
-/// [SetPropositionProductExtension]
+/// [SetProposition2Extension]
 /// [SetPropositionCompoundExtension]
 ///
 ///
 ///
-///
-///
+/// [PropositionEquivalenceLaw]
+/// [PropositionRulesInference]
 ///
 ///
 ///
@@ -36,7 +36,6 @@
 ///
 ///
 part of damath_experiment;
-// ignore_for_file: constant_identifier_names
 
 ///
 /// [Propositioner] enums all the possibility of proposition operation.
@@ -108,7 +107,7 @@ sealed class PropositionComponent {
   /// [truthTable] is computed in binary.
   /// See Also:
   ///   [Proposition.truthTable]
-  ///   [PropositionProduct.truthTable]
+  ///   [Proposition2.truthTable]
   ///   [PropositionCompound.truthTable]
   ///
   Iterable<bool> get truthTable;
@@ -173,11 +172,11 @@ class Proposition extends PropositionComponent {
   Proposition operator -() => Proposition(declarative, !value); // negation
 
   @override
-  PropositionProduct operate(
+  Proposition2 operate(
     covariant Proposition other,
     Propositioner combine,
   ) =>
-      PropositionProduct(this, combine, other);
+      Proposition2(this, combine, other);
 
   @override
   bool isConsistentWithin(covariant Set<Proposition> other) =>
@@ -190,7 +189,7 @@ class Proposition extends PropositionComponent {
 /// [p], [q], [reduce]
 ///
 ///
-class PropositionProduct extends PropositionComponent {
+class Proposition2 extends PropositionComponent {
   @override
   final bool value;
   final Proposition p;
@@ -208,8 +207,7 @@ class PropositionProduct extends PropositionComponent {
   @override
   String get declarative => '${reduce.name}[($p), ($q)]';
 
-  PropositionProduct(this.p, this.reduce, this.q)
-      : value = reduce(p.value, q.value);
+  Proposition2(this.p, this.reduce, this.q) : value = reduce(p.value, q.value);
 
   @override
   int get hashCode => Object.hash(p.hashCode, q.hashCode, reduce.hashCode);
@@ -221,7 +219,7 @@ class PropositionProduct extends PropositionComponent {
   String toString() => "$declarative == $value";
 
   @override
-  PropositionProduct operator -() => PropositionProduct(-p, reduce, -q);
+  Proposition2 operator -() => Proposition2(-p, reduce, -q);
 
   @override
   PropositionCompound operate(
@@ -231,7 +229,7 @@ class PropositionProduct extends PropositionComponent {
       PropositionCompound([p, q, other], [reduce, combine]);
 
   @override
-  bool isConsistentWithin(covariant Set<PropositionProduct> other) {
+  bool isConsistentWithin(covariant Set<Proposition2> other) {
     if (!other.isConsistent) return false;
     final p = this.p;
     final q = this.q;
@@ -252,12 +250,12 @@ class PropositionProduct extends PropositionComponent {
     }.isConsistent;
   }
 
-  PropositionProduct copyWith({
+  Proposition2 copyWith({
     Proposition? p,
     Proposition? q,
     Propositioner? reduce,
   }) =>
-      PropositionProduct(p ?? this.p, reduce ?? this.reduce, q ?? this.q);
+      Proposition2(p ?? this.p, reduce ?? this.reduce, q ?? this.q);
 }
 
 ///
@@ -280,7 +278,7 @@ class PropositionCompound extends PropositionComponent {
           // every propositions having same 'declarative', must have same 'value'
           final ps = _components.groupBy((p) => p.declarative).values;
           for (var list in ps) {
-            if (list.iterator.anyDifferent) return false;
+            if (list.iterator.existDifferent) return false;
           }
 
           return _components.isFixed &&
@@ -320,7 +318,6 @@ class PropositionCompound extends PropositionComponent {
 
   ///
   /// [truthTable]
-  /// [isTautology]
   ///
 
   ///
@@ -336,14 +333,14 @@ class PropositionCompound extends PropositionComponent {
   ///     'sun rise' == false, 'sky shine' == false, 'stay high' == false
   /// just the way binary code goes.
   ///
+  /// see also [IteratorBoolExtension]
+  ///
   @override
   Iterable<bool> get truthTable {
     // final declaratives = declarativesSet;
     // final propositions = declaratives.map((d) => null);
     throw UnimplementedError();
   }
-
-  bool get isTautology => truthTable.every(FMapper.keep);
 
   ///
   /// [toString]
@@ -415,7 +412,7 @@ class PropositionCompound extends PropositionComponent {
     for (var component in _components) {
       v = switch (component) {
         Proposition() => consumer(component),
-        PropositionProduct() => () {
+        Proposition2() => () {
             consumer(component.p);
             consumer(component.q);
           }(),
@@ -444,7 +441,7 @@ class PropositionCompound extends PropositionComponent {
               _components[i] = Proposition(declarative, toValue);
             }
           }(),
-        PropositionProduct() => () {
+        Proposition2() => () {
             final pO = component.p;
             final qO = component.q;
             final pN = pO.declarative == declarative
@@ -474,7 +471,7 @@ class PropositionCompound extends PropositionComponent {
         {},
         (set, component) => switch (component) {
           Proposition() => set..add(toK(component)),
-          PropositionProduct() => set
+          Proposition2() => set
             ..add(toK(component.p))
             ..add(toK(component.q)),
           PropositionCompound() => set..addAll(toKSet(component)),
@@ -486,7 +483,7 @@ class PropositionCompound extends PropositionComponent {
   /// [declarativesSet]
   ///
   Set<Proposition> get propositionsSet => _foldPropositionsToSet(
-        FMapper.keep,
+        FApplier.keep,
         (value) => value.propositionsSet,
       );
 
@@ -509,10 +506,10 @@ class PropositionCompound extends PropositionComponent {
 
 extension SetPropositionExtension on Set<Proposition> {
   bool get isConsistent =>
-      iterator.anyDifferentByGroupsBool((p) => p.declarative, (p) => p.value);
+      alsoConsistentBy((p) => p.declarative, (p) => p.value);
 }
 
-extension SetPropositionProductExtension on Set<PropositionProduct> {
+extension SetProposition2Extension on Set<Proposition2> {
   bool get isConsistent => iterator.fold<Set<Proposition>>(
       {},
       (set, value) => set
@@ -525,5 +522,38 @@ extension SetPropositionCompoundExtension on Set<PropositionCompound> {
         {},
         (set, compound) => set..addAll(compound.propositionsSet),
       ).isConsistent;
+}
+
+///
+///
+///
+///
+///
+
+// p.29
+enum PropositionEquivalenceLaw {
+  identity,
+  domination,
+  idempotent,
+  doubleNegation,
+  commutative,
+  associative,
+  distributive,
+  deMorgans,
+  absorption,
+  negation
+} // ... conditional, biconditional,
+// p.35 n-Queens problem
+
+// p.76
+enum PropositionRulesInference {
+  modusPonens,
+  modusTollens,
+  hypotheticalSyllogism,
+  disjunctiveSyllogism,
+  addition,
+  simplification,
+  conjunction,
+  resolution,
 }
 

@@ -1,6 +1,6 @@
 // import 'dart:math' as math;
 // import 'package:damath/src/experiment/experiment.dart';
-// import 'package:damath/src/math/math.dart';
+import 'package:damath/src/math/math.dart';
 
 void main(List<String> arguments) async {
   // const d1 = 'the computer is complex';
@@ -20,6 +20,7 @@ void main(List<String> arguments) async {
 
   // watching();
 
+  print(Hello() == Hello());
 }
 
 void watching() {
@@ -35,3 +36,9 @@ void watching() {
   print('end');
 }
 
+
+class Hello extends Operatable with OperatableComparable<Hello>{
+  @override
+  int compareTo(Hello other) => 1;
+
+}

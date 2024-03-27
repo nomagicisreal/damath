@@ -9,31 +9,82 @@ part of damath_math;
 
 ///
 ///
+/// [alsoConsistentBy], ...
+/// [copy], ...
+/// [toMap], ...
+///
 ///
 extension SetExtension<K> on Set<K> {
+  ///
+  /// [alsoConsistentBy]
+  ///
+  /// sample 1:
+  ///   final list = <MapEntry<int, int>>[
+  ///       MapEntry(1, 20),
+  ///       MapEntry(1, 20),
+  ///       MapEntry(1, 30),
+  ///       MapEntry(2, 0),
+  ///   ];
+  ///   print(list.iterator.[alsoConsistentBy]
+  ///   (
+  ///     (value) => value.key,
+  ///     (value) => value.value,
+  ///   )); // true
+  ///
+  ///   in the sample above, there are two group: group 1, group 2.
+  ///   the reason why the method returns true is because
+  ///   group 1 elements: {list[0].value, list[1].value, list[2].value}
+  ///   has a same on entry.value: list[0].value == list[1].value.
+  ///
+  /// sample 2:
+  ///   final list = <MapEntry<int, int>>[
+  ///       MapEntry(1, 20),
+  ///       MapEntry(1, 30),
+  ///       MapEntry(2, 30),
+  ///       MapEntry(3, 20),
+  ///   ];
+  ///   print(list.iterator.[alsoConsistentBy]
+  ///   (
+  ///     (value) => value.key,
+  ///     (value) => value.value,
+  ///   )); // false
+  ///
+  ///   in the sample above, there are three group: group 1, group 2, group 3.
+  ///   the reason why the method returns false is that
+  ///   each of the groups is identical on value
+  ///
+  bool alsoConsistentBy<E, V>(Mapper<K, E> toKey, Mapper<K, V> toVal) =>
+      !iterator.existAnyForEachGroup(
+        toKey,
+        toVal,
+        FPredicatorFusionor.mapValueInputYet,
+      );
+
+  ///
+  /// [copy]
+  ///
   Set get copy => Set.of(this);
 
   ///
-  /// [mapToMap]
+  /// [toMap]
   ///
-  Map<K, V> mapToMap<V>(Mapper<K, V> toValue) =>
-      Map.fromIterables(this, map(toValue));
+  Map<K, V> toMap<V>(Mapper<K, V> toVal) => Map.fromIterables(this, map(toVal));
 }
 
-
 ///
-///
+/// [merged], ...
+/// [everyIdentical], ...
 ///
 extension SetIteratorExtension<K> on Iterator<Set<K>> {
   Set<K> get merged => reduce((a, b) => a..addAll(b));
 
   bool get everyIdentical => moveNextThen(() {
-    var tempt = current.copy;
-    while (moveNext()) {
-      final lengthTotal = tempt.length + current.length;
-      tempt.addAll(current);
-      if (lengthTotal != tempt.length) return false;
-    }
-    return true;
-  });
+        var tempt = current.copy;
+        while (moveNext()) {
+          final lengthTotal = tempt.length + current.length;
+          tempt.addAll(current);
+          if (lengthTotal != tempt.length) return false;
+        }
+        return true;
+      });
 }

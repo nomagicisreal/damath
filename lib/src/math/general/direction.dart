@@ -24,7 +24,6 @@
 ///
 ///
 part of damath_math;
-// ignore_for_file: constant_identifier_names
 
 ///
 ///
@@ -122,7 +121,7 @@ sealed class Direction3D<D extends Direction3D<D>> implements Direction<D> {}
 /// these are two significant definition for [Direction3DIn6],
 ///   1. [Direction3DIn6.back] means user side, [Direction3DIn6.front] means screen side.
 ///   2. "[Direction3DIn6.back] -> [Direction3DIn6.front]" means the perspective from user to screen.
-/// which helps constructing the space in the imagination.
+/// which helps constructing the operatable in the imagination.
 ///
 /// See Also
 ///   * [Point2.rotate], [Space2.fromDirection]
