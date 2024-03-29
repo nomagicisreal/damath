@@ -5,11 +5,11 @@
 /// [KMath]
 ///
 ///
-part of damath_math;
+part of damath_core;
 
 
-abstract interface class KMath {
-  const KMath();
+abstract interface class KCore {
+  const KCore();
 
   static const durationMilli1 = Duration(milliseconds: 1);
   static const durationMilli5 = Duration(milliseconds: 5);
@@ -38,13 +38,4 @@ abstract interface class KMath {
   static const durationMin3 = Duration(minutes: 3);
   static const durationMin4 = Duration(minutes: 4);
   static const durationMin5 = Duration(minutes: 5);
-
-  static bool get randomBinary => math.Random().nextBool();
-
-  static double get randomDoubleIn1 => math.Random().nextDouble();
-
-  static int randomIntTo(int max) => math.Random().nextInt(max);
-
-  static double randomDoubleOf(int max, [int digit = 1]) =>
-      (math.Random().nextInt(max) * 0.1.powBy(digit)).toDouble();
 }

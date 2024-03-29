@@ -1,7 +1,7 @@
 library damath_experiment;
 
 import 'dart:math' as math hide Point;
-import 'package:damath/api.dart';
+import 'package:damath/src/core/core.dart';
 import 'package:damath/src/math/math.dart';
 
 

@@ -2,6 +2,7 @@ library damath_flutter;
 
 import 'dart:math' as math;
 import 'package:damath/src/async/async.dart';
+import 'package:damath/src/core/core.dart';
 import 'package:damath/src/experiment/experiment.dart';
 import 'package:damath/src/math/math.dart';
 import 'package:flutter/material.dart';

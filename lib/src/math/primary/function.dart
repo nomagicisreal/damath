@@ -1,29 +1,7 @@
 ///
 ///
 /// this file contains:
-/// [Consumer], [ConsumerIndexable]
-/// [Intersector], [IntersectorIndexable]
-/// [Supplier], [Generator]
 ///
-/// [Applier]
-/// [Reducer]
-/// [Collapser]
-/// [Companion]
-/// [Absorber]
-/// [Forcer]
-/// [Collector]
-/// [Linker]
-/// [Fusionor]
-/// [Mapper]
-/// [Combiner]
-/// [Mixer]
-///
-/// [Predicator], [PredicatorCombiner], [PredicatorMixer], [PredicatorFusionor], [PredicatorGenerator]
-/// [Generator2D], [MapperGenerator], [ReducerGenerator], [CollapserGenerator], [CompanionGenerator], ...
-/// [Differentiator]
-/// [Lerper]
-///
-/// extensions:
 /// [FSupplier]
 /// [FPredicator], [FPredicatorCombiner], [FPredicatorFusionor]
 /// [FApplier]
@@ -38,73 +16,6 @@
 part of damath_math;
 
 ///
-///
-typedef Consumer<T> = void Function(T value);
-typedef ConsumerIndexable<T> = void Function(T value, int index);
-typedef Intersector<A, B> = void Function(A a, B b);
-typedef IntersectorIndexable<A, B> = void Function(A a, B b, int index);
-typedef Supplier<S> = S Function();
-typedef Generator<S> = S Function(int index);
-
-typedef Applier<T> = T Function(T value);
-typedef Reducer<T> = T Function(T v1, T v2);
-typedef Collapser<T> = T Function(T v1, T v2, T v3);
-typedef Companion<T, E> = T Function(T value, E other);
-typedef Absorber<T, E> = T Function(T value, E e1, E e2);
-typedef Forcer<T, E> = T Function(T v1, T v2, E other);
-typedef Collector<T, A, B> = T Function(T value, A a, B b);
-
-typedef Linker<T, E, S> = S Function(T v1, T v2, E other);
-typedef Fusionor<P, Q, R, S> = S Function(P p, Q q, R r);
-typedef Mapper<T, S> = S Function(T value);
-typedef Combiner<T, S> = S Function(T v1, T v2);
-typedef Mixer<A, B, S> = S Function(A a, B b);
-
-///
-/// predicator
-///
-typedef Predicator<T> = bool Function(T value);
-typedef PredicatorCombiner<T> = bool Function(T v1, T v2);
-typedef PredicatorMixer<A, B> = bool Function(A a, B b);
-typedef PredicatorFusionor<O, P, Q> = bool Function(O o, P p, Q q);
-typedef PredicatorGenerator<T> = bool Function(T value, int index);
-
-///
-/// supplier, generator
-///
-typedef Generator2D<S> = S Function(int i, int j);
-typedef MapperGenerator<T> = T Function(T value, int index);
-typedef ReducerGenerator<T> = T Function(T v1, T v2, int index);
-typedef CollapserGenerator<T> = T Function(T v1, T v2, T v3, int index);
-typedef CompanionGenerator<T, E> = T Function(T value, E other, int index);
-typedef AbsorberGenerator<T, E> = T Function(T value, E e1, E e2, int index);
-typedef ForcerGenerator<T, E> = T Function(T v1, T v2, E other, int index);
-typedef CollectorGenerator<T, A, B> = T Function(T value, A a, B b, int index);
-
-typedef LinkerGenerator<T, E, S> = S Function(T v1, T v2, E other, int index);
-typedef FusionorGenerator<P, Q, R, S> = S Function(P p, Q q, R r, int index);
-typedef TranslatorGenerator<T, S> = S Function(T value, int index);
-typedef CombinerGenerator<T, S> = S Function(T v1, T v2, int index);
-typedef MixerGenerator<A, B, S> = S Function(A a, B b, int index);
-
-///
-/// others
-///
-typedef Differentiator<A, B> = int Function(A a, B b);
-typedef Lerper<T> = T Function(double t);
-
-///
-///
-///
-///
-///
-/// extensions
-///
-///
-///
-///
-
-///
 /// supplier
 ///
 extension FSupplier on Supplier {
@@ -112,8 +23,8 @@ extension FSupplier on Supplier {
   /// [iterableElement]
   ///
   static Supplier<Iterable<I>> iterableElement<I>(I value) => () sync* {
-        yield value;
-      };
+    yield value;
+  };
 }
 
 ///
@@ -137,7 +48,7 @@ extension FPredicator on Predicator {
   static Predicator<T> sameWith<T>(T another) => (value) => value == another;
 
   static Predicator<DateTime> sameDayWith(DateTime? day) =>
-      (currentDay) => DateTimeExtension.isSameDay(currentDay, day);
+          (currentDay) => DateTimeExtension.isSameDay(currentDay, day);
 }
 
 ///
@@ -199,9 +110,9 @@ extension FPredicatorCombiner on PredicatorCombiner {
       a.key == b.key;
 
   static bool entryIsKeyNumDifferent<V>(
-    MapEntry<num, V> a,
-    MapEntry<num, V> b,
-  ) =>
+      MapEntry<num, V> a,
+      MapEntry<num, V> b,
+      ) =>
       a.key != b.key;
 
   static bool entryIsKeyNumLess<V>(MapEntry<num, V> a, MapEntry<num, V> b) =>
@@ -307,7 +218,7 @@ extension FApplier on Applier {
   static Applier<double> doubleOnModule(double value) => (v) => v % value;
 
   static Applier<double> doubleOnDivideToInt(double value) =>
-      (v) => (v ~/ value).toDouble();
+          (v) => (v ~/ value).toDouble();
 
   ///
   /// [doubleOnTimesFactor]
@@ -317,10 +228,10 @@ extension FApplier on Applier {
   ///   [doubleOnPeriodTanByTimes]
   ///
   static Applier<double> doubleOnTimesFactor(
-    double times,
-    double factor, [
-    Applier<double> transform = math.sin,
-  ]) {
+      double times,
+      double factor, [
+        Applier<double> transform = math.sin,
+      ]) {
     assert(times.isFinite && factor.isFinite);
     return (value) => transform(times * value) * factor;
   }
@@ -328,9 +239,9 @@ extension FApplier on Applier {
   // sin period: (0 ~ 1 ~ 0 ~ -1 ~ 0)
   // cos period: (1 ~ 0 ~ -1 ~ 0 ~ 1)
   static Applier<double> doubleOnPeriod(
-    double period, [
-    Applier<double> transform = math.sin,
-  ]) {
+      double period, [
+        Applier<double> transform = math.sin,
+      ]) {
     assert(transform == math.sin || transform == math.cos);
     final times = math.pi * 2 * period;
     return FLerper.clamp((value) => transform(times * value), 0.0, 1.0);
@@ -350,7 +261,7 @@ extension FApplier on Applier {
   /// [iterableAppend]
   ///
   static Applier<Iterable<I>> iterableAppend<I>(I value) =>
-      (iterable) => iterable.append(value);
+          (iterable) => iterable.append(value);
 
   ///
   /// list
@@ -401,20 +312,20 @@ extension FGenerator<T> on Generator<T> {
   /// [yieldingToList]
   ///
   Iterable<E> yielding<E>(
-    int length,
-    Mapper<T, E> toVal, [
-    int start = 0,
-  ]) sync* {
+      int length,
+      Mapper<T, E> toVal, [
+        int start = 0,
+      ]) sync* {
     for (var i = start; i < length; i++) {
       yield toVal(this(i));
     }
   }
 
   List<E> yieldingToList<E>(
-    int length,
-    Mapper<T, E> toVal, [
-    int start = 0,
-  ]) =>
+      int length,
+      Mapper<T, E> toVal, [
+        int start = 0,
+      ]) =>
       [for (var i = start; i < length; i++) toVal(this(i))];
 
   ///
@@ -440,11 +351,11 @@ extension FGenerator<T> on Generator<T> {
   }
 
   S foldCollectTill<E, S>(
-    int length,
-    Generator<E> another,
-    S initialValue,
-    Collector<S, T, E> collect,
-  ) {
+      int length,
+      Generator<E> another,
+      S initialValue,
+      Collector<S, T, E> collect,
+      ) {
     var val = initialValue;
     for (var i = 0; i < length; i++) {
       val = collect(val, this(i), another(i));
@@ -468,10 +379,10 @@ extension FGenerator<T> on Generator<T> {
   /// [linkToListTill]
   ///
   Iterable<S> linkTill<E, S>(
-    int length,
-    Generator<E> interval,
-    Linker<T, E, S> link,
-  ) sync* {
+      int length,
+      Generator<E> interval,
+      Linker<T, E, S> link,
+      ) sync* {
     var val = this(0);
     for (var i = 1; i < length; i++) {
       final current = this(i);
@@ -481,10 +392,10 @@ extension FGenerator<T> on Generator<T> {
   }
 
   List<S> linkToListTill<E, S>(
-    int length,
-    Generator<E> interval,
-    Linker<T, E, S> link,
-  ) {
+      int length,
+      Generator<E> interval,
+      Linker<T, E, S> link,
+      ) {
     var list = <S>[];
     var val = this(0);
     for (var i = 1; i < length; i++) {
@@ -598,30 +509,30 @@ extension FReducer on Reducer {
   /// iterator
   ///
   static Iterator<double> iteratorDoubleDistanceMax(
-    Iterator<double> a,
-    Iterator<double> b,
-  ) =>
+      Iterator<double> a,
+      Iterator<double> b,
+      ) =>
       a.distance > b.distance ? a : b;
 
   static Iterator<double> iteratorDoubleDistanceMin(
-    Iterator<double> a,
-    Iterator<double> b,
-  ) =>
+      Iterator<double> a,
+      Iterator<double> b,
+      ) =>
       a.distance < b.distance ? a : b;
 
   ///
   /// record
   ///
   static (double, double) recordDouble2DirectionMax(
-    (double, double) a,
-    (double, double) b,
-  ) =>
+      (double, double) a,
+      (double, double) b,
+      ) =>
       a.direction > b.direction ? a : b;
 
   static (double, double) recordDouble2DirectionMin(
-    (double, double) a,
-    (double, double) b,
-  ) =>
+      (double, double) a,
+      (double, double) b,
+      ) =>
       a.direction < b.direction ? a : b;
 }
 
@@ -643,25 +554,25 @@ extension FLerper on Lerper {
   /// [clampZeroTo1], [clampPositive], [clampNegative]
   ///
   static Lerper<T> clamp<T>(
-    Lerper<T> transform,
-    double lowerLimit,
-    double upperLimit,
-  ) =>
-      (value) => transform(value.clampDouble(lowerLimit, upperLimit));
+      Lerper<T> transform,
+      double lowerLimit,
+      double upperLimit,
+      ) =>
+          (value) => transform(value.clampDouble(lowerLimit, upperLimit));
 
   static Lerper<T> clampZeroTo1<T>(Lerper<T> transform) =>
-      (value) => transform(value.clampZeroTo1);
+          (value) => transform(value.clampZeroTo1);
 
   static Lerper<T> clampPositive<T>(Lerper<T> transform) =>
-      (value) => transform(value.clampPositive);
+          (value) => transform(value.clampPositive);
 
   static Lerper<T> clampNegative<T>(Lerper<T> transform) =>
-      (value) => transform(value.clampNegative);
+          (value) => transform(value.clampNegative);
 
   ///
   /// [from]
   ///
   static Mapper<double, T> from<T>(T begin, T end) => switch (begin) {
-        _ => throw DamathException(DamathException.pass),
-      };
+    _ => throw DamathException(DamathException.pass),
+  };
 }

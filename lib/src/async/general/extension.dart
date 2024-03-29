@@ -83,7 +83,7 @@ extension FStream<T> on Stream<T> {
   static Stream<int> ofInts({
     int start = 0,
     int end = 10,
-    Duration delay = KMath.durationSecond1,
+    Duration delay = KCore.durationSecond1,
   }) async* {
     assert(end >= start);
     for (var i = start; i <= end; i++) {
@@ -104,7 +104,7 @@ extension FStream<T> on Stream<T> {
   static Stream<int> intOf({
     int start = 1,
     int end = 10,
-    Duration interval = KMath.durationSecond1,
+    Duration interval = KCore.durationSecond1,
     bool startWithDelay = true,
   }) async* {
     Future<int> yielding(int value) async =>

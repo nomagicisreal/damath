@@ -14,7 +14,6 @@
 ///
 ///
 ///
-///
 part of damath_math;
 
 ///
