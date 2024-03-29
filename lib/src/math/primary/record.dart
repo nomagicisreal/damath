@@ -33,10 +33,10 @@ extension RecordDouble2Extension on (double, double) {
   ///   the vector parallel to x axis projects on both x axis and y axis.      ( cos, sin)
   ///   the vector parallel to y axis projects on both x axis and y axis, too. (-sin, cos)
   ///   therefore, the matrix multiplication be like:
-  ///     [ cos, -sin ] [ dx ]
-  ///     [ sin,  cos ] [ dy ]
-  ///   dx' = [dx] * cos(radian) - [dy] * sin(radian);
-  ///   dy' = [dx] * sin(radian) + [dy] * cos(radian);
+  ///     [ cos, -sin ] [ x ]
+  ///     [ sin,  cos ] [ y ]
+  ///   dx' = [x] * cos(radian) - [y] * sin(radian);
+  ///   dy' = [x] * sin(radian) + [y] * cos(radian);
   ///
   (double, double) rotate(double radian) {
     final c = math.cos(radian);
@@ -137,15 +137,15 @@ extension RecordDouble3Extension on (double, double, double) {
   /// it's just the record of my intention that i want to improve the performance of [rotate] function.
   /// ----------------------------------------------------------------
   ///
-  /// let ([dx], [dy], [dz]) represent the record before [rotate] finished.
-  /// let ([Point3.dx], [Point3.dy], [Point3.dz]) represent the result of [rotate].
+  /// let ([x], [y], [dz]) represent the record before [rotate] finished.
+  /// let ([Point3.x], [Point3.y], [Point3.dz]) represent the result of [rotate].
   /// let rP, rA represent the origin state of polar and azimuthal.
   /// let rP', rA' represent the [radian] rotation of polar and azimuthal.
   /// which means "rP + rP'", "rA + rA'" are the rotated rotation of polar and azimuthal.
   ///
   /// when rA' grows,
-  ///     [ cos(rA'), -sin(rA') ] [ dx ]
-  ///     [ sin(rA'),  cos(rA') ] [ dy ]
+  ///     [ cos(rA'), -sin(rA') ] [ x ]
+  ///     [ sin(rA'),  cos(rA') ] [ y ]
   ///
   /// when rP' grows from 0 ~ π,
   ///   the vector can be separate into the one that parallel to z axis, and the one that parallel to xy plane.
@@ -153,9 +153,9 @@ extension RecordDouble3Extension on (double, double, double) {
   ///   [Point3.dz] = cos(rP + rP')
   ///
   ///   the one that parallel to xy plane projects a positive distance on xy plane, sin(rP + rP'),
-  ///   which is also [Point3.dx] * sec(rA + rA'), [Point3.dy] * csc(rA + rA').
-  ///   [Point3.dx] = sin(rP + rP') / sec(rA + rA')
-  ///   [Point3.dx] = sin(rP + rP') / csc(rA + rA')
+  ///   which is also [Point3.x] * sec(rA + rA'), [Point3.y] * csc(rA + rA').
+  ///   [Point3.x] = sin(rP + rP') / sec(rA + rA')
+  ///   [Point3.x] = sin(rP + rP') / csc(rA + rA')
   ///
   /// ----------------------------------------------------------------
   ///
@@ -170,36 +170,36 @@ extension RecordDouble3Extension on (double, double, double) {
   ///   the vector parallel to y axis will project on both y axis and z axis.      ( cos, sin)
   ///   the vector parallel to z axis will project on both y axis and z axis, too. (-sin, cos)
   ///   therefore, the matrix multiplication be like:
-  ///     [  1,   0,   0 ]  [ dx ]
-  ///     [  0, cos,-sin ]  [ dy ]
+  ///     [  1,   0,   0 ]  [ x ]
+  ///     [  0, cos,-sin ]  [ y ]
   ///     [  0, sin, cos ]  [ dz ]
   /// When rotate on y axis,
   ///   the vector parallel to x axis will project on both x axis and z axis.      ( cos,-sin)
   ///   the vector parallel to z axis will project on both x axis and z axis, too. ( sin, cos)
   ///   therefore, the matrix multiplication be like:
-  ///     [ cos,  0, sin ]  [ dx ]
-  ///     [  0,   1,   0 ]  [ dy ]
+  ///     [ cos,  0, sin ]  [ x ]
+  ///     [  0,   1,   0 ]  [ y ]
   ///     [-sin,  0, cos ]  [ dz ]
   /// When rotate on z axis,
   ///   the vector parallel to x axis will project on both x axis and y axis.      ( cos, sin)
   ///   the vector parallel to y axis will project on both x axis and y axis, too. (-sin, cos)
   ///   therefore, the matrix multiplication be like:
-  ///     [ cos,-sin,  0 ]  [ dx ]
-  ///     [ sin, cos,  0 ]  [ dy ]
+  ///     [ cos,-sin,  0 ]  [ x ]
+  ///     [ sin, cos,  0 ]  [ y ]
   ///     [  0,    0,  1 ]  [ dz ]
   /// because the priority of rotations on x axis, y axis, z axis influence each other,
   /// it better not to rotate by them all together at [Point3.rotate].
   ///   [rotateX] do the rotation only for x axis:
-  ///     [dx]' = [dx]
-  ///     [dy]' = [dy] * cos(rx) - [dz] * sin(rx)
-  ///     [dz]' = [dy] * sin(rx) + [dz] * cos(rx)
+  ///     [x]' = [x]
+  ///     [y]' = [y] * cos(rx) - [dz] * sin(rx)
+  ///     [dz]' = [y] * sin(rx) + [dz] * cos(rx)
   ///   [rotateY] do the rotation only for y axis:
-  ///     [dx]' = [dx] * cos(ry) + [dz] * sin(ry)
-  ///     [dy]' = [dy]
-  ///     [dz]' = [dz] * cos(ry) - [dx] * sin(ry)
+  ///     [x]' = [x] * cos(ry) + [dz] * sin(ry)
+  ///     [y]' = [y]
+  ///     [dz]' = [dz] * cos(ry) - [x] * sin(ry)
   ///   [rotateZ] do the rotation only for z axis:
-  ///     [dx]' = [dx] * cos(rz) - [dy] * sin(rz)
-  ///     [dy]' = [dx] * sin(rz) + [dy] * cos(rz)
+  ///     [x]' = [x] * cos(rz) - [y] * sin(rz)
+  ///     [y]' = [x] * sin(rz) + [y] * cos(rz)
   ///     [dz]' = [dz]
   ///
   ///

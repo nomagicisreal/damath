@@ -7,6 +7,8 @@
 /// [IntExtension]
 ///
 ///
+/// 'flutter pub add rational' for rational number
+///
 ///
 part of damath_math;
 
@@ -105,10 +107,12 @@ extension DoubleExtension on double {
   }
 
   ///
-  /// [isNearlyInt]
+  /// [isInt], [isNearlyInt]
   /// [squared], [squareRoot]
   /// [clampPositive], [clampNegative], [clampZeroTo1]
   ///
+  bool get isInt => ceil() == roundToDouble();
+
   bool get isNearlyInt => (ceil() - this) <= 0.01;
 
   double get squared => this * this;

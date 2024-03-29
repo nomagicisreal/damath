@@ -8,7 +8,8 @@
 ///     [TensorVectorDouble]
 ///     [TensorVectorString]
 ///   [TensorMatrix]
-///   [TensorDataFrame]
+///
+///
 ///
 ///
 ///
@@ -423,11 +424,4 @@ part of damath_experiment;
 //     assert(isInvertible);
 //     throw UnimplementedError();
 //   }
-// }
-//
-// ///
-// /// tensor data frame
-// ///
-// abstract class TensorDataFrame extends Tensor<List<TensorVector>> {
-//   TensorDataFrame(super.value);
 // }

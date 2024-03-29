@@ -195,20 +195,20 @@ extension FOnAnimateMatrix4 on Matrix4 {
   /// [translateOf], [rotateOf], [scaledOf]
   ///
   void translateOf(Point3 space3) =>
-      translate(v64.Vector3(space3.dx, space3.dy, space3.dz));
+      translate(v64.Vector3(space3.x, space3.y, space3.dz));
 
   void rotateOf(Point3 space3) => this
-    ..rotateX(space3.dx)
-    ..rotateY(space3.dy)
+    ..rotateX(space3.x)
+    ..rotateY(space3.y)
     ..rotateZ(space3.dz);
 
-  Matrix4 scaledOf(Point3 space3) => scaled(space3.dx, space3.dy, space3.dz);
+  Matrix4 scaledOf(Point3 space3) => scaled(space3.x, space3.y, space3.dz);
 
   ///
   /// [rotateOn]
   ///
   void rotateOn(Point3 space3, double radian) =>
-      rotate(v64.Vector3(space3.dx, space3.dy, space3.dz), radian);
+      rotate(v64.Vector3(space3.x, space3.y, space3.dz), radian);
 
   ///
   ///

@@ -5,11 +5,6 @@
 /// [NullableExtension]
 ///
 ///
-/// [NumExtension]
-/// [DoubleExtension]
-/// [IntExtension]
-///
-///
 /// [DurationExtension]
 /// [DateTimeExtension]
 ///
@@ -27,8 +22,6 @@
 ///
 ///
 part of damath_math;
-
-
 
 ///
 /// nullable
@@ -58,6 +51,14 @@ extension NullableExtension<T> on T? {
     return value == null ? ifNull() : toVal(value);
   }
 
+  void consumeNotNull(Consumer<T> consumer) {
+    final value = this;
+    if (value != null) consumer(value);
+  }
+
+  ///
+  /// [expandTo]
+  ///
   Iterable<S> expandTo<S>(
     Mapper<T, Iterable<S>> expanding, [
     Supplier<Iterable<S>>? supplyNull,
@@ -66,11 +67,6 @@ extension NullableExtension<T> on T? {
     yield* value == null
         ? supplyNull?.call() ?? Iterable.empty()
         : expanding(value);
-  }
-
-  void consumeNotNull(Consumer<T> consumer) {
-    final value = this;
-    if (value != null) consumer(value);
   }
 }
 

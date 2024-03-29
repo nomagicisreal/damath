@@ -303,3 +303,70 @@ enum Direction3DIn27 implements Direction3D<Direction3DIn27> {
         Direction3DIn27.backTopLeft => throw UnimplementedError(),
       };
 }
+
+
+
+///
+/// [radianFromAngle], ...
+/// [radianComplementary], ...
+/// [radianIfWithinAngle90_90N], ...
+///
+enum RotationUnit {
+  radian,
+  angle,
+  round;
+
+  ///
+  ///
+  /// static methods
+  ///
+  ///
+  static double radianFromAngle(double angle) => angle * Radian.angle_1;
+
+  static double radianFromRound(double round) => round * Radian.angle_360;
+
+  static double angleFromRadian(double radian) => radian / Radian.angle_1;
+
+  static double roundFromRadian(double radian) => radian / Radian.angle_360;
+
+  static double radianModulus90Angle(double radian) => radian % Radian.angle_90;
+
+  static double radianModulus180Angle(double radian) =>
+      radian % Radian.angle_180;
+
+  static double radianModulus360Angle(double radian) =>
+      radian % Radian.angle_360;
+
+  ///
+  /// [radianComplementary], [radianSupplementary], [radianRestrict180Angle]
+  ///
+  static double radianComplementary(double radian) {
+    assert(radian.rangeIn(0, Radian.angle_90));
+    return radianFromAngle(90 - angleFromRadian(radian));
+  }
+
+  static double radianSupplementary(double radian) {
+    assert(radian.rangeIn(0, Radian.angle_180));
+    return radianFromAngle(180 - angleFromRadian(radian));
+  }
+
+  static double radianRestrict180Angle(double angle) {
+    final r = angle % 360;
+    return r >= Radian.angle_180 ? r - Radian.angle_360 : r;
+  }
+
+  ///
+  /// [radianIfWithinAngle90_90N], [radianIfOverAngle90_90N], [radianIfWithinAngle0_180], [radianIfWithinAngle0_180N]
+  ///
+  static bool radianIfWithinAngle90_90N(double radian) =>
+      radian.abs() < Radian.angle_90;
+
+  static bool radianIfOverAngle90_90N(double radian) =>
+      radian.abs() > Radian.angle_90;
+
+  static bool radianIfWithinAngle0_180(double radian) =>
+      radian > 0 && radian < Radian.angle_180;
+
+  static bool radianIfWithinAngle0_180N(double radian) =>
+      radian > -Radian.angle_180 && radian < 0;
+}

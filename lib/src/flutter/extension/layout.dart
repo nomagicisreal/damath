@@ -70,7 +70,7 @@ extension OffsetExtension on Offset {
   /// [unitFromDirection]
   ///
   static Offset fromPoint(Point point) => switch (point) {
-        Point2() => Offset(point.dx, point.dy),
+        Point2() => Offset(point.x, point.y),
         Point3() => throw UnimplementedError(),
       };
 
@@ -632,9 +632,9 @@ extension TransformExtension on Transform {
   ///
   /// [translateSpace2], [translateSpace3], ...
   ///
-  static Point2 translateSpace2(Point2 p) => Point2(p.dx, -p.dy);
+  static Point2 translateSpace2(Point2 p) => Point2(p.x, -p.y);
 
-  static Point3 translateSpace3(Point3 p) => Point3(p.dx, -p.dz, -p.dy);
+  static Point3 translateSpace3(Point3 p) => Point3(p.x, -p.dz, -p.y);
 
   ///
   ///
