@@ -250,7 +250,7 @@ abstract interface class Radian extends Operatable
 ///
 ///
 /// [toString], ... (implementation for [Object])
-/// [-], ... (implementation for [Space])
+/// [-], ... (implementation for [Operatable])
 ///
 /// [azimuthalOnRight], ... (getters)
 /// [azimuthalInQuadrant], ... (methods)

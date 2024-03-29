@@ -1,7 +1,6 @@
 library damath_math;
 
 import 'dart:math' as math;
-import 'package:damath/api.dart';
 import 'package:damath/src/core/core.dart';
 
 
