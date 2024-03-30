@@ -35,10 +35,9 @@ sealed class Proof {
 
   const Proof(this.condition, this.conclusion);
 
-  // const factory Proof.universal(String condition, String conclusion) = ProofUniversal;
-  // const factory Proof.existent(String condition, String conclusion) = ProofExistent;
+// const factory Proof.universal(String condition, String conclusion) = ProofUniversal;
+// const factory Proof.existent(String condition, String conclusion) = ProofExistent;
 }
-
 
 ///
 ///
@@ -64,7 +63,6 @@ abstract class ProofDirect extends ProofUniversal {
 abstract class ProofIndirect extends ProofUniversal {
   const ProofIndirect(super.condition, super.conclusion);
 }
-
 
 //
 class ProofDirectly extends ProofDirect {
@@ -105,17 +103,20 @@ sealed class ProofExistent extends Proof {
   const ProofExistent(super.condition, super.conclusion);
 }
 
-
-//
+// by directly showing there is a condition exist
 abstract class ProofConstructive extends ProofExistent {
-  const ProofConstructive(super.condition, super.conclusion);
+  final String witness;
+
+  const ProofConstructive(super.condition, this.witness, super.conclusion);
 }
 
-//
+// by indirectly inference there is a condition exist
 abstract class ProofNonconstructive extends ProofExistent {
   const ProofNonconstructive(super.condition, super.conclusion);
-}
 
+  // by instancing all the other cases are contradicts the condition,
+  const ProofNonconstructive.uniqueness(super.condition, super.conclusion);
+}
 
 ///
 ///
@@ -124,11 +125,12 @@ abstract class ProofNonconstructive extends ProofExistent {
 ///
 ///
 
-//
-enum ProofQuantifier {
-  universal, // every
-  existence; // any
+// p.105
+enum ProofReasoning {
+  forward,
+  backward;
 }
+
 
 //
 enum ProofTerminology {
@@ -166,6 +168,9 @@ enum ProofTerminology {
   axiom,
   lemma,
   corollary,
+
+  ///
+  ///
+  ///
   conjecture;
 }
-

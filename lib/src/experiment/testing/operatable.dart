@@ -12,6 +12,7 @@
 /// [Radian]
 ///   [Radian2]
 ///   [Radian3]
+///     [Radian3OnAxis]
 ///
 ///
 /// [Point]
@@ -25,7 +26,7 @@
 ///
 ///
 ///
-part of damath_math;
+part of damath_experiment;
 
 //
 abstract class Operatable {
@@ -431,6 +432,38 @@ class Radian3 extends Radian {
 
   double get sinPhi => math.sin(rPolar);
 }
+
+// class Radian3OnAxis extends Radian3 {
+//   const Radian3OnAxis(super.rAzimuthal, super.rPolar);
+//
+// // ///
+// // /// [Direction3DIn6.front] can be seen within {angleY(-90 ~ 90), angleX(-90 ~ 90)}
+// // /// [Direction3DIn6.left] can be seen within {angleY(0 ~ -180), angleZ(-90 ~ 90)}
+// // /// [Direction3DIn6.top] can be seen within {angleX(0 ~ 180), angleZ(-90 ~ 90)}
+// // /// [Direction3DIn6.back] can be seen while [Direction3DIn6.front] not be seen.
+// // /// [Direction3DIn6.right] can be seen while [Direction3DIn6.left] not be seen.
+// // /// [Direction3DIn6.bottom] can be seen while [Direction3DIn6.top] not be seen.
+// // ///
+// // List<Direction3DIn6> get visibleFaces {
+// //   throw UnimplementedError();
+// //   // final r = radian.restrict180AbsAngle;
+// //   // final rX = r.dx;
+// //   // final rY = r.dy;
+// //   // final rZ = r.dz;
+// //
+// //   // return <Direction3DIn6>[
+// //   //   Radian.ifWithinAngle90_90N(rY) && Radian.ifWithinAngle90_90N(rX)
+// //   //       ? Direction3DIn6.front
+// //   //       : Direction3DIn6.back,
+// //   //   Radian.ifWithinAngle0_180N(rY) && Radian.ifWithinAngle90_90N(rZ)
+// //   //       ? Direction3DIn6.left
+// //   //       : Direction3DIn6.right,
+// //   //   Radian.ifWithinAngle0_180(rX) && Radian.ifWithinAngle90_90N(rZ)
+// //   //       ? Direction3DIn6.top
+// //   //       : Direction3DIn6.bottom,
+// //   // ];
+// // }
+// }
 
 
 

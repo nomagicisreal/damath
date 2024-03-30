@@ -9,6 +9,10 @@
 /// [IterableIntExtension]
 ///
 ///
+///
+/// 'flutter pub add statistics' for advance statistic analyze
+///
+///
 part of damath_math;
 
 ///
@@ -41,7 +45,8 @@ extension IteratorBoolExtension on Iterator<bool> {
 ///
 /// [anyFinite], ...
 /// [min], ...
-/// [distance], ...
+///
+/// [range], ...
 ///
 /// [abs], ...
 /// [interValuesTo], ...
@@ -64,31 +69,39 @@ extension IteratorDoubleExtension on Iterator<double> {
   bool get anyNegative => any((value) => value < 0);
 
   ///
-  /// [min], [max], [mean]
+  /// [min], [max], [meanArithmetic], [meanGeometric]
   /// [sum], [sumSquared]
+  /// [distance], [volume]
+  /// [distanceTo], [distanceHalfTo]
   ///
   double get min => reduce(FReducer.doubleMin);
 
   double get max => reduce(FReducer.doubleMax);
 
-  double get mean {
-    var total = 0.0;
-    var length = 0;
-    while (moveNext()) {
-      total += current;
-      length++;
-    }
-    return total / length;
-  }
+  double get meanArithmetic => moveNextThen(() {
+        var total = current;
+        var length = 1;
+        while (moveNext()) {
+          total += current;
+          length++;
+        }
+        return total / length;
+      });
+
+  double get meanGeometric => moveNextThen(() {
+        var total = current;
+        var length = 1;
+        while (moveNext()) {
+          total *= current;
+          length++;
+        }
+        return math.pow(total, 1 / length).toDouble();
+      });
 
   double get sum => reduce(FReducer.doubleAdd);
 
   double get sumSquared => reduce(FReducer.doubleAddSquared);
 
-  ///
-  /// [distance], [volume]
-  /// [distanceTo], [distanceHalfTo]
-  ///
   double get distance => math.sqrt(reduce(FReducer.doubleAddSquared));
 
   double get volume => reduce(FReducer.doubleMultiply);
@@ -97,6 +110,19 @@ extension IteratorDoubleExtension on Iterator<double> {
 
   double distanceHalfTo(Iterator<double> other) =>
       (other.distance - distance) / 2;
+
+  ///
+  /// [range]
+  ///
+  (double, double) get range => moveNextThen(() {
+        var min = current;
+        var max = current;
+        while (moveNext()) {
+          if (current < min) min = current;
+          if (current > max) max = current;
+        }
+        return (min, max);
+      });
 
   ///
   /// [abs], [rounded], [roundUpTo]
@@ -145,6 +171,17 @@ extension IteratorDoubleExtension on Iterator<double> {
 ///
 ///
 ///
+///
+/// iterable
+///
+///
+///
+///
+///
+
+///
+///
+///
 extension IterableDoubleExtension on Iterable<double> {
   ///
   /// [valuesTo], [valuesFrom]
@@ -170,7 +207,7 @@ extension IterableDoubleExtension on Iterable<double> {
   ///
   /// [analyzing]
   ///
-  /// see also [IteratorDoubleExtension.mean]
+  /// see also [IteratorDoubleExtension.meanArithmetic]
   ///
   Iterable<double> analyzing([
     bool requireLength = true,
@@ -196,27 +233,18 @@ extension IterableDoubleExtension on Iterable<double> {
     for (var value in this) {
       sum += (value - mean).squared;
     }
-    final standardDeviation = sum / length;
+    final sd = sum / length;
     if (requireStandardDeviation) {
-      yield standardDeviation;
+      yield sd;
     }
 
     ///
     /// scores
     ///
-    // requireTScores.expandTo((value) {
-    //
-    // });
     if (requireTScores != null) {
-      if (requireTScores) {
-        for (var value in this) {
-          yield ((value - mean) / standardDeviation) * 10 + 50; // t scores
-        }
-      } else {
-        for (var value in this) {
-          yield (value - mean) / standardDeviation; // z scores
-        }
-      }
+      yield* requireTScores
+          ? iterator.yieldingApply((x) => (x - mean) / sd * 10 + 50)
+          : iterator.yieldingApply((x) => (x - mean) / sd);
     }
   }
 }

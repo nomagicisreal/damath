@@ -44,3 +44,11 @@ part of damath_experiment;
 //     return value == -1 || value == 0;
 //   }
 // }
+
+
+//
+// Lagrange's four-square theorem
+// every natural number can be represented as a sum of four non-negative integer squares.
+//
+// class Vector4 {}
+//

@@ -2,6 +2,8 @@
 ///
 /// this file contains:
 ///
+/// [RandomExtension]
+///
 /// [NumExtension]
 /// [DoubleExtension]
 /// [IntExtension]
@@ -12,6 +14,19 @@
 ///
 part of damath_math;
 
+///
+///
+///
+extension RandomExtension on math.Random {
+  static bool get randomBinary => math.Random().nextBool();
+
+  static double get randomDoubleIn1 => math.Random().nextDouble();
+
+  static int randomIntTo(int max) => math.Random().nextInt(max);
+
+  static double randomDoubleOf(int max, [int digit = 1]) =>
+      (math.Random().nextInt(max) * 0.1.powBy(digit)).toDouble();
+}
 
 ///
 ///
@@ -89,10 +104,10 @@ extension DoubleExtension on double {
   /// [clampDouble]
   ///
   double filterInfinity(double precision) => switch (this) {
-    double.infinity => proximateInfinityOf(precision),
-    double.negativeInfinity => proximateNegativeInfinityOf(precision),
-    _ => this,
-  };
+        double.infinity => proximateInfinityOf(precision),
+        double.negativeInfinity => proximateNegativeInfinityOf(precision),
+        _ => this,
+      };
 
   double roundUpTo(int digit) {
     final value = math.pow(10, digit);
@@ -130,9 +145,10 @@ extension DoubleExtension on double {
 /// static methods:
 /// [accumulation]
 /// [fibonacci]
-/// [pascalTriangle]
-/// [binomialCoefficient], [combination]
-/// [partition], [partitionAllFor], [partitionGroups]
+/// [collatzConjecture]
+/// [stoneTakingFinal]
+/// [pascalTriangle], [binomialCoefficient], [combination]
+/// [partition], [partitionGroups]
 ///
 /// instance getters, methods:
 /// [accumulated], ...
@@ -142,35 +158,74 @@ extension DoubleExtension on double {
 ///
 extension IntExtension on int {
   ///
-  /// [1, 3, 6, 10, 15, ...]
+  /// [accumulation] ([1, 3, 6, 10, 15, ...])
   ///
-  static List<int> accumulation(int end, {int start = 0}) {
-    final list = <int>[];
+  static Iterable<int> accumulation(int end, {int start = 0}) sync* {
     for (int i = start; i <= end; i++) {
-      list.add(i.accumulated);
+      yield i.accumulated;
     }
-    return list;
   }
 
   ///
-  /// [fibonacci] calculate the sequence be like: 1, 1, 2, 3, 5, 8, 13, ...
-  /// when [k] == 1, return 1
-  /// when [k] == 2, return 1
-  /// when [k] == 3, return 2
-  /// ...
+  /// [fibonacci] ([1, 1, 2, 3, 5, 8, 13, ...])
   ///
-  static int fibonacci(int k) {
+  static Iterable<int> fibonacci(int k) sync* {
     assert(k > 0);
-    int a = 0;
-    int b = 1;
+    var a = 0;
+    var b = 1;
 
-    for (var i = 2; i <= k; i++) {
-      final next = a + b;
+    yield b;
+    for (var i = 1; i < k; i++) {
+      final current = a + b;
+      yield current;
       a = b;
-      b = next;
+      b = current;
     }
-    return b;
   }
+
+  ///
+  /// [collatzConjecture]
+  ///
+  static Iterable<int> collatzConjecture(int value, [int scale = 3]) sync* {
+    assert(value != 0);
+    yield value;
+    while (value != 1) {
+      value = (value.isOdd ? value * scale + 1 : value / 2).toInt();
+      yield value;
+    }
+  }
+
+  ///
+  /// [stoneTakingFinal]
+  ///
+  /// Suppose there is [n] people play a game taking turns removing stones from [limitLower] to [limitUpper],
+  /// and there is [total] stones. the person remove tha last stone wins the game. for example,
+  /// if [n] = 2, [limitLower] = 1, [limitUpper] = 3, [total] = 15,
+  /// it returns (4, 8, 12), which means the remain stones that the winning person should leave.
+  ///
+  static Iterable<int> stoneTakingFinal(
+    int n,
+    int total,
+    int limitLower,
+    int limitUpper,
+  ) sync* {
+    assert(
+      n > 1 &&
+          total >= n &&
+          limitLower.rangeIn(0, limitUpper) &&
+          limitUpper.rangeIn(limitLower, total),
+    );
+    final interval = limitLower + limitUpper * (n - 1);
+    for (var step = interval; step <= total; step += interval) {
+      yield step;
+    }
+  }
+
+  ///
+  /// [pascalTriangle]
+  /// [binomialCoefficient], [_binomialCoefficient]
+  /// [combination]
+  ///
 
   ///
   /// [pascalTriangle] calculate the 2D array like
@@ -205,28 +260,28 @@ extension IntExtension on int {
   /// ...
   ///
   static List<List<int>> pascalTriangle(
-      int n,
-      int k, {
-        int rowStart = 0,
-        bool isColumnEndAtK = true,
-      }) {
+    int n,
+    int k, {
+    int rowStart = 0,
+    bool isColumnEndAtK = true,
+  }) {
     assert(
-    n > 0 && k > 0 && k <= n + 1 && rowStart < 4,
-    throw ArgumentError('($n, $k)'),
+      n > 0 && k > 0 && k <= n + 1 && rowStart < 4,
+      throw ArgumentError('($n, $k)'),
     );
 
     final rowEnd = n + 1 - rowStart;
     final columnEndOf =
-    isColumnEndAtK ? (i) => i + rowStart < k ? i + 1 : k : (i) => i + 1;
+        isColumnEndAtK ? (i) => i + rowStart < k ? i + 1 : k : (i) => i + 1;
 
     final array = ListExtension.generate2D<int>(
       rowEnd,
       k,
-          (i, j) => j == 0 || j == i + rowStart
+      (i, j) => j == 0 || j == i + rowStart
           ? 1
           : j == 1 || j == i + rowStart - 1
-          ? i + rowStart
-          : 0,
+              ? i + rowStart
+              : 0,
     );
 
     for (int i = 4 - rowStart; i < rowEnd; i++) {
@@ -239,29 +294,18 @@ extension IntExtension on int {
   }
 
   ///
-  ///
-  /// [combination]
-  /// [binomialCoefficient], [_binomialCoefficient]
-  ///
-  ///
-  static int combination(int m, int n) => binomialCoefficient(m, n + 1);
-
-  ///
-  /// [binomialCoefficient]
-
-  ///
   /// see the comment above [_binomialCoefficient] for implementation detail
   ///
   static int binomialCoefficient(int n, int k) {
     assert(
-    n > 0 && k > 0 && k <= n + 1,
-    throw ArgumentError('binomial coefficient for ($n, $k)'),
+      n > 0 && k > 0 && k <= n + 1,
+      throw ArgumentError('binomial coefficient for ($n, $k)'),
     );
     return k == 1 || k == n + 1
         ? 1
         : k == 2 || k == n
-        ? n
-        : _binomialCoefficient(n, k);
+            ? n
+            : _binomialCoefficient(n, k);
   }
 
   ///
@@ -328,15 +372,16 @@ extension IntExtension on int {
   }
 
   ///
+  static int combination(int m, int n) => binomialCoefficient(m, n + 1);
+
+  ///
   /// Generally, these methods return the possible partition of an integer [m],
   /// [partition]
-  /// [partitionAllFor]
   /// [partitionGroups]
-  /// [partitionGroupsToString]
   ///
   /// and these private methods are the implementation of those methods
   /// [_partition]
-  /// [_partitionSpace]
+  /// [_partitionContainer]
   /// [_partitionElementGenerator]
   /// [_partitionSearchOnFloor]
   ///
@@ -346,25 +391,12 @@ extension IntExtension on int {
 
   ///
   /// [partition] return the possible partition in [n] group for an integer [m],
-  /// and each group must not be empty.
-  ///
   /// for example, when [m] = 7, [n] = 4, this function returns 3 because there are 3 possible partition:
   /// [4, 1, 1, 1]
   /// [3, 2, 1, 1]
   /// [2, 2, 2, 1]
   ///
-  static int partition(int m, int n) {
-    assert(
-    m.isPositiveOrZero && n <= m,
-    'it is impossible to partition $m into $n group',
-    );
-    return _partition(m, n, space: _partitionSpace<int>(m, n: n));
-  }
-
-  ///
-  /// [partitionAllFor] return the possible partitions for an integer [m],
-  /// and each group must not be empty.
-  ///
+  /// if [n] is not provided, it returns all the possible partitions for an integer [m],
   /// for example, when [m] = 5, this function return 7 because there are 7 possible partition for 5:
   /// (5)
   /// (4, 1)
@@ -374,19 +406,22 @@ extension IntExtension on int {
   /// (2, 1, 1, 1)
   /// (1, 1, 1, 1, 1)
   ///
-  static int partitionAllFor(int m) {
-    assert(m.isPositiveOrZero, 'it is impossible to partition $m');
-    final pSpace = _partitionSpace<int>(m);
+  static int partition(int m, [int? n]) {
+    assert(m.isPositiveOrZero, 'cannot partition negative integer: $m');
+    if (n != null) {
+      assert(n <= m, 'cannot partition $m into $n group');
+      return _partition(m, n, container: _partitionContainer<int>(m, n: n));
+    }
+
+    final pSpace = _partitionContainer<int>(m);
     return Iterable.generate(
       m,
-          (i) => _partition<int>(m, i + 1, space: pSpace),
-    ).reduce((p1, p2) => p1 + p2);
+      (i) => _partition<int>(m, i + 1, container: pSpace),
+    ).reduce(FReducer.intAdd);
   }
 
   ///
-  /// [partitionGroups] return entire groups of possible partition,
-  /// and each group must not be empty.
-  ///
+  /// [partitionGroups] return entire groups of possible partition in [n] for m,
   /// for example, when [m] = 8, [n] = 4, this function returns [
   ///   [5, 1, 1, 1],
   ///   [4, 2, 1, 1],
@@ -397,20 +432,17 @@ extension IntExtension on int {
   ///
   static List<List<int>> partitionGroups(int m, int n) {
     assert(
-    m.isPositiveOrZero && n <= m,
-    'it is impossible to partition $m into $n group',
+      m.isPositiveOrZero && n <= m,
+      'it is impossible to partition $m into $n group',
     );
-    final groups = _partition(
+    final groups = _partition<List<List<int>>>(
       m,
       n,
-      space: _partitionSpace<List<List<int>>>(m, n: n),
+      container: _partitionContainer<List<List<int>>>(m, n: n),
     );
     assert(groups.every((element) => element.length == n), 'runtime error');
     return groups..sortAccordingly();
   }
-
-  static String partitionGroupsToString(int m, int n) =>
-      partitionGroups(m, n).fold('', (a, b) => '$a \n $b');
 
   ///
   /// The "row" concept in here helps to calculate values in more efficient way. definition:
@@ -457,97 +489,93 @@ extension IntExtension on int {
   /// with those "floor", we can get the answer of ([m] = 10, [n] = 4).
   ///
   /// [_partition] implementation is based on the discussion above
-  /// [_partitionSpace] for [operatable] helps to prevent invoking [elementOf] in [_partition] redundantly.
+  /// [_partitionContainer] for [container] helps to prevent invoking [elementOf] in [_partition] redundantly.
   /// [_partitionElementGenerator] is the generator to find row element
   /// [_partitionSearchOnFloor] is a way to find out where a row element comes from
   ///
-  ///
-
-  ///
-  ///
   static P _partition<P>(
-      int m,
-      int n, {
-        required List<List<P>> space,
-      }) =>
-      switch (space) {
+    int m,
+    int n, {
+    required List<List<P>> container,
+  }) =>
+      switch (container) {
         List<List<int>>() => () {
-          final partitionSpace = space as List<List<int>>;
-          late final Reducer<int> elementOf;
+            final pContainer = container as List<List<int>>;
+            late final Reducer<int> elementOf;
 
-          int instancesOf(int i, int j) {
-            int sum = 1;
-            _partitionSearchOnFloor<int>(
-              i,
-              j,
-              space: partitionSpace,
-              elementOf: elementOf,
-              predicate: (p) => p == 1,
-              consume: (p) => sum += p,
-              trailing: (_) => sum++,
+            int instancesOf(int i, int j) {
+              int sum = 1;
+              _partitionSearchOnFloor<int>(
+                i,
+                j,
+                container: pContainer,
+                elementOf: elementOf,
+                predicate: (p) => p == 1,
+                consume: (p) => sum += p,
+                trailing: (_) => sum++,
+              );
+              return sum;
+            }
+
+            elementOf = _partitionElementGenerator(
+              atFirst: FGenerator.filled2D(1),
+              atLast: FGenerator.filled2D(1),
+              atLastPrevious: FGenerator.filled2D(1),
+              instancesOf: instancesOf,
             );
-            return sum;
-          }
 
-          elementOf = _partitionElementGenerator(
-            atFirst: FGenerator.filled2D(1),
-            atLast: FGenerator.filled2D(1),
-            atLastPrevious: FGenerator.filled2D(1),
-            instancesOf: instancesOf,
-          );
-
-          return elementOf(m, n);
-        }(),
+            return elementOf(m, n);
+          }(),
         List<List<Iterable<List<int>>>>() => () {
-          final partitionSpace = space as List<List<Iterable<List<int>>>>;
-          late final Generator2D<Iterable<List<int>>> elementOf;
+            final partitionSpace = container as List<List<Iterable<List<int>>>>;
+            late final Generator2D<Iterable<List<int>>> elementOf;
 
-          print('($m, $n)');
+            print('($m, $n)');
 
-          List<int> firstOf(int n) => [n];
-          List<int> lastOf(int n) => List.filled(n, 1, growable: true);
-          List<int> lastPreviousOf(int n) => [2, ...List.filled(n - 2, 1)];
+            List<int> firstOf(int n) => [n];
+            List<int> lastOf(int n) => List.filled(n, 1, growable: true);
+            List<int> lastPreviousOf(int n) => [2, ...List.filled(n - 2, 1)];
 
-          Iterable<List<int>> instancesOf(int i, int j) {
-            final instances = [firstOf(i)];
-            _partitionSearchOnFloor<Iterable<List<int>>>(
-              i,
-              j,
-              space: partitionSpace,
-              elementOf: elementOf,
-              predicate: (p) => p.isEmpty,
-              consume: (p) => instances.addAll(p),
-              trailing: (current) => instances.add(
-                (current == i ? lastOf(i) : lastPreviousOf(i)),
-              ),
+            Iterable<List<int>> instancesOf(int i, int j) {
+              final instances = [firstOf(i)];
+              _partitionSearchOnFloor<Iterable<List<int>>>(
+                i,
+                j,
+                container: partitionSpace,
+                elementOf: elementOf,
+                predicate: (p) => p.isEmpty,
+                consume: (p) => instances.addAll(p),
+                trailing: (current) => instances.add(
+                  (current == i ? lastOf(i) : lastPreviousOf(i)),
+                ),
+              );
+              return instances;
+            }
+
+            elementOf = _partitionElementGenerator(
+              atFirst: (i, j) => [firstOf(i)],
+              atLast: (i, j) => [lastOf(j)],
+              atLastPrevious: (i, j) => [lastPreviousOf(j)],
+              instancesOf: (i, j) {
+                final instances = instancesOf(i, j);
+                final result = <List<int>>[];
+                for (var instance in instances) {
+                  result.add([
+                    ...instance.map((element) => element + 1),
+                    ...Iterable.generate(j - instance.length, (_) => 1),
+                  ]);
+                }
+                return result;
+              },
             );
-            return instances;
-          }
 
-          elementOf = _partitionElementGenerator(
-            atFirst: (i, j) => [firstOf(i)],
-            atLast: (i, j) => [lastOf(j)],
-            atLastPrevious: (i, j) => [lastPreviousOf(j)],
-            instancesOf: (i, j) {
-              final instances = instancesOf(i, j);
-              final result = <List<int>>[];
-              for (var instance in instances) {
-                result.add([
-                  ...instance.map((element) => element + 1),
-                  ...Iterable.generate(j - instance.length, (_) => 1),
-                ]);
-              }
-              return result;
-            },
-          );
-
-          return elementOf(m, n);
-        }(),
+            return elementOf(m, n);
+          }(),
         _ => throw UnimplementedError(),
       } as P;
 
   ///
-  /// [_partitionSpace] specify how much operatable a [_partition] needs.
+  /// [_partitionContainer] specify how much operatable a [_partition] needs.
   /// with predicator, it can prevent calculation for the same value in [_partitionSearchOnFloor].
   /// the values inside [List]<[List]<[P]>> will update during the loop if:
   ///   [P] == [int] && element is 1
@@ -558,15 +586,15 @@ extension IntExtension on int {
   ///
   /// instead of [List.filled], using [List.generate] prevents shared instance for list
   ///
-  static List<List<P>> _partitionSpace<P>(int m, {int? n}) {
+  static List<List<P>> _partitionContainer<P>(int m, {int? n}) {
     final spaceRow = math.max(0, m - 3 - (n ?? 0));
     final Generator<P> generator = P == int
         ? (_) => 1 as P
         : (P == List<List<int>>)
-        ? (_) => <List<int>>[] as P
-        : throw UnimplementedError(
-      'generic type must be int or Iterable<List<int>>, current: $P',
-    );
+            ? (_) => <List<int>>[] as P
+            : throw UnimplementedError(
+                'generic type must be int or Iterable<List<int>>, current: $P',
+              );
     return List.generate(
       spaceRow,
       n == null
@@ -583,7 +611,7 @@ extension IntExtension on int {
     required Generator2D<T> atLastPrevious,
     required Generator2D<T> instancesOf,
   }) =>
-          (i, j) {
+      (i, j) {
         if (j == 1) return atFirst(i, j);
         if (j == i) return atLast(i, j);
         if (j == i - 1) return atLastPrevious(i, j);
@@ -593,23 +621,23 @@ extension IntExtension on int {
   ///
   ///
   static void _partitionSearchOnFloor<P>(
-      int i,
-      int j, {
-        required List<List<P>> space,
-        required Generator2D<P> elementOf,
-        required Predicator<P> predicate,
-        required void Function(P instance) consume,
-        required void Function(int current) trailing,
-      }) {
+    int i,
+    int j, {
+    required List<List<P>> container,
+    required Generator2D<P> elementOf,
+    required Predicator<P> predicate,
+    required Consumer<P> consume,
+    required Consumer<int> trailing,
+  }) {
     final min = math.min(i, j);
     final bound = min == i
         ? math.max(1, min - 2)
         : min == i - 1
-        ? min - 1
-        : min;
+            ? min - 1
+            : min;
     for (var k = 2; k <= bound; k++) {
-      P p = space[i - 4][k - 2];
-      if (predicate(p)) p = space[i - 4][k - 2] = elementOf(i, k);
+      var p = container[i - 4][k - 2];
+      if (predicate(p)) p = container[i - 4][k - 2] = elementOf(i, k);
       consume(p);
     }
     for (var current = bound + 1; current <= min; current++) {
