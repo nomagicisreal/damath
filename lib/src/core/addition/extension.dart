@@ -37,23 +37,18 @@ extension NullableExtension<T> on T? {
   ///
   S? nullOr<S>(S value) => this == null ? null : value;
 
-  S? nullOrMap<S>(Mapper<T, S> toVal) {
-    final value = this;
-    return value == null ? null : toVal(value);
-  }
+  S? nullOrMap<S>(Mapper<T, S> toVal) => this == null ? null : toVal(this!);
 
   ///
   /// [mapNotNullOr]
   /// [consumeNotNull]
   ///
   S mapNotNullOr<S>(Mapper<T, S> toVal, Supplier<S> ifNull) {
-    final value = this;
-    return value == null ? ifNull() : toVal(value);
+    return this == null ? ifNull() : toVal(this!);
   }
 
   void consumeNotNull(Consumer<T> consumer) {
-    final value = this;
-    if (value != null) consumer(value);
+    if (this != null) consumer(this!);
   }
 
   ///
@@ -62,12 +57,8 @@ extension NullableExtension<T> on T? {
   Iterable<S> expandTo<S>(
     Mapper<T, Iterable<S>> expanding, [
     Supplier<Iterable<S>>? supplyNull,
-  ]) sync* {
-    final value = this;
-    yield* value == null
-        ? supplyNull?.call() ?? Iterable.empty()
-        : expanding(value);
-  }
+  ]) =>
+      this == null ? supplyNull?.call() ?? Iterable.empty() : expanding(this!);
 }
 
 extension BoolExtension on bool {

@@ -3,6 +3,7 @@
 /// this file contains:
 ///
 /// [IteratorExtension]
+/// [IteratorNullableExtension]
 ///
 ///
 part of damath_math;
@@ -19,10 +20,11 @@ part of damath_math;
 ///
 /// [fold], ...
 /// [reduce], ...
-/// [yielding], ...
+/// [yieldingApply], ...
 /// [expand], ...
 ///
 /// [cumulativeWhere], ...
+/// [frequencies], ...
 ///
 ///
 extension IteratorExtension<I> on Iterator<I> {
@@ -77,7 +79,6 @@ extension IteratorExtension<I> on Iterator<I> {
   /// predication
   /// [contains], [containsAll]
   /// [notContains], [notContainsAll]
-  /// [containsThen]
   ///
   /// [any]
   ///
@@ -91,7 +92,6 @@ extension IteratorExtension<I> on Iterator<I> {
   ///
   /// [contains], [containsAll]
   /// [notContains], [notContainsAll]
-  /// [containsThen]
   ///
   bool contains(I element) {
     while (moveNext()) {
@@ -120,9 +120,6 @@ extension IteratorExtension<I> on Iterator<I> {
     }
     return true;
   }
-
-  T containsThen<T>(I value, Supplier<T> ifContains, Supplier<T> ifAbsent) =>
-      contains(value) ? ifContains() : ifAbsent();
 
   ///
   /// [any]
@@ -322,7 +319,7 @@ extension IteratorExtension<I> on Iterator<I> {
   /// [yieldingToByIndex], [yieldingAccompany], [yieldingTo]
   /// [yieldingWhere], [yieldingToWhere]
   /// [yieldingToEntries], [yieldingToEntriesByKey], [yieldingToEntriesByValue]
-  /// [yieldingToList], [yieldingToListByIndex], [yieldingToListByList], [yieldingToListByMap]
+  /// [yieldingToList], [yieldingToListByIndex], [yieldingToListBySet], [yieldingToListByMap]
   /// [yieldingToSet], [yieldingToSetBySet]
   ///
   /// expand
@@ -469,16 +466,10 @@ extension IteratorExtension<I> on Iterator<I> {
   ///
 
   ///
-  /// [yielding]
-  /// [yieldingApply], [yieldingAccompany], [yieldingWhere]
+  /// [yieldingApply], [yieldingAccompany]
+  /// [yieldingWhere]
   /// [yieldingTo], ...
   ///
-  Iterable<I> yielding() sync* {
-    while (moveNext()) {
-      yield current;
-    }
-  }
-
   Iterable<I> yieldingApply(Applier<I> apply) sync* {
     while (moveNext()) {
       yield apply(current);
@@ -500,7 +491,7 @@ extension IteratorExtension<I> on Iterator<I> {
   ///
   /// [yieldingTo], [yieldingToByIndex], [yieldingToWhere]
   /// [yieldingToEntries], [yieldingToEntriesByKey], [yieldingToEntriesByValue]
-  /// [yieldingToList], [yieldingToListByIndex], [yieldingToListByList], [yieldingToListByMap]
+  /// [yieldingToList], [yieldingToListByIndex], [yieldingToListByList], [yieldingToListBySet], [yieldingToListByMap]
   /// [yieldingToSet], [yieldingToSetBySet]
   ///
   Iterable<S> yieldingTo<S>(Mapper<I, S> toVal) sync* {
@@ -510,7 +501,7 @@ extension IteratorExtension<I> on Iterator<I> {
   }
 
   Iterable<S> yieldingToByIndex<S>(
-    TranslatorGenerator<I, S> toVal, [
+    MapperGenerator<I, S> toVal, [
     int start = 0,
   ]) sync* {
     for (var i = start; moveNext(); i++) {
@@ -555,14 +546,22 @@ extension IteratorExtension<I> on Iterator<I> {
       [for (; moveNext();) toVal(current)];
 
   List<S> yieldingToListByIndex<S>(
-    TranslatorGenerator<I, S> toVal, [
+    MapperGenerator<I, S> toVal, [
     int start = 0,
   ]) =>
       [for (var i = start; moveNext(); i++) toVal(current, i)];
 
   List<T> yieldingToListByList<T, R>(
-          List<R> list, Mixer<I, List<R>, T> mixer) =>
+    List<R> list,
+    Mixer<I, List<R>, T> mixer,
+  ) =>
       [for (; moveNext();) mixer(current, list)];
+
+  List<T> yieldingToListBySet<T, R>(
+    Set<R> set,
+    Mixer<I, Set<R>, T> mixer,
+  ) =>
+      [for (; moveNext();) mixer(current, set)];
 
   List<T> yieldingToListByMap<T, K, V>(
     Map<K, V> map,
@@ -590,7 +589,7 @@ extension IteratorExtension<I> on Iterator<I> {
   }
 
   Iterable<I> expandByIndex(
-    TranslatorGenerator<I, Iterable<I>> expanding, [
+    MapperGenerator<I, Iterable<I>> expanding, [
     int start = 0,
   ]) sync* {
     for (var i = start; moveNext(); i++) {
@@ -637,9 +636,9 @@ extension IteratorExtension<I> on Iterator<I> {
 
   ///
   /// cumulative
-  /// [cumulativeWhere]
-  /// [cumulativeBy]
+  /// [cumulativeWhere], [cumulativeWhereBy]
   /// [cumulativeNested]
+  /// [cumulativeGroups]
   ///
   int cumulativeWhere(Predicator<I> test) {
     var val = 0;
@@ -649,7 +648,7 @@ extension IteratorExtension<I> on Iterator<I> {
     return val;
   }
 
-  int cumulativeBy<T>(T value, PredicatorMixer<I, T> test) {
+  int cumulativeWhereBy<T>(T value, PredicatorMixer<I, T> test) {
     var val = 0;
     while (moveNext()) {
       if (test(current, value)) val++;
@@ -666,4 +665,52 @@ extension IteratorExtension<I> on Iterator<I> {
         },
         FReducer.intAdd,
       );
+
+  Map<I, int> get cumulativeGroups => fold(
+        {},
+        (map, current) => map..update(current, (c) => ++c, ifAbsent: () => 1),
+      );
+
+  ///
+  /// [frequencies]
+  ///
+  Map<I, double> get frequencies {
+    final map = <I, double>{};
+    var length = 0;
+    while (moveNext()) {
+      map.update(current, (c) => ++c, ifAbsent: () => 1);
+      length++;
+    }
+    return map..updateAll((key, value) => value / length);
+  }
+}
+
+///
+///
+/// [validFrequencies]
+///
+///
+extension IteratorNullableExtension<I> on Iterator<I?> {
+  ///
+  /// [validFrequencies]
+  ///
+  Map<I, double> validFrequencies([bool lengthValid = true]) {
+    final map = <I, double>{};
+    var length = 0;
+
+    final Consumer<I?> consume = lengthValid
+        ? (current) => current.consumeNotNull((key) {
+              map.plusOn(key);
+              length++;
+            })
+        : (current) {
+            current.consumeNotNull(map.plusOn);
+            length++;
+          };
+
+    while (moveNext()) {
+      consume(current);
+    }
+    return map..updateAll((key, value) => value / length);
+  }
 }

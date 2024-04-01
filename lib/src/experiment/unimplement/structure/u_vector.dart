@@ -7,8 +7,14 @@
 part of damath_experiment;
 
 ///
-/// implement vector in r way
+/// implement vector in r way,
 ///
+/// enable operation for vector bool, matrix bool, list bool, nullable
+///
+
+// class Rector extends Operatable with OperatableDirectable<>{
+//   Rector();
+// }
 
 // class Vector2 extends Operatable
 //     with

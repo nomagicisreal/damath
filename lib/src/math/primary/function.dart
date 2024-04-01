@@ -23,8 +23,8 @@ extension FSupplier on Supplier {
   /// [iterableElement]
   ///
   static Supplier<Iterable<I>> iterableElement<I>(I value) => () sync* {
-    yield value;
-  };
+        yield value;
+      };
 }
 
 ///
@@ -48,7 +48,7 @@ extension FPredicator on Predicator {
   static Predicator<T> sameWith<T>(T another) => (value) => value == another;
 
   static Predicator<DateTime> sameDayWith(DateTime? day) =>
-          (currentDay) => DateTimeExtension.isSameDay(currentDay, day);
+      (currentDay) => DateTimeExtension.isSameDay(currentDay, day);
 }
 
 ///
@@ -110,9 +110,9 @@ extension FPredicatorCombiner on PredicatorCombiner {
       a.key == b.key;
 
   static bool entryIsKeyNumDifferent<V>(
-      MapEntry<num, V> a,
-      MapEntry<num, V> b,
-      ) =>
+    MapEntry<num, V> a,
+    MapEntry<num, V> b,
+  ) =>
       a.key != b.key;
 
   static bool entryIsKeyNumLess<V>(MapEntry<num, V> a, MapEntry<num, V> b) =>
@@ -218,7 +218,7 @@ extension FApplier on Applier {
   static Applier<double> doubleOnModule(double value) => (v) => v % value;
 
   static Applier<double> doubleOnDivideToInt(double value) =>
-          (v) => (v ~/ value).toDouble();
+      (v) => (v ~/ value).toDouble();
 
   ///
   /// [doubleOnTimesFactor]
@@ -228,10 +228,10 @@ extension FApplier on Applier {
   ///   [doubleOnPeriodTanByTimes]
   ///
   static Applier<double> doubleOnTimesFactor(
-      double times,
-      double factor, [
-        Applier<double> transform = math.sin,
-      ]) {
+    double times,
+    double factor, [
+    Applier<double> transform = math.sin,
+  ]) {
     assert(times.isFinite && factor.isFinite);
     return (value) => transform(times * value) * factor;
   }
@@ -239,9 +239,9 @@ extension FApplier on Applier {
   // sin period: (0 ~ 1 ~ 0 ~ -1 ~ 0)
   // cos period: (1 ~ 0 ~ -1 ~ 0 ~ 1)
   static Applier<double> doubleOnPeriod(
-      double period, [
-        Applier<double> transform = math.sin,
-      ]) {
+    double period, [
+    Applier<double> transform = math.sin,
+  ]) {
     assert(transform == math.sin || transform == math.cos);
     final times = math.pi * 2 * period;
     return FLerper.clamp((value) => transform(times * value), 0.0, 1.0);
@@ -261,7 +261,7 @@ extension FApplier on Applier {
   /// [iterableAppend]
   ///
   static Applier<Iterable<I>> iterableAppend<I>(I value) =>
-          (iterable) => iterable.append(value);
+      (iterable) => iterable.append(value);
 
   ///
   /// list
@@ -312,20 +312,20 @@ extension FGenerator<T> on Generator<T> {
   /// [yieldingToList]
   ///
   Iterable<E> yielding<E>(
-      int length,
-      Mapper<T, E> toVal, [
-        int start = 0,
-      ]) sync* {
+    int length,
+    Mapper<T, E> toVal, [
+    int start = 0,
+  ]) sync* {
     for (var i = start; i < length; i++) {
       yield toVal(this(i));
     }
   }
 
   List<E> yieldingToList<E>(
-      int length,
-      Mapper<T, E> toVal, [
-        int start = 0,
-      ]) =>
+    int length,
+    Mapper<T, E> toVal, [
+    int start = 0,
+  ]) =>
       [for (var i = start; i < length; i++) toVal(this(i))];
 
   ///
@@ -351,11 +351,11 @@ extension FGenerator<T> on Generator<T> {
   }
 
   S foldCollectTill<E, S>(
-      int length,
-      Generator<E> another,
-      S initialValue,
-      Collector<S, T, E> collect,
-      ) {
+    int length,
+    Generator<E> another,
+    S initialValue,
+    Collector<S, T, E> collect,
+  ) {
     var val = initialValue;
     for (var i = 0; i < length; i++) {
       val = collect(val, this(i), another(i));
@@ -379,10 +379,10 @@ extension FGenerator<T> on Generator<T> {
   /// [linkToListTill]
   ///
   Iterable<S> linkTill<E, S>(
-      int length,
-      Generator<E> interval,
-      Linker<T, E, S> link,
-      ) sync* {
+    int length,
+    Generator<E> interval,
+    Linker<T, E, S> link,
+  ) sync* {
     var val = this(0);
     for (var i = 1; i < length; i++) {
       final current = this(i);
@@ -392,10 +392,10 @@ extension FGenerator<T> on Generator<T> {
   }
 
   List<S> linkToListTill<E, S>(
-      int length,
-      Generator<E> interval,
-      Linker<T, E, S> link,
-      ) {
+    int length,
+    Generator<E> interval,
+    Linker<T, E, S> link,
+  ) {
     var list = <S>[];
     var val = this(0);
     for (var i = 1; i < length; i++) {
@@ -434,19 +434,23 @@ extension FTranslator on Mapper {
 
 ///
 ///
-/// [keepCurrent], [keepValue]
+/// [keepV1], [keepV2]
+///
 /// [doubleMax], ...
 /// [intMax], ...
+/// [entryKeyIntMax], ...
+///
 /// [stringLine], ...
 /// [durationAdd], ...
+///
 /// [iteratorDoubleDistanceMax], ...
 /// [recordDouble2DirectionMax], ...
 ///
 ///
 extension FReducer on Reducer {
-  static T keepCurrent<T>(T current, T value) => current;
+  static T keepV1<T>(T v1, T v2) => v1;
 
-  static T keepValue<T>(T current, T value) => value;
+  static T keepV2<T>(T v1, T v2) => v2;
 
   ///
   /// double
@@ -491,6 +495,60 @@ extension FReducer on Reducer {
   static int intAddSquared(int v1, int v2) => v1 * v1 + v2 * v2;
 
   ///
+  /// entry
+  ///
+
+  // key
+  static MapEntry<int, K> entryKeyIntMax<K>(
+    MapEntry<int, K> v1,
+    MapEntry<int, K> v2,
+  ) =>
+      v1.key > v2.key ? v1 : v2;
+
+  static MapEntry<int, K> entryKeyIntMin<K>(
+    MapEntry<int, K> v1,
+    MapEntry<int, K> v2,
+  ) =>
+      v1.key < v2.key ? v1 : v2;
+
+  static MapEntry<double, K> entryKeyDoubleMax<K>(
+    MapEntry<double, K> v1,
+    MapEntry<double, K> v2,
+  ) =>
+      v1.key > v2.key ? v1 : v2;
+
+  static MapEntry<double, K> entryKeyDoubleMin<K>(
+    MapEntry<double, K> v1,
+    MapEntry<double, K> v2,
+  ) =>
+      v1.key < v2.key ? v1 : v2;
+
+  // value
+  static MapEntry<K, int> entryValueIntMax<K>(
+    MapEntry<K, int> v1,
+    MapEntry<K, int> v2,
+  ) =>
+      v1.value > v2.value ? v1 : v2;
+
+  static MapEntry<K, int> entryValueIntMin<K>(
+    MapEntry<K, int> v1,
+    MapEntry<K, int> v2,
+  ) =>
+      v1.value < v2.value ? v1 : v2;
+
+  static MapEntry<K, double> entryValueDoubleMax<K>(
+    MapEntry<K, double> v1,
+    MapEntry<K, double> v2,
+  ) =>
+      v1.value > v2.value ? v1 : v2;
+
+  static MapEntry<K, double> entryValueDoubleMin<K>(
+    MapEntry<K, double> v1,
+    MapEntry<K, double> v2,
+  ) =>
+      v1.value < v2.value ? v1 : v2;
+
+  ///
   /// string
   ///
   static String stringLine(String v1, String v2) => '$v1\n$v2';
@@ -503,36 +561,37 @@ extension FReducer on Reducer {
   /// duration
   ///
   static Duration durationAdd(Duration v1, Duration v2) => v1 + v2;
+
   static Duration durationSubtract(Duration v1, Duration v2) => v1 - v2;
 
   ///
   /// iterator
   ///
   static Iterator<double> iteratorDoubleDistanceMax(
-      Iterator<double> a,
-      Iterator<double> b,
-      ) =>
+    Iterator<double> a,
+    Iterator<double> b,
+  ) =>
       a.distance > b.distance ? a : b;
 
   static Iterator<double> iteratorDoubleDistanceMin(
-      Iterator<double> a,
-      Iterator<double> b,
-      ) =>
+    Iterator<double> a,
+    Iterator<double> b,
+  ) =>
       a.distance < b.distance ? a : b;
 
   ///
   /// record
   ///
   static (double, double) recordDouble2DirectionMax(
-      (double, double) a,
-      (double, double) b,
-      ) =>
+    (double, double) a,
+    (double, double) b,
+  ) =>
       a.direction > b.direction ? a : b;
 
   static (double, double) recordDouble2DirectionMin(
-      (double, double) a,
-      (double, double) b,
-      ) =>
+    (double, double) a,
+    (double, double) b,
+  ) =>
       a.direction < b.direction ? a : b;
 }
 
@@ -554,25 +613,25 @@ extension FLerper on Lerper {
   /// [clampZeroTo1], [clampPositive], [clampNegative]
   ///
   static Lerper<T> clamp<T>(
-      Lerper<T> transform,
-      double lowerLimit,
-      double upperLimit,
-      ) =>
-          (value) => transform(value.clampDouble(lowerLimit, upperLimit));
+    Lerper<T> transform,
+    double lowerLimit,
+    double upperLimit,
+  ) =>
+      (value) => transform(value.clampDouble(lowerLimit, upperLimit));
 
   static Lerper<T> clampZeroTo1<T>(Lerper<T> transform) =>
-          (value) => transform(value.clampZeroTo1);
+      (value) => transform(value.clampZeroTo1);
 
   static Lerper<T> clampPositive<T>(Lerper<T> transform) =>
-          (value) => transform(value.clampPositive);
+      (value) => transform(value.clampPositive);
 
   static Lerper<T> clampNegative<T>(Lerper<T> transform) =>
-          (value) => transform(value.clampNegative);
+      (value) => transform(value.clampNegative);
 
   ///
   /// [from]
   ///
   static Mapper<double, T> from<T>(T begin, T end) => switch (begin) {
-    _ => throw DamathException(DamathException.pass),
-  };
+        _ => throw DamathException(DamathException.pass),
+      };
 }

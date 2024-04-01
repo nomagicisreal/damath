@@ -4,18 +4,60 @@
 ///
 ///
 part of damath_experiment;
-
-// abstract interface class Statistics {
-//   const Statistics();
+//
+// ///
+// ///
+// /// [Variable]
+// ///   [VariableDiscrete]
+// ///     ...
+// ///   [VariableContinuous]
+// ///     ...
+// ///
+// ///
+// abstract class Variable<V> {
+//   final String name;
+//   final V value;
+//
+//   const Variable(this.name, this.value);
 // }
 //
-// abstract class StatisticsForVector extends Statistics {
-//   const StatisticsForVector();
+// ///
+// /// [VariableIndependent]
+// /// [VariableDependent]
+// ///
+// mixin VariableIndependent on Variable {}
+// mixin VariableDependent on Variable {}
+//
+// ///
+// ///
+// ///
+// /// discrete (qualitative)
+// ///
+// ///
+// ///
+// abstract class VariableDiscrete<V> extends Variable<V> {
+//   const VariableDiscrete(super.name, super.value);
 // }
 //
-// abstract class StatisticsForDataframe extends Statistics {
-//   const StatisticsForDataframe();
+// abstract class VariableDichotomous extends VariableDiscrete<bool> {
+//   const VariableDichotomous(super.name, super.value);
+// }
+//
+// abstract class VariableMultiple<V extends Enum> extends Variable<V> {
+//   const VariableMultiple(super.name, super.value);
+// }
+//
+// ///
+// ///
+// ///
+// ///
+// /// continuous (quantitative)
+// ///
+// ///
+// ///
+// ///
+// abstract class VariableContinuous extends Variable<double> {
+//   const VariableContinuous(super.name, super.value);
 // }
 
-// median, mode
-// measures of variation (interquaretile range)
+// chart

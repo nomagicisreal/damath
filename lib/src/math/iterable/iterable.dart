@@ -2,9 +2,9 @@
 ///
 /// this file contains:
 ///
-/// [IteratorExtension]
-///
 /// [IterableExtension]
+/// [IterableNullableExtension]
+///
 /// [IterableIterableExtension]
 ///
 ///
@@ -64,7 +64,7 @@ extension IterableExtension<I> on Iterable<I> {
   /// [isVariantTo]
   ///
   bool isVariantTo(Iterable<I> another) =>
-      length == another.length && iterator.containsAll(another.iterator);
+      another.toSet().length == toSet().length;
 
   ///
   /// [anyElementWith]
@@ -98,11 +98,17 @@ extension IterableExtension<I> on Iterable<I> {
 
   ///
   ///
-  /// fold, reduce, expand
+  /// get, fold, reduce, expand
+  /// [getWith]
   /// [foldWith], [foldTogether]
   /// [reduceWith], [reduceTogether]
   /// [expandWith], [expandTogether]
   ///
+
+  Iterable<I> getWith(Iterable<bool> where) {
+    assert(length == where.length);
+    return iterator.interYieldingOn(where.iterator);
+  }
 
   ///
   /// [foldWith]
@@ -192,10 +198,11 @@ extension IterableExtension<I> on Iterable<I> {
   /// [intersectionIndex]
   /// [intersectionDetail]
   ///
-  Iterable<I> intersection(Iterable<I> another) => iterator.interYieldingToWhere(
+  Iterable<I> intersection(Iterable<I> another) =>
+      iterator.interYieldingToWhere(
         another.iterator,
         FPredicatorCombiner.isEqual,
-        FReducer.keepCurrent,
+        FReducer.keepV1,
       );
 
   Iterable<int> intersectionIndex(Iterable<I> another, [int start = 0]) =>
@@ -223,7 +230,7 @@ extension IterableExtension<I> on Iterable<I> {
         another.iterator,
         FPredicatorCombiner.isNotEqual,
         FPredicator.alwaysTrue,
-        FReducer.keepCurrent,
+        FReducer.keepV1,
         FApplier.keep,
       );
 
@@ -275,7 +282,7 @@ extension IterableExtension<I> on Iterable<I> {
   ///
   /// [mirrored]
   ///
-  List<E> mirrored<E>(Generator<E> generator) =>
+  Iterable<E> mirrored<E>(Generator<E> generator) =>
       [for (var i = 0; i < length; i++) generator(i)];
 
   ///
@@ -317,6 +324,18 @@ extension IterableExtension<I> on Iterable<I> {
       iterator.yieldingTo(another.iterator.yieldingToEntriesByKey);
 }
 
+///
+///
+/// [validLength]
+///
+///
+extension IterableNullableExtension<I> on Iterable<I?> {
+  ///
+  /// [validLength]
+  ///
+  int get validLength =>
+      iterator.fold(0, (value, current) => current == null ? value : ++value);
+}
 
 ///
 /// [size]
@@ -365,5 +384,3 @@ extension IterableIterableExtension<I> on Iterable<Iterable<I>> {
         (value, e, eAnother) => value = e.foldWith(eAnother, value, fusionor),
       );
 }
-
-

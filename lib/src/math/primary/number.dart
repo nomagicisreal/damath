@@ -33,7 +33,7 @@ extension RandomExtension on math.Random {
 /// [squared], [isPositive]
 /// [rangeIn], ...
 /// [isLowerOneOrEqualTo], ...
-/// [constraints], ...
+/// [constraintsFrom], ...
 ///
 extension NumExtension on num {
   bool get isPositiveOrZero => !isNegative;
@@ -58,7 +58,7 @@ extension NumExtension on num {
   bool isHigherOneOrEqualTo(num value) => this == value || this == value + 1;
 
   ///
-  bool constraints(int begin, int end, [int from = 0]) =>
+  bool constraintsFrom(int from, int begin, int end) =>
       begin.rangeIn(from, end) && end.rangeIn(begin, this);
 }
 

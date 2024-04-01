@@ -30,7 +30,7 @@ extension IteratorWithExtension<I> on Iterator<I> {
   ///
   /// [inter], [interIndexable]
   /// [interAny], [interAnyTernary]
-  /// [interYieldingApply]
+  /// [interYieldingOn], [interYieldingApply]
   ///
 
   ///
@@ -77,8 +77,15 @@ extension IteratorWithExtension<I> on Iterator<I> {
   }
 
   ///
+  /// [interYieldingOn]
   /// [interYieldingApply]
   ///
+  Iterable<I> interYieldingOn(Iterator<bool> where) sync* {
+    while (moveNext() && where.moveNext()) {
+      if (where.current) current;
+    }
+  }
+
   Iterable<I> interYieldingApply(Iterator<I> other, Reducer<I> reducing) sync* {
     while (moveNext() && other.moveNext()) {
       yield reducing(current, other.current);
@@ -90,6 +97,7 @@ extension IteratorWithExtension<I> on Iterator<I> {
   /// [interYieldingToWhere], [interExpandToWhere]
   /// [interYieldingToIndexable], [interExpandToIndexable]
   /// [interYieldingToIndexableWhere], [interExpandToIndexableWhere]
+  /// [interYieldingToList], [interExpandToList]
   /// [interYieldingToEntry], [interExpandToEntries]
   ///
 
@@ -196,6 +204,26 @@ extension IteratorWithExtension<I> on Iterator<I> {
       }
     }
   }
+
+  ///
+  /// [interYieldingToList]
+  /// [interExpandToList]
+  ///
+  List<S> interYieldingToList<E, S>(
+      Iterator<E> other,
+      Mixer<I, E, S> mixer,
+      ) =>
+      [for (; moveNext() && other.moveNext();) mixer(current, other.current)];
+
+  List<S> interExpandToList<E, S>(
+      Iterator<E> other,
+      Mixer<I, E, Iterable<S>> expanding,
+      ) =>
+      [
+        for (; moveNext() && other.moveNext();)
+          ...expanding(current, other.current)
+      ];
+
 
   ///
   /// [interYieldingToEntry]
@@ -461,7 +489,7 @@ extension IteratorWithExtension<I> on Iterator<I> {
   Iterable<S> diffYieldingToIndexable<E, S>(
     Iterator<E> other,
     MixerGenerator<I, E, S> mixer,
-    TranslatorGenerator<I, S> overflow,
+    MapperGenerator<I, S> overflow,
     int start,
   ) {
     var i = start - 1;
@@ -477,7 +505,7 @@ extension IteratorWithExtension<I> on Iterator<I> {
     PredicatorMixer<I, E> test,
     Predicator<I> testOverflow,
     MixerGenerator<I, E, S> mixer,
-    TranslatorGenerator<I, S> overflow,
+    MapperGenerator<I, S> overflow,
     int start,
   ) {
     var i = start - 1;
@@ -493,7 +521,7 @@ extension IteratorWithExtension<I> on Iterator<I> {
   Iterable<S> diffExpandToIndexable<E, S>(
     Iterator<E> other,
     MixerGenerator<I, E, Iterable<S>> mixer,
-    TranslatorGenerator<I, Iterable<S>> overflow,
+    MapperGenerator<I, Iterable<S>> overflow,
     int start,
   ) {
     var i = start - 1;
@@ -513,7 +541,7 @@ extension IteratorWithExtension<I> on Iterator<I> {
     PredicatorMixer<I, E> test,
     Predicator<I> testOverflow,
     MixerGenerator<I, E, Iterable<S>> mixer,
-    TranslatorGenerator<I, Iterable<S>> overflow,
+    MapperGenerator<I, Iterable<S>> overflow,
     int start,
   ) {
     var i = start - 1;

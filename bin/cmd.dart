@@ -1,7 +1,7 @@
 // import 'dart:math' as math;
 // import 'package:damath/src/experiment/experiment.dart';
 // import 'package:damath/src/experiment/experiment.dart';
-// import 'package:damath/src/math/math.dart';
+import 'package:damath/src/math/math.dart';
 
 void main(List<String> arguments) async {
   // const d1 = 'the computer is complex';
@@ -20,8 +20,7 @@ void main(List<String> arguments) async {
   // print(result);
 
   // watching();
-
-
+  print([1, 1, 2, 2, 2, 3, 4, 4, 5, 5].percentileCumulative());
 }
 
 void watching() async {

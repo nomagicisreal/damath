@@ -363,7 +363,7 @@ extension IterableOffsetExtension on Iterable<Offset> {
   ///
   static Generator<Offset> generatorWithValue(
     double value,
-    TranslatorGenerator<double, Offset> generator,
+    MapperGenerator<double, Offset> generator,
   ) =>
       (i) => generator(value, i);
 

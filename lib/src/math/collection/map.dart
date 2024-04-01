@@ -9,7 +9,8 @@
 ///
 /// [MapKeyComparableExtension]
 ///
-/// [MapValueBoolExtension]
+/// [MapValueIntExtension]
+/// [MapValueDoubleExtension]
 /// [MapValueSetExtension]
 ///
 ///
@@ -363,6 +364,20 @@ extension MapKeyComparableExtension<K extends Comparable, V> on Map<K, V> {
 
   Iterable<MapEntry<K, V>> sortedEntries([Comparator<K>? compare]) =>
       sortedKeys(compare).map((key) => MapEntry(key, this[key] as V));
+}
+
+///
+/// [plusOn]
+///
+extension MapValueIntExtension<K> on Map<K, int> {
+  void plusOn(K key) => update(key, (value) => ++value, ifAbsent: () => 1);
+}
+
+///
+/// [plusOn]
+///
+extension MapValueDoubleExtension<K> on Map<K, double> {
+  void plusOn(K key) => update(key, (value) => ++value, ifAbsent: () => 1);
 }
 
 ///

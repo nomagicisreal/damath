@@ -45,8 +45,8 @@ extension IteratorBoolExtension on Iterator<bool> {
 ///
 /// [anyFinite], ...
 /// [min], ...
-///
-/// [range], ...
+/// [sum], ...
+/// [distance], ...
 ///
 /// [abs], ...
 /// [interValuesTo], ...
@@ -69,14 +69,42 @@ extension IteratorDoubleExtension on Iterator<double> {
   bool get anyNegative => any((value) => value < 0);
 
   ///
-  /// [min], [max], [meanArithmetic], [meanGeometric]
-  /// [sum], [sumSquared]
-  /// [distance], [volume]
-  /// [distanceTo], [distanceHalfTo]
+  /// [min], [max], [mode]
+  /// [range], [boundary]
   ///
   double get min => reduce(FReducer.doubleMin);
 
   double get max => reduce(FReducer.doubleMax);
+
+  double get mode => cumulativeGroups.reduce(FReducer.entryValueIntMax).key;
+
+  double get range => moveNextThen(() {
+        var min = current;
+        var max = current;
+        while (moveNext()) {
+          if (current < min) min = current;
+          if (current > max) max = current;
+        }
+        return max - min;
+      });
+
+  (double, double) get boundary => moveNextThen(() {
+        var min = current;
+        var max = current;
+        while (moveNext()) {
+          if (current < min) min = current;
+          if (current > max) max = current;
+        }
+        return (min, max);
+      });
+
+  ///
+  /// [sum], [sumSquared]
+  /// [meanArithmetic], [meanGeometric]
+  ///
+  double get sum => reduce(FReducer.doubleAdd);
+
+  double get sumSquared => reduce(FReducer.doubleAddSquared);
 
   double get meanArithmetic => moveNextThen(() {
         var total = current;
@@ -98,10 +126,10 @@ extension IteratorDoubleExtension on Iterator<double> {
         return math.pow(total, 1 / length).toDouble();
       });
 
-  double get sum => reduce(FReducer.doubleAdd);
-
-  double get sumSquared => reduce(FReducer.doubleAddSquared);
-
+  ///
+  /// [distance], [volume]
+  /// [distanceTo], [distanceHalfTo]
+  ///
   double get distance => math.sqrt(reduce(FReducer.doubleAddSquared));
 
   double get volume => reduce(FReducer.doubleMultiply);
@@ -110,19 +138,6 @@ extension IteratorDoubleExtension on Iterator<double> {
 
   double distanceHalfTo(Iterator<double> other) =>
       (other.distance - distance) / 2;
-
-  ///
-  /// [range]
-  ///
-  (double, double) get range => moveNextThen(() {
-        var min = current;
-        var max = current;
-        while (moveNext()) {
-          if (current < min) min = current;
-          if (current > max) max = current;
-        }
-        return (min, max);
-      });
 
   ///
   /// [abs], [rounded], [roundUpTo]
@@ -205,38 +220,38 @@ extension IterableDoubleExtension on Iterable<double> {
   }
 
   ///
-  /// [analyzing]
+  /// [statisticAnalyze]
   ///
-  /// see also [IteratorDoubleExtension.meanArithmetic]
-  ///
-  Iterable<double> analyzing([
+  Iterable<double> statisticAnalyze({
     bool requireLength = true,
     bool requireMean = true,
     bool requireStandardDeviation = true,
+    bool requireStandardError = true,
     bool? requireTScores, // t scores or z scores
-  ]) sync* {
-    /// length, µ
-    var length = 0.0;
+    double? requireConfidenceInterval = 0.95,
+  }) sync* {
+    /// n, µ
+    var n = 0.0;
     var total = 0.0;
     for (var value in this) {
       total += value;
-      length++;
+      n++;
     }
-    final mean = total / length;
-    if (requireLength) yield length;
+    final mean = total / n;
+    if (requireLength) yield n;
     if (requireMean) yield mean;
 
     ///
-    /// standard deviation
+    /// standard deviation, standard error
     ///
     var sum = 0.0;
     for (var value in this) {
       sum += (value - mean).squared;
     }
-    final sd = sum / length;
-    if (requireStandardDeviation) {
-      yield sd;
-    }
+    final sd = sum / n;
+    final se = sd / math.sqrt(n);
+    if (requireStandardDeviation) yield sd;
+    if (requireStandardError) yield se;
 
     ///
     /// scores
@@ -245,6 +260,19 @@ extension IterableDoubleExtension on Iterable<double> {
       yield* requireTScores
           ? iterator.yieldingApply((x) => (x - mean) / sd * 10 + 50)
           : iterator.yieldingApply((x) => (x - mean) / sd);
+    }
+
+    ///
+    /// confidence interval (µ - z * se ~ µ + z(se))
+    ///
+    if (requireConfidenceInterval != null) {
+      final z = switch (requireConfidenceInterval) {
+        0.95 => 1.96,
+        0.99 => 2.576,
+        _ => throw UnimplementedError(),
+      };
+      yield mean - z * se;
+      yield mean + z * se;
     }
   }
 }
@@ -260,11 +288,8 @@ extension IterableIntExtension on Iterable<int> {
   static Iterable<int> sequence(int length, [int start = 1]) =>
       Iterable.generate(length, (i) => start + i);
 
-  static Iterable<int> seq(int begin, int end) sync* {
-    for (var i = begin; i <= end; i++) {
-      yield i;
-    }
-  }
+  static Iterable<int> seq(int begin, int end) =>
+      [for (var i = begin; i <= end; i++) i];
 
   int get sum => reduce(FReducer.intAdd);
 }
