@@ -22,25 +22,24 @@
 ///
 ///
 ///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
 part of damath_async;
 
 ///
 /// stream
 ///
 extension StreamExtension<M> on Stream<M> {
+  ///
+  /// [fromFutures]
+  ///
+  static Stream<P> fromFutures<P>(Iterable<Future<P>> futures) async* {
+    for (var future in futures) {
+      yield await future;
+    }
+  }
+
+  ///
+  /// [whereDiff]
+  ///
   Stream<M> get whereDiff {
     M? previousValue;
     return where((event) {

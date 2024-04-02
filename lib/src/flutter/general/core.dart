@@ -16,7 +16,7 @@
 /// [WidgetGlobalKeysBuilder]
 ///
 ///
-/// simple extensions:
+/// extensions:
 /// [WWidgetBuilder], [WWidgetParentBuilder]
 /// [WImageLoadingBuilder], [WImageErrorWidgetBuilder]
 ///
@@ -269,6 +269,11 @@ extension WImageLoadingBuilder on ImageLoadingBuilder {
       );
 }
 
+///
+///
+/// [WImageErrorWidgetBuilder]
+///
+///
 extension WImageErrorWidgetBuilder on ImageErrorWidgetBuilder {
   static Widget accountStyle2(BuildContext c, Object o, StackTrace? s) =>
       WIconMaterial.accountCircleStyle2;

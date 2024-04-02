@@ -20,8 +20,12 @@ part of damath_math;
 ///
 /// [fold], ...
 /// [reduce], ...
+///
 /// [yieldingApply], ...
+/// [where], ...
+/// [map], ...
 /// [expand], ...
+/// [emit], ...
 ///
 /// [cumulativeWhere], ...
 /// [frequencies], ...
@@ -306,7 +310,8 @@ extension IteratorExtension<I> on Iterator<I> {
   ///
   /// fold
   /// [fold]
-  /// [foldByIndex], [foldAccompany], [foldNested]
+  /// [foldByIndex], [foldNested],
+  /// [foldAccompanyBefore], [foldAccompanyAfter],
   ///
   /// reduce
   /// [reduce]
@@ -315,12 +320,11 @@ extension IteratorExtension<I> on Iterator<I> {
   /// [reduceToInitialized], [reduceToInitializedByIndex]
   ///
   /// yielding
-  /// [yielding]
-  /// [yieldingToByIndex], [yieldingAccompany], [yieldingTo]
-  /// [yieldingWhere], [yieldingToWhere]
-  /// [yieldingToEntries], [yieldingToEntriesByKey], [yieldingToEntriesByValue]
-  /// [yieldingToList], [yieldingToListByIndex], [yieldingToListBySet], [yieldingToListByMap]
-  /// [yieldingToSet], [yieldingToSetBySet]
+  /// [mapByIndex], [yieldingAccompany], [map]
+  /// [where], [mapWhere]
+  /// [mapToEntries], [mapToEntriesByKey], [mapToEntriesByValue]
+  /// [mapToList], [mapToListByIndex], [mapToListBySet], [mapToListByMap]
+  /// [mapToSet], [mapToSetBySet]
   ///
   /// expand
   /// [expand]
@@ -330,7 +334,6 @@ extension IteratorExtension<I> on Iterator<I> {
   ///
   /// [fold]
   /// [foldByIndex]
-  /// [foldAccompany]
   /// [foldNested]
   ///
   T fold<T>(T initialValue, Companion<T, I> companion) {
@@ -353,21 +356,6 @@ extension IteratorExtension<I> on Iterator<I> {
     return val;
   }
 
-  S foldAccompany<R, S>(
-    S initialValue,
-    R initialElement,
-    Collector<S, I, R> companion,
-    Collector<R, I, S> after,
-  ) {
-    var val = initialValue;
-    var ele = initialElement;
-    while (moveNext()) {
-      val = companion(val, current, ele);
-      ele = after(ele, current, val);
-    }
-    return val;
-  }
-
   Iterable<T> foldNested<T>() => fold<List<T>>(
         [],
         (list, element) => switch (element) {
@@ -377,6 +365,40 @@ extension IteratorExtension<I> on Iterator<I> {
           _ => throw _errorElementNotNest<I, T>(element),
         },
       );
+
+  ///
+  /// [foldAccompanyBefore]
+  /// [foldAccompanyAfter]
+  ///
+  S foldAccompanyBefore<R, S>(
+    S initialValue,
+    R initialElement,
+    Companion<R, I> before,
+    Collector<S, I, R> companion,
+  ) {
+    var val = initialValue;
+    var ele = initialElement;
+    while (moveNext()) {
+      ele = before(ele, current);
+      val = companion(val, current, ele);
+    }
+    return val;
+  }
+
+  S foldAccompanyAfter<R, S>(
+    S initialValue,
+    R initialElement,
+    Collector<S, I, R> companion,
+    Companion<R, I> after,
+  ) {
+    var val = initialValue;
+    var ele = initialElement;
+    while (moveNext()) {
+      val = companion(val, current, ele);
+      ele = after(ele, current);
+    }
+    return val;
+  }
 
   ///
   /// [reduce]
@@ -461,14 +483,8 @@ extension IteratorExtension<I> on Iterator<I> {
       });
 
   ///
-  /// yielding
-  ///
-  ///
-
-  ///
-  /// [yieldingApply], [yieldingAccompany]
-  /// [yieldingWhere]
-  /// [yieldingTo], ...
+  /// [yieldingApply]
+  /// [yieldingAccompany]
   ///
   Iterable<I> yieldingApply(Applier<I> apply) sync* {
     while (moveNext()) {
@@ -482,25 +498,52 @@ extension IteratorExtension<I> on Iterator<I> {
     }
   }
 
-  Iterable<I> yieldingWhere(Predicator<I> test) sync* {
+  ///
+  /// [where]
+  /// [whereUntil], [headUntil], [tailFrom]
+  ///
+  Iterable<I> where(Predicator<I> test) sync* {
     while (moveNext()) {
       if (test(current)) yield current;
     }
   }
 
+  Iterable<I> whereUntil(Predicator<I> test, Predicator<I> until) sync* {
+    while (moveNext()) {
+      if (until(current)) break;
+      if (test(current)) yield current;
+    }
+  }
+
+  Iterable<I> headUntil(Predicator<I> until) sync* {
+    while (moveNext()) {
+      if (until(current)) break;
+      yield current;
+    }
+  }
+
+  Iterable<I> tailFrom(Predicator<I> from) sync* {
+    while (moveNext()) {
+      if (from(current)) break;
+    }
+    while (moveNext()) {
+      yield current;
+    }
+  }
+
   ///
-  /// [yieldingTo], [yieldingToByIndex], [yieldingToWhere]
-  /// [yieldingToEntries], [yieldingToEntriesByKey], [yieldingToEntriesByValue]
-  /// [yieldingToList], [yieldingToListByIndex], [yieldingToListByList], [yieldingToListBySet], [yieldingToListByMap]
-  /// [yieldingToSet], [yieldingToSetBySet]
+  /// [map], [mapByIndex], [mapWhere]
+  /// [mapToEntries], [mapToEntriesByKey], [mapToEntriesByValue]
+  /// [mapToList], [mapToListByIndex], [mapToListByList], [mapToListBySet], [mapToListByMap]
+  /// [mapToSet], [mapToSetBySet]
   ///
-  Iterable<S> yieldingTo<S>(Mapper<I, S> toVal) sync* {
+  Iterable<S> map<S>(Mapper<I, S> toVal) sync* {
     while (moveNext()) {
       yield toVal(current);
     }
   }
 
-  Iterable<S> yieldingToByIndex<S>(
+  Iterable<S> mapByIndex<S>(
     MapperGenerator<I, S> toVal, [
     int start = 0,
   ]) sync* {
@@ -509,7 +552,7 @@ extension IteratorExtension<I> on Iterator<I> {
     }
   }
 
-  Iterable<S> yieldingToWhere<S>(
+  Iterable<S> mapWhere<S>(
     Predicator<I> test,
     Mapper<I, S> toVal,
   ) sync* {
@@ -520,7 +563,7 @@ extension IteratorExtension<I> on Iterator<I> {
 
   ///
   ///
-  Iterable<MapEntry<K, V>> yieldingToEntries<K, V>(
+  Iterable<MapEntry<K, V>> mapToEntries<K, V>(
     Mapper<I, MapEntry<K, V>> toVal,
   ) sync* {
     while (moveNext()) {
@@ -528,13 +571,13 @@ extension IteratorExtension<I> on Iterator<I> {
     }
   }
 
-  Iterable<MapEntry<K, I>> yieldingToEntriesByKey<K>(K key) sync* {
+  Iterable<MapEntry<K, I>> mapToEntriesByKey<K>(K key) sync* {
     while (moveNext()) {
       yield MapEntry(key, current);
     }
   }
 
-  Iterable<MapEntry<I, V>> yieldingToEntriesByValue<V>(V value) sync* {
+  Iterable<MapEntry<I, V>> mapToEntriesByValue<V>(V value) sync* {
     while (moveNext()) {
       yield MapEntry(current, value);
     }
@@ -542,28 +585,28 @@ extension IteratorExtension<I> on Iterator<I> {
 
   ///
   ///
-  List<T> yieldingToList<T>(Mapper<I, T> toVal) =>
+  List<T> mapToList<T>(Mapper<I, T> toVal) =>
       [for (; moveNext();) toVal(current)];
 
-  List<S> yieldingToListByIndex<S>(
+  List<S> mapToListByIndex<S>(
     MapperGenerator<I, S> toVal, [
     int start = 0,
   ]) =>
       [for (var i = start; moveNext(); i++) toVal(current, i)];
 
-  List<T> yieldingToListByList<T, R>(
+  List<T> mapToListByList<T, R>(
     List<R> list,
     Mixer<I, List<R>, T> mixer,
   ) =>
       [for (; moveNext();) mixer(current, list)];
 
-  List<T> yieldingToListBySet<T, R>(
+  List<T> mapToListBySet<T, R>(
     Set<R> set,
     Mixer<I, Set<R>, T> mixer,
   ) =>
       [for (; moveNext();) mixer(current, set)];
 
-  List<T> yieldingToListByMap<T, K, V>(
+  List<T> mapToListByMap<T, K, V>(
     Map<K, V> map,
     Mixer<I, Map<K, V>, T> mixer,
   ) =>
@@ -571,10 +614,10 @@ extension IteratorExtension<I> on Iterator<I> {
 
   ///
   ///
-  Set<K> yieldingToSet<K>(Mapper<I, K> toVal) =>
+  Set<K> mapToSet<K>(Mapper<I, K> toVal) =>
       {for (; moveNext();) toVal(current)};
 
-  Set<K> yieldingToSetBySet<K>(Set<K> set, Mixer<I, Set<K>, K> mixer) =>
+  Set<K> mapToSetBySet<K>(Set<K> set, Mixer<I, Set<K>, K> mixer) =>
       {for (; moveNext();) mixer(current, set)};
 
   ///
@@ -631,6 +674,64 @@ extension IteratorExtension<I> on Iterator<I> {
   ) sync* {
     while (moveNext()) {
       yield* expanding(current);
+    }
+  }
+
+  ///
+  /// [emit]
+  /// [emitFrom], [emitTo]
+  ///
+  Iterable<I> emit(
+    Predicator<I> startWhen,
+    Predicator<I> endWhen, [
+    bool includeEnd = true,
+  ]) sync* {
+    while (moveNext()) {
+      if (startWhen(current)) break;
+    }
+    while (moveNext()) {
+      if (!endWhen(current)) {
+        if (includeEnd) yield current;
+        break;
+      }
+      yield current;
+    }
+  }
+
+  Iterable<I> emitFrom(
+    int start,
+    Predicator<I> endWhen, [
+    bool includeEnd = true,
+  ]) sync* {
+    for (var i = 0; i < start; i++) {
+      moveNext();
+    }
+    while (moveNext()) {
+      if (!endWhen(current)) {
+        if (includeEnd) yield current;
+        break;
+      }
+      yield current;
+    }
+  }
+
+  Iterable<I> emitTo(
+    Predicator<I> startWhen,
+    int end, [
+    bool includeEnd = true,
+  ]) sync* {
+    var i = 0;
+    while (moveNext()) {
+      i++;
+      if (startWhen(current)) break;
+    }
+    while (moveNext()) {
+      if (i == end) {
+        if (includeEnd) yield current;
+        break;
+      }
+      yield current;
+      i++;
     }
   }
 

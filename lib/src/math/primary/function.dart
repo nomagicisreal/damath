@@ -2,7 +2,6 @@
 ///
 /// this file contains:
 ///
-/// [FSupplier]
 /// [FPredicator], [FPredicatorCombiner], [FPredicatorFusionor]
 /// [FApplier]
 /// [FGenerator]
@@ -14,18 +13,6 @@
 ///
 ///
 part of damath_math;
-
-///
-/// supplier
-///
-extension FSupplier on Supplier {
-  ///
-  /// [iterableElement]
-  ///
-  static Supplier<Iterable<I>> iterableElement<I>(I value) => () sync* {
-        yield value;
-      };
-}
 
 ///
 ///

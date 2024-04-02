@@ -6,29 +6,11 @@
 /// [Curving], [CurveFR]
 ///
 /// [CubicOffset]
+/// [RRegularPolygonCubicOnEdge]
 ///
 ///
 /// [IconAction]
 ///   [IterableIconAction]
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
 ///
 ///
 ///
@@ -90,7 +72,7 @@ class Painting extends CustomPainter {
   ///
   factory Painting.rRegularPolygon(
     PaintFrom paintFrom,
-    RRegularPolygon polygon,
+    RRegularPolygonCubicOnEdge polygon,
   ) =>
       Painting.rePaintNever(
         paintFrom: paintFrom,
@@ -144,7 +126,7 @@ class Clipping extends CustomClipper<Path> {
       Clipping.rectOf(Rect.fromPoints(Offset.zero, corner));
 
   factory Clipping.rRegularPolygon(
-    RRegularPolygon polygon, {
+      RRegularPolygonCubicOnEdge polygon, {
     Companion<CubicOffset, Size> adjust = CubicOffset.companionSizeAdjustCenter,
   }) =>
       Clipping.reclipNever(
@@ -441,18 +423,22 @@ class CurveFR {
 }
 
 ///
+/// [x], ... (variables)
+/// [companionSizeAdjustCenter], ... (static methods)
 ///
-///
-/// [CubicOffset]
-///
-///
-///
-
 class CubicOffset {
   final Cubic x;
   final Cubic y;
 
   const CubicOffset(this.x, this.y);
+
+  static CubicOffset companionSizeAdjustCenter(
+      CubicOffset cubicOffset,
+      Size size,
+      ) =>
+      CubicOffset.fromPoints(
+        cubicOffset.points.adjustCenterFor(size).toList(),
+      );
 
   Offset get a => Offset(x.a, y.a);
 
@@ -489,14 +475,127 @@ class CubicOffset {
 
   CubicOffset mapY(Applier<Cubic> mapper) => CubicOffset(x, mapper(y));
 
-  static CubicOffset companionSizeAdjustCenter(
-    CubicOffset cubicOffset,
-    Size size,
-  ) =>
-      CubicOffset.fromPoints(
-        cubicOffset.points.adjustCenterFor(size).toList(),
-      );
+
 }
+
+
+///
+/// [cornerRadius], ... (variables)
+/// [cornersOf], ... (static methods)
+/// [corners], ... (getters)
+///
+/// See Also:
+///   * [KMapperCubicPointsPermutation]
+///   * [FSizingPath.polygonCubic], [FSizingPath.polygonCubicFromSize]
+///
+///
+class RRegularPolygonCubicOnEdge extends RegularPolygon
+    with RegularPolygonRadiusSingle {
+  @override
+  final int n;
+  @override
+  final double radiusCircumscribedCircle;
+  @override
+  final double cornerRadius;
+
+  final double timesForEdge;
+  final Applier<Map<Offset, CubicOffset>> cubicPointsMapper;
+  final Companion<CubicOffset, Size> cornerAdjust;
+
+  ///
+  ///
+  /// constructors
+  ///
+  ///
+  const RRegularPolygonCubicOnEdge(
+      this.n, {
+        this.timesForEdge = 0,
+        this.cornerRadius = 0,
+        this.cubicPointsMapper = _cubicPointsMapper,
+        this.cornerAdjust = CubicOffset.companionSizeAdjustCenter,
+        required this.radiusCircumscribedCircle,
+      });
+
+  RRegularPolygonCubicOnEdge.from(
+      RRegularPolygonCubicOnEdge polygon, {
+        double timesForEdge = 0,
+        Mapper<RRegularPolygonCubicOnEdge, double>? cornerRadius,
+        Applier<Map<Offset, CubicOffset>> cubicPointsMapper = _cubicPointsMapper,
+        Companion<CubicOffset, Size> cornerAdjust =
+            CubicOffset.companionSizeAdjustCenter,
+      }) : this(
+    polygon.n,
+    timesForEdge: timesForEdge,
+    cornerRadius: cornerRadius?.call(polygon) ?? 0,
+    cubicPointsMapper: cubicPointsMapper,
+    cornerAdjust: cornerAdjust,
+    radiusCircumscribedCircle: polygon.radiusCircumscribedCircle,
+  );
+
+  ///
+  ///
+  /// static methods
+  ///
+  ///
+
+  static List<Offset> cornersOf(
+      int n,
+      double radiusCircumscribedCircle, {
+        Size? size,
+      }) {
+    final step = Radian.angle_360 / n;
+    final center = size?.center(Offset.zero) ?? Offset.zero;
+    return List.generate(
+      n,
+          (i) => center + Offset.fromDirection(step * i, radiusCircumscribedCircle),
+      growable: false,
+    );
+  }
+
+  // [cornerPrevious, controlPointA, controlPointB, cornerNext]
+  static Map<Offset, CubicOffset> _cubicPointsMapper(
+      Map<Offset, CubicOffset> points,
+      ) =>
+      points.mapValues((value) => value.mapXY(CubicExtension.keep_0231));
+
+  ///
+  ///
+  ///
+  /// getters
+  ///
+  ///
+  ///
+
+  @override
+  List<Offset> get corners => cornersOf(n, radiusCircumscribedCircle);
+
+  ///
+  /// [cubicPoints]
+  /// [cubicPointsFrom]
+  ///
+  Iterable<CubicOffset> get cubicPoints =>
+      cubicPointsMapper(corners.cubicPoints(
+        RegularPolygonRadiusSingle.tangentFrom(cornerRadius, n),
+        timesForEdge,
+      )).values;
+
+  Iterable<CubicOffset> cubicPointsFrom(
+      double cornerRadius,
+      double timesEdge,
+      ) =>
+      cubicPointsMapper(corners.cubicPoints(
+        RegularPolygonRadiusSingle.tangentFrom(cornerRadius, n),
+        timesEdge,
+      )).values;
+
+  static List<double> get stepsOfEdgeTimes => [
+    double.negativeInfinity,
+    0,
+    1,
+    double.infinity,
+  ];
+}
+
 
 ///
 /// icon action

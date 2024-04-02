@@ -7,6 +7,7 @@
 ///   [OperatableScalable]
 ///   [OperatableStepable]
 ///   [OperatableComplex]
+///   [OperatableIndexable]
 ///
 ///
 /// [Radian]
@@ -19,8 +20,6 @@
 ///   [Point2]
 ///   [Point3]
 ///
-///
-/// [RotationUnit]
 ///
 ///
 ///
@@ -49,8 +48,7 @@ mixin OperatableDirectable<O> on Operatable {
 ///
 mixin OperatableComparable<O extends OperatableComparable<O>> on Operatable
     implements Comparable<O> {
-  static StateError error() =>
-      StateError('no implementation for compareTo');
+  static StateError error() => StateError('no implementation for compareTo');
 
   @override
   int compareTo(O other);
@@ -104,6 +102,13 @@ mixin OperatableComplex<O> on Operatable {
   Object operator <<(covariant O other);
 }
 
+///
+/// indexable
+///
+mixin OperatableIndexable<T> on Operatable {
+  List<T> get _list;
+  T operator [](int index) => _list[index];
+}
 
 ///
 ///
@@ -120,8 +125,9 @@ mixin OperatableComplex<O> on Operatable {
 /// normally, 'positive radian' means counterclockwise in mathematical discussion,
 ///
 /// [angle_1], ... (constants)
-/// [compareTo], ...(implementation for [Operatable])
+/// [fromAngle], ... (static methods)
 ///
+/// [compareTo], ...(implementation for [Operatable])
 /// [cos], ... (getters)
 /// [azimuthalIn], ... (methods)
 ///
@@ -169,13 +175,59 @@ abstract interface class Radian extends Operatable
   static const angle_450 = math.pi * 5 / 2;
 
   static const right = 0;
-  static const bottomRight = Radian.angle_45;
-  static const bottom = Radian.angle_90;
-  static const bottomLeft = Radian.angle_135;
-  static const left = Radian.angle_180;
-  static const topLeft = Radian.angle_225;
-  static const top = Radian.angle_270;
-  static const topRight = Radian.angle_315;
+  static const bottomRight = angle_45;
+  static const bottom = angle_90;
+  static const bottomLeft = angle_135;
+  static const left = angle_180;
+  static const topLeft = angle_225;
+  static const top = angle_270;
+  static const topRight = angle_315;
+
+  ///
+  ///
+  /// static methods
+  ///
+  ///
+  static double fromAngle(double angle) => angle * angle_1;
+
+  static double fromRound(double round) => round * angle_360;
+
+  static double angleFromRadian(double radian) => radian / angle_1;
+
+  static double roundFromRadian(double radian) => radian / angle_360;
+
+  static double moduleBy90Angle(double radian) => radian % angle_90;
+
+  static double moduleBy180Angle(double radian) => radian % angle_180;
+
+  static double moduleBy360Angle(double radian) => radian % angle_360;
+
+  ///
+  /// [complementaryOf], [supplementaryOf]
+  ///
+  static double complementaryOf(double radian) {
+    assert(radian.rangeIn(0, angle_90));
+    return fromAngle(90 - angleFromRadian(radian));
+  }
+
+  static double supplementaryOf(double radian) {
+    assert(radian.rangeIn(0, angle_180));
+    return fromAngle(180 - angleFromRadian(radian));
+  }
+
+  ///
+  /// [absWithinAngle90], [absOverAngle90]
+  /// [ifWithinAngle0_180], [ifWithinAngle0_180N]
+  ///
+  static bool absWithinAngle90(double radian) => radian.abs() <= angle_90;
+
+  static bool absOverAngle90(double radian) => radian.abs() > angle_90;
+
+  static bool ifWithinAngle0_180(double radian) =>
+      radian > 0 && radian < angle_180;
+
+  static bool ifWithinAngle0_180N(double radian) =>
+      radian > -angle_180 && radian < 0;
 
   ///
   ///
@@ -207,17 +259,14 @@ abstract interface class Radian extends Operatable
 
   double get cot => 1 / tan;
 
-  bool get azimuthalOnRight => RotationUnit.radianIfWithinAngle90_90N(
-      RotationUnit.radianModulus360Angle(rAzimuthal));
+  bool get azimuthalOnRight => absWithinAngle90(moduleBy360Angle(rAzimuthal));
 
-  bool get azimuthalOnLeft => RotationUnit.radianIfOverAngle90_90N(
-      RotationUnit.radianModulus360Angle(rAzimuthal));
+  bool get azimuthalOnLeft => absOverAngle90(moduleBy360Angle(rAzimuthal));
 
-  bool get azimuthalOnTop => RotationUnit.radianIfWithinAngle0_180(
-      RotationUnit.radianModulus360Angle(rAzimuthal));
+  bool get azimuthalOnTop => ifWithinAngle0_180(moduleBy360Angle(rAzimuthal));
 
-  bool get azimuthalOnBottom => RotationUnit.radianIfWithinAngle0_180N(
-      RotationUnit.radianModulus360Angle(rAzimuthal));
+  bool get azimuthalOnBottom =>
+      ifWithinAngle0_180N(moduleBy360Angle(rAzimuthal));
 
   ///
   ///
@@ -233,16 +282,12 @@ abstract interface class Radian extends Operatable
       rAzimuthal.rangeIn(lower, upper);
 
   bool azimuthalInQuadrant(int quadrant) {
-    final r = RotationUnit.radianModulus360Angle(rAzimuthal);
+    final r = moduleBy360Angle(rAzimuthal);
     return switch (quadrant) {
-      1 => r.within(0, Radian.angle_90) ||
-          r.within(-Radian.angle_360, -Radian.angle_270),
-      2 => r.within(Radian.angle_90, Radian.angle_180) ||
-          r.within(-Radian.angle_270, -Radian.angle_180),
-      3 => r.within(Radian.angle_180, Radian.angle_270) ||
-          r.within(-Radian.angle_180, -Radian.angle_90),
-      4 => r.within(Radian.angle_270, Radian.angle_360) ||
-          r.within(-Radian.angle_90, 0),
+      1 => r.within(0, angle_90) || r.within(-angle_360, -angle_270),
+      2 => r.within(angle_90, angle_180) || r.within(-angle_270, -angle_180),
+      3 => r.within(angle_180, angle_270) || r.within(-angle_180, -angle_90),
+      4 => r.within(angle_270, angle_360) || r.within(-angle_90, 0),
       _ => throw DamathException('un defined quadrant: $quadrant for $this'),
     };
   }
@@ -331,8 +376,8 @@ class Radian3 extends Radian {
   ///
   const Radian3(super.rAzimuthal, this.rPolar)
       : assert(
-  rPolar >= 0 && rPolar <= Radian.angle_180,
-  );
+          rPolar >= 0 && rPolar <= Radian.angle_180,
+        );
 
   const Radian3.polar1(double rAzimuthal) : this(rAzimuthal, Radian.angle_1);
 
@@ -465,8 +510,6 @@ class Radian3 extends Radian {
 // // }
 // }
 
-
-
 ///
 ///
 ///
@@ -478,7 +521,6 @@ class Radian3 extends Radian {
 ///
 ///
 ///
-
 
 ///
 ///
@@ -568,9 +610,9 @@ class Point2 extends Point {
 
   Point2.fromDirection(double direction, [double distance = 1])
       : super(
-    distance * math.cos(direction),
-    distance * math.sin(direction),
-  );
+          distance * math.cos(direction),
+          distance * math.sin(direction),
+        );
 
   ///
   ///
@@ -649,24 +691,19 @@ class Point2 extends Point {
   Point2 operator -() => Point2(-x, -y);
 
   @override
-  Point2 operator +(covariant Point2 other) =>
-      Point2(x + other.x, y + other.y);
+  Point2 operator +(covariant Point2 other) => Point2(x + other.x, y + other.y);
 
   @override
-  Point2 operator -(covariant Point2 other) =>
-      Point2(x - other.x, y - other.y);
+  Point2 operator -(covariant Point2 other) => Point2(x - other.x, y - other.y);
 
   @override
-  Point2 operator *(covariant Point2 other) =>
-      Point2(x * other.x, y * other.y);
+  Point2 operator *(covariant Point2 other) => Point2(x * other.x, y * other.y);
 
   @override
-  Point2 operator /(covariant Point2 other) =>
-      Point2(x / other.x, y / other.y);
+  Point2 operator /(covariant Point2 other) => Point2(x / other.x, y / other.y);
 
   @override
-  Point2 operator %(covariant Point2 other) =>
-      Point2(x % other.x, y % other.y);
+  Point2 operator %(covariant Point2 other) => Point2(x % other.x, y % other.y);
 
   @override
   Point2 operator ~/(covariant Point2 other) =>
@@ -921,10 +958,10 @@ class Point3 extends Point {
 
   @override
   Point3 operator ~/(covariant Point3 other) => Point3(
-    (x ~/ other.x).toDouble(),
-    (y ~/ other.y).toDouble(),
-    (dz ~/ other.dz).toDouble(),
-  );
+        (x ~/ other.x).toDouble(),
+        (y ~/ other.y).toDouble(),
+        (dz ~/ other.dz).toDouble(),
+      );
 
   ///
   ///
@@ -967,72 +1004,4 @@ class Point3 extends Point {
   Point3 get retainYZAsYX => Point3(dz, y, 0);
 
   Point3 get retainXZAsYX => Point3(dz, x, 0);
-}
-
-
-
-
-///
-/// [radianFromAngle], ...
-/// [radianComplementary], ...
-/// [radianIfWithinAngle90_90N], ...
-///
-enum RotationUnit {
-  radian,
-  angle,
-  round;
-
-  ///
-  ///
-  /// static methods
-  ///
-  ///
-  static double radianFromAngle(double angle) => angle * Radian.angle_1;
-
-  static double radianFromRound(double round) => round * Radian.angle_360;
-
-  static double angleFromRadian(double radian) => radian / Radian.angle_1;
-
-  static double roundFromRadian(double radian) => radian / Radian.angle_360;
-
-  static double radianModulus90Angle(double radian) => radian % Radian.angle_90;
-
-  static double radianModulus180Angle(double radian) =>
-      radian % Radian.angle_180;
-
-  static double radianModulus360Angle(double radian) =>
-      radian % Radian.angle_360;
-
-  ///
-  /// [radianComplementary], [radianSupplementary], [radianRestrict180Angle]
-  ///
-  static double radianComplementary(double radian) {
-    assert(radian.rangeIn(0, Radian.angle_90));
-    return radianFromAngle(90 - angleFromRadian(radian));
-  }
-
-  static double radianSupplementary(double radian) {
-    assert(radian.rangeIn(0, Radian.angle_180));
-    return radianFromAngle(180 - angleFromRadian(radian));
-  }
-
-  static double radianRestrict180Angle(double angle) {
-    final r = angle % 360;
-    return r >= Radian.angle_180 ? r - Radian.angle_360 : r;
-  }
-
-  ///
-  /// [radianIfWithinAngle90_90N], [radianIfOverAngle90_90N], [radianIfWithinAngle0_180], [radianIfWithinAngle0_180N]
-  ///
-  static bool radianIfWithinAngle90_90N(double radian) =>
-      radian.abs() < Radian.angle_90;
-
-  static bool radianIfOverAngle90_90N(double radian) =>
-      radian.abs() > Radian.angle_90;
-
-  static bool radianIfWithinAngle0_180(double radian) =>
-      radian > 0 && radian < Radian.angle_180;
-
-  static bool radianIfWithinAngle0_180N(double radian) =>
-      radian > -Radian.angle_180 && radian < 0;
 }

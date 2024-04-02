@@ -3,6 +3,10 @@
 /// this file contains:
 ///
 ///
+/// [FTextFormFieldValidator]
+///
+///
+/// extension:
 /// [FocusManagerExtension], [FocusNodeExtension]
 /// [GlobalKeyExtension]
 ///
@@ -19,23 +23,20 @@
 ///
 ///
 ///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
 part of damath_flutter;
+
+
+///
+///
+///
+extension FTextFormFieldValidator on TextFormFieldValidator {
+  static FormFieldValidator<String> validateNullOrEmpty(
+      String validationFailedMessage,
+      ) =>
+          (value) =>
+      value == null || value.isEmpty ? validationFailedMessage : null;
+}
+
 
 
 ///

@@ -9,14 +9,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:vector_math/vector_math_64.dart' as v64 show Vector3;
 
-part 'definition/extended.dart';
-part 'definition/shape.dart';
 part 'extension/element.dart';
 part 'extension/responsible.dart';
-part 'extension/layout.dart';
-part 'general/function.dart';
+part 'layout/collection.dart';
+part 'layout/others.dart';
+part 'layout/function.dart';
+part 'general/extended.dart';
 part 'general/core.dart';
+part 'general/localization.dart';
 part 'general/value.dart';
 part 'widget/extended.dart';
 part 'widget/value.dart';
-

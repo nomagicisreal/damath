@@ -383,7 +383,7 @@ extension WTransform on Transform {
 ///
 extension WCustomPaint on CustomPaint {
   static CustomPaint drawRRegularPolygon(
-      RRegularPolygon polygon, {
+      RRegularPolygonCubicOnEdge polygon, {
         required PaintFrom pathFrom,
         Widget? child,
       }) =>
@@ -588,7 +588,7 @@ extension WClipPath on ClipPath {
       );
 
   static ClipPath pathPolygonRRegular(
-      RRegularPolygon polygon, {
+      RRegularPolygonCubicOnEdge polygon, {
         Key? key,
         Clip clipBehavior = Clip.antiAlias,
         Widget? child,
@@ -605,7 +605,7 @@ extension WClipPath on ClipPath {
 
   static ClipPath pathPolygonRRegularDecoratedBox(
       Decoration decoration,
-      RRegularPolygon polygon, {
+      RRegularPolygonCubicOnEdge polygon, {
         DecorationPosition position = DecorationPosition.background,
         Widget? child,
       }) =>

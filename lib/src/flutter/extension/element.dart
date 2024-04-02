@@ -11,32 +11,6 @@
 ///
 ///
 ///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///
 part of damath_flutter;
 
 ///
@@ -45,7 +19,6 @@ part of damath_flutter;
 ///
 /// [plusARGB], [minusARGB], [multiplyARGB], [divideARGB],
 /// [plusAllRGB], [minusAllRGB], [multiplyAllRGB], [divideAllRGB],
-/// [operateWithValue]
 ///
 extension ColorExtension on Color {
   Color plusARGB(int alpha, int red, int green, int blue) => Color.fromARGB(

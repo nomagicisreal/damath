@@ -12,6 +12,7 @@
 ///
 ///
 ///
+/// [RotationUnit]
 ///
 ///
 ///
@@ -300,4 +301,15 @@ enum Direction3DIn27 implements Direction3D<Direction3DIn27> {
         Direction3DIn27.frontBottomRight => throw UnimplementedError(),
         Direction3DIn27.backTopLeft => throw UnimplementedError(),
       };
+}
+
+
+///
+///
+///
+///
+enum RotationUnit {
+  radian,
+  angle,
+  round;
 }

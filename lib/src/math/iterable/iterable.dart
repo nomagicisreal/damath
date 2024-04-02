@@ -275,7 +275,7 @@ extension IterableExtension<I> on Iterable<I> {
           ..update(
             toKey(value),
             FApplier.iterableAppend(value),
-            ifAbsent: FSupplier.iterableElement(value),
+            ifAbsent: () => [value],
           ),
       );
 
@@ -321,7 +321,7 @@ extension IterableExtension<I> on Iterable<I> {
   /// }
   ///
   Iterable<Iterable<MapEntry<I, V>>> combinationsWith<V>(Iterable<V> another) =>
-      iterator.yieldingTo(another.iterator.yieldingToEntriesByKey);
+      iterator.map(another.iterator.mapToEntriesByKey);
 }
 
 ///

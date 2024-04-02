@@ -326,11 +326,11 @@ extension ListExtension<T> on List<T> {
           positions.first >= begin &&
           positions.last <= length,
     );
-    return positions.iterator.foldAccompany(
+    return positions.iterator.foldAccompanyAfter(
       [],
       begin,
       (result, interval, i) => result..add(sublist(i, interval)),
-      (i, interval, result) => interval,
+      (i, interval) => interval,
     );
   }
 
@@ -452,7 +452,7 @@ extension ListComparableExtension<C extends Comparable> on List<C> {
     C? previous;
     var exist = 0;
     var index = -1;
-    return copySorted(increase).iterator.yieldingToList((vSorted) {
+    return copySorted(increase).iterator.mapToList((vSorted) {
       if (vSorted != previous) {
         exist = 0;
         for (var i = 0; i < length; i++) {
@@ -499,7 +499,7 @@ extension ListComparableExtension<C extends Comparable> on List<C> {
 
     C? previous;
     var rank = -1.0;
-    return iterator.yieldingToList(
+    return iterator.mapToList(
       // tie to average
       tieToMin == null
           ? (v) {

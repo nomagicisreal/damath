@@ -4,6 +4,13 @@
 ///
 ///
 part of damath_experiment;
+
+// chart
+// stem and leaf,
+
+// analyze on variable set (translated or not)
+// translate spss
+
 //
 // ///
 // ///
@@ -59,5 +66,3 @@ part of damath_experiment;
 // abstract class VariableContinuous extends Variable<double> {
 //   const VariableContinuous(super.name, super.value);
 // }
-
-// chart
