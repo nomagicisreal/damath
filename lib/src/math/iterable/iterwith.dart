@@ -1,11 +1,3 @@
-///
-///
-/// this file contains:
-///
-/// [IteratorWithExtension]
-///
-///
-///
 part of damath_math;
 
 ///
@@ -210,20 +202,19 @@ extension IteratorWithExtension<I> on Iterator<I> {
   /// [interExpandToList]
   ///
   List<S> interYieldingToList<E, S>(
-      Iterator<E> other,
-      Mixer<I, E, S> mixer,
-      ) =>
+    Iterator<E> other,
+    Mixer<I, E, S> mixer,
+  ) =>
       [for (; moveNext() && other.moveNext();) mixer(current, other.current)];
 
   List<S> interExpandToList<E, S>(
-      Iterator<E> other,
-      Mixer<I, E, Iterable<S>> expanding,
-      ) =>
+    Iterator<E> other,
+    Mixer<I, E, Iterable<S>> expanding,
+  ) =>
       [
         for (; moveNext() && other.moveNext();)
           ...expanding(current, other.current)
       ];
-
 
   ///
   /// [interYieldingToEntry]
@@ -686,19 +677,9 @@ extension IteratorWithExtension<I> on Iterator<I> {
       diffReduceToInitializedIndexable(other, init, mutual, overflow, start);
 
   ///
-  ///
-  ///
-  ///
-  ///
   /// interval
-  ///
-  ///
-  ///
-  ///
-  ///
-
-  ///
-  /// [interval], [intervalBy]
+  /// [interval]
+  /// [intervalBy]
   ///
 
   ///

@@ -31,35 +31,52 @@ extension RandomExtension on math.Random {
 ///
 ///
 /// [squared], [isPositive]
-/// [rangeIn], ...
-/// [isLowerOneOrEqualTo], ...
-/// [constraintsFrom], ...
+/// [rangeClose], ...
+/// [constraintsClose], ...
 ///
 extension NumExtension on num {
+  ///
+  /// [isPositiveOrZero]
+  /// [isPositive]
+  /// [squared]
+  ///
   bool get isPositiveOrZero => !isNegative;
 
   bool get isPositive => this > 0;
 
   num get squared => this * this;
 
+  ///
+  /// [powBy]
+  ///
   num powBy(num x) => math.pow(x, this);
 
   ///
-  bool rangeIn(num lower, num upper) => this >= lower && this <= upper;
+  /// [rangeClose]
+  /// [rangeOpen], [rangeOpenLower], [rangeOpenUpper]
+  ///
 
-  bool rangeFromMaxTo(num max, num lower) => this > lower && this <= max;
+  /// [ lower, upper ]
+  bool rangeClose(num lower, num upper) => this >= lower && this <= upper;
 
-  bool rangeFromMinTo(num min, num upper) => this >= min && this < upper;
+  /// ( lower, upper )
+  bool rangeOpen(num lower, num upper) => this > lower && this < upper;
 
-  bool within(num min, num max) => this > min && this < max;
+  /// ( lower, upper ]
+  bool rangeOpenLower(num lower, num upper) => this > lower && this <= upper;
 
-  bool isLowerOneOrEqualTo(num value) => this == value || this + 1 == value;
-
-  bool isHigherOneOrEqualTo(num value) => this == value || this == value + 1;
+  /// [ lower, upper )
+  bool rangeOpenUpper(num lower, num upper) => this >= lower && this < upper;
 
   ///
-  bool constraintsFrom(int from, int begin, int end) =>
-      begin.rangeIn(from, end) && end.rangeIn(begin, this);
+  /// [constraintsClose]
+  /// [constraintsOpen]
+  ///
+  bool constraintsClose(int begin, int end, [int from = 0]) =>
+      from <= begin && begin <= end && end <= this;
+
+  bool constraintsOpen(int begin, int end, [int from = 0]) =>
+      from < begin && begin < end && end < this;
 }
 
 ///
@@ -88,6 +105,12 @@ extension DoubleExtension on double {
   static const double sqrt1_7 = 0.3779644730092272;
   static const double sqrt1_8 = 0.3535533905932738;
   static const double sqrt1_10 = 0.31622776601683794;
+
+  ///
+  ///
+  /// static methods
+  ///
+  ///
 
   ///
   /// [proximateInfinityOf], [proximateNegativeInfinityOf]
@@ -124,7 +147,7 @@ extension DoubleExtension on double {
   ///
   /// [isInt], [isNearlyInt]
   /// [squared], [squareRoot]
-  /// [clampPositive], [clampNegative], [clampZeroTo1]
+  /// [clampPositive], [clampNegative], [clamp01]
   ///
   bool get isInt => ceil() == roundToDouble();
 
@@ -138,7 +161,7 @@ extension DoubleExtension on double {
 
   double get clampNegative => clampDouble(double.negativeInfinity, 0);
 
-  double get clampZeroTo1 => clampDouble(0, 1);
+  double get clamp01 => clampDouble(0, 1);
 }
 
 ///
@@ -212,8 +235,8 @@ extension IntExtension on int {
     assert(
       n > 1 &&
           total >= n &&
-          limitLower.rangeIn(0, limitUpper) &&
-          limitUpper.rangeIn(limitLower, total),
+          limitLower.rangeClose(0, limitUpper) &&
+          limitUpper.rangeClose(limitLower, total),
     );
     final interval = limitLower + limitUpper * (n - 1);
     for (var step = interval; step <= total; step += interval) {

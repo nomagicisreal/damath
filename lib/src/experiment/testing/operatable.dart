@@ -206,12 +206,12 @@ abstract interface class Radian extends Operatable
   /// [complementaryOf], [supplementaryOf]
   ///
   static double complementaryOf(double radian) {
-    assert(radian.rangeIn(0, angle_90));
+    assert(radian.rangeClose(0, angle_90));
     return fromAngle(90 - angleFromRadian(radian));
   }
 
   static double supplementaryOf(double radian) {
-    assert(radian.rangeIn(0, angle_180));
+    assert(radian.rangeClose(0, angle_180));
     return fromAngle(180 - angleFromRadian(radian));
   }
 
@@ -279,15 +279,15 @@ abstract interface class Radian extends Operatable
   /// [azimuthalInQuadrant]
   ///
   bool azimuthalIn(double lower, double upper) =>
-      rAzimuthal.rangeIn(lower, upper);
+      rAzimuthal.rangeClose(lower, upper);
 
   bool azimuthalInQuadrant(int quadrant) {
     final r = moduleBy360Angle(rAzimuthal);
     return switch (quadrant) {
-      1 => r.within(0, angle_90) || r.within(-angle_360, -angle_270),
-      2 => r.within(angle_90, angle_180) || r.within(-angle_270, -angle_180),
-      3 => r.within(angle_180, angle_270) || r.within(-angle_180, -angle_90),
-      4 => r.within(angle_270, angle_360) || r.within(-angle_90, 0),
+      1 => r.rangeOpen(0, angle_90) || r.rangeOpen(-angle_360, -angle_270),
+      2 => r.rangeOpen(angle_90, angle_180) || r.rangeOpen(-angle_270, -angle_180),
+      3 => r.rangeOpen(angle_180, angle_270) || r.rangeOpen(-angle_180, -angle_90),
+      4 => r.rangeOpen(angle_270, angle_360) || r.rangeOpen(-angle_90, 0),
       _ => throw DamathException('un defined quadrant: $quadrant for $this'),
     };
   }

@@ -58,3 +58,5 @@ part of damath_experiment;
 //
 // class Vector4 {}
 //
+
+// factor, factor(X, level), unique

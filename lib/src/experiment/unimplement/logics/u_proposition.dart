@@ -220,7 +220,7 @@ class Proposition2 extends PropositionComponent {
     return {
       p,
       q,
-      ...other.iterator.expandWhereTo(
+      ...other.iterator.mapWhereExpand(
         (product) =>
             product.p == p ||
             product.p == q ||
@@ -366,7 +366,7 @@ class PropositionCompound extends PropositionComponent {
     final set = propositionsSet;
     return {
       ...set,
-      ...other.iterator.expandWhereTo(
+      ...other.iterator.mapWhereExpand(
         (value) => set.any((p) => value.propositionsSet.contains(p)),
         (value) => value.propositionsSet,
       ),
@@ -489,7 +489,7 @@ class PropositionCompound extends PropositionComponent {
 
 extension SetPropositionExtension on Set<Proposition> {
   bool get isConsistent =>
-      alsoConsistentBy((p) => p.declarative, (p) => p.value);
+      consistentBy((p) => p.declarative, (p) => p.value);
 }
 
 extension SetProposition2Extension on Set<Proposition2> {

@@ -89,7 +89,7 @@ abstract class GraphAncestor<T, S, V extends VertexAncestor<T?>,
   bool containsAllEdges(Iterable<E> edges) =>
       this.edges.iterator.containsAll(edges.iterator);
 
-  S weightFrom(V source, V destination) => edges.iterator.firstWhereMap(
+  S weightFrom(V source, V destination) => edges.iterator.findMap(
         (edge) => edge.containsBoth(source, destination),
         (edge) => edge.weight,
       );
@@ -151,7 +151,7 @@ abstract class GraphAncestor<T, S, V extends VertexAncestor<T?>,
   List<V> _searchBreathFirst(V source) {
     final visited = <V>[source];
     for (var i = 0; i < visited.length; i++) {
-      destinationsFrom(visited[i]).iterator.actionWhere(
+      destinationsFrom(visited[i]).iterator.whereConsume(
             (destination) => visited.iterator.notContains(destination),
             (destination) => visited.add(destination),
           );
@@ -162,7 +162,7 @@ abstract class GraphAncestor<T, S, V extends VertexAncestor<T?>,
   List<V> _searchDepthFirst(V source) {
     final visited = <V>[source];
     while (visited.isNotEmpty) {
-      destinationsFrom(visited.removeLast()).iterator.actionWhere(
+      destinationsFrom(visited.removeLast()).iterator.whereConsume(
             (destination) => visited.iterator.notContains(destination),
             (destination) => visited.add(destination),
           );

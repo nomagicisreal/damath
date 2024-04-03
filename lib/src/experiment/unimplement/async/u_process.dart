@@ -9,7 +9,9 @@ part of damath_experiment;
 
 ///
 ///
-/// [process], ...
+/// [process], ...(variables)
+/// [minBurst], ...(static methods)
+/// [compareTo], ...(methods)
 ///
 ///
 class ProcessUnit<P> implements Comparable<ProcessUnit> {
@@ -19,6 +21,18 @@ class ProcessUnit<P> implements Comparable<ProcessUnit> {
 
   ProcessUnit(this.process, this.arrival, this.burst);
 
+  ///
+  /// static methods
+  ///
+  static ProcessUnit<P> minBurst<P>(ProcessUnit<P> a, ProcessUnit<P> b) =>
+      a.burst < b.burst ? a : b;
+
+  static ProcessUnit<P> maxBurst<P>(ProcessUnit<P> a, ProcessUnit<P> b) =>
+      a.burst > b.burst ? a : b;
+
+  ///
+  /// methods
+  ///
   @override
   int compareTo(ProcessUnit other) => arrival.compareTo(other.arrival);
 
@@ -85,6 +99,11 @@ enum ProcessSchedule {
 
 ///
 ///
+/// [_list], ...
+/// [ProcessUnitList.copy], ...
+/// [minBurst], ...
+/// [completionTimesOf], ...
+///
 ///
 class ProcessUnitList<P> extends Operatable
     with OperatableIndexable<ProcessUnit<P>> {
@@ -100,6 +119,21 @@ class ProcessUnitList<P> extends Operatable
   ProcessUnitList(List<ProcessUnit<P>> units) : _list = units..sort();
 
   ProcessUnitList.copy(List<ProcessUnit<P>> units) : _list = units.copySorted();
+
+  ///
+  /// static methods
+  ///
+  static MapEntry<int, ProcessUnit<P>> minBurst<P>(
+    MapEntry<int, ProcessUnit<P>> a,
+    MapEntry<int, ProcessUnit<P>> b,
+  ) =>
+      a.value.burst < b.value.burst ? a : b;
+
+  static MapEntry<int, ProcessUnit<P>> maxBurst<P>(
+    MapEntry<int, ProcessUnit<P>> a,
+    MapEntry<int, ProcessUnit<P>> b,
+  ) =>
+      a.value.burst > b.value.burst ? a : b;
 
   ///
   /// methods
@@ -123,15 +157,25 @@ class ProcessUnitList<P> extends Operatable
 
   ///
   ///
-  List<Duration> get shortestJobCompletionTimes {
-    final result = <Duration>[];
-    var completion = Duration.zero;
-    result.add(completion += _list.first.burst);
-
-
-    final first = _list[1];
-    final list = _list.sublist(2);
-    list.iterator.headUntil((value) => value.burst > first.burst);
+  List<Duration> get completionTimesShortestJob {
+    // final result = <MapEntry<int, Duration>>[];
+    // var completion = Duration.zero;
+    //
+    // var index = 0;
+    // final current = _list[index];
+    //
+    // final entry = _list
+    //     .sublist(index + 1)
+    //     .iterator
+    //     .takeUntil((value) {
+    //       index++;
+    //       return value.arrival > current.arrival;
+    //     })
+    //     .iterator
+    //     .toMap
+    //     .reduce(minBurst);
+    //
+    // result.add(MapEntry(entry.key, completion += entry.value.burst));
 
     throw UnimplementedError();
   }

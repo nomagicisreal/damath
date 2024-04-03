@@ -1,22 +1,22 @@
-///
-///
-/// this file contains:
-///
-/// [SetExtension]
-///
-///
 part of damath_math;
 
 ///
 ///
-/// [alsoConsistentBy], ...
+/// [isEqualToSet], ...
+/// [consistentBy], ...
 /// [copy], ...
 /// [toMap], ...
 ///
 ///
 extension SetExtension<K> on Set<K> {
   ///
-  /// [alsoConsistentBy]
+  /// [isEqualToSet]
+  ///
+  bool isEqualToSet(Set<K> another) =>
+      length == another.length && containsAll(another);
+
+  ///
+  /// [consistentBy]
   ///
   /// sample 1:
   ///   final list = <MapEntry<int, int>>[
@@ -25,7 +25,7 @@ extension SetExtension<K> on Set<K> {
   ///       MapEntry(1, 30),
   ///       MapEntry(2, 0),
   ///   ];
-  ///   print(list.iterator.[alsoConsistentBy]
+  ///   print(list.iterator.[consistentBy]
   ///   (
   ///     (value) => value.key,
   ///     (value) => value.value,
@@ -43,7 +43,7 @@ extension SetExtension<K> on Set<K> {
   ///       MapEntry(2, 30),
   ///       MapEntry(3, 20),
   ///   ];
-  ///   print(list.iterator.[alsoConsistentBy]
+  ///   print(list.iterator.[consistentBy]
   ///   (
   ///     (value) => value.key,
   ///     (value) => value.value,
@@ -53,7 +53,7 @@ extension SetExtension<K> on Set<K> {
   ///   the reason why the method returns false is that
   ///   each of the groups is identical on value
   ///
-  bool alsoConsistentBy<E, V>(Mapper<K, E> toKey, Mapper<K, V> toVal) =>
+  bool consistentBy<E, V>(Mapper<K, E> toKey, Mapper<K, V> toVal) =>
       !iterator.existAnyForEachGroup(
         toKey,
         toVal,

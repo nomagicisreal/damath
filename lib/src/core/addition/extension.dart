@@ -69,6 +69,9 @@ extension BoolExtension on bool {
 /// duration
 ///
 extension DurationExtension on Duration {
+  ///
+  /// [toStringDayMinuteSecond]
+  ///
   String toStringDayMinuteSecond({String splitter = ':'}) {
     final dayMinuteSecond = toString().substring(0, 7);
     return splitter == ":"

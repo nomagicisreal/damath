@@ -48,13 +48,13 @@ extension FPredicator on Predicator {
 ///
 extension FPredicatorCombiner on PredicatorCombiner {
   ///
-  /// [isEqual], [isNotEqual]
+  /// [isEqual], [isDifferent]
   /// [alwaysTrue], [alwaysFalse]
   /// [ternaryAlwaysTrue], [ternaryAlwaysFalse], [ternaryAlwaysNull]
   ///
   static bool isEqual<T>(T valueA, T valueB) => valueA == valueB;
 
-  static bool isNotEqual<T>(T valueA, T valueB) => valueA != valueB;
+  static bool isDifferent<T>(T valueA, T valueB) => valueA != valueB;
 
   static bool alwaysTrue<T>(T a, T b) => true;
 
@@ -110,12 +110,18 @@ extension FPredicatorCombiner on PredicatorCombiner {
 
   ///
   /// [iterableIsLengthEqual], [iterableIsLengthDifferent]
+  /// [iterableIsEqual], [iterableIsDifferent]
   ///
   static bool iterableIsLengthEqual<A, B>(Iterable<A> a, Iterable<B> b) =>
       a.length == b.length;
 
   static bool iterableIsLengthDifferent<A, B>(Iterable<A> a, Iterable<B> b) =>
       a.length != b.length;
+
+  static bool iterableIsEqual<I>(Iterable<I> a, Iterable<I> b) => a.isEqualTo(b);
+
+  static bool iterableIsDifferent<I>(Iterable<I> a, Iterable<I> b) =>
+      a.anyElementIsDifferentWith(b);
 }
 
 ///
@@ -547,6 +553,10 @@ extension FReducer on Reducer {
   ///
   /// duration
   ///
+  static Duration durationMax(Duration a, Duration b) => a > b ? a : b;
+
+  static Duration durationMin(Duration a, Duration b) => a < b ? a : b;
+
   static Duration durationAdd(Duration v1, Duration v2) => v1 + v2;
 
   static Duration durationSubtract(Duration v1, Duration v2) => v1 - v2;
@@ -597,7 +607,7 @@ extension FLerper on Lerper {
 
   ///
   /// [clamp]
-  /// [clampZeroTo1], [clampPositive], [clampNegative]
+  /// [clamp01], [clampPositive], [clampNegative]
   ///
   static Lerper<T> clamp<T>(
     Lerper<T> transform,
@@ -606,8 +616,8 @@ extension FLerper on Lerper {
   ) =>
       (value) => transform(value.clampDouble(lowerLimit, upperLimit));
 
-  static Lerper<T> clampZeroTo1<T>(Lerper<T> transform) =>
-      (value) => transform(value.clampZeroTo1);
+  static Lerper<T> clamp01<T>(Lerper<T> transform) =>
+      (value) => transform(value.clamp01);
 
   static Lerper<T> clampPositive<T>(Lerper<T> transform) =>
       (value) => transform(value.clampPositive);

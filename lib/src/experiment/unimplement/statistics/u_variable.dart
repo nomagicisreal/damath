@@ -5,9 +5,6 @@
 ///
 part of damath_experiment;
 
-// chart
-// stem and leaf,
-
 // analyze on variable set (translated or not)
 // translate spss
 

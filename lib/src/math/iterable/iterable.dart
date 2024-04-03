@@ -1,17 +1,3 @@
-///
-///
-/// this file contains:
-///
-/// [IterableExtension]
-/// [IterableNullableExtension]
-///
-/// [IterableIterableExtension]
-///
-///
-///
-///
-///
-///
 part of damath_math;
 
 ///
@@ -30,12 +16,13 @@ part of damath_math;
 ///
 /// [intersection], ...
 /// [difference], ...
+/// [isEqualTo], ...
 /// [interval], ...
 ///
 /// [groupBy], ...
 /// [mirrored], ...
 /// [chunk], ...
-/// [combinationsWith]
+/// [combinationsWith], ...
 ///
 extension IterableExtension<I> on Iterable<I> {
   static int toLength<I>(Iterable<I> iterable) => iterable.length;
@@ -80,7 +67,7 @@ extension IterableExtension<I> on Iterable<I> {
       anyElementWith(another, FPredicatorCombiner.isEqual);
 
   bool anyElementIsDifferentWith(Iterable<I> another) =>
-      anyElementWith(another, FPredicatorCombiner.isNotEqual);
+      anyElementWith(another, FPredicatorCombiner.isDifferent);
 
   ///
   /// append
@@ -228,7 +215,7 @@ extension IterableExtension<I> on Iterable<I> {
   ///
   Iterable<I> difference(Iterable<I> another) => iterator.diffYieldingToWhere(
         another.iterator,
-        FPredicatorCombiner.isNotEqual,
+        FPredicatorCombiner.isDifferent,
         FPredicator.alwaysTrue,
         FReducer.keepV1,
         FApplier.keep,
@@ -237,7 +224,7 @@ extension IterableExtension<I> on Iterable<I> {
   Iterable<int> differenceIndex(Iterable<I> another, [int start = 0]) =>
       iterator.diffYieldingToIndexableWhere(
         another.iterator,
-        FPredicatorCombiner.isNotEqual,
+        FPredicatorCombiner.isDifferent,
         FPredicator.alwaysTrue,
         (p, q, index) => index,
         (value, index) => index,
@@ -257,6 +244,13 @@ extension IterableExtension<I> on Iterable<I> {
         (map, e1, index) => map..putIfAbsent(index, () => MapEntry(e1, null)),
         0,
       );
+
+  ///
+  /// [isEqualTo]
+  ///
+  bool isEqualTo(Iterable<I> another) =>
+      length == another.length &&
+      !iterator.interAny(another.iterator, FPredicatorCombiner.isDifferent);
 
   ///
   /// [interval]
@@ -322,65 +316,4 @@ extension IterableExtension<I> on Iterable<I> {
   ///
   Iterable<Iterable<MapEntry<I, V>>> combinationsWith<V>(Iterable<V> another) =>
       iterator.map(another.iterator.mapToEntriesByKey);
-}
-
-///
-///
-/// [validLength]
-///
-///
-extension IterableNullableExtension<I> on Iterable<I?> {
-  ///
-  /// [validLength]
-  ///
-  int get validLength =>
-      iterator.fold(0, (value, current) => current == null ? value : ++value);
-}
-
-///
-/// [size]
-/// [toStringPadLeft], [toStringMapJoin]
-/// [anyElementsLengthIsDifferentWith]
-/// [foldWith2D]
-///
-extension IterableIterableExtension<I> on Iterable<Iterable<I>> {
-  ///
-  /// [size]
-  ///
-  int get size =>
-      iterator.reduceTo(IterableExtension.toLength, FReducer.intAdd);
-
-  ///
-  /// [toStringMapJoin]
-  /// [toStringPadLeft]
-  ///
-  String toStringMapJoin([
-    Mapper<Iterable<I>, String>? mapper,
-    String separator = "\n",
-  ]) =>
-      map(mapper ?? (e) => e.toString()).join(separator);
-
-  String toStringPadLeft(int space) => toStringMapJoin(
-        (row) => row.map((e) => e.toString().padLeft(space)).toString(),
-      );
-
-  ///
-  /// [anyElementsLengthIsDifferentWith]
-  ///
-  bool anyElementsLengthIsDifferentWith<P>(Iterable<Iterable<P>> another) =>
-      anyElementWith(another, FPredicatorCombiner.iterableIsLengthDifferent);
-
-  ///
-  /// [foldWith2D]
-  ///
-  S foldWith2D<S, P>(
-    Iterable<Iterable<P>> another,
-    S initialValue,
-    Collector<S, I, P> fusionor,
-  ) =>
-      foldWith(
-        another,
-        initialValue,
-        (value, e, eAnother) => value = e.foldWith(eAnother, value, fusionor),
-      );
 }

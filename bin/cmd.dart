@@ -1,6 +1,6 @@
 // import 'dart:math' as math;
 // import 'package:damath/src/experiment/experiment.dart';
-// import 'package:damath/src/experiment/experiment.dart';
+// import 'package:damath/src/math/math.dart';
 
 void main(List<String> arguments) async {
   // watching();
@@ -11,6 +11,9 @@ void main(List<String> arguments) async {
   //   ProcessUnit(Future.delayed(Duration.zero), KCore.durationMilli100, KCore.durationSecond1),
   // ]);
   // print(units.sequenceTurnaround);
+
+  print(const {5, 2} == const {2, 5});
+
 }
 
 // void watching() async {
