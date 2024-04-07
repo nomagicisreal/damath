@@ -30,7 +30,7 @@ abstract class Dataframe {
     throw UnimplementedError();
   }
 
-  /// see also [RecordDouble2Extension], [RecordDouble3Extension], ...
+  /// see also [RecordDouble2], [RecordDouble3], ...
   void bindRow();
 
   void bindCol();

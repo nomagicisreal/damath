@@ -47,7 +47,7 @@ part of damath_experiment;
 // ///
 //
 // //
-// sealed class Tensor<T extends Comparable<T>> extends Operatable
+// sealed class Tensor<T extends Comparable<T>> 
 //     with
 //         OperatableDirectable<Tensor>,
 //         OperatableComparable<Tensor<T>>,

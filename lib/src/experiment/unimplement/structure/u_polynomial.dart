@@ -15,7 +15,7 @@
 part of damath_experiment;
 
 //
-sealed class Polynomial extends Operatable
+sealed class Polynomial 
     with OperatableDirectable<Polynomial>
 {
   const Polynomial();
@@ -134,7 +134,7 @@ abstract class PolynomialSetOneUnknown extends Polynomial {
   final List<PolynomialItemDecoration> decorations;
 
   PolynomialSetOneUnknown(this.unknown, this.decorations)
-      : assert(decorations.isSorted(true));
+      : assert(decorations.iterator.isSorted(true));
 
   @override
   Polynomial operator +(Polynomial other) {

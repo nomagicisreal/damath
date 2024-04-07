@@ -14,12 +14,12 @@ part of damath_math;
 /// [fillUntil], ...
 /// [copy], ...
 /// [splitBy], ...
-///
-/// [intersection], ...
-/// [difference], ...
+/// [sublistMap], ...
 ///
 /// [mapToList], ...
 /// [interReduce], ...
+///
+/// [reverseToList]
 ///
 extension ListExtension<T> on List<T> {
   ///
@@ -265,6 +265,33 @@ extension ListExtension<T> on List<T> {
       [...sublist(count), ...sublist(count).reversed];
 
   ///
+  /// sublist
+  ///
+  List<S> sublistMap<S>(int begin, Mapper<T, S> mapper, [int? end]) {
+    final length = end ?? this.length;
+    assert(this.length.constraintsOpen(begin, length));
+    final result = <S>[];
+    for (var i = begin; i < length; i++) {
+      result.add(mapper(this[i]));
+    }
+    return result;
+  }
+
+  List<S> sublistMapByIndex<S>(
+    int begin,
+    MapperGenerator<T, S> mapper, [
+    int? end,
+  ]) {
+    final length = end ?? this.length;
+    assert(this.length.constraintsOpen(begin, length));
+    final result = <S>[];
+    for (var i = begin; i < length; i++) {
+      result.add(mapper(this[i], i));
+    }
+    return result;
+  }
+
+  ///
   /// [mapToList]
   /// [mapToListWithByNew], [mapToListWithByOld]
   /// [mapToListTogether]
@@ -306,4 +333,10 @@ extension ListExtension<T> on List<T> {
 
   List<T> interCompanion<E>(List<E> other, Companion<T, E> companion) =>
       [for (var i = 0; i < length; i++) companion(this[i], other[i])];
+
+  ///
+  /// [reverseToList]
+  ///
+  List<T> reverseToList([bool growable = true]) =>
+      [for (var i = length - 1; i > -1; i--) this[i]];
 }

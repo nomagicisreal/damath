@@ -97,17 +97,6 @@ extension SequencingUtil<C extends Comparable> on List<List<C>> {
   }
 
   ///
-  /// (Single-Source-Shortest Path)
-  ///
-  List<Vertex<C>> shortestDijkstra(
-    Vertex<C> source,
-    Vertex<C> destination, {
-    Map<Vertex<C>, VertexComparable<C>?>? paths,
-  }) {
-    throw UnimplementedError();
-  }
-
-  ///
   ///
   static List<List<num>> shortestTravelingSalesman(List<List<num>> rawPath) {
     final raw = rawPath;
@@ -188,9 +177,9 @@ extension SequencingUtil<C extends Comparable> on List<List<C>> {
     bool increase = true,
     bool compareLastElement = false,
   ]) {
-    assert(every((element) => element.isSorted(increase)));
+    assert(everyElementSorted(increase));
     assert(!compareLastElement);
-    final groups = groupBy((value) => value.length);
+    final groups = iterator.groupBy((value) => value.length);
     // final result = <List<C>>[];
     groups.forEach((length, value) {
       // queue ??

@@ -75,7 +75,7 @@ extension NumExtension on num {
   bool constraintsClose(int begin, int end, [int from = 0]) =>
       from <= begin && begin <= end && end <= this;
 
-  bool constraintsOpen(int begin, int end, [int from = 0]) =>
+  bool constraintsOpen(int begin, int end, [int from = -1]) =>
       from < begin && begin < end && end < this;
 }
 

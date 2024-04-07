@@ -14,15 +14,10 @@ part of damath_math;
 /// [reduceWith], ...
 /// [expandWith], ...
 ///
-/// [intersection], ...
-/// [difference], ...
 /// [isEqualTo], ...
 /// [interval], ...
 ///
-/// [groupBy], ...
-/// [mirrored], ...
 /// [chunk], ...
-/// [combinationsWith], ...
 ///
 extension IterableExtension<I> on Iterable<I> {
   static int toLength<I>(Iterable<I> iterable) => iterable.length;
@@ -173,77 +168,6 @@ extension IterableExtension<I> on Iterable<I> {
     );
   }
 
-  ///
-  /// intersection, difference
-  /// [intersection], [intersectionIndex], [intersectionDetail]
-  /// [difference], [differenceIndex], [differenceDetail]
-  ///
-  ///
-
-  ///
-  /// [intersection]
-  /// [intersectionIndex]
-  /// [intersectionDetail]
-  ///
-  Iterable<I> intersection(Iterable<I> another) =>
-      iterator.interYieldingToWhere(
-        another.iterator,
-        FPredicatorCombiner.isEqual,
-        FReducer.keepV1,
-      );
-
-  Iterable<int> intersectionIndex(Iterable<I> another, [int start = 0]) =>
-      iterator.interYieldingToIndexableWhere(
-        another.iterator,
-        FPredicatorCombiner.isEqual,
-        (p, q, index) => index,
-        start,
-      );
-
-  Map<int, I> intersectionDetail(Iterable<I> another) =>
-      iterator.interFoldIndexable(
-        {},
-        another.iterator,
-        (map, v1, v2, index) => map..putIfAbsentWhen(v1 == v2, index, () => v1),
-        0,
-      );
-
-  ///
-  /// [difference]
-  /// [differenceIndex]
-  /// [differenceDetail]
-  ///
-  Iterable<I> difference(Iterable<I> another) => iterator.diffYieldingToWhere(
-        another.iterator,
-        FPredicatorCombiner.isDifferent,
-        FPredicator.alwaysTrue,
-        FReducer.keepV1,
-        FApplier.keep,
-      );
-
-  Iterable<int> differenceIndex(Iterable<I> another, [int start = 0]) =>
-      iterator.diffYieldingToIndexableWhere(
-        another.iterator,
-        FPredicatorCombiner.isDifferent,
-        FPredicator.alwaysTrue,
-        (p, q, index) => index,
-        (value, index) => index,
-        start,
-      );
-
-  ///
-  /// [MapEntry.key] is the value in this instance that different with [another]
-  /// [MapEntry.value] is the value in [another] that different with this instance
-  ///
-  Map<int, MapEntry<I, I?>> differenceDetail(Iterable<I> another) =>
-      iterator.diffFoldIndexable(
-        {},
-        another.iterator,
-        (map, e1, e2, index) =>
-            map..putIfAbsentWhen(e1 != e2, index, () => MapEntry(e1, e2)),
-        (map, e1, index) => map..putIfAbsent(index, () => MapEntry(e1, null)),
-        0,
-      );
 
   ///
   /// [isEqualTo]
@@ -261,25 +185,6 @@ extension IterableExtension<I> on Iterable<I> {
   }
 
   ///
-  /// [groupBy]
-  ///
-  Map<K, Iterable<I>> groupBy<K>(Mapper<I, K> toKey) => fold(
-        {},
-        (map, value) => map
-          ..update(
-            toKey(value),
-            FApplier.iterableAppend(value),
-            ifAbsent: () => [value],
-          ),
-      );
-
-  ///
-  /// [mirrored]
-  ///
-  Iterable<E> mirrored<E>(Generator<E> generator) =>
-      [for (var i = 0; i < length; i++) generator(i)];
-
-  ///
   /// [chunk]
   ///
 
@@ -287,10 +192,10 @@ extension IterableExtension<I> on Iterable<I> {
   /// list = [2, 3, 4, 6, 10, 3, 9];
   /// list.chunk([2, 1, 3, 1]); // [[2, 3], [4], [6, 10, 3], [9]]
   ///
-  Iterable<List<I>> chunk(Iterable<int> lengthOfEachChunk) sync* {
-    assert(lengthOfEachChunk.sum == length);
+  Iterable<List<I>> chunk(Iterable<int> chunks) sync* {
+    assert(chunks.sum == length);
     final iterator = this.iterator;
-    for (var l in lengthOfEachChunk) {
+    for (var l in chunks) {
       final list = <I>[];
       for (var i = 0; i < l; i++) {
         iterator.moveNext();
@@ -300,20 +205,4 @@ extension IterableExtension<I> on Iterable<I> {
     }
   }
 
-  ///
-  /// [combinationsWith]
-  ///
-
-  ///
-  /// listA = [1, 2, 3];
-  /// listB = [101, 102];
-  /// result = [combinationsWith] ([listA, listB]);
-  /// print(result); // [
-  ///   [MapEntry(1, 101), MapEntry(1, 102)],
-  ///   [MapEntry(2, 101), MapEntry(2, 102)],
-  ///   [MapEntry(3, 101), MapEntry(3, 102)],
-  /// }
-  ///
-  Iterable<Iterable<MapEntry<I, V>>> combinationsWith<V>(Iterable<V> another) =>
-      iterator.map(another.iterator.mapToEntriesByKey);
 }

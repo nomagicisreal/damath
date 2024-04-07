@@ -12,11 +12,11 @@ part of damath_experiment;
 /// enable operation for vector bool, matrix bool, list bool, nullable
 ///
 
-// class Rector extends Operatable with OperatableDirectable<>{
+// class Rector  with OperatableDirectable<>{
 //   Rector();
 // }
 
-// class Vector2 extends Operatable
+// class Vector2 
 //     with
 //         OperatableDirectable,
 //         OperatableComparable<Point>,
@@ -28,7 +28,7 @@ part of damath_experiment;
 //   Vector2(this.x, this.y);
 // }
 
-// mixin OperatableComparableData<O extends OperatableComparable<O>>
+// mixin OperatableComparableData<O Comparable<O>>
 //     on Operatable {
 //   static StateError error() => StateError('no implementation for comparison');
 //

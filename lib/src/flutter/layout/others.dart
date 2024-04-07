@@ -36,8 +36,8 @@ part of damath_flutter;
 Lerper<T> lerperFrom<T>(T begin, T end) {
   try {
     return FLerper.from(begin, end);
-  } on DamathException catch (e) {
-    if (e.message == DamathException.pass) {
+  } on StateError catch (e) {
+    if (e.message == KErrorMessage.lerperNoImplementation) {
       return switch (begin) {
         Size _ => (t) => Size.lerp(begin, end as Size, t)!,
         Rect _ => (t) => Rect.lerp(begin, end as Rect, t)!,

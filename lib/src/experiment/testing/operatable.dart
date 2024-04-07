@@ -2,12 +2,12 @@
 ///
 /// this file contains:
 ///
-/// [Operatable]
-///   [OperatableComparable]
-///   [OperatableScalable]
-///   [OperatableStepable]
-///   [OperatableComplex]
-///   [OperatableIndexable]
+/// [OperatableComparable]
+/// [OperatableScalable]
+/// [OperatableStepable]
+/// [OperatableComplex]
+/// [OperatableIndexable]
+///   [OperatableIndexableList]
 ///
 ///
 /// [Radian]
@@ -27,15 +27,10 @@
 ///
 part of damath_experiment;
 
-//
-abstract class Operatable {
-  const Operatable();
-}
-
 ///
 /// directable
 ///
-mixin OperatableDirectable<O> on Operatable {
+mixin OperatableDirectable<O> on Object {
   Object operator -();
 
   Object operator +(covariant O other);
@@ -46,7 +41,7 @@ mixin OperatableDirectable<O> on Operatable {
 ///
 /// comparable
 ///
-mixin OperatableComparable<O extends OperatableComparable<O>> on Operatable
+mixin OperatableComparable<O extends Comparable<O>> on Object
     implements Comparable<O> {
   static StateError error() => StateError('no implementation for compareTo');
 
@@ -74,7 +69,7 @@ mixin OperatableComparable<O extends OperatableComparable<O>> on Operatable
 ///
 /// scalable
 ///
-mixin OperatableScalable<O> on Operatable {
+mixin OperatableScalable<O> on Object {
   Object operator *(covariant O other);
 
   Object operator /(covariant O other);
@@ -85,14 +80,14 @@ mixin OperatableScalable<O> on Operatable {
 ///
 /// stepable
 ///
-mixin OperatableStepable<O> on Operatable {
+mixin OperatableStepable<O> on Object {
   Object operator ~/(covariant O other);
 }
 
 ///
 /// complex
 ///
-mixin OperatableComplex<O> on Operatable {
+mixin OperatableComplex<O> on Object {
   Object operator &(covariant O other);
 
   Object operator ^(covariant O other);
@@ -105,8 +100,15 @@ mixin OperatableComplex<O> on Operatable {
 ///
 /// indexable
 ///
-mixin OperatableIndexable<T> on Operatable {
+mixin OperatableIndexable<T> on Object {
+  T operator [](int index);
+}
+
+//
+mixin OperatableIndexableList<T> on Object implements OperatableIndexable<T> {
   List<T> get _list;
+
+  @override
   T operator [](int index) => _list[index];
 }
 
@@ -131,7 +133,7 @@ mixin OperatableIndexable<T> on Operatable {
 /// [cos], ... (getters)
 /// [azimuthalIn], ... (methods)
 ///
-abstract interface class Radian extends Operatable
+abstract interface class Radian 
     with
         OperatableDirectable,
         OperatableComparable<Radian>,
@@ -285,10 +287,12 @@ abstract interface class Radian extends Operatable
     final r = moduleBy360Angle(rAzimuthal);
     return switch (quadrant) {
       1 => r.rangeOpen(0, angle_90) || r.rangeOpen(-angle_360, -angle_270),
-      2 => r.rangeOpen(angle_90, angle_180) || r.rangeOpen(-angle_270, -angle_180),
-      3 => r.rangeOpen(angle_180, angle_270) || r.rangeOpen(-angle_180, -angle_90),
+      2 =>
+        r.rangeOpen(angle_90, angle_180) || r.rangeOpen(-angle_270, -angle_180),
+      3 =>
+        r.rangeOpen(angle_180, angle_270) || r.rangeOpen(-angle_180, -angle_90),
       4 => r.rangeOpen(angle_270, angle_360) || r.rangeOpen(-angle_90, 0),
-      _ => throw DamathException('un defined quadrant: $quadrant for $this'),
+      _ => throw StateError('undefined quadrant: $quadrant for $this'),
     };
   }
 }
@@ -530,7 +534,7 @@ class Radian3 extends Radian {
 /// [middleTo], ...(methods)
 ///
 ///
-sealed class Point extends Operatable
+sealed class Point 
     with
         OperatableDirectable,
         OperatableComparable<Point>,
@@ -638,13 +642,13 @@ class Point2 extends Point {
 
   ///
   /// the rotation of
-  ///   1. [RecordDouble2Extension.direction], [RecordDouble2Extension.rotate]
+  ///   1. [RecordDouble2.direction], [RecordDouble2.rotate]
   ///   2. [Point2.fromDirection]
   /// follows the axis [Direction3DIn6.back] -> [Direction3DIn6.front],
   /// and the rotation on axis starts from [Direction3DIn6.right].
   ///
   /// the implementation of [Point2.fromDirection] is let (d, 0) be the unit vector,
-  /// then [RecordDouble2Extension.rotate] the unit vector as follows:
+  /// then [RecordDouble2.rotate] the unit vector as follows:
   ///   [Point2.x] = d * cos(radian); // 0 * sin(radian) = 0
   ///   [Point2.y] = d * sin(radian); // 0 * cos(radian) = 0
   ///
@@ -716,7 +720,7 @@ class Point2 extends Point {
   ///
 
   ///
-  /// ([x], [y]) can be treated as [Record] to use the getters, functions in [RecordDouble2Extension]
+  /// ([x], [y]) can be treated as [Record] to use the getters, functions in [RecordDouble2]
   ///
   @override
   (double, double) get toRecord => (x, y);
@@ -746,7 +750,7 @@ class Point2 extends Point {
 /// [withoutXY], ... (getters)
 /// [rotateX], ... (methods)
 ///
-/// to compute efficiently without creating a class, see [RecordDouble3Extension]
+/// to compute efficiently without creating a class, see [RecordDouble3]
 ///
 class Point3 extends Point {
   final double dz;
@@ -970,7 +974,7 @@ class Point3 extends Point {
   ///
 
   ///
-  /// ([x], [y], [dz]) can be treated as [Record] to use the getters, functions in [RecordDouble3Extension]
+  /// ([x], [y], [dz]) can be treated as [Record] to use the getters, functions in [RecordDouble3]
   ///
   @override
   (double, double, double) get toRecord => (x, y, dz);

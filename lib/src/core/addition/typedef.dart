@@ -29,6 +29,7 @@ part of damath_core;
 
 ///
 ///
+typedef Listener = void Function();
 typedef Consumer<T> = void Function(T value);
 typedef ConsumerIndexable<T> = void Function(T value, int index);
 typedef Intersector<A, B> = void Function(A a, B b);

@@ -5,13 +5,12 @@
 /// [MapExtension]
 ///
 /// [MapEntryExtension]
-/// [MapEntryIterableExtension]
 ///
-/// [MapKeyComparableExtension]
+/// [MapKeyComparable]
 ///
-/// [MapValueIntExtension]
-/// [MapValueDoubleExtension]
-/// [MapValueSetExtension]
+/// [MapValueInt]
+/// [MapValueDouble]
+/// [MapValueSet]
 ///
 ///
 ///
@@ -171,7 +170,7 @@ extension MapExtension<K, V> on Map<K, V> {
   ///   1. value set absent: return [absentReturn]
   ///   2. [value] has exist in value set: return `false`
   ///   3. [value] not yet contained in value set: return `true`
-  /// see also [MapValueSetExtension.inputSet], [Set.add]
+  /// see also [MapValueSet.inputSet], [Set.add]
   ///
   bool input(K key, V value, [bool absentReturn = true]) {
     var vOld = this[key];
@@ -334,56 +333,56 @@ extension MapExtension<K, V> on Map<K, V> {
 /// entry
 ///
 extension MapEntryExtension<K, V> on MapEntry<K, V> {
+  ///
+  static MapEntry<K, V> of<K, V>(K key, V value) => MapEntry(key, value);
+
+  static MapEntry<V, K> ofReverse<K, V>(K k, V v) => MapEntry(v, k);
+
+  ///
+  ///
+  ///
   MapEntry<V, K> get reversed => MapEntry(value, key);
 
   String join([String separator = '']) => '$key$separator$value';
 }
 
 ///
-/// iterable entry
 ///
-extension MapEntryIterableExtension<K, V> on Iterable<MapEntry<K, V>> {
+///
+extension MapKeyComparable<K extends Comparable, V> on Map<K, V> {
   ///
-  /// [toMap], [keys], [values]
+  /// [keysSorted]
+  /// [valuesBySortedKeys]
+  /// [entriesBySortedKeys]
   ///
-  Map<K, V> get toMap => Map.fromEntries(this);
+  List<K> keysSorted([bool increase = true]) => keys.toList(growable: false)
+    ..sort(IteratorComparable.comparator(increase));
 
-  Iterable<K> get keys => map((e) => e.key);
+  List<V> valuesBySortedKeys([bool increase = true]) =>
+      keysSorted(increase).mapToList((key) => this[key]!);
 
-  Iterable<V> get values => map((e) => e.value);
-}
-
-///
-///
-///
-extension MapKeyComparableExtension<K extends Comparable, V> on Map<K, V> {
-  List<K> sortedKeys([Comparator<K>? compare]) => keys.toList()..sort(compare);
-
-  Iterable<V> sortedValuesByKey([Comparator<K>? compare]) =>
-      sortedKeys(compare).map((key) => this[key]!);
-
-  Iterable<MapEntry<K, V>> sortedEntries([Comparator<K>? compare]) =>
-      sortedKeys(compare).map((key) => MapEntry(key, this[key] as V));
+  List<MapEntry<K, V>> entriesBySortedKeys([bool increase = true]) =>
+      keysSorted(increase).mapToList((key) => MapEntry(key, this[key] as V));
 }
 
 ///
 /// [plusOn]
 ///
-extension MapValueIntExtension<K> on Map<K, int> {
+extension MapValueInt<K> on Map<K, int> {
   void plusOn(K key) => update(key, (value) => ++value, ifAbsent: () => 1);
 }
 
 ///
 /// [plusOn]
 ///
-extension MapValueDoubleExtension<K> on Map<K, double> {
+extension MapValueDouble<K> on Map<K, double> {
   void plusOn(K key) => update(key, (value) => ++value, ifAbsent: () => 1);
 }
 
 ///
 ///
 ///
-extension MapValueSetExtension<K, V> on Map<K, Set<V>> {
+extension MapValueSet<K, V> on Map<K, Set<V>> {
   ///
   /// when calling [inputSet], there are three conditions:
   ///   1. value set absent: return [absentReturn]

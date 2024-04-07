@@ -2,19 +2,18 @@
 ///
 /// this file contains:
 ///
-/// [IteratorNullableExtension]
-/// [IterableNullableExtension]
+/// [IteratorNullable]
+/// [IterableNullable]
 ///
 ///
 part of damath_math;
-
 
 ///
 ///
 /// [validFrequencies]
 ///
 ///
-extension IteratorNullableExtension<I> on Iterator<I?> {
+extension IteratorNullable<I> on Iterator<I?> {
   ///
   /// [validFrequencies]
   ///
@@ -46,7 +45,7 @@ extension IteratorNullableExtension<I> on Iterator<I?> {
 /// [validLength]
 ///
 ///
-extension IterableNullableExtension<I> on Iterable<I?> {
+extension IterableNullable<I> on Iterable<I?> {
   ///
   /// [validLength]
   ///

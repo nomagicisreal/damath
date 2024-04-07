@@ -2,15 +2,18 @@
 ///
 /// this file contains:
 ///
-/// [IteratorBoolExtension]
-/// [IteratorDoubleExtension]
+/// [IteratorBool]
+/// [IteratorComparable]
+/// [IteratorDouble]
+/// [IterableMapEntry]
 ///
-/// [IterableDoubleExtension]
-/// [IterableIntExtension]
+/// [IterableComparable]
+/// [IterableDouble]
+/// [IterableInt]
 ///
 ///
-/// [ListComparableExtension]
-/// [ListDoubleExtension]
+/// [ListComparable]
+/// [ListDouble]
 ///
 ///
 /// 'flutter pub add statistics' for advance statistic analyze
@@ -26,7 +29,7 @@ part of damath_math;
 /// [isSatisfiable], ...
 ///
 ///
-extension IteratorBoolExtension on Iterator<bool> {
+extension IteratorBool on Iterator<bool> {
   static bool _keep(bool value) => value;
 
   static bool _reverse(bool value) => !value;
@@ -44,6 +47,92 @@ extension IteratorBoolExtension on Iterator<bool> {
 }
 
 ///
+/// static methods:
+/// [isEqual], ...
+/// [comparator], [compare]
+/// [_validationFor], ...
+/// [_errorIteratorDisorder], ...
+///
+/// instance methods:
+/// [isSorted], ...
+///
+///
+extension IteratorComparable<C extends Comparable> on Iterator<C> {
+  ///
+  /// [isEqual], [notEqual]
+  /// [isIncrease], [isDecrease]
+  /// [notIncrease], [notDecrease]
+  ///
+  // require a == b
+  static bool isEqual<C extends Comparable>(C a, C b) => a.compareTo(b) == 0;
+
+  // require a != b
+  static bool notEqual<C extends Comparable>(C a, C b) => a.compareTo(b) != 0;
+
+  // require a < b
+  static bool isIncrease<C extends Comparable>(C a, C b) =>
+      a.compareTo(b) == -1;
+
+// require a > b
+  static bool isDecrease<C extends Comparable>(C a, C b) => a.compareTo(b) == 1;
+
+  // require a >= b
+  static bool notIncrease<C extends Comparable>(C a, C b) =>
+      a.compareTo(b) != -1;
+
+  // require a <= b
+  static bool notDecrease<C extends Comparable>(C a, C b) =>
+      a.compareTo(b) != 1;
+
+  ///
+  /// [comparator], [compare]
+  ///
+  static Comparator<C> comparator<C extends Comparable>(bool increase) =>
+      increase ? Comparable.compare : compare;
+
+  /// it is the reverse version of [Comparable.compare]
+  static int compare<C extends Comparable>(C a, C b) => b.compareTo(a);
+
+  ///
+  /// [_validationFor]
+  /// in convention, the validation for [PredicatorCombiner] should pass in order of (lower, upper)
+  ///
+  static PredicatorCombiner<C> _validationFor<C extends Comparable>(
+    bool increase,
+    bool close,
+  ) =>
+      close
+          ? increase
+              ? notDecrease
+              : notIncrease
+          : increase
+              ? isIncrease
+              : isDecrease;
+
+  ///
+  /// [_errorIteratorDisorder]
+  ///
+  static StateError _errorIteratorDisorder() => StateError('iterator disorder');
+
+  ///
+  /// [isSorted]
+  /// [checkSortedForSupply]
+  ///
+  bool isSorted([bool increase = true]) => moveNextSupply(() {
+        final validate = _validationFor(increase, true);
+        var val = current;
+        while (moveNext()) {
+          if (validate(val, current)) return false;
+          val = current;
+        }
+        return true;
+      });
+
+  S checkSortedForSupply<S>(Supplier<S> supply, [bool increase = true]) =>
+      isSorted(increase) ? supply() : throw _errorIteratorDisorder();
+}
+
+///
 ///
 ///
 /// [anyFinite], ...
@@ -56,7 +145,7 @@ extension IteratorBoolExtension on Iterator<bool> {
 ///
 ///
 ///
-extension IteratorDoubleExtension on Iterator<double> {
+extension IteratorDouble on Iterator<double> {
   ///
   /// [anyFinite], [anyInFinite]
   /// [anyZero], [anyPositive], [anyNegative]
@@ -81,9 +170,9 @@ extension IteratorDoubleExtension on Iterator<double> {
 
   double get mode => toMapCounted.reduce(FReducer.entryValueIntMax).key;
 
-  double get range => moveNextThen(() {
-        var min = current;
-        var max = current;
+  double get range => moveNextApply((value) {
+        var min = value;
+        var max = value;
         while (moveNext()) {
           if (current < min) min = current;
           if (current > max) max = current;
@@ -91,7 +180,7 @@ extension IteratorDoubleExtension on Iterator<double> {
         return max - min;
       });
 
-  (double, double) get boundary => moveNextThen(() {
+  (double, double) get boundary => moveNextSupply(() {
         var min = current;
         var max = current;
         while (moveNext()) {
@@ -109,8 +198,7 @@ extension IteratorDoubleExtension on Iterator<double> {
 
   double get sumSquared => reduce(FReducer.doubleAddSquared);
 
-  double get meanArithmetic => moveNextThen(() {
-        var total = current;
+  double get meanArithmetic => moveNextApply((total) {
         var length = 1;
         while (moveNext()) {
           total += current;
@@ -119,8 +207,7 @@ extension IteratorDoubleExtension on Iterator<double> {
         return total / length;
       });
 
-  double get meanGeometric => moveNextThen(() {
-        var total = current;
+  double get meanGeometric => moveNextApply((total) {
         var length = 1;
         while (moveNext()) {
           total *= current;
@@ -189,6 +276,20 @@ extension IteratorDoubleExtension on Iterator<double> {
 ///
 ///
 ///
+extension IterableMapEntry<K, V> on Iterable<MapEntry<K, V>> {
+  ///
+  /// [toMap], [keys], [values]
+  ///
+  Map<K, V> get toMap => Map.fromEntries(this);
+
+  Iterable<K> get keys => map((e) => e.key);
+
+  Iterable<V> get values => map((e) => e.value);
+}
+
+///
+///
+///
 ///
 /// iterable
 ///
@@ -200,7 +301,46 @@ extension IteratorDoubleExtension on Iterator<double> {
 ///
 ///
 ///
-extension IterableDoubleExtension on Iterable<double> {
+/// [rangeIn], ...
+///
+///
+///
+extension IterableComparable<C extends Comparable> on Iterable<C> {
+  ///
+  /// [rangeIn]
+  ///
+  bool rangeIn(C lower, C upper, {bool increase = true, bool isClose = true}) =>
+      iterator.checkSortedForSupply(() {
+        final validate = IteratorComparable._validationFor(increase, isClose);
+        assert(validate(lower, upper));
+        return validate(lower, first) && validate(last, upper);
+      });
+
+  // ///
+  // /// [groupToIterable]
+  // ///
+  // // instead of list.add, it's better to insert by binary node comparable
+  // Iterable<Iterable<C>> groupToIterable([bool increase = true]) =>
+  //     iterator.checkSortedForSupply(
+  //       () {
+  //         final iterator = this.iterator;
+  //         return iterator.moveNextSupply(() sync* {
+  //           var previous = iterator.current;
+  //           while (iterator.moveNext()) {
+  //             yield takeWhile(
+  //                 (value) => IteratorComparable.isEqual(previous, value));
+  //             throw UnimplementedError();
+  //           }
+  //         });
+  //       },
+  //       increase,
+  //     );
+}
+
+///
+///
+///
+extension IterableDouble on Iterable<double> {
   ///
   /// [valuesTo], [valuesFrom]
   ///
@@ -287,7 +427,7 @@ extension IterableDoubleExtension on Iterable<double> {
 /// instance methods:
 /// [sum], ...
 ///
-extension IterableIntExtension on Iterable<int> {
+extension IterableInt on Iterable<int> {
   static Iterable<int> sequence(int length, [int start = 1]) =>
       Iterable.generate(length, (i) => start + i);
 
@@ -298,51 +438,13 @@ extension IterableIntExtension on Iterable<int> {
 }
 
 ///
-/// static methods:
-/// [reverse], ...
-/// [_validationFor], ...
-/// [_errorListNotSorted], ...
-///
 /// instance methods:
-/// [rangeIn], ...
 /// [median], ...
-/// [isSorted], ...
+/// [copySorted], ...
 /// [order], ...
 /// [sortMerge], ...
 ///
-extension ListComparableExtension<C extends Comparable> on List<C> {
-  ///
-  /// [reverse], reverse version from [Comparable.compare]
-  ///
-  static int reverse<C extends Comparable>(C a, C b) => b.compareTo(a);
-
-
-  ///
-  /// [_validationFor]
-  ///
-  static Predicator<int> _validationFor(bool increase, bool isClose) => isClose
-      ? increase
-          ? (value) => value <= 0
-          : (value) => value >= 0
-      : increase
-          ? (value) => value < 0
-          : (value) => value > 0;
-
-  ///
-  /// [_errorListNotSorted]
-  ///
-  static StateError _errorListNotSorted() => StateError('list not sorted');
-
-  ///
-  /// [rangeIn]
-  ///
-  bool rangeIn(C lower, C upper, {bool increase = true, bool isClose = true}) {
-    final test = _validationFor(increase, isClose);
-    if (isSorted(increase)) throw _errorListNotSorted();
-    assert(test(lower.compareTo(upper)));
-    return test(lower.compareTo(first)) && test(last.compareTo(upper));
-  }
-
+extension ListComparable<C extends Comparable> on List<C> {
   ///
   /// [median]
   ///
@@ -351,29 +453,14 @@ extension ListComparableExtension<C extends Comparable> on List<C> {
 
   ///
   ///
-  /// [isSorted], [copySorted]
+  /// [copySorted]
   ///
   ///
-
-  ///
-  /// [isSorted]
-  ///
-  bool isSorted([bool increase = true]) {
-    final invalid = increase ? 1 : -1;
-    C a = this[0];
-    for (var i = 1; i < length; i++) {
-      final b = this[i];
-      if (a.compareTo(b) == invalid) return false;
-      a = b;
-    }
-    return true;
-  }
 
   ///
   /// [copySorted]
   ///
-  List<C> copySorted([bool increase = true]) =>
-      List.of(this)..sort(increase ? Comparable.compare : reverse);
+  List<C> copySorted([bool increase = true]) => List.of(this)..sort();
 
   ///
   ///
@@ -531,26 +618,24 @@ extension ListComparableExtension<C extends Comparable> on List<C> {
   ///
   /// [percentileCumulative]
   ///
-  Iterable<MapEntry<C, double>> percentileCumulative([
-    bool increase = true,
-  ]) sync* {
-    if (isSorted(increase)) throw _errorListNotSorted();
-    final percent = 1 / length;
+  Iterable<MapEntry<C, double>> percentileCumulative([bool increase = true]) =>
+      iterator.checkSortedForSupply(() sync* {
+        final percent = 1 / length;
 
-    var previous = first;
-    var cumulative = 0.0;
-    for (var i = 1; i < length; i++) {
-      final current = this[i];
-      cumulative += percent;
+        var previous = first;
+        var cumulative = 0.0;
+        for (var i = 1; i < length; i++) {
+          final current = this[i];
+          cumulative += percent;
 
-      if (current != previous) {
+          if (current != previous) {
+            yield MapEntry(previous, cumulative);
+            cumulative = 0;
+            previous = current;
+          }
+        }
         yield MapEntry(previous, cumulative);
-        cumulative = 0;
-        previous = current;
-      }
-    }
-    yield MapEntry(previous, cumulative);
-  }
+      });
 
   ///
   ///
@@ -697,7 +782,7 @@ extension ListComparableExtension<C extends Comparable> on List<C> {
 ///
 ///
 ///
-extension ListDoubleExtension on List<double> {
+extension ListDouble on List<double> {
   ///
   /// [interquartileRange]
   ///

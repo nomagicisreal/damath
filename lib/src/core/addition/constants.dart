@@ -7,7 +7,6 @@
 ///
 part of damath_core;
 
-
 abstract interface class KCore {
   const KCore();
 
@@ -38,4 +37,41 @@ abstract interface class KCore {
   static const durationMin3 = Duration(minutes: 3);
   static const durationMin4 = Duration(minutes: 4);
   static const durationMin5 = Duration(minutes: 5);
+}
+
+///
+/// [iteratorNoElement], ...
+///
+abstract interface class KErrorMessage {
+  const KErrorMessage();
+
+  ///
+  /// iterator
+  ///
+  static const String iteratorNoElement = 'iterator no element';
+  static const String iteratorElementNotFound = 'iterator element not found';
+  static const String iteratorIndexOutOfBoundary =
+      'iterator index out of boundary';
+  static const String iteratorElementNotNest = 'iterator element not nested';
+
+  ///
+  /// vertex
+  ///
+  static const String vertexDataIsImmutable = 'data is immutable';
+  static const String vertexDataCannotAssignDirectly =
+      'cannot assign data directly';
+  static const String vertexDataRequiredNotNull = 'data is null';
+  static const String vertexDataLazyNotInitialized =
+      'lazy data not been initialized';
+
+  ///
+  /// node
+  ///
+  static String nodeIndexOutOfBoundary = 'index out of boundary';
+  static String nodeNextIsImmutable = 'next node is immutable';
+  static const String nodeNextCannotAssignDirectly =
+      'cannot assign next node directly';
+  static const String nodeNotHoldComparator = 'node not hold comparator';
+
+  static const String lerperNoImplementation = 'lerper no implementation';
 }

@@ -63,28 +63,10 @@ extension SetExtension<K> on Set<K> {
   ///
   /// [copy]
   ///
-  Set get copy => Set.of(this);
+  Set<K> get copy => Set.of(this);
 
   ///
   /// [toMap]
   ///
   Map<K, V> toMap<V>(Mapper<K, V> toVal) => Map.fromIterables(this, map(toVal));
-}
-
-///
-/// [merged], ...
-/// [everyIdentical], ...
-///
-extension SetIteratorExtension<K> on Iterator<Set<K>> {
-  Set<K> get merged => reduce((a, b) => a..addAll(b));
-
-  bool get everyIdentical => moveNextThen(() {
-        var tempt = current.copy;
-        while (moveNext()) {
-          final lengthTotal = tempt.length + current.length;
-          tempt.addAll(current);
-          if (lengthTotal != tempt.length) return false;
-        }
-        return true;
-      });
 }

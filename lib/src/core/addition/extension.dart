@@ -40,15 +40,18 @@ extension NullableExtension<T> on T? {
   S? nullOrMap<S>(Mapper<T, S> toVal) => this == null ? null : toVal(this!);
 
   ///
+  /// [applyNotNullOr]
   /// [mapNotNullOr]
   /// [consumeNotNull]
   ///
-  S mapNotNullOr<S>(Mapper<T, S> toVal, Supplier<S> ifNull) {
-    return this == null ? ifNull() : toVal(this!);
-  }
+  T applyNotNullOr(Applier<T> apply, Supplier<T> ifNull) =>
+      this == null ? ifNull() : apply(this as T);
 
-  void consumeNotNull(Consumer<T> consumer) {
-    if (this != null) consumer(this!);
+  S mapNotNullOr<S>(Mapper<T, S> toVal, Supplier<S> ifNull) =>
+      this == null ? ifNull() : toVal(this as T);
+
+  void consumeNotNull(Consumer<T> consume) {
+    if (this != null) consume(this as T);
   }
 
   ///

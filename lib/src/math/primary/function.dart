@@ -118,7 +118,8 @@ extension FPredicatorCombiner on PredicatorCombiner {
   static bool iterableIsLengthDifferent<A, B>(Iterable<A> a, Iterable<B> b) =>
       a.length != b.length;
 
-  static bool iterableIsEqual<I>(Iterable<I> a, Iterable<I> b) => a.isEqualTo(b);
+  static bool iterableIsEqual<I>(Iterable<I> a, Iterable<I> b) =>
+      a.isEqualTo(b);
 
   static bool iterableIsDifferent<I>(Iterable<I> a, Iterable<I> b) =>
       a.anyElementIsDifferentWith(b);
@@ -171,6 +172,28 @@ extension FPredicatorFusionor on PredicatorFusionor {
   // return true if exist or absent
   static bool mapValueSetInputKeep<K, V>(Map<K, Set<V>> map, K k, V v) =>
       !map.inputSet(k, v, false);
+}
+
+extension FComparator<C> on Comparator<C> {
+  ///
+  /// entry key
+  ///
+  static int entryKeyIntIncrease<V>(MapEntry<int, V> a, MapEntry<int, V> b) =>
+      a.key.compareTo(b.key);
+
+  static int entryKeyIntDecrease<V>(MapEntry<int, V> a, MapEntry<int, V> b) =>
+      b.key.compareTo(a.key);
+
+  ///
+  /// entry value
+  ///
+  static int entryValueDurationIncrease<K>(
+          MapEntry<K, Duration> a, MapEntry<K, Duration> b) =>
+      a.value.compareTo(b.value);
+
+  static int entryValueDurationDecrease<K>(
+          MapEntry<K, Duration> a, MapEntry<K, Duration> b) =>
+      b.value.compareTo(a.value);
 }
 
 ///
@@ -629,6 +652,6 @@ extension FLerper on Lerper {
   /// [from]
   ///
   static Mapper<double, T> from<T>(T begin, T end) => switch (begin) {
-        _ => throw DamathException(DamathException.pass),
+        _ => throw StateError(KErrorMessage.lerperNoImplementation),
       };
 }

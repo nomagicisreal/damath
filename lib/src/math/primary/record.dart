@@ -2,8 +2,8 @@
 ///
 /// this file contains:
 ///
-/// [RecordXYExtension]
-/// [RecordDouble3Extension]
+/// [RecordDouble2]
+/// [RecordDouble3]
 ///
 ///
 ///
@@ -18,7 +18,7 @@ part of damath_math;
 /// [toStringAsFixed], ...
 ///
 ///
-extension RecordDouble2Extension on (double, double) {
+extension RecordDouble2 on (double, double) {
   ///
   /// [direction], [directionTo]
   /// [rotate]
@@ -100,7 +100,7 @@ extension RecordDouble2Extension on (double, double) {
 /// [toStringAsFixed], ...
 ///
 ///
-extension RecordDouble3Extension on (double, double, double) {
+extension RecordDouble3 on (double, double, double) {
   ///
   /// [direction]
   /// [rotate]

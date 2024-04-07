@@ -1,502 +1,725 @@
 ///
 ///
+///
 /// this file contains:
-/// [NodeBinarySetSorted]
-/// [NodeAvlComparable]
-/// [NodeTrie], [NodeTrieString]
 ///
-/// [AdjacencyList], [AdjacencyMatrix]
+/// [_MixinVertexLazyFinal], ...
+/// [_MixinVertexOperatableComparable]
+/// 
+/// [NodeBinary]
+///   [NodeBinaryAvl]
+/// [NodeTree]
 ///
-/// [Heap]
+/// [Junction]
 ///
-/// some sample code can be seen at https://medium.com/@m.m.shahmeh/data-structures-algorithms-in-dart-5-5-660e0ef30a4d
-///
-///
-///
-/// extensions:
-/// [SetVertexExtension]
-///
+/// [Edge]
+///   [EdgeBidirectional]
+/// [IterableEdgeExtension]
 ///
 ///
+/// [Graph]
+///   [_MixinGraphFunctions]
+///   [_MixinGraphSetVertex]
+///   [_MixinGraphSetEdge]
 ///
-///
-///
+///   [_InterfaceGraphMutable]
 ///
 ///
 ///
 ///
 part of damath_experiment;
-//
-// ///
-// ///
-// /// [root], [min], [max]
-// ///
-// class NodeBinarySetSorted<E extends Comparable> extends NodeBinarySet<E> {
-//   NodeBinarySetSorted(super.root) : assert(throw UnimplementedError());
-//
-//   ///
-//   /// [min], [max]
-//   ///
-//   NodeBinary<E> get min => leftest;
-//
-//   NodeBinary<E> get max => rightest;
-//
-//   ///
-//   /// [insertionOf], [removalOf]
-//   ///
-//   static NodeBinary<E> insertionOf<E extends Comparable>(
-//       NodeBinary<E>? node,
-//       E data,
-//       ) =>
-//       node == null
-//           ? NodeBinary(data)
-//           : () {
-//         final value = data.compareTo(node.data);
-//         return switch (value) {
-//           -1 => node..left = insertionOf(node.left, data),
-//           1 => node..right = insertionOf(node.right, data),
-//           0 => throw UnimplementedError('data already exist: $data'),
-//           _ => throw UnimplementedError(),
-//         };
-//       }();
-//
-//   static NodeBinary<E>? removalOf<E extends Comparable>(
-//       NodeBinary<E>? node,
-//       E data,
-//       NodeBinary<E>? Function(NodeBinary<E> node) fillFrom,
-//       ) =>
-//       node == null
-//           ? null
-//           : () {
-//         final value = data.compareTo(node.data);
-//         return switch (value) {
-//           -1 => node..left = removalOf(node.left, data, fillFrom),
-//           1 => node..right = removalOf(node.right, data, fillFrom),
-//           0 => fillFrom(node),
-//           _ => throw UnimplementedError(),
-//         };
-//       }();
-//
-//   static NodeBinary<E>? fillFromLargerAfterRemoval<E extends Comparable>(
-//       NodeBinary<E> node,
-//       ) {
-//     final right = node.right;
-//     return right == null
-//         ? node.left
-//         : () {
-//       final replacement = right.leftest.data;
-//       node.data = replacement;
-//       node.right =
-//           removalOf(right, replacement, fillFromLargerAfterRemoval<E>);
-//       return node;
-//     }();
-//   }
-//
-//   static NodeBinary<E>? fillFromSmallerAfterRemoval<E extends Comparable>(
-//       NodeBinary<E> node,
-//       ) {
-//     final left = node.left;
-//     final right = node.right;
-//     if (left != null && right != null) {
-//       final replacement = left.rightest.data;
-//       node.data = replacement;
-//       node.left = removalOf(left, replacement, fillFromSmallerAfterRemoval<E>);
-//       return node;
-//     } else {
-//       return left ?? right;
-//     }
-//   }
-//
-//   ///
-//   /// [insert], [remove]
-//   ///
-//   void insert(E value) => root = insertionOf(root, value);
-//
-//   void remove(E value, [bool fillFromSmaller = true]) {
-//     if (value == root.data) {
-//       throw UnimplementedError('root must not be removed');
-//     } else {
-//       root = removalOf(
-//         root,
-//         value,
-//         fillFromSmaller
-//             ? fillFromSmallerAfterRemoval
-//             : fillFromLargerAfterRemoval,
-//       )!;
-//     }
-//   }
+
+// //
+// mixin _MixinVertexLazyFinal<T> on Vertex<T> {
+//   @override
+//   late final T data;
 // }
-//
-// class NodeAvlComparable<E extends Comparable> extends NodeBinaryAvl<E> {
-//   NodeAvlComparable(super.data);
-//
-//   @override
-//   NodeBinaryAvl<E> _updateInsert(covariant NodeBinaryAvl<E>? node, E value) {
-//     final balanced = balance(super._updateInsert(node, value) as NodeBinaryAvl<E>);
-//     balanced.height = 1 + math.max(balanced.heightLeft, balanced.heightRight);
-//     return balanced;
-//   }
-//
-//   @override
-//   NodeBinaryAvl<E> _updateRemove(covariant NodeBinaryAvl<E>? node, E value) {
-//     final balanced = balance(super._updateRemove(node, value) as NodeBinaryAvl<E>);
-//     balanced.height = 1 + math.max(balanced.heightLeft, balanced.heightRight);
-//     return balanced;
-//   }
-// }
-//
-// class NodeTrie<T> {
-//   T? data;
-//   NodeTrie<T>? parent;
-//
-//   NodeTrie({this.data, this.parent});
-//
-//   final Map<T, NodeTrie<T>?> children = {};
-//   bool isTerminating = false;
-// }
-//
-// class NodeTrieString {
-//   NodeTrie<int> root = NodeTrie(data: null, parent: null);
-//
-//   void insert(String text) {
-//     var current = root;
-//
-//     for (var codeUnit in text.codeUnits) {
-//       current.children[codeUnit] ??= NodeTrie(data: codeUnit, parent: current);
-//       current = current.children[codeUnit]!;
-//     }
-//
-//     current.isTerminating = true;
-//   }
-//
-//   bool contains(String text) {
-//     var current = root;
-//     for (var codeUnit in text.codeUnits) {
-//       final child = current.children[codeUnit];
-//       if (child == null) return false;
-//       current = child;
-//     }
-//     return current.isTerminating;
-//   }
-//
-//   void remove(String text) {
-//     var current = root;
-//     for (var codeUnit in text.codeUnits) {
-//       final child = current.children[codeUnit];
-//       if (child == null) return;
-//       current = child;
-//     }
-//     if (!current.isTerminating) return;
-//     current.isTerminating = false;
-//
-//     while (current.parent != null &&
-//         current.children.isEmpty &&
-//         !current.isTerminating) {
-//       current.parent!.children[current.data!] = null;
-//       current = current.parent!;
-//     }
-//   }
-//
-//   ///
-//   /// match
-//   ///
-//
-//   List<String> _moreMatches(String prefix, NodeTrie<int> node) {
-//     List<String> results = [];
-//     if (node.isTerminating) results.add(prefix);
-//
-//     for (final child in node.children.values) {
-//       final codeUnit = child!.data!;
-//       results.addAll(
-//         _moreMatches('$prefix${String.fromCharCode(codeUnit)}', child),
-//       );
-//     }
-//     return results;
-//   }
-//
-//   List<String> matchPrefix(String prefix) {
-//     var current = root;
-//     for (var codeUnit in prefix.codeUnits) {
-//       final child = current.children[codeUnit];
-//       if (child == null) return [];
-//       current = child;
-//     }
-//
-//     return _moreMatches(prefix, current);
-//   }
-// }
-//
-// mixin GraphVertexComparable<E> on Graph<E> {
-//   int _index = 0;
-//
-//   int _indexOf(Vertex<E> v) => (v as VertexComparable<E>).value as int;
-// }
-//
-// class AdjacencyList<E> extends Graph<E> with GraphVertexComparable<E> {
-//   final Map<VertexComparable<E>, List<Edge<E>>> _connections = {};
-//
-//   @override
-//   Iterable<Vertex<E>> get vertices => _connections.keys;
-//
-//   @override
-//   Vertex<E> createVertex(E data) {
-//     final vertex = VertexComparable(_index, data);
-//     _index++;
-//     _connections[vertex] = [];
-//     return vertex;
-//   }
-//
-//   @override
-//   void addEdge(
-//       Vertex<E> source,
-//       Vertex<E> destination, {
-//         EdgeType edgeType = EdgeType.undirected,
-//         double weight = double.infinity,
-//       }) {
-//     _connections[source]?.add(Edge(source, destination, weight));
-//     if (edgeType == EdgeType.undirected) {
-//       _connections[destination]?.add(Edge(destination, source, weight));
-//     }
-//   }
-//
-//   @override
-//   List<Edge<E>> edgesFrom(Vertex<E> source) => _connections[source] ?? [];
-//
-//   @override
-//   double weightFrom(
-//       Vertex<E> source,
-//       Vertex<E> destination,
-//       ) {
-//     final match = edgesFrom(source).where((edge) {
-//       return edge.destination == destination;
-//     });
-//     if (match.isEmpty) return double.infinity;
-//     return match.first.weight;
-//   }
-//
-//   @override
-//   String toString() => _connections
-//       .fold(
-//     StringBuffer(),
-//         (buffer, entry) =>
-//     buffer..writeln('${entry.key} --> ${entry.x.join(', ')}'),
-//   )
-//       .toString();
-// }
-//
-// class AdjacencyMatrix<E> extends Graph<E> with GraphVertexComparable<E> {
-//   final List<Vertex<E>> _vertices = [];
-//   final List<List<double?>?> _weights = [];
-//
-//   @override
-//   Iterable<Vertex<E>> get vertices => _vertices;
-//
-//   @override
-//   Vertex<E> createVertex(E data) {
-//     final vertex = VertexComparable(_index, data);
-//     _index++;
-//     _vertices.add(vertex);
-//     for (var i = 0; i < _weights.length; i++) {
-//       _weights[i]?.add(null);
-//     }
-//     _weights.add(List<double?>.filled(_vertices.length, null)); // row
-//     return vertex;
-//   }
-//
-//   @override
-//   void addEdge(
-//       Vertex<E> source,
-//       Vertex<E> destination, {
-//         EdgeType edgeType = EdgeType.undirected,
-//         double weight = double.infinity,
-//       }) {
-//     final si = _indexOf(source);
-//     final di = _indexOf(destination);
-//
-//     _weights[si]?[di] = weight;
-//     if (edgeType == EdgeType.undirected) _weights[di]?[si] = weight;
-//   }
-//
-//   @override
-//   List<Edge<E>> edgesFrom(Vertex<E> source) {
-//     final si = _indexOf(source);
-//     final edges = <Edge<E>>[];
-//     for (var column = 0; column < _weights.length; column++) {
-//       final weight = _weights[si]?[column];
-//       if (weight != null) {
-//         edges.add(Edge(source, _vertices[column], weight));
-//       }
-//     }
-//     return edges;
-//   }
-//
-//   @override
-//   double weightFrom(Vertex<E> source, Vertex<E> destination) =>
-//       _weights[_indexOf(source)]?[_indexOf(destination)] ?? double.infinity;
-//
-//   @override
-//   String toString() {
-//     final buffer = StringBuffer();
-//     for (final vertex in _vertices) {
-//       buffer.writeln('${_indexOf(vertex)}: ${vertex.data}');
-//     }
-//     for (int i = 0; i < _weights.length; i++) {
-//       for (int j = 0; j < _weights.length; j++) {
-//         buffer.write((_weights[i]?[j] ?? '.').toString().padRight(6));
-//       }
-//       buffer.writeln();
-//     }
-//     return buffer.toString();
-//   }
-// }
-//
-//
-// class Heap<E extends Comparable> {
-//   final Comparator<E> comparator;
-//   final List<E> elements = [];
-//
-//   Heap(List<E> elements, {bool increase = false})
-//       : comparator =
-//   increase ? Comparable.compare : ComparableData.compareReverse {
-//     this.elements.addAll(elements);
-//     if (isNotEmpty) {
-//       final start = elements.length ~/ 2 - 1;
-//       for (var i = start; i >= 0; i--) {
-//         _shiftDown(i);
-//       }
-//     }
-//   }
-//
-//   @override
-//   String toString() => 'Heap($elements)';
-//
-//   ///
-//   /// [length]
-//   /// [isEmpty], [isNotEmpty],
-//   /// [peek]
-//   ///
-//   int get length => elements.length;
-//
-//   bool get isEmpty => elements.isEmpty;
-//
-//   bool get isNotEmpty => elements.isNotEmpty;
-//
-//   E get peek => elements.first;
-//
-//   ///
-//   /// [_indexPreviousFrom], [_indexNextFrom], [_indexParentFrom]
-//   /// [_prioritize], [_priorityMax]
-//   ///
-//   int _indexPreviousFrom(int iParent) => 2 * iParent + 1;
-//
-//   int _indexNextFrom(int iParent) => 2 * iParent + 2;
-//
-//   int _indexParentFrom(int iChild) => (iChild - 1) ~/ 2;
-//
-//   bool _prioritize(E vA, E vB) => comparator(vA, vB) > 0;
-//
-//   int _priorityMax(int indexA, int indexB) {
-//     final elements = this.elements;
-//     if (indexA >= elements.length) return indexB;
-//     return _prioritize(elements[indexA], elements[indexB]) ? indexA : indexB;
-//   }
-//
-//   ///
-//   /// [_swap]
-//   /// [_shiftUp], [_shiftDown]
-//   ///
-//   void _swap(int indexA, int indexB) => elements.swap(indexA, indexB);
-//
-//   void _shiftUp(int index) {
-//     var child = index;
-//     var parent = _indexParentFrom(child);
-//     while (child > 0 && child == _priorityMax(child, parent)) {
-//       _swap(child, parent);
-//       child = parent;
-//       parent = _indexParentFrom(child);
-//     }
-//   }
-//
-//   void _shiftDown(int index) {
-//     var parent = index;
-//     while (true) {
-//       var tempt = _priorityMax(_indexPreviousFrom(parent), parent);
-//       tempt = _priorityMax(_indexNextFrom(parent), tempt);
-//       if (tempt == parent) return;
-//       _swap(parent, tempt);
-//       parent = tempt;
-//     }
-//   }
-//
-//   ///
-//   /// [insert]
-//   /// [removeAt], [removeLast]
-//   /// [indexOf]
-//   ///
-//   void insert(E value) {
-//     elements.add(value);
-//     _shiftUp(elements.length - 1);
-//   }
-//
-//   E removeAt(int index) {
-//     final lastIndex = elements.length - 1;
-//     if (index < 0 || index > lastIndex) {
-//       throw UnimplementedError('index out of range(0, $lastIndex)');
-//     }
-//
-//     if (index == lastIndex) elements.removeLast();
-//     _swap(index, lastIndex);
-//     final value = elements.removeLast();
-//     _shiftDown(index);
-//     _shiftUp(index);
-//     return value;
-//   }
-//
-//   E removeLast() {
-//     if (isEmpty) throw UnimplementedError('no elements');
-//
-//     _swap(0, elements.length - 1);
-//     final value = elements.removeLast();
-//     _shiftDown(0);
-//     return value;
-//   }
-//
-//   int indexOf(E value, [int index = 0]) {
-//     final elements = this.elements;
-//     final current = elements[index];
-//     if (index >= elements.length || _prioritize(value, current)) return -1;
-//
-//     if (value == current) return index;
-//     final previous = indexOf(value, _indexPreviousFrom(index));
-//     if (previous != -1) return previous;
-//     return indexOf(value, _indexNextFrom(index));
-//   }
-// }
-//
-// ///
-// ///
-// ///
-// ///
-// /// [SetVertexExtension]
-// ///
-// ///
-// ///
-// ///
-// ///
 //
 // //
-// extension SetVertexExtension<C extends Comparable> on Set<Vertex<C>> {
+// mixin _MixinVertexLazyMutable<T> on Vertex<T> {
+//   @override
+//   late T data;
+// }
+//
+// //
+// mixin _MixinNodeNextLazy<T> on Node<T> {
+//   @override
+//   late Node<T>? next;
+// }
+//
+// //
+// class _MixinNodeLazyNext<T> extends Node<T> with _MixinNodeNextLazy<T> {
+//   @override
+//   T data;
+//
+//   _MixinNodeLazyNext(this.data, [Node<T>? next]) {
+//     if (next != null) this.next = next;
+//   }
+// }
+// ....
+
+///
+/// [_MixinVertexOperatableComparable]
+///
+///
+
+//
+mixin _MixinVertexOperatableComparable<T extends Comparable>
+    on Vertex<T>, OperatableComparable<_MixinVertexOperatableComparable<T>> {
+  
+  @override
+  int compareTo(_MixinVertexOperatableComparable<T> other) =>
+      data.compareTo(other.data);
+}
+
+///
+///
+/// [NodeBinary]
+/// [NodeBinaryAvl]
+/// [NodeTree]
+///
+///
+
+///
+/// [data], [left], [right]
+///
+/// static methods:
+/// [stringDiagramOf]
+///
+/// instance getters, methods:
+/// [iterateFromLeftToRight], [iterateFromRightToLeft]
+/// [traversalFromLeftToRight], [traversalFromRightToLeft]
+/// [climbFromLeftToRight], [climbFromRightToLeft]
+/// [leftest], [rightest]
+/// [depthLeft], [depthRight], [depth], [height]
+/// [relativeNodes]
+/// [any], [contains]
+/// [everyDifferent]
+///
+///
+abstract class NodeBinary<T> extends Vertex<T> {
+  NodeBinary<T>? get left;
+
+  NodeBinary<T>? get right;
+
+  const NodeBinary();
+
+  static String stringDiagramOf<E>(
+    NodeBinary<E>? node, [
+    String bottom = '',
+    String root = '',
+    String top = '',
+  ]) =>
+      node == null
+          ? '${root.replaceFirst('=', '')}\n'
+          : (
+              StringBuffer()
+                ..write(stringDiagramOf(
+                  node.left,
+                  '$top| ',
+                  '$top =',
+                  '$top  ',
+                ))
+                ..write('$root${node.data}\n')
+                ..write(stringDiagramOf(
+                  node.right,
+                  '$bottom  ',
+                  '$bottom =',
+                  '$bottom| ',
+                )),
+            ).toString();
+
+  @override
+  String toString() => stringDiagramOf(this);
+
+  ///
+  ///
+  /// [iterateFromLeftToRight], [iterateFromRightToLeft]
+  /// [traversalFromLeftToRight], [traversalFromRightToLeft]
+  /// [climbFromLeftToRight], [climbFromRightToLeft]
+  ///
+  ///
+  void iterateFromLeftToRight(Consumer<T> consume) {
+    left?.iterateFromLeftToRight(consume);
+    consume(data);
+    right?.iterateFromLeftToRight(consume);
+  }
+
+  void iterateFromRightToLeft(Consumer<T> consume) {
+    right?.iterateFromRightToLeft(consume);
+    consume(data);
+    left?.iterateFromRightToLeft(consume);
+  }
+
+  void traversalFromLeftToRight(Consumer<T> consume) {
+    consume(data);
+    left?.iterateFromLeftToRight(consume);
+    right?.iterateFromLeftToRight(consume);
+  }
+
+  void traversalFromRightToLeft(Consumer<T> consume) {
+    consume(data);
+    right?.iterateFromRightToLeft(consume);
+    left?.iterateFromRightToLeft(consume);
+  }
+
+  void climbFromLeftToRight(Consumer<T> consume) {
+    left?.iterateFromLeftToRight(consume);
+    right?.iterateFromLeftToRight(consume);
+    consume(data);
+  }
+
+  void climbFromRightToLeft(Consumer<T> consume) {
+    left?.iterateFromRightToLeft(consume);
+    right?.iterateFromRightToLeft(consume);
+    consume(data);
+  }
+
+  ///
+  /// [leftest], [rightest]
+  /// [depthLeft], [depthRight], [depth], [height]
+  ///
+  NodeBinary<T> get leftest => left?.leftest ?? this;
+
+  NodeBinary<T> get rightest => right?.rightest ?? this;
+
+  int get depthLeft {
+    final left = this.left;
+    return left == null ? 0 : 1 + left.depth;
+  }
+
+  int get depthRight {
+    final right = this.right;
+    return right == null ? 0 : 1 + right.depth;
+  }
+
+  int get depth => math.max(depthLeft, depthRight);
+
+  int get height => depth + 1; // + current node
+
+  ///
+  /// [relativeNodes]
+  /// [any], [contains]
+  /// [everyDifferent]
+  ///
+  List<T> get relativeNodes {
+    final list = <T>[];
+    iterateFromLeftToRight(list.add);
+    return list;
+  }
+
+  bool any(Predicator<T> test) {
+    const String pass = 'pass';
+    try {
+      iterateFromLeftToRight((value) {
+        if (test(value)) throw pass;
+      });
+    } on String catch (message) {
+      return message == pass;
+    }
+    return false;
+  }
+
+  bool contains(T element) => any((a) => a == element);
+
+  bool get everyDifferent {
+    final values = this.relativeNodes;
+    return values.toSet().length == values.length;
+  }
+}
+
+///
+/// [data], [left], [right], ...
+///
+/// instance getters, methods:
+/// [balanceFactor]
+/// [balance]
+/// [rotateLeft], [rotateRight]
+/// [rotateLeftRight], [rotateRightLeft]
+///
+///
+abstract class NodeBinaryAvl<T> extends NodeBinary<T> {
+  @override
+  NodeBinaryAvl<T>? get left;
+
+  set left(NodeBinaryAvl<T>? node);
+
+  @override
+  NodeBinaryAvl<T>? get right;
+
+  set right(NodeBinaryAvl<T>? node);
+
+  const NodeBinaryAvl();
+
+  ///
+  /// because [depthLeft] >= 0, [depthRight] >= 0,
+  /// if [balanceFactor] == 2, [depthLeft] >=2, which indicates [left] != null
+  /// if [balanceFactor] == -2, [depthRight] >=2, which indicates [right] != null
+  ///
+  int get balanceFactor => depthLeft - depthRight;
+
+  ///
+  /// after balancing, these methods return the balanced root of current node
+  ///
+  /// [balance]
+  /// [rotateLeft], [rotateRight]
+  /// [rotateLeftRight], [rotateRightLeft]
+  ///
+  NodeBinaryAvl<T> balance() => switch (balanceFactor) {
+        2 => left!.balanceFactor == -1 ? rotateLeftRight() : rotateRight(),
+        -2 => right!.balanceFactor == 1 ? rotateRightLeft() : rotateLeft(),
+        _ => this,
+      };
+
+  NodeBinaryAvl<T> rotateLeft() {
+    final pivot = right!;
+    right = pivot.left;
+    pivot.left = this;
+    return pivot;
+  }
+
+  NodeBinaryAvl<T> rotateRight() {
+    final pivot = left!;
+    left = pivot.right;
+    pivot.right = this;
+    return pivot;
+  }
+
+  NodeBinaryAvl<T> rotateLeftRight() {
+    final left = this.left;
+    if (left == null) return this;
+    this.left = left.rotateLeft();
+    return rotateRight();
+  }
+
+  NodeBinaryAvl<T> rotateRightLeft() {
+    final right = this.right;
+    if (right == null) return this;
+    this.right = right.rotateRight();
+    return rotateLeft();
+  }
+}
+
+///
+/// [children]
+/// [isLeaf]
+///
+/// [add]
+/// [forEachData], [forEachNode]
+/// [foldData], [foldNode]
+/// [whereData], [whereNode]
+///
+abstract class NodeTree<T> extends Vertex<T> {
+  final List<NodeTree<T>> children;
+
+  NodeTree(this.children);
+
+  ///
+  /// [add]
+  ///
+  void add(NodeTree<T> child) => children.add(child);
+
+  ///
+  /// [forEachData]
+  /// [forEachNode]
+  ///
+  void forEachData(Consumer<T> consume, [bool breadth = true]) =>
+      forEachNode((node) => consume(node.data), breadth);
+
+  void forEachNode(Consumer<NodeTree<T>> consume, [bool breadth = true]) =>
+      breadth
+          ? _forEachNodeBreadthFirst(consume)
+          : _forEachNodeDepthFirst(consume);
+
+  ///
+  /// [_forEachNodeDepthFirst]
+  /// [_forEachNodeBreadthFirst]
+  ///
+  void _forEachNodeDepthFirst(Consumer<NodeTree<T>> consume) {
+    consume(this);
+    for (final child in children) {
+      child._forEachNodeDepthFirst(consume);
+    }
+  }
+
+  void _forEachNodeBreadthFirst(Consumer<NodeTree<T>> consume) {
+    consume(this);
+    final list = List<NodeTree<T>>.of(children);
+    for (var i = 0; i < list.length; i++) {
+      final node = list[i];
+      consume(node);
+      list.addAll(node.children);
+    }
+  }
+
+  ///
+  /// [foldData], [foldNode]
+  ///
+  F foldData<F>(F initial, Companion<F, T> combine, [bool breadth = true]) {
+    var value = initial;
+    forEachNode((node) => value = combine(value, node.data), breadth);
+    return value;
+  }
+
+  F foldNode<F>(
+    F initial,
+    Companion<F, NodeTree<T>> combine, [
+    bool breadth = true,
+  ]) {
+    var value = initial;
+    forEachNode((node) => value = combine(value, node), breadth);
+    return value;
+  }
+
+  ///
+  /// [whereData], [whereNode]
+  ///
+  List<T> whereData(Predicator<T> test, [bool breadth = true]) =>
+      foldData([], (l, data) => test(data) ? (l..add(data)) : l);
+
+  List<NodeTree<T>> whereNode(
+    Predicator<NodeTree<T>> test, [
+    bool breadth = true,
+  ]) =>
+      foldNode([], (l, node) => test(node) ? (l..add(node)) : l, breadth);
+}
+
+
+///
+///
+///
+
+abstract class Junction<T, V extends Vertex<T>> extends Vertex<T> {
+  const Junction();
+
+  V get another;
+}
+
+///
+///
+///
+/// [Edge]
+/// [EdgeBidirectional]
+///
+///
+///
+
+///
+/// [_source], [_destination], [weight]
+/// [contains], ...
+///
+abstract class Edge<T, S, V extends Vertex<T>> {
+  V get _source;
+
+  V get _destination;
+
+  S get weight;
+
+  T get source => _source.data;
+
+  set source(T value) => _source.data = value;
+
+  T get destination => _destination.data;
+
+  set destination(T value) => _destination.data = value;
+
+  String toStringIdentity() => '$weight:${_source.data}===${_destination.data}';
+
+  @override
+  String toString() => 'Edge(${toStringIdentity()})';
+
+  const Edge();
+
+  ///
+  /// [toSource], [toDestination]
+  ///
+  static Vertex<T> toSource<T, S, V extends Vertex<T>>(Edge<T, S, V> edge) =>
+      edge._source;
+
+  static Vertex<T> toDestination<T, S, V extends Vertex<T>>(
+          Edge<T, S, V> edge) =>
+      edge._source;
+
+  ///
+  /// [contains]
+  /// [containsBoth]
+  /// [containsData]
+  ///
+  bool contains(V vertex) => _source == vertex || _destination == vertex;
+
+  bool containsBoth(V source, V destination) =>
+      _source == source || _destination == destination;
+
+  bool containsData(T data) =>
+      _source.data == data || _destination.data == data;
+
+  MapEntry<V, V> get toVertexEntry => MapEntry(_source, _destination);
+}
+
+///
+///
+///
+/// [EdgeBidirectional]
+///
+///
+///
+///
+///
+
+///
+/// [weightReverse]
+///
+mixin EdgeBidirectional<T, S, V extends Vertex<T>> on Edge<T, S, V> {
+  S get weightReverse;
+
+  bool get isWeightEqual => weight == weightReverse;
+  
+  @override
+  String toStringIdentity() => '${_source.data}==$weight>===<$weightReverse==${_destination.data})';
+}
+
+///
+/// [toVertices]
+///
+extension IterableEdgeExtension<T, S, V extends Vertex<T>>
+on Iterable<Edge<T, S, V>> {
+  Set<V> get toVertices => fold(
+    {},
+        (set, edge) => set
+      ..add(edge._source)
+      ..add(edge._destination),
+  );
+}
+
+///
+/// 
+/// 
+/// 
+/// 
+/// graph
+/// 
+/// 
+/// 
+/// 
+/// 
+/// 
+
+
+///
+///
+/// [vertices], ...
+///
+///
+abstract class Graph<T, S, V extends Vertex<T>, E extends Edge<T, S, V>> {
+  const Graph();
+
+  ///
+  /// [vertices], [edges], [weights]
+  ///
+  Iterable<V> get vertices;
+
+  Iterable<E> get edges;
+
+  String toStringIdentity() => '\n'
+      'Vertices: ${vertices.map((e) => e.data)}\n'
+      'Edges: ${edges.map((e) => e.toStringIdentity())}\n';
+
+  @override
+  String toString() => 'GraphAncestor(${toStringIdentity()})';
+
+  bool containsVertex(V vertex) => vertices.contains(vertex);
+
+  bool containsEdge(E edge) => edges.contains(edge);
+}
+
+// ///
+// ///
+// /// [edgesFrom], ...
+// /// [hasCycleOn], ...
+// /// [_hasCycleOn], ...
+// ///
+// ///
+// mixin _MixinGraphFunctions<T, S, V extends Vertex<T>, E extends Edge<T, S, V>>
+// on Graph<T, S, V, E> {
 //   ///
-//   /// Minimum Spanning Tree - Prim
+//   /// [vertexGroupsFromEdges]
+//   /// [destinationsGroupBySources]
+//   /// [sourcesGroupByDestinations]
 //   ///
-//   Set<Edge<C>> prim(Set<Edge<C>> edgesSet) {
-//     throw UnimplementedError();
+//   Map<K, List<D>> vertexGroupsFromEdges<K, D>(
+//       Mapper<E, K> edgeToKey,
+//       Mapper<E, D> edgeToValue,
+//       ) =>
+//       edges.fold(
+//         {},
+//             (map, edge) => map
+//           ..update(
+//             edgeToKey(edge),
+//                 (m) => m..add(edgeToValue(edge)),
+//             ifAbsent: () => [edgeToValue(edge)],
+//           ),
+//       );
+//
+//   Map<V, List<V>> get destinationsGroupBySources => vertexGroupsFromEdges(
+//         (value) => value._source,
+//         (value) => value._destination,
+//   );
+//
+//   Map<V, List<V>> get sourcesGroupByDestinations => vertexGroupsFromEdges(
+//         (value) => value._destination,
+//         (value) => value._source,
+//   );
+//
+//   ///
+//   /// [containsVertex], [containsVerticesOnEdge], [containsAllVertices]
+//   /// [containsEdge], [containsAllEdges], [containsEdgeForBoth]
+//   /// [weightFrom]
+//   ///
+//
+//   bool containsVerticesOnEdge(E edge) =>
+//       containsVertex(edge._source) && containsVertex(edge._destination);
+//
+//   bool containsAllVertices(Iterable<V> vertices) =>
+//       this.vertices.iterator.containsAll(vertices.iterator);
+//
+//   bool containsEdgeForBoth(V source, V destination) =>
+//       edges.any((edge) => edge.containsBoth(source, destination));
+//
+//   bool containsAllEdges(Iterable<E> edges) =>
+//       this.edges.iterator.containsAll(edges.iterator);
+//
+//   S weightFrom(V source, V destination) => edges.iterator.findMap(
+//         (edge) => edge.containsBoth(source, destination),
+//         (edge) => edge.weight,
+//   );
+//
+//   ///
+//   /// [edgesFrom], [edgesTo]
+//   /// [destinationsFrom], [sourcesTo]
+//   /// [reachablesFrom]
+//   ///
+//   Iterable<E> edgesFrom(V source) =>
+//       edges.where((edge) => edge._source == source);
+//
+//   Iterable<E> edgesTo(V destination) =>
+//       edges.where((edge) => edge._destination == destination);
+//
+//   Iterable<V> destinationsFrom(V source) => edges.iterator.mapWhere(
+//         (edge) => edge._source == source,
+//         (edge) => edge._destination,
+//   );
+//
+//   Iterable<V> sourcesTo(V destination) => edges.iterator.mapWhere(
+//         (edge) => edge._destination == destination,
+//         (edge) => edge._source,
+//   );
+//
+//   Iterable<V> reachablesFrom(V source, [bool breadth = true]) =>
+//       breadth ? _searchBreathFirst(source) : _searchDepthFirst(source);
+//
+//   ///
+//   /// [hasCycleOn]
+//   ///
+//   bool hasCycleOn(V source) => _hasCycleOn(source, []);
+//
+//   ///
+//   ///
+//   /// private implementations:
+//   ///
+//   /// [_hasCycleOn]
+//   /// [_searchBreathFirst]
+//   /// [_searchDepthFirst]
+//   ///
+//   ///
+//
+//   ///
+//   /// [_hasCycleOn]
+//   ///
+//   bool _hasCycleOn(V source, List<V> pushed) {
+//     pushed.add(source);
+//     final result = destinationsFrom(source).any((destination) =>
+//     pushed.contains(destination) || _hasCycleOn(destination, pushed));
+//     pushed.remove(source);
+//     return result;
 //   }
 //
 //   ///
-//   /// Minimum Spanning Tree - Kruskal
+//   /// [_searchBreathFirst]
+//   /// [_searchDepthFirst]
 //   ///
-//   Set<Edge<C>> kruskal(Set<Edge<C>> edgesSet) {
-//     throw UnimplementedError();
+//   List<V> _searchBreathFirst(V source) {
+//     final visited = <V>[source];
+//     for (var i = 0; i < visited.length; i++) {
+//       destinationsFrom(visited[i]).iterator.whereConsume(
+//             (destination) => visited.iterator.notContains(destination),
+//             (destination) => visited.add(destination),
+//       );
+//     }
+//     return visited;
 //   }
+//
+//   List<V> _searchDepthFirst(V source) {
+//     final visited = <V>[source];
+//     while (visited.isNotEmpty) {
+//       destinationsFrom(visited.removeLast()).iterator.whereConsume(
+//             (destination) => visited.iterator.notContains(destination),
+//             (destination) => visited.add(destination),
+//       );
+//     }
+//     return visited;
+//   }
+// }
+
+// //
+// mixin _MixinGraphSetVertex<T> on Graph<T, double, Vertex<T>, Edge<T, double, Vertex<T>>>
+// implements
+//     _MixinGraphFunctions<T, double, Vertex<T>, Edge<T, double, Vertex<T>>> {
+//   @override
+//   Set<Vertex<T>> get vertices;
+//
+//   @override
+//   Set<Edge<T, double, Vertex<T>>> edges = {};
+//
+//   ///
+//   /// Returns `true` if [edge] (or an equal value) was not yet in the [edges].
+//   /// Otherwise returns `false` and the set is not changed. See also [Set.add]
+//   ///
+//   bool addEdgeForVertices(Edge<T, double, Vertex<T>> edge) {
+//     if (containsVerticesOnEdge(edge)) return edges.add(edge);
+//     throw StateError(
+//       'Edge.source(${edge._source}) or '
+//           'Edge.destination(${edge._destination}) not in $vertices',
+//     );
+//   }
+// }
+//
+// //
+// mixin _MixinGraphSetEdge<T> on Graph<T, double, Vertex<T>, Edge<T, double, Vertex<T>>>
+// implements
+//     _MixinGraphFunctions<T, double, Vertex<T>, Edge<T, double, Vertex<T>>> {
+//   @override
+//   Set<Edge<T, double, Vertex<T>>> get edges;
+//
+//   @override
+//   Set<Vertex<T>> get vertices => edges.toVertices;
+// }
+//
+// ///
+// /// [createVertex], ...
+// /// [createEdge], ...
+// ///
+// abstract interface class _InterfaceGraphMutable<T, S, V extends Vertex<T>,
+// E extends Edge<T, S, V>> extends Graph<T, S, V, E> {
+//   ///
+//   /// [createVertex], [addVertex]
+//   /// [createEdge], [addEdge],
+//   ///
+//
+//   V createVertex(V vertex);
+//
+//   V addVertex(V vertex);
+//
+//   E createEdge(E edge);
+//
+//   E addEdge(E edge);
 // }

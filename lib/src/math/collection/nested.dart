@@ -2,16 +2,57 @@
 ///
 /// this file contains:
 ///
+/// [IteratorSet]
 ///
-/// [IterableIterableExtension]
+/// [IterableIterable]
+/// [IterableIterableComparable]
 ///
-///
-/// [ListListComparableExtension]
-/// [ListSetExtension]
+/// [ListListComparable]
+/// [ListSet]
 ///
 ///
 part of damath_math;
 
+///
+/// static methods:
+/// [_errorSetNotIdentical], ...
+///
+/// instance methods:
+/// [everyIdentical], ...
+/// [merged], ...
+///
+extension IteratorSet<K> on Iterator<Set<K>> {
+  ///
+  /// [_errorSetNotIdentical]
+  ///
+  static StateError _errorSetNotIdentical<K>(Set<K> a, Set<K> b) =>
+      StateError('set not identical:\n$a\n$b');
+
+  ///
+  /// [everyIdentical]
+  ///
+  bool get everyIdentical => moveNextSupply(() {
+        final set = current.copy;
+        while (moveNext()) {
+          if (current.any(set.add)) return false;
+        }
+        return true;
+      });
+
+  ///
+  /// [merged]
+  /// [mergedIfIdentical]
+  ///
+  Set<K> get merged => fold({}, (set, other) => set..addAll(other));
+
+  Set<K> get mergedIfIdentical => moveNextSupply(() {
+        final set = current.copy;
+        while (moveNext()) {
+          if (current.any(set.add)) throw _errorSetNotIdentical(set, current);
+        }
+        return set;
+      });
+}
 
 ///
 /// [size]
@@ -19,7 +60,7 @@ part of damath_math;
 /// [isEqualElementsLengthTo]
 /// [foldWith2D]
 ///
-extension IterableIterableExtension<I> on Iterable<Iterable<I>> {
+extension IterableIterable<I> on Iterable<Iterable<I>> {
   ///
   /// [size]
   ///
@@ -38,7 +79,7 @@ extension IterableIterableExtension<I> on Iterable<Iterable<I>> {
 
   String toStringPadLeft(int space) => toStringMapJoin(
         (row) => row.map((e) => e.toString().padLeft(space)).toString(),
-  );
+      );
 
   ///
   /// [isEqualElementsLengthTo]
@@ -53,17 +94,35 @@ extension IterableIterableExtension<I> on Iterable<Iterable<I>> {
   /// [foldWith2D]
   ///
   S foldWith2D<S, P>(
-      Iterable<Iterable<P>> another,
-      S initialValue,
-      Collector<S, I, P> fusionor,
-      ) =>
+    Iterable<Iterable<P>> another,
+    S initialValue,
+    Collector<S, I, P> fusionor,
+  ) =>
       foldWith(
         another,
         initialValue,
-            (value, e, eAnother) => value = e.foldWith(eAnother, value, fusionor),
+        (value, e, eAnother) => value = e.foldWith(eAnother, value, fusionor),
       );
 }
 
+///
+///
+///
+///
+extension IterableIterableComparable<C extends Comparable>
+    on Iterable<Iterable<C>> {
+  ///
+  /// [everyElementSorted]
+  /// [everyElementSortedThen]
+  ///
+  bool everyElementSorted([bool increase = true]) =>
+      every((element) => element.iterator.isSorted(increase));
+
+  void everyElementSortedThen(Listener listen, [bool increase = true]) =>
+      every((element) => element.iterator.isSorted(increase))
+          ? listen()
+          : throw IteratorComparable._errorIteratorDisorder();
+}
 
 ///
 ///
@@ -78,21 +137,32 @@ extension IterableIterableExtension<I> on Iterable<Iterable<I>> {
 ///
 
 ///
-/// [sortByFirst]
-/// [sortAccordingly]
+/// static methods:
+/// [accordinglyIncrease], ...
 ///
-extension ListListComparableExtension<C extends Comparable> on List<List<C>> {
+/// instance methods:
+/// [sortByFirst], ...
+///
+extension ListListComparable<C extends Comparable> on List<List<C>> {
   ///
-  /// [accordingly]
+  /// [accordinglyIncrease]
+  /// [accordinglyDecrease]
   ///
-  static int accordingly<C extends Comparable>(
-      List<C> a,
-      List<C> b,
-      Comparator<C> comparing,
-      ) {
+  static int accordinglyIncrease<C extends Comparable>(List<C> a, List<C> b) {
     final maxIndex = math.max(a.length, b.length);
     int compareBy(int i) {
-      final value = comparing(a[i], b[i]);
+      final value = Comparable.compare(a[i], b[i]);
+      return value == 0 && i < maxIndex ? compareBy(i + 1) : value;
+    }
+
+    return compareBy(0);
+  }
+
+  // it's redundant
+  static int accordinglyDecrease<C extends Comparable>(List<C> a, List<C> b) {
+    final maxIndex = math.max(a.length, b.length);
+    int compareBy(int i) {
+      final value = IteratorComparable.compare(a[i], b[i]);
       return value == 0 && i < maxIndex ? compareBy(i + 1) : value;
     }
 
@@ -101,27 +171,22 @@ extension ListListComparableExtension<C extends Comparable> on List<List<C>> {
 
   ///
   /// [sortByFirst]
-  ///
-  void sortByFirst([bool increasing = true]) => sort(
-    increasing
-        ? (a, b) => a.first.compareTo(b.first)
-        : (a, b) => b.first.compareTo(a.first),
-  );
-
-  ///
   /// [sortAccordingly]
   ///
-  void sortAccordingly([bool increase = true]) => sort(
-    increase
-        ? (a, b) => accordingly(a, b, Comparable.compare)
-        : (a, b) => accordingly(a, b, ListComparableExtension.reverse),
-  );
+  void sortByFirst([bool increasing = true]) => sort(
+        increasing
+            ? (a, b) => a.first.compareTo(b.first)
+            : (a, b) => b.first.compareTo(a.first),
+      );
+
+  void sortAccordingly([bool increase = true]) =>
+      sort(increase ? accordinglyIncrease : accordinglyDecrease);
 }
 
 ///
 /// [mergeToThis], ...
 ///
-extension ListSetExtension<I> on List<Set<I>> {
+extension ListSet<I> on List<Set<I>> {
   ///
   /// [mergeToThis]
   /// [mergeToThat]

@@ -1,30 +1,35 @@
-// import 'dart:math' as math;
+// import 'package:damath/src/core/core.dart';
 // import 'package:damath/src/experiment/experiment.dart';
 // import 'package:damath/src/math/math.dart';
 
 void main(List<String> arguments) async {
   // watching();
 
-  // final units = ProcessUnitList([
-  //   ProcessUnit(Future.delayed(Duration.zero), KCore.durationMilli200, KCore.durationSecond1),
-  //   ProcessUnit(Future.delayed(Duration.zero), KCore.durationSecond4, KCore.durationSecond1),
-  //   ProcessUnit(Future.delayed(Duration.zero), KCore.durationMilli100, KCore.durationSecond1),
-  // ]);
-  // print(units.sequenceTurnaround);
-
-  print(const {5, 2} == const {2, 5});
-
 }
 
-// void watching() async {
-//   final watch = Stopwatch();
-//   print('start');
-//
-//   watch.start();
-//   watch.reset();
-//
-//   watch.start();
-//   watch.reset();
-//
-//   print('end');
-// }
+void watching() async {
+  final watch = Stopwatch();
+  print('start');
+
+  watch.start();
+  print('way 1: ${way1()} in ${watch.elapsed}');
+  watch.reset();
+
+  watch.start();
+  print('way 2: ${way2()} in ${watch.elapsed}');
+  watch.reset();
+
+  print('end');
+}
+
+String way1() {
+  for (var i = 1e9; i > 1; i--) {}
+  throw UnimplementedError();
+  // return hello.toString();
+}
+
+String way2() {
+  for (var i = 1e9; i > 1; i--) {}
+  throw UnimplementedError();
+  // return world.toString();
+}

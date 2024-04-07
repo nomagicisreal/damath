@@ -6,16 +6,19 @@ part of damath_math;
 /// [interYieldingTo], ...
 /// [interFold], ...
 /// [interReduceTo], ...
+/// [intersection], ...
 ///
 /// difference:
 /// [diff], ...
 /// [diffYieldingTo], ...
 /// [diffFold], ...
 /// [diffReduceToInitialized], ...
+/// [difference]
 ///
 /// others:
-/// [interval], ...
 /// [leadThenInterFold], ...
+/// [interval], ...
+/// [combinationsWith], ...
 ///
 ///
 extension IteratorWithExtension<I> on Iterator<I> {
@@ -285,7 +288,7 @@ extension IteratorWithExtension<I> on Iterator<I> {
     Reducer<S> init,
     Collapser<S> mutual,
   ) =>
-      moveNextThenWith(other, () {
+      moveNextSupplyWith(other, () {
         var val = init(toVal(current), toValother(other.current));
         while (moveNext() && other.moveNext()) {
           val = mutual(val, toVal(current), toValother(other.current));
@@ -301,7 +304,7 @@ extension IteratorWithExtension<I> on Iterator<I> {
     CollapserGenerator<S> mutual,
     int start,
   ) =>
-      moveNextThenWith(other, () {
+      moveNextSupplyWith(other, () {
         var val = init(toVal(current), toValother(other.current));
         for (var i = start + 1; moveNext() && other.moveNext(); i++) {
           val = mutual(val, toVal(current), toValother(other.current), i);
@@ -318,7 +321,7 @@ extension IteratorWithExtension<I> on Iterator<I> {
     Mixer<I, E, S> init,
     Collector<S, I, E> mutual,
   ) =>
-      moveNextThenWith(other, () {
+      moveNextSupplyWith(other, () {
         var val = init(current, other.current);
         while (moveNext() && other.moveNext()) {
           val = mutual(val, current, other.current);
@@ -332,7 +335,7 @@ extension IteratorWithExtension<I> on Iterator<I> {
     CollectorGenerator<S, I, E> mutual,
     int start,
   ) =>
-      moveNextThenWith(other, () {
+      moveNextSupplyWith(other, () {
         var val = init(current, other.current, start);
         for (var i = start + 1; moveNext() && other.moveNext(); i++) {
           val = mutual(val, current, other.current, i);
@@ -354,6 +357,36 @@ extension IteratorWithExtension<I> on Iterator<I> {
     int start,
   ) =>
       interReduceToInitializedIndexable(other, init, mutual, start);
+
+  ///
+  /// [intersection], [intersectionIndex], [intersectionDetail]
+  ///
+
+  ///
+  /// [intersection]
+  /// [intersectionIndex]
+  /// [intersectionDetail]
+  ///
+  Iterable<I> intersection(Iterable<I> another) => interYieldingToWhere(
+        another.iterator,
+        FPredicatorCombiner.isEqual,
+        FReducer.keepV1,
+      );
+
+  Iterable<int> intersectionIndex(Iterable<I> another, [int start = 0]) =>
+      interYieldingToIndexableWhere(
+        another.iterator,
+        FPredicatorCombiner.isEqual,
+        (p, q, index) => index,
+        start,
+      );
+
+  Map<int, I> intersectionDetail(Iterable<I> another) => interFoldIndexable(
+        {},
+        another.iterator,
+        (map, v1, v2, index) => map..putIfAbsentWhen(v1 == v2, index, () => v1),
+        0,
+      );
 
   ///
   ///
@@ -625,7 +658,7 @@ extension IteratorWithExtension<I> on Iterator<I> {
     Collector<S, I, E> mutual,
     Companion<S, I> overflow,
   ) =>
-      moveNextThenWith(other, () {
+      moveNextSupplyWith(other, () {
         var val = init(current, other.current);
         while (other.moveNext()) {
           if (moveNext()) val = mutual(val, current, other.current);
@@ -643,7 +676,7 @@ extension IteratorWithExtension<I> on Iterator<I> {
     CompanionGenerator<S, I> overflow,
     int start,
   ) =>
-      moveNextThenWith(other, () {
+      moveNextSupplyWith(other, () {
         var i = start - 1;
         var val = init(current, other.current, ++i);
         while (other.moveNext()) {
@@ -677,6 +710,76 @@ extension IteratorWithExtension<I> on Iterator<I> {
       diffReduceToInitializedIndexable(other, init, mutual, overflow, start);
 
   ///
+  /// [difference], [differenceIndex], [differenceDetail]
+  ///
+  ///
+  /// [difference]
+  /// [differenceIndex]
+  /// [differenceDetail]
+  ///
+  Iterable<I> difference(Iterable<I> another) => diffYieldingToWhere(
+        another.iterator,
+        FPredicatorCombiner.isDifferent,
+        FPredicator.alwaysTrue,
+        FReducer.keepV1,
+        FApplier.keep,
+      );
+
+  Iterable<int> differenceIndex(Iterable<I> another, [int start = 0]) =>
+      diffYieldingToIndexableWhere(
+        another.iterator,
+        FPredicatorCombiner.isDifferent,
+        FPredicator.alwaysTrue,
+        (p, q, index) => index,
+        (value, index) => index,
+        start,
+      );
+
+  ///
+  /// [MapEntry.key] is the value in this instance that different with [another]
+  /// [MapEntry.value] is the value in [another] that different with this instance
+  ///
+  Map<int, MapEntry<I, I?>> differenceDetail(Iterable<I> another) =>
+      diffFoldIndexable(
+        {},
+        another.iterator,
+        (map, e1, e2, index) =>
+            map..putIfAbsentWhen(e1 != e2, index, () => MapEntry(e1, e2)),
+        (map, e1, index) => map..putIfAbsent(index, () => MapEntry(e1, null)),
+        0,
+      );
+
+  ///
+  /// lead then
+  /// [leadThenInterFold]
+  /// [leadThenDiffFold]
+  ///
+
+  ///
+  /// [leadThenInterFold]
+  /// [leadThenDiffFold]
+  ///
+  S leadThenInterFold<E, S>(
+    int ahead,
+    Mapper<I, S> init,
+    Iterator<E> other,
+    Collector<S, I, E> mutual,
+  ) =>
+      leadSupply(ahead, () => interFold(init(current), other, mutual));
+
+  S leadThenDiffFold<E, S>(
+    int ahead,
+    Mapper<I, S> init,
+    Iterator<E> other,
+    Collector<S, I, E> mutual,
+    Companion<S, I> overflow,
+  ) =>
+      leadSupply(
+        ahead,
+        () => diffFold(init(current), other, mutual, overflow),
+      );
+
+  ///
   /// interval
   /// [interval]
   /// [intervalBy]
@@ -686,7 +789,7 @@ extension IteratorWithExtension<I> on Iterator<I> {
   /// [interval]
   /// [intervalBy]
   ///
-  Iterable<I> interval(Reducer<I> reducing) => moveNextThen(() sync* {
+  Iterable<I> interval(Reducer<I> reducing) => moveNextSupply(() sync* {
         var previous = current;
         while (moveNext()) {
           yield reducing(previous, current);
@@ -706,41 +809,29 @@ extension IteratorWithExtension<I> on Iterator<I> {
   ///   // (16.0, 27.0, 38.0, 49.0, 60.0, 71.0, 82.0, 93.0, 104.0)
   ///
   Iterable<S> intervalBy<T, S>(Iterator<T> interval, Linker<I, T, S> link) =>
-      moveNextThen(
-        () sync* {
-          var previous = current;
-          while (moveNext() && interval.moveNext()) {
-            yield link(previous, current, interval.current);
-            previous = current;
-          }
-        },
-      );
+      moveNextSupply(() sync* {
+        var previous = current;
+        while (moveNext() && interval.moveNext()) {
+          yield link(previous, current, interval.current);
+          previous = current;
+        }
+      });
 
   ///
-  /// [leadThenInterFold], [leadThenDiffFold]
+  /// combination
+  /// [combinationsWith]
   ///
 
   ///
-  /// [leadThenInterFold]
-  /// [leadThenDiffFold]
+  /// listA = [1, 2, 3];
+  /// listB = [101, 102];
+  /// result = [combinationsWith] ([listA, listB]);
+  /// print(result); // [
+  ///   [MapEntry(1, 101), MapEntry(1, 102)],
+  ///   [MapEntry(2, 101), MapEntry(2, 102)],
+  ///   [MapEntry(3, 101), MapEntry(3, 102)],
+  /// }
   ///
-  S leadThenInterFold<E, S>(
-    int ahead,
-    Mapper<I, S> init,
-    Iterator<E> other,
-    Collector<S, I, E> mutual,
-  ) =>
-      leadThen(ahead, () => interFold(init(current), other, mutual));
-
-  S leadThenDiffFold<E, S>(
-    int ahead,
-    Mapper<I, S> init,
-    Iterator<E> other,
-    Collector<S, I, E> mutual,
-    Companion<S, I> overflow,
-  ) =>
-      leadThen(
-        ahead,
-        () => diffFold(init(current), other, mutual, overflow),
-      );
+  Iterable<Iterable<MapEntry<I, V>>> combinationsWith<V>(Iterator<V> another) =>
+      map(another.mapToEntriesByKey);
 }

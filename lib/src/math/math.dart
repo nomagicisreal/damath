@@ -2,6 +2,7 @@ library damath_math;
 
 import 'dart:math' as math;
 import 'package:damath/src/core/core.dart';
+import 'package:damath/src/experiment/experiment.dart';
 
 
 part 'collection/nested.dart';
@@ -10,6 +11,7 @@ part 'collection/primary.dart';
 part 'iterable/list.dart';
 part 'iterable/iterable.dart';
 part 'iterable/iterator.dart';
+part 'iterable/iteratorto.dart';
 part 'iterable/iterwith.dart';
 part 'primary/function.dart';
 part 'primary/number.dart';
