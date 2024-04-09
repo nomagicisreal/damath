@@ -3,12 +3,16 @@
 ///
 /// this file contains:
 ///
-/// [_MixinVertexLazyFinal], ...
-/// [_MixinVertexOperatableComparable]
-/// 
+/// ##[_MixinVertexLazyFinal], ..., [_MixinVertexHiddenAssign]
+/// ##[_MixinVertexComparatorPredicate]
+/// ##[_MixinVertexOperatableComparable]
+///
+/// ##[_MixinNodeNextInsertableNullable]
+/// ##[_MixinNodeNextInsertableByPredication]
+/// ##[_MixinNodeNextInsertableByComparator]
 /// [NodeBinary]
 ///   [NodeBinaryAvl]
-/// [NodeTree]
+/// [NodeTree], [_NodeTreeChainedConstructor], [NodeTreeChained]
 ///
 /// [Junction]
 ///
@@ -58,19 +62,79 @@ part of damath_experiment;
 // }
 // ....
 
+//
+// mixin _MixinVertexHiddenAssign<T> on _MixinVertexHidden<T> {
+//   bool _nullAssign(T data) {
+//     if (_data == null) {
+//       _data = data;
+//       return true;
+//     }
+//     return false;
+//   }
+// }
+
+// mixin _MixinVertexComparatorPredicate<T> on Vertex<T> {
+//   Predicator<int> get _predicator;
+//
+//   Comparator<T> get _comparator;
+//
+//   bool _predicateNew(T data) => _predicator(_comparator(this.data, data));
+// }
+
 ///
 /// [_MixinVertexOperatableComparable]
 ///
 ///
 
 //
-mixin _MixinVertexOperatableComparable<T extends Comparable>
-    on Vertex<T>, OperatableComparable<_MixinVertexOperatableComparable<T>> {
-  
+base mixin _MixinVertexOperatableComparable<T extends Comparable>
+    on BOperatableComparable<_MixinVertexOperatableComparable<T>>
+    implements Vertex<T> {
   @override
   int compareTo(_MixinVertexOperatableComparable<T> other) =>
       data.compareTo(other.data);
 }
+
+
+// //
+// mixin _MixinNodeNextInsertableNullable<T>
+// on
+//     _NodeNextInsertable<T, _MixinNodeNextInsertableNullable<T>>,
+//     _MixinVertexHiddenAssign<T> {
+//   @override
+//   void insert(T data) {
+//     if (!_nullAssign(data)) super.insert(data);
+//   }
+// }
+//
+// //
+// mixin _MixinNodeNextInsertableByPredication<T>
+// on _NodeNextInsertable<T, _MixinNodeNextInsertableByPredication<T>> {
+//   @override
+//   void insert(T data) =>
+//       _predicate(data) ? _insertCurrent(data) : _insertNext(data);
+//
+//   bool _predicate(T data);
+// }
+//
+// //
+// mixin _MixinNodeNextInsertableByComparator<T,
+// N extends _MixinNodeNextInsertableByComparator<T, N>>
+// on _NodeNextInsertable<T, N> {
+//   @override
+//   void insert(T data, [Comparator<T>? comparator]);
+//
+//   @override
+//   void insertAll(Iterable<T> iterable, [Comparator<T>? comparator]) =>
+//       iterable.iterator.consumeAll((data) => insert(data, comparator));
+//
+//   @override
+//   void _insertNext(T data, [Comparator<T>? comparator]) =>
+//       _child = _constructChild(
+//         data,
+//             (node) => node..insert(data, comparator),
+//       );
+// }
 
 ///
 ///
@@ -384,6 +448,64 @@ abstract class NodeTree<T> extends Vertex<T> {
       foldNode([], (l, node) => test(node) ? (l..add(node)) : l, breadth);
 }
 
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///
+
+
+//
+// typedef _NodeTreeChainedConstructor<T> = NodeTreeChained<T> Function(
+//     Comparator<T> comparator,
+//     T data,
+//     NodeTreeChained<T>? next,
+//     );
+//
+// //
+// mixin _MixinNodeTreeChained<T, N extends NodeTreeChained<T>>
+// on
+//     _NodeNextInsertable<T, NodeTreeChained<T>>,
+//     _MixinVertexComparatorPredicate<T> {
+//   @override
+//   NodeConstructorNext<T, NodeTreeChained<T>> get _construct =>
+//           (data, next) => _chained(_comparator, data, next);
+//
+//   @override
+//   void insert(T data) => throw UnimplementedError();
+//
+//   _NodeTreeChainedConstructor<T> get _chained;
+// }
+//
+//
+// ///
+// /// [_comparator], ...(overrides)
+// ///
+// abstract class NodeTreeChained<T> extends Vertex<T>
+//     with
+//         _MixinVertexComparatorPredicate<T>,
+//         _MixinNodeTreeChained<T, NodeTreeChained<T>> {
+//   ///
+//   /// overrides
+//   ///
+//   @override
+//   final Comparator<T> _comparator;
+//
+//   @override
+//   final _NodeTreeChainedConstructor<T> _chained;
+//
+//   ///
+//   /// constructors
+//   ///
+//   const NodeTreeChained(this._comparator, this._chained);
+// }
+
 
 ///
 ///
@@ -473,37 +595,37 @@ mixin EdgeBidirectional<T, S, V extends Vertex<T>> on Edge<T, S, V> {
   S get weightReverse;
 
   bool get isWeightEqual => weight == weightReverse;
-  
+
   @override
-  String toStringIdentity() => '${_source.data}==$weight>===<$weightReverse==${_destination.data})';
+  String toStringIdentity() =>
+      '${_source.data}==$weight>===<$weightReverse==${_destination.data})';
 }
 
 ///
 /// [toVertices]
 ///
 extension IterableEdgeExtension<T, S, V extends Vertex<T>>
-on Iterable<Edge<T, S, V>> {
+    on Iterable<Edge<T, S, V>> {
   Set<V> get toVertices => fold(
-    {},
+        {},
         (set, edge) => set
-      ..add(edge._source)
-      ..add(edge._destination),
-  );
+          ..add(edge._source)
+          ..add(edge._destination),
+      );
 }
 
 ///
-/// 
-/// 
-/// 
-/// 
+///
+///
+///
+///
 /// graph
-/// 
-/// 
-/// 
-/// 
-/// 
-/// 
-
+///
+///
+///
+///
+///
+///
 
 ///
 ///

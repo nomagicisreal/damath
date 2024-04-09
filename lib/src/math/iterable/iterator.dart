@@ -3,9 +3,8 @@ part of damath_math;
 ///
 ///
 ///
-/// [hasNextToConsume], ...
-/// [moveNextApply], ...
-/// [leadSupply], ...
+/// [hasNextConsume], ...
+/// [moveNextConsume], ...
 ///
 /// [contains], ...
 /// [any], ...
@@ -27,24 +26,30 @@ part of damath_math;
 ///
 extension IteratorExtension<I> on Iterator<I> {
   ///
-  /// [hasNextToConsume]
+  /// [hasNextConsume]
+  /// [consumeAll]
   ///
-  void hasNextToConsume(Consumer<Iterator<I>> consume) {
+  void hasNextConsume(Consumer<Iterator<I>> consume) {
     if (moveNext()) consume(this);
   }
 
+  void consumeAll(Consumer<I> consume) {
+    while (moveNext()) {
+      consume(current);
+    }
+  }
+
   ///
+  /// [moveNextConsume]
   /// [moveNextApply]
-  /// [moveNextApplyWith]
   ///
+  void moveNextConsume(Consumer<I> consume) => moveNext()
+      ? consume(current)
+      : throw StateError(KErrorMessage.iteratorNoElement);
+
   I moveNextApply(Applier<I> apply) => moveNext()
       ? apply(current)
       : throw StateError(KErrorMessage.iteratorNoElement);
-
-  I moveNextApplyWith<E>(Iterator<E> another, Applier<I> apply) =>
-      moveNext() && another.moveNext()
-          ? apply(current)
-          : throw StateError(KErrorMessage.iteratorNoElement);
 
   ///
   /// [leadApply]
@@ -423,7 +428,7 @@ extension IteratorExtension<I> on Iterator<I> {
     for (; moveNext() && i < count; i++) {
       yield current;
     }
-    if (count > i) throw RangeError(KErrorMessage.iteratorIndexOutOfBoundary);
+    if (count > i) throw RangeError(KErrorMessage.indexOutOfBoundary);
   }
 
   Iterable<I> get takeAll sync* {
@@ -552,7 +557,7 @@ extension IteratorExtension<I> on Iterator<I> {
     for (; moveNext() && i < count; i++) {
       list.add(current);
     }
-    if (count > i) throw RangeError(KErrorMessage.iteratorIndexOutOfBoundary);
+    if (count > i) throw RangeError(KErrorMessage.indexOutOfBoundary);
     return list;
   }
 
@@ -636,7 +641,6 @@ extension IteratorExtension<I> on Iterator<I> {
         return list;
       });
 
-
   ///
   /// skip / [Iterable.skip]
   /// [skip]
@@ -645,7 +649,7 @@ extension IteratorExtension<I> on Iterator<I> {
   Iterable<I> skip(int count) {
     var i = 0;
     for (; moveNext() && i < count; i++) {}
-    if (count > i) throw RangeError(KErrorMessage.iteratorIndexOutOfBoundary);
+    if (count > i) throw RangeError(KErrorMessage.indexOutOfBoundary);
     return takeAll;
   }
 
@@ -966,5 +970,4 @@ extension IteratorExtension<I> on Iterator<I> {
         }
         return val;
       });
-
 }

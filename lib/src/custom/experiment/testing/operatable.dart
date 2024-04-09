@@ -2,13 +2,6 @@
 ///
 /// this file contains:
 ///
-/// [OperatableComparable]
-/// [OperatableScalable]
-/// [OperatableStepable]
-/// [OperatableComplex]
-/// [OperatableIndexable]
-///   [OperatableIndexableList]
-///
 ///
 /// [Radian]
 ///   [Radian2]
@@ -26,91 +19,6 @@
 ///
 ///
 part of damath_experiment;
-
-///
-/// directable
-///
-mixin OperatableDirectable<O> on Object {
-  Object operator -();
-
-  Object operator +(covariant O other);
-
-  Object operator -(covariant O other);
-}
-
-///
-/// comparable
-///
-mixin OperatableComparable<O extends Comparable<O>> on Object
-    implements Comparable<O> {
-  static StateError error() => StateError('no implementation for compareTo');
-
-  @override
-  int compareTo(O other);
-
-  @override
-  bool operator ==(covariant O other) => compareTo(other) == 0;
-
-  bool operator >(O other) => compareTo(other) == 1;
-
-  bool operator <(O other) => compareTo(other) == -1;
-
-  bool operator >=(O other) {
-    final value = compareTo(other);
-    return value == 1 || value == 0;
-  }
-
-  bool operator <=(O other) {
-    final value = compareTo(other);
-    return value == -1 || value == 0;
-  }
-}
-
-///
-/// scalable
-///
-mixin OperatableScalable<O> on Object {
-  Object operator *(covariant O other);
-
-  Object operator /(covariant O other);
-
-  Object operator %(covariant O other);
-}
-
-///
-/// stepable
-///
-mixin OperatableStepable<O> on Object {
-  Object operator ~/(covariant O other);
-}
-
-///
-/// complex
-///
-mixin OperatableComplex<O> on Object {
-  Object operator &(covariant O other);
-
-  Object operator ^(covariant O other);
-
-  Object operator >>(covariant O other);
-
-  Object operator <<(covariant O other);
-}
-
-///
-/// indexable
-///
-mixin OperatableIndexable<T> on Object {
-  T operator [](int index);
-}
-
-//
-mixin OperatableIndexableList<T> on Object implements OperatableIndexable<T> {
-  List<T> get _list;
-
-  @override
-  T operator [](int index) => _list[index];
-}
 
 ///
 ///
@@ -133,11 +41,8 @@ mixin OperatableIndexableList<T> on Object implements OperatableIndexable<T> {
 /// [cos], ... (getters)
 /// [azimuthalIn], ... (methods)
 ///
-abstract interface class Radian 
-    with
-        OperatableDirectable,
-        OperatableComparable<Radian>,
-        OperatableScalable {
+abstract base class Radian extends BOperatableComparable<Radian>
+    implements IOperatableDirectable, IOperatableScalable {
   final double rAzimuthal;
 
   const Radian(this.rAzimuthal);
@@ -306,7 +211,7 @@ abstract interface class Radian
 /// [azimuthalInQuadrant], ... (methods)
 ///
 ///
-class Radian2 extends Radian {
+base class Radian2 extends Radian {
   const Radian2(super.rAzimuthal);
 
   ///
@@ -364,7 +269,7 @@ class Radian2 extends Radian {
 /// [toRecord], ...(getters)
 ///
 ///
-class Radian3 extends Radian {
+base class Radian3 extends Radian {
   ///
   /// the rotation of [rPolar] ranges in 0 ~ π, start from [Direction3DIn6.top] to [Direction3DIn6.bottom]
   ///
@@ -534,14 +439,33 @@ class Radian3 extends Radian {
 /// [middleTo], ...(methods)
 ///
 ///
-sealed class Point 
-    with
-        OperatableDirectable,
-        OperatableComparable<Point>,
-        OperatableScalable,
-        OperatableStepable {
+sealed class Point extends BOperatableComparable<Point>
+    implements IOperatableDirectable, IOperatableScalable, IOperatableStepable {
+  ///
+  ///
+  /// overrides
+  ///
+  ///
+  @override
+  int compareTo(Point other) => x < other.x && y < other.y
+      ? -1
+      : x > other.x && y > other.y
+      ? 1
+      : 0;
+
+  ///
+  /// properties
+  ///
   final double x;
   final double y;
+
+
+  ///
+  /// getter, function
+  ///
+  Record get toRecord;
+
+  Point middleTo(Point p);
 
   ///
   ///
@@ -555,36 +479,6 @@ sealed class Point
   const Point.ofX(double dx) : this(dx, 0);
 
   const Point.ofY(double dy) : this(0, dy);
-
-  ///
-  ///
-  /// implementations for [Operatable]
-  ///
-  ///
-  @override
-  int compareTo(Point other) => throw OperatableComparable.error();
-
-  @override
-  bool operator <(covariant Point other) => x < other.x && y < other.y;
-
-  @override
-  bool operator <=(covariant Point other) => x <= other.x && y <= other.y;
-
-  @override
-  bool operator >(covariant Point other) => x > other.x && y > other.y;
-
-  @override
-  bool operator >=(covariant Point other) => x >= other.x && y >= other.y;
-
-  ///
-  /// [toRecord]
-  ///
-  Record get toRecord;
-
-  ///
-  /// [middleTo]
-  ///
-  Point middleTo(Point p);
 }
 
 ///
@@ -598,7 +492,7 @@ sealed class Point
 ///
 /// [...nothing...], ...()
 ///
-class Point2 extends Point {
+base class Point2 extends Point {
   ///
   ///
   /// constructors
@@ -752,7 +646,7 @@ class Point2 extends Point {
 ///
 /// to compute efficiently without creating a class, see [RecordDouble3]
 ///
-class Point3 extends Point {
+base class Point3 extends Point {
   final double dz;
 
   ///

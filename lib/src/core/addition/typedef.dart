@@ -25,6 +25,8 @@
 ///
 ///
 ///
+///
+///
 part of damath_core;
 
 ///
@@ -83,3 +85,10 @@ typedef MixerGenerator<A, B, S> = S Function(A a, B b, int index);
 ///
 typedef Differentiator<A, B> = int Function(A a, B b);
 typedef Lerper<T> = T Function(double t);
+
+
+///
+/// complex
+///
+
+typedef Applicator<A, T> = Applier<A> Function(T value);

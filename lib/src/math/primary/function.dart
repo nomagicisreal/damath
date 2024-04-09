@@ -27,6 +27,14 @@ extension FPredicator on Predicator {
   static bool alwaysTrue<T>(T value) => true;
 
   static bool alwaysFalse<T>(T value) => false;
+  //
+  // ///
+  // /// [compareIncrease]
+  // /// [compareDecrease]
+  // ///
+  // static bool compareIncrease(int value) => value == -1;
+  //
+  // static bool compareDecrease(int value) => value == 1;
 
   ///
   /// [sameWith]
@@ -178,22 +186,15 @@ extension FComparator<C> on Comparator<C> {
   ///
   /// entry key
   ///
-  static int entryKeyIntIncrease<V>(MapEntry<int, V> a, MapEntry<int, V> b) =>
+  static int entryKeyInt<V>(MapEntry<int, V> a, MapEntry<int, V> b) =>
       a.key.compareTo(b.key);
-
-  static int entryKeyIntDecrease<V>(MapEntry<int, V> a, MapEntry<int, V> b) =>
-      b.key.compareTo(a.key);
 
   ///
   /// entry value
   ///
-  static int entryValueDurationIncrease<K>(
+  static int entryValueDuration<K>(
           MapEntry<K, Duration> a, MapEntry<K, Duration> b) =>
       a.value.compareTo(b.value);
-
-  static int entryValueDurationDecrease<K>(
-          MapEntry<K, Duration> a, MapEntry<K, Duration> b) =>
-      b.value.compareTo(a.value);
 }
 
 ///
@@ -620,6 +621,15 @@ extension FReducer on Reducer {
 ///
 extension FCompanion on Companion {
   static T keep<T, S>(T origin, S another) => origin;
+}
+
+///
+///
+///
+extension FMixer on Mixer {
+  static MapEntry<K, V> entry<K, V>(K key, V value) => MapEntry(key, value);
+
+  static MapEntry<V, K> entryReverse<K, V>(K k, V v) => MapEntry(v, k);
 }
 
 ///

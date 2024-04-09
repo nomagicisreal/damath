@@ -3,15 +3,16 @@
 /// this file contains:
 /// [Vertex]
 ///   |##[_MixinVertexHidden]
-///   |##[_MixinVertexNullable]
-///   |   ##[_MixinVertexNullableAssign]
-///   |   ##[_MixinVertexNullableHidden]
 ///   |
 ///   |-[_VertexImmutable], [_VertexImmutableNullable]
 ///   |-[_VertexMutable], [_VertexMutableNullable]
 ///   |
 ///   |
+///   |
+///   |
+///   |
 ///   |-[Node], ...
+///
 ///
 ///
 ///
@@ -37,6 +38,9 @@ abstract class Vertex<T> {
   @override
   bool operator ==(covariant Vertex<T> other) => hashCode == other.hashCode;
 
+  @override
+  String toString() => 'Vertex($data)';
+
   /// constructor
   ///
   const Vertex();
@@ -48,7 +52,8 @@ abstract class Vertex<T> {
 
   factory Vertex.mutable(T data) = _VertexMutable<T>;
 
-  const factory Vertex.immutableNullable([T? data]) = _VertexImmutableNullable<T>;
+  const factory Vertex.immutableNullable([T? data]) =
+      _VertexImmutableNullable<T>;
 
   factory Vertex.mutableNullable([T? data]) = _VertexMutableNullable<T>;
 
@@ -68,62 +73,25 @@ abstract class Vertex<T> {
   ///
   /// getter, setter
   ///
-  set data(T value) => throw StateError(KErrorMessage.vertexDataIsImmutable);
+  set data(T value) => throw StateError(KErrorMessage.modifyImmutable);
 
   T get data;
 }
 
 //
 mixin _MixinVertexHidden<T> on Vertex<T> {
-  set _data(T value) => throw StateError(KErrorMessage.vertexDataIsImmutable);
-
-  T get _data;
-
   @override
-  T get data => _data;
-
-  @override
-  set data(T value) =>
-      throw StateError(KErrorMessage.vertexDataCannotAssignDirectly);
-}
-
-//
-mixin _MixinVertexNullable<T> on Vertex<T> {
-  set _dataNullable(T? value) =>
-      throw StateError(KErrorMessage.vertexDataIsImmutable);
-
-  T? get _dataNullable;
+  set data(T value) => _data = value;
 
   @override
   T get data =>
-      _dataNullable ??
-      (throw StateError(KErrorMessage.vertexDataRequiredNotNull));
+      _data ??
+          (throw StateError(KErrorMessage.vertexDataRequiredNotNull));
 
-  @override
-  set data(T value) => _dataNullable = value;
-}
+  set _data(T? value) =>
+      throw StateError(KErrorMessage.modifyImmutable);
 
-//
-mixin _MixinVertexNullableAssign<T> on _MixinVertexNullable<T> {
-  bool _nullAssign(T data) {
-    if (_dataNullable == null) {
-      _dataNullable = data;
-      return true;
-    }
-    return false;
-  }
-}
-
-//
-mixin _MixinVertexNullableHidden<T>
-    on _MixinVertexNullable<T>, _MixinVertexHidden<T> {
-  @override
-  T get _data =>
-      _dataNullable ??
-      (throw StateError(KErrorMessage.vertexDataRequiredNotNull));
-
-  @override
-  set _data(T value) => _dataNullable = value;
+  T? get _data;
 }
 
 //
@@ -136,11 +104,11 @@ class _VertexImmutable<T> extends Vertex<T> {
 
 //
 class _VertexImmutableNullable<T> extends Vertex<T>
-    with _MixinVertexNullable<T> {
+    with _MixinVertexHidden<T> {
   @override
-  final T? _dataNullable;
+  final T? _data;
 
-  const _VertexImmutableNullable([this._dataNullable]);
+  const _VertexImmutableNullable([this._data]);
 }
 
 //
@@ -152,9 +120,9 @@ class _VertexMutable<T> extends Vertex<T> {
 }
 
 //
-class _VertexMutableNullable<T> extends Vertex<T> with _MixinVertexNullable<T> {
+class _VertexMutableNullable<T> extends Vertex<T> with _MixinVertexHidden<T> {
   @override
-  T? _dataNullable;
+  T? _data;
 
-  _VertexMutableNullable([this._dataNullable]);
+  _VertexMutableNullable([this._data]);
 }

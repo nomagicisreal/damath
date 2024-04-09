@@ -334,11 +334,6 @@ extension MapExtension<K, V> on Map<K, V> {
 ///
 extension MapEntryExtension<K, V> on MapEntry<K, V> {
   ///
-  static MapEntry<K, V> of<K, V>(K key, V value) => MapEntry(key, value);
-
-  static MapEntry<V, K> ofReverse<K, V>(K k, V v) => MapEntry(v, k);
-
-  ///
   ///
   ///
   MapEntry<V, K> get reversed => MapEntry(value, key);

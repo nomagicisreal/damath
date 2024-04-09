@@ -69,9 +69,9 @@ extension IteratorToExtension<I> on Iterator<I> {
   }
 
   Iterable<S> mapByIndex<S>(
-      MapperGenerator<I, S> toVal, [
-        int start = 0,
-      ]) sync* {
+    MapperGenerator<I, S> toVal, [
+    int start = 0,
+  ]) sync* {
     for (var i = start; moveNext(); i++) {
       yield toVal(current, i);
     }
@@ -83,8 +83,8 @@ extension IteratorToExtension<I> on Iterator<I> {
   /// [mapToEntriesByValue]
   ///
   Iterable<MapEntry<K, V>> mapToEntries<K, V>(
-      Mapper<I, MapEntry<K, V>> toVal,
-      ) sync* {
+    Mapper<I, MapEntry<K, V>> toVal,
+  ) sync* {
     while (moveNext()) {
       yield toVal(current);
     }
@@ -113,27 +113,27 @@ extension IteratorToExtension<I> on Iterator<I> {
       [for (; moveNext();) toVal(current)];
 
   List<S> mapToListByIndex<S>(
-      MapperGenerator<I, S> toVal, [
-        int start = 0,
-      ]) =>
+    MapperGenerator<I, S> toVal, [
+    int start = 0,
+  ]) =>
       [for (var i = start; moveNext(); i++) toVal(current, i)];
 
   List<T> mapToListByList<T, R>(
-      List<R> list,
-      Mixer<I, List<R>, T> mixer,
-      ) =>
+    List<R> list,
+    Mixer<I, List<R>, T> mixer,
+  ) =>
       [for (; moveNext();) mixer(current, list)];
 
   List<T> mapToListBySet<T, R>(
-      Set<R> set,
-      Mixer<I, Set<R>, T> mixer,
-      ) =>
+    Set<R> set,
+    Mixer<I, Set<R>, T> mixer,
+  ) =>
       [for (; moveNext();) mixer(current, set)];
 
   List<T> mapToListByMap<T, K, V>(
-      Map<K, V> map,
-      Mixer<I, Map<K, V>, T> mixer,
-      ) =>
+    Map<K, V> map,
+    Mixer<I, Map<K, V>, T> mixer,
+  ) =>
       [for (; moveNext();) mixer(current, map)];
 
   ///
@@ -164,11 +164,11 @@ extension IteratorToExtension<I> on Iterator<I> {
   }
 
   Iterable<S> mapWhereExpand<S>(
-      Predicator<I> test,
-      Mapper<I, Iterable<S>> expanding,
-      ) sync* {
+    Predicator<I> test,
+    Mapper<I, Iterable<S>> expanding,
+  ) sync* {
     while (moveNext()) {
-      yield* expanding(current);
+      if (test(current) )yield* expanding(current);
     }
   }
 
@@ -177,10 +177,10 @@ extension IteratorToExtension<I> on Iterator<I> {
   /// [mapByIndexExistUntil]
   ///
   Iterable<S> mapUntil<S>(
-      Predicator<I> testInvalid,
-      Mapper<I, S> toVal,
-      [bool includeFirstInvalid = false,]
-      ) sync* {
+    Predicator<I> testInvalid,
+    Mapper<I, S> toVal, [
+    bool includeFirstInvalid = false,
+  ]) sync* {
     while (moveNext()) {
       if (testInvalid(current)) {
         if (includeFirstInvalid) toVal(current);
@@ -191,12 +191,12 @@ extension IteratorToExtension<I> on Iterator<I> {
   }
 
   Iterable<S> mapByIndexExistUntil<S>(
-      PredicatorCombiner<I> testInvalid,
-      MapperGenerator<I, S> toVal, {
-        bool includeFirst = true,
-        bool includeInvalid = false,
-        int start = 0,
-      }) =>
+    PredicatorCombiner<I> testInvalid,
+    MapperGenerator<I, S> toVal, {
+    bool includeFirst = true,
+    bool includeInvalid = false,
+    int start = 0,
+  }) =>
       moveNextSupply(() sync* {
         final first = current;
         if (includeFirst) yield toVal(first, 0);
@@ -214,11 +214,11 @@ extension IteratorToExtension<I> on Iterator<I> {
   /// [mapToListByIndexExistUntil]
   ///
   List<T> mapToListByIndexUntil<T>(
-      Predicator<I> testInvalid,
-      MapperGenerator<I, T> toVal, {
-        bool includeInvalid = false,
-        int start = 0,
-      }) {
+    Predicator<I> testInvalid,
+    MapperGenerator<I, T> toVal, {
+    bool includeInvalid = false,
+    int start = 0,
+  }) {
     final list = <T>[];
     for (var i = start; moveNext(); i++) {
       if (testInvalid(current)) {
@@ -231,12 +231,12 @@ extension IteratorToExtension<I> on Iterator<I> {
   }
 
   List<T> mapToListByIndexExistUntil<T>(
-      PredicatorCombiner<I> testInvalid,
-      MapperGenerator<I, T> toVal, {
-        bool includeFirst = true,
-        bool includeFirstInvalid = false,
-        int start = 0,
-      }) =>
+    PredicatorCombiner<I> testInvalid,
+    MapperGenerator<I, T> toVal, {
+    bool includeFirst = true,
+    bool includeFirstInvalid = false,
+    int start = 0,
+  }) =>
       moveNextSupply(() {
         final first = current;
         final list = <T>[if (includeFirst) toVal(first, 0)];
@@ -285,10 +285,10 @@ extension IteratorToExtension<I> on Iterator<I> {
   }
 
   T foldByIndex<T>(
-      T initialValue,
-      CompanionGenerator<T, I> companion, [
-        int start = 0,
-      ]) {
+    T initialValue,
+    CompanionGenerator<T, I> companion, [
+    int start = 0,
+  ]) {
     var val = initialValue;
     for (var i = start; moveNext(); i++) {
       val = companion(val, current, i);
@@ -297,25 +297,25 @@ extension IteratorToExtension<I> on Iterator<I> {
   }
 
   Iterable<T> foldNested<T>() => fold<List<T>>(
-    [],
+        [],
         (list, element) => switch (element) {
-      T() => list..add(element),
-      Iterable<T>() => list..addAll(element),
-      Iterable<Iterable>() => list..addAll(element.iterator.foldNested()),
-      _ => throw StateError(KErrorMessage.iteratorElementNotNest),
-    },
-  );
+          T() => list..add(element),
+          Iterable<T>() => list..addAll(element),
+          Iterable<Iterable>() => list..addAll(element.iterator.foldNested()),
+          _ => throw StateError(KErrorMessage.iteratorElementNotNest),
+        },
+      );
 
   ///
   /// [foldAccompanyBefore]
   /// [foldAccompanyAfter]
   ///
   S foldAccompanyBefore<R, S>(
-      S initialValue,
-      R initialElement,
-      Companion<R, I> before,
-      Collector<S, I, R> companion,
-      ) {
+    S initialValue,
+    R initialElement,
+    Companion<R, I> before,
+    Collector<S, I, R> companion,
+  ) {
     var val = initialValue;
     var ele = initialElement;
     while (moveNext()) {
@@ -326,11 +326,11 @@ extension IteratorToExtension<I> on Iterator<I> {
   }
 
   S foldAccompanyAfter<R, S>(
-      S initialValue,
-      R initialElement,
-      Collector<S, I, R> companion,
-      Companion<R, I> after,
-      ) {
+    S initialValue,
+    R initialElement,
+    Collector<S, I, R> companion,
+    Companion<R, I> after,
+  ) {
     var val = initialValue;
     var ele = initialElement;
     while (moveNext()) {
@@ -352,18 +352,18 @@ extension IteratorToExtension<I> on Iterator<I> {
   /// [reduceToByIndex]
   ///
   T reduceTo<T>(Mapper<I, T> toVal, Reducer<T> reducing) => moveNextSupply(() {
-    var val = toVal(current);
-    while (moveNext()) {
-      val = reducing(val, toVal(current));
-    }
-    return val;
-  });
+        var val = toVal(current);
+        while (moveNext()) {
+          val = reducing(val, toVal(current));
+        }
+        return val;
+      });
 
   T reduceToByIndex<T>(
-      Mapper<I, T> toVal,
-      ReducerGenerator<T> reducing, [
-        int start = 0,
-      ]) =>
+    Mapper<I, T> toVal,
+    ReducerGenerator<T> reducing, [
+    int start = 0,
+  ]) =>
       moveNextSupply(() {
         var val = toVal(current);
         for (var i = start; moveNext(); i++) {
@@ -386,10 +386,10 @@ extension IteratorToExtension<I> on Iterator<I> {
       });
 
   T reduceToInitializedByIndex<T>(
-      Mapper<I, T> init,
-      CompanionGenerator<T, I> reducing, [
-        int start = 0,
-      ]) =>
+    Mapper<I, T> init,
+    CompanionGenerator<T, I> reducing, [
+    int start = 0,
+  ]) =>
       moveNextSupply(() {
         var val = init(current);
         for (var i = start; moveNext(); i++) {
@@ -413,15 +413,15 @@ extension IteratorToExtension<I> on Iterator<I> {
   /// [toMapFrequencies]
   ///
   Map<int, I> toMap([int start = 0]) => foldByIndex(
-    {},
+        {},
         (map, value, i) => map..putIfAbsent(i, () => value),
-    start,
-  );
+        start,
+      );
 
   Map<I, int> get toMapCounted => fold(
-    {},
+        {},
         (map, current) => map..update(current, (c) => ++c, ifAbsent: () => 1),
-  );
+      );
 
   Map<I, double> get toMapFrequencies {
     final map = <I, double>{};
@@ -437,12 +437,12 @@ extension IteratorToExtension<I> on Iterator<I> {
   /// [groupBy]
   ///
   Map<K, Iterable<I>> groupBy<K>(Mapper<I, K> toKey) => fold(
-    {},
+        {},
         (map, value) => map
-      ..update(
-        toKey(value),
-        FApplier.iterableAppend(value),
-        ifAbsent: () => [value],
-      ),
-  );
+          ..update(
+            toKey(value),
+            FApplier.iterableAppend(value),
+            ifAbsent: () => [value],
+          ),
+      );
 }

@@ -122,15 +122,15 @@ extension WListView on ListView {
 ///
 ///
 ///
-extension WIcon on Icon {
-  static IconData iconDataOf(Latex operator) => switch (operator) {
-    Latex.plus => Icons.add,
-    Latex.minus => Icons.remove,
-    Latex.multiply => CupertinoIcons.multiply,
-    Latex.divide => CupertinoIcons.divide,
-    Latex.modulus => CupertinoIcons.percent,
-  };
-}
+// extension WIcon on Icon {
+//   static IconData iconDataOf(Latex operator) => switch (operator) {
+//     Latex.plus => Icons.add,
+//     Latex.minus => Icons.remove,
+//     Latex.multiply => CupertinoIcons.multiply,
+//     Latex.divide => CupertinoIcons.divide,
+//     Latex.modulus => CupertinoIcons.percent,
+//   };
+// }
 
 ///
 ///

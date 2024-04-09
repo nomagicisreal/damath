@@ -9,6 +9,7 @@
 /// [DateTimeExtension]
 ///
 /// [StringExtension]
+/// [StringBufferExtension]
 /// [MatchExtension]
 ///
 ///
@@ -27,10 +28,6 @@ part of damath_core;
 /// nullable
 ///
 extension NullableExtension<T> on T? {
-  bool get isNull => this == null;
-
-  bool get isNotNull => this != null;
-
   ///
   /// [nullOr]
   /// [nullOrMap]
@@ -122,7 +119,17 @@ extension DateTimeExtension on DateTime {
 }
 
 ///
-/// string
+///
+///
+///
+extension MatchExtension on Match {
+  String get group0 => group(0)!;
+}
+
+
+///
+///
+///
 ///
 extension StringExtension on String {
   String get lowercaseFirstChar => replaceFirstMapped(
@@ -151,7 +158,11 @@ extension StringExtension on String {
       });
 }
 
-/// match
-extension MatchExtension on Match {
-  String get group0 => group(0)!;
+///
+///
+///
+extension StringBufferExtension on StringBuffer {
+  void writeIfNotNull(Object? object) {
+    if (object != null) write(object);
+  }
 }

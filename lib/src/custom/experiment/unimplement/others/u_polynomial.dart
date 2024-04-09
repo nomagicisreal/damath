@@ -15,9 +15,7 @@
 part of damath_experiment;
 
 //
-sealed class Polynomial 
-    with OperatableDirectable<Polynomial>
-{
+sealed class Polynomial implements IOperatableDirectable<Polynomial> {
   const Polynomial();
 }
 
@@ -28,8 +26,9 @@ sealed class Polynomial
 /// [PolynomialItem]
 ///
 ///
-class PolynomialItemDecoration extends Polynomial
-    with OperatableComparable<PolynomialItemDecoration> {
+base class PolynomialItemDecoration
+    extends BOperatableComparable<PolynomialItemDecoration>
+    implements Polynomial {
   final double coefficient;
   final double exponent;
 
@@ -45,12 +44,14 @@ class PolynomialItemDecoration extends Polynomial
   }
 
   @override
-  PolynomialItemDecoration operator +(covariant PolynomialItemDecoration other) {
+  PolynomialItemDecoration operator +(
+      covariant PolynomialItemDecoration other) {
     throw UnimplementedError();
   }
 
   @override
-  PolynomialItemDecoration operator -(covariant PolynomialItemDecoration other) {
+  PolynomialItemDecoration operator -(
+      covariant PolynomialItemDecoration other) {
     throw UnimplementedError();
   }
 }

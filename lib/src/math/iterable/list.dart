@@ -14,7 +14,7 @@ part of damath_math;
 /// [fillUntil], ...
 /// [copy], ...
 /// [splitBy], ...
-/// [sublistMap], ...
+/// [mapSublist], ...
 ///
 /// [mapToList], ...
 /// [interReduce], ...
@@ -267,7 +267,7 @@ extension ListExtension<T> on List<T> {
   ///
   /// sublist
   ///
-  List<S> sublistMap<S>(int begin, Mapper<T, S> mapper, [int? end]) {
+  List<S> mapSublist<S>(int begin, Mapper<T, S> mapper, [int? end]) {
     final length = end ?? this.length;
     assert(this.length.constraintsOpen(begin, length));
     final result = <S>[];
@@ -277,7 +277,7 @@ extension ListExtension<T> on List<T> {
     return result;
   }
 
-  List<S> sublistMapByIndex<S>(
+  List<S> mapSublistByIndex<S>(
     int begin,
     MapperGenerator<T, S> mapper, [
     int? end,

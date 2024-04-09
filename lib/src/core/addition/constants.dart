@@ -50,28 +50,30 @@ abstract interface class KErrorMessage {
   ///
   static const String iteratorNoElement = 'iterator no element';
   static const String iteratorElementNotFound = 'iterator element not found';
-  static const String iteratorIndexOutOfBoundary =
-      'iterator index out of boundary';
   static const String iteratorElementNotNest = 'iterator element not nested';
 
   ///
   /// vertex
   ///
-  static const String vertexDataIsImmutable = 'data is immutable';
   static const String vertexDataCannotAssignDirectly =
       'cannot assign data directly';
-  static const String vertexDataRequiredNotNull = 'data is null';
+  static const String vertexDataRequiredNotNull = 'data require not null';
   static const String vertexDataLazyNotInitialized =
       'lazy data not been initialized';
 
   ///
   /// node
   ///
-  static String nodeIndexOutOfBoundary = 'index out of boundary';
-  static String nodeNextIsImmutable = 'next node is immutable';
   static const String nodeNextCannotAssignDirectly =
       'cannot assign next node directly';
   static const String nodeNotHoldComparator = 'node not hold comparator';
 
   static const String lerperNoImplementation = 'lerper no implementation';
+
+  ///
+  /// others
+  ///
+  static String indexOutOfBoundary = 'index out of boundary';
+  static String generateByNegative = 'invalid to generate by negative';
+  static String modifyImmutable = 'cannot modify immutable value';
 }

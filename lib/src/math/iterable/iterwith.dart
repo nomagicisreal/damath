@@ -1,6 +1,9 @@
 part of damath_math;
 
 ///
+///
+/// [moveNextApplyWith], ...
+///
 /// intersection:
 /// [inter], ...
 /// [interYieldingTo], ...
@@ -22,6 +25,14 @@ part of damath_math;
 ///
 ///
 extension IteratorWithExtension<I> on Iterator<I> {
+  ///
+  /// [moveNextApplyWith]
+  ///
+  I moveNextApplyWith<E>(Iterator<E> another, Applier<I> apply) =>
+      moveNext() && another.moveNext()
+          ? apply(current)
+          : throw StateError(KErrorMessage.iteratorNoElement);
+
   ///
   /// [inter], [interIndexable]
   /// [interAny], [interAnyTernary]
