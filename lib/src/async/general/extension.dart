@@ -8,9 +8,9 @@
 ///
 ///
 ///
-/// [FTimer]
-/// [FTimerConsumer]
-/// [IterableTimerExtension]
+/// [TimerExtension]
+/// [FConsumerTimer]
+/// [IterableTimer]
 ///
 ///
 ///
@@ -23,6 +23,14 @@
 ///
 ///
 part of damath_async;
+
+///
+///
+///
+extension FutureExtension<T> on Future<T> {
+  static final delayedZero = Future.delayed(Duration.zero);
+}
+
 
 ///
 /// stream
@@ -136,7 +144,7 @@ extension FStream<T> on Stream<T> {
 ///
 
 //
-extension FTimer on Timer {
+extension TimerExtension on Timer {
   static final Timer zero = Timer(Duration.zero, FListener.none);
 
   static Timer _nest(
@@ -158,10 +166,10 @@ extension FTimer on Timer {
     Iterable<Duration> steps,
     Iterable<Listener> listeners,
   ) =>
-      _sequence(steps.iterator.interYieldingToEntry(listeners.iterator));
+      _sequence(steps.iterator.interMapEntry(listeners.iterator));
 }
 
-extension FTimerConsumer on Consumer<Timer> {
+extension FConsumerTimer on Consumer<Timer> {
   static Consumer<Timer> periodicProcessUntil(int n, Listener listener) {
     int count = 0;
     return (timer) {
@@ -192,7 +200,10 @@ extension FTimerConsumer on Consumer<Timer> {
   }
 }
 
-extension IterableTimerExtension on Iterable<Timer> {
+///
+///
+///
+extension IterableTimer on Iterable<Timer> {
   void cancelAll() {
     for (var t in this) {
       t.cancel();

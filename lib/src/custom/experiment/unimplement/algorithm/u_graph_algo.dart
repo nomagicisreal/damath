@@ -60,63 +60,62 @@ part of damath_experiment;
 //   /// [insertionOf], [removalOf]
 //   ///
 //   static NodeBinary<E> insertionOf<E extends Comparable>(
-//       NodeBinary<E>? node,
+//       NodeBinary<E>? general,
 //       E data,
 //       ) =>
-//       node == null
+//       general == null
 //           ? NodeBinary(data)
 //           : () {
-//         final value = data.compareTo(node.data);
-//         return switch (value) {
-//           -1 => node..left = insertionOf(node.left, data),
-//           1 => node..right = insertionOf(node.right, data),
+//         return switch (data.compareTo(general.data)) {
+//           -1 => general..left = insertionOf(general.left, data),
+//           1 => general..right = insertionOf(general.right, data),
 //           0 => throw UnimplementedError('data already exist: $data'),
 //           _ => throw UnimplementedError(),
 //         };
 //       }();
 //
 //   static NodeBinary<E>? removalOf<E extends Comparable>(
-//       NodeBinary<E>? node,
+//       NodeBinary<E>? general,
 //       E data,
-//       NodeBinary<E>? Function(NodeBinary<E> node) fillFrom,
+//       NodeBinary<E>? Function(NodeBinary<E> general) fillFrom,
 //       ) =>
-//       node == null
+//       general == null
 //           ? null
 //           : () {
-//         final value = data.compareTo(node.data);
+//         final value = data.compareTo(general.data);
 //         return switch (value) {
-//           -1 => node..left = removalOf(node.left, data, fillFrom),
-//           1 => node..right = removalOf(node.right, data, fillFrom),
-//           0 => fillFrom(node),
+//           -1 => general..left = removalOf(general.left, data, fillFrom),
+//           1 => general..right = removalOf(general.right, data, fillFrom),
+//           0 => fillFrom(general),
 //           _ => throw UnimplementedError(),
 //         };
 //       }();
 //
 //   static NodeBinary<E>? fillFromLargerAfterRemoval<E extends Comparable>(
-//       NodeBinary<E> node,
+//       NodeBinary<E> general,
 //       ) {
-//     final right = node.right;
+//     final right = general.right;
 //     return right == null
-//         ? node.left
+//         ? general.left
 //         : () {
 //       final replacement = right.leftest.data;
-//       node.data = replacement;
-//       node.right =
+//       general.data = replacement;
+//       general.right =
 //           removalOf(right, replacement, fillFromLargerAfterRemoval<E>);
-//       return node;
+//       return general;
 //     }();
 //   }
 //
 //   static NodeBinary<E>? fillFromSmallerAfterRemoval<E extends Comparable>(
-//       NodeBinary<E> node,
+//       NodeBinary<E> general,
 //       ) {
-//     final left = node.left;
-//     final right = node.right;
+//     final left = general.left;
+//     final right = general.right;
 //     if (left != null && right != null) {
 //       final replacement = left.rightest.data;
-//       node.data = replacement;
-//       node.left = removalOf(left, replacement, fillFromSmallerAfterRemoval<E>);
-//       return node;
+//       general.data = replacement;
+//       general.left = removalOf(left, replacement, fillFromSmallerAfterRemoval<E>);
+//       return general;
 //     } else {
 //       return left ?? right;
 //     }
@@ -146,15 +145,15 @@ part of damath_experiment;
 //   NodeAvlComparable(super.data);
 //
 //   @override
-//   NodeBinaryAvl<E> _updateInsert(covariant NodeBinaryAvl<E>? node, E value) {
-//     final balanced = balance(super._updateInsert(node, value) as NodeBinaryAvl<E>);
+//   NodeBinaryAvl<E> _updateInsert(covariant NodeBinaryAvl<E>? general, E value) {
+//     final balanced = balance(super._updateInsert(general, value) as NodeBinaryAvl<E>);
 //     balanced.height = 1 + math.max(balanced.heightLeft, balanced.heightRight);
 //     return balanced;
 //   }
 //
 //   @override
-//   NodeBinaryAvl<E> _updateRemove(covariant NodeBinaryAvl<E>? node, E value) {
-//     final balanced = balance(super._updateRemove(node, value) as NodeBinaryAvl<E>);
+//   NodeBinaryAvl<E> _updateRemove(covariant NodeBinaryAvl<E>? general, E value) {
+//     final balanced = balance(super._updateRemove(general, value) as NodeBinaryAvl<E>);
 //     balanced.height = 1 + math.max(balanced.heightLeft, balanced.heightRight);
 //     return balanced;
 //   }
@@ -216,11 +215,11 @@ part of damath_experiment;
 //   /// match
 //   ///
 //
-//   List<String> _moreMatches(String prefix, NodeTrie<int> node) {
+//   List<String> _moreMatches(String prefix, NodeTrie<int> general) {
 //     List<String> results = [];
-//     if (node.isTerminating) results.add(prefix);
+//     if (general.isTerminating) results.add(prefix);
 //
-//     for (final child in node.children.values) {
+//     for (final child in general.children.values) {
 //       final codeUnit = child!.data!;
 //       results.addAll(
 //         _moreMatches('$prefix${String.fromCharCode(codeUnit)}', child),

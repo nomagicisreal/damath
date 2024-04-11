@@ -262,13 +262,13 @@ extension KOffsetPermutation4 on List<Offset> {
   static List<Offset> p0123(List<Offset> list) => list;
 
   static List<Offset> p1230(List<Offset> list) =>
-      list..copyCycle();
+      list..cloneSwitch();
 
   static List<Offset> p2301(List<Offset> list) =>
-      p1230(list)..copyCycle();
+      p1230(list)..cloneSwitch();
 
   static List<Offset> p3012(List<Offset> list) =>
-      p2301(list)..copyCycle();
+      p2301(list)..cloneSwitch();
 
   // a, 2, 3, b (add 1, remove b)
   // 2, 3, 1, a
@@ -279,13 +279,13 @@ extension KOffsetPermutation4 on List<Offset> {
     ..removeAt(1);
 
   static List<Offset> p2310(List<Offset> list) =>
-      p0231(list)..copyCycle();
+      p0231(list)..cloneSwitch();
 
   static List<Offset> p3102(List<Offset> list) =>
-      p2310(list)..copyCycle();
+      p2310(list)..cloneSwitch();
 
   static List<Offset> p1023(List<Offset> list) =>
-      p3102(list)..copyCycle();
+      p3102(list)..cloneSwitch();
 
   // 0, 1, 3, 2 (add 2, remove 2)
   // 1, 3, 2, 0
@@ -296,13 +296,13 @@ extension KOffsetPermutation4 on List<Offset> {
     ..removeAt(2);
 
   static List<Offset> p1320(List<Offset> list) =>
-      p0132(list)..copyCycle();
+      p0132(list)..cloneSwitch();
 
   static List<Offset> p3201(List<Offset> list) =>
-      p1320(list)..copyCycle();
+      p1320(list)..cloneSwitch();
 
   static List<Offset> p2013(List<Offset> list) =>
-      p3201(list)..copyCycle();
+      p3201(list)..cloneSwitch();
 
   // 1, 3, 0, 2 (add 02, remove 02)
   // 3, 0, 2, 1
@@ -313,13 +313,13 @@ extension KOffsetPermutation4 on List<Offset> {
     ..removeAt(1);
 
   static List<Offset> p3021(List<Offset> list) =>
-      p1302(list)..copyCycle();
+      p1302(list)..cloneSwitch();
 
   static List<Offset> p0213(List<Offset> list) =>
-      p3021(list)..copyCycle();
+      p3021(list)..cloneSwitch();
 
   static List<Offset> p2130(List<Offset> list) =>
-      p0213(list)..copyCycle();
+      p0213(list)..cloneSwitch();
 
   // 0, 3, 1, 2 (add 12, remove 12)
   // 3, 1, 2, 0
@@ -330,13 +330,13 @@ extension KOffsetPermutation4 on List<Offset> {
     ..removeAt(1);
 
   static List<Offset> p3120(List<Offset> list) =>
-      p0312(list)..copyCycle();
+      p0312(list)..cloneSwitch();
 
   static List<Offset> p1203(List<Offset> list) =>
-      p3120(list)..copyCycle();
+      p3120(list)..cloneSwitch();
 
   static List<Offset> p2031(List<Offset> list) =>
-      p1203(list)..copyCycle();
+      p1203(list)..cloneSwitch();
 
   // 0, 3, 2, 1 (add 21, remove 21)
   // 3, 2, 1, 0
@@ -347,13 +347,13 @@ extension KOffsetPermutation4 on List<Offset> {
     ..removeAt(1);
 
   static List<Offset> p3210(List<Offset> list) =>
-      p0321(list)..copyCycle();
+      p0321(list)..cloneSwitch();
 
   static List<Offset> p2103(List<Offset> list) =>
-      p3210(list)..copyCycle();
+      p3210(list)..cloneSwitch();
 
   static List<Offset> p1032(List<Offset> list) =>
-      p2103(list)..copyCycle();
+      p2103(list)..cloneSwitch();
 }
 
 extension KMapperCubicPointsPermutation on Applier<Map<Offset, List<Offset>>> {

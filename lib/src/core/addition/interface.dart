@@ -9,9 +9,7 @@
 /// [IOperatableScalable]
 /// [IOperatableStepable]
 /// [IOperatableComplex]
-/// [IOperatableIndexable]
-///   |-[BOperatableIndexableList]
-///
+/// [IOperatableIndexable], [IOperatableIndexableAssignable]
 /// [BOperatableComparable]
 ///
 ///
@@ -24,10 +22,9 @@ part of damath_core;
 ///
 ///
 ///
-abstract interface class IIteratorRedo<I> implements Iterator<I>{
-  bool moveNextRedo();
+abstract interface class IIteratorPrevious<I> implements Iterator<I> {
+  bool movePrevious();
 }
-
 
 ///
 ///
@@ -61,50 +58,57 @@ abstract interface class IEnqueueable<T> {
 ///
 /// directable
 ///
-abstract interface class IOperatableDirectable<O> {
-  Object operator -();
+abstract interface class IOperatableDirectable<I, O> {
+  O operator -();
 
-  Object operator +(covariant O other);
+  O operator +(covariant I another);
 
-  Object operator -(covariant O other);
+  O operator -(covariant I another);
 }
 
 ///
 /// scalable
 ///
-abstract interface class IOperatableScalable<O> {
-  Object operator *(covariant O other);
+abstract interface class IOperatableScalable<I, O> {
+  O operator *(covariant I another);
 
-  Object operator /(covariant O other);
+  O operator /(covariant I another);
+}
 
-  Object operator %(covariant O other);
+abstract interface class IOperatableModuleable<I, O> {
+  O operator %(covariant I another);
 }
 
 ///
 /// stepable
 ///
-abstract interface class IOperatableStepable<O> {
-  Object operator ~/(covariant O other);
+abstract interface class IOperatableStepable<I, O> {
+  O operator ~/(covariant I another);
 }
 
 ///
 /// complex
 ///
-abstract interface class IOperatableComplex<O> {
-  Object operator &(covariant O other);
+abstract interface class IOperatableComplex<I, O> {
+  O operator &(covariant I another);
 
-  Object operator ^(covariant O other);
+  O operator ^(covariant I another);
 
-  Object operator >>(covariant O other);
+  O operator >>(covariant I another);
 
-  Object operator <<(covariant O other);
+  O operator <<(covariant I another);
 }
 
 ///
 /// indexable
 ///
 abstract interface class IOperatableIndexable<T> {
-  T operator [](int index);
+  T operator [](int i);
+}
+
+abstract interface class IOperatableIndexableAssignable<T>
+    implements IOperatableIndexable<T> {
+  void operator []=(int i, T data);
 }
 
 ///
@@ -130,26 +134,13 @@ abstract base class BOperatableComparable<C extends Comparable<C>>
   const BOperatableComparable();
 
   @override
-  int compareTo(C other);
+  int compareTo(C another);
 
-  bool operator >(C other) => compareTo(other) > 0;
+  bool operator >(C another) => compareTo(another) > 0;
 
-  bool operator <(C other) => compareTo(other) < 0;
+  bool operator <(C another) => compareTo(another) < 0;
 
-  bool operator >=(C other) => compareTo(other) >= 0;
+  bool operator >=(C another) => compareTo(another) >= 0;
 
-  bool operator <=(C other) => compareTo(other) <= 0;
-}
-
-///
-/// indexable list
-///
-abstract base class BOperatableIndexableList<T>
-    implements IOperatableIndexable<T> {
-  List<T> get list;
-
-  @override
-  T operator [](int index) => list[index];
-
-  int get length => list.length;
+  bool operator <=(C another) => compareTo(another) <= 0;
 }

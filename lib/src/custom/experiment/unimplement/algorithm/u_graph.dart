@@ -132,7 +132,7 @@ base mixin _MixinVertexOperatableComparable<T extends Comparable>
 //   void _insertNext(T data, [Comparator<T>? comparator]) =>
 //       _child = _constructChild(
 //         data,
-//             (node) => node..insert(data, comparator),
+//             (general) => general..insert(data, comparator),
 //       );
 // }
 
@@ -259,7 +259,7 @@ abstract class NodeBinary<T> extends Vertex<T> {
 
   int get depth => math.max(depthLeft, depthRight);
 
-  int get height => depth + 1; // + current node
+  int get height => depth + 1; // + current general
 
   ///
   /// [relativeNodes]
@@ -323,7 +323,7 @@ abstract class NodeBinaryAvl<T> extends NodeBinary<T> {
   int get balanceFactor => depthLeft - depthRight;
 
   ///
-  /// after balancing, these methods return the balanced root of current node
+  /// after balancing, these methods return the balanced root of current general
   ///
   /// [balance]
   /// [rotateLeft], [rotateRight]

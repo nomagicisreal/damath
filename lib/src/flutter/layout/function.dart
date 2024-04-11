@@ -159,7 +159,7 @@ extension FSizingPath on SizingPath {
         Companion<CubicOffset, Size>? adjust,
       }) {
     final Applier<Iterable<CubicOffset>> scaled = scale == 1
-        ? FApplier.keep
+        ? FKeep.applier
         : (corners) => corners.map((cubics) => cubics * scale);
 
     Path from(Iterable<CubicOffset> offsets) =>

@@ -15,7 +15,7 @@
 part of damath_experiment;
 
 //
-sealed class Polynomial implements IOperatableDirectable<Polynomial> {
+sealed class Polynomial implements IOperatableDirectable<Polynomial, Polynomial> {
   const Polynomial();
 }
 

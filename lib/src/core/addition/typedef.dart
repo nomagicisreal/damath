@@ -1,29 +1,18 @@
 ///
 ///
 /// this file contains:
-/// [Consumer], [ConsumerIndexable]
-/// [Intersector], [IntersectorIndexable]
-/// [Supplier], [Generator]
-///
-/// [Applier]
-/// [Reducer]
-/// [Collapser]
-/// [Companion]
-/// [Absorber]
-/// [Forcer]
-/// [Collector]
-/// [Linker]
-/// [Fusionor]
-/// [Mapper]
-/// [Combiner]
-/// [Mixer]
-///
-/// [Predicator], [PredicatorCombiner], [PredicatorMixer], [PredicatorFusionor], [PredicatorGenerator]
-/// [Generator2D], [ApplierGenerator], [ReducerGenerator], [CollapserGenerator], [CompanionGenerator], ...
-/// [Differentiator]
-/// [Lerper]
+/// [Listener]...
 ///
 ///
+/// [ConsumerDoubleExtension]
+///
+/// [FPredicatorCombiner]
+/// [FGenerator]
+/// [FMapper]
+/// [FReducer]
+///
+///
+/// [FKeep]
 ///
 ///
 ///
@@ -33,9 +22,8 @@ part of damath_core;
 ///
 typedef Listener = void Function();
 typedef Consumer<T> = void Function(T value);
-typedef ConsumerIndexable<T> = void Function(T value, int index);
+typedef Accompanier<T> = void Function(T v1, T v2);
 typedef Intersector<A, B> = void Function(A a, B b);
-typedef IntersectorIndexable<A, B> = void Function(A a, B b, int index);
 typedef Supplier<S> = S Function();
 typedef Generator<S> = S Function(int index);
 
@@ -48,22 +36,29 @@ typedef Forcer<T, E> = T Function(T v1, T v2, E other);
 typedef Collector<T, A, B> = T Function(T value, A a, B b);
 
 typedef Linker<T, E, S> = S Function(T v1, T v2, E other);
-typedef Fusionor<P, Q, R, S> = S Function(P p, Q q, R r);
 typedef Mapper<T, S> = S Function(T value);
 typedef Combiner<T, S> = S Function(T v1, T v2);
-typedef Mixer<A, B, S> = S Function(A a, B b);
+typedef Mixer<T, E, S> = S Function(T value, E element);
+typedef Fusionor<A, B, C, S> = S Function(A a, B b, C c);
 
 ///
 /// predicator
 ///
 typedef Predicator<T> = bool Function(T value);
 typedef PredicatorCombiner<T> = bool Function(T v1, T v2);
-typedef PredicatorMixer<A, B> = bool Function(A a, B b);
+typedef PredicatorMixer<T, E> = bool Function(T value, E element);
 typedef PredicatorFusionor<O, P, Q> = bool Function(O o, P p, Q q);
 typedef PredicatorGenerator<T> = bool Function(T value, int index);
 
 ///
-/// supplier, generator
+/// indexable
+///
+typedef ConsumerIndexable<T> = void Function(T value, int index);
+typedef AccompanierIndexable<T> = void Function(T v1, T v2, int index);
+typedef IntersectorIndexable<A, B> = void Function(A a, B b, int index);
+
+///
+/// generator
 ///
 typedef Generator2D<S> = S Function(int i, int j);
 typedef ApplierGenerator<T> = T Function(T value, int index);
@@ -78,7 +73,7 @@ typedef LinkerGenerator<T, E, S> = S Function(T v1, T v2, E other, int index);
 typedef FusionorGenerator<P, Q, R, S> = S Function(P p, Q q, R r, int index);
 typedef MapperGenerator<T, S> = S Function(T value, int index);
 typedef CombinerGenerator<T, S> = S Function(T v1, T v2, int index);
-typedef MixerGenerator<A, B, S> = S Function(A a, B b, int index);
+typedef MixerGenerator<T, E, S> = S Function(T value, E element, int index);
 
 ///
 /// others
@@ -86,9 +81,388 @@ typedef MixerGenerator<A, B, S> = S Function(A a, B b, int index);
 typedef Differentiator<A, B> = int Function(A a, B b);
 typedef Lerper<T> = T Function(double t);
 
+///
+///
+///
+///
+///
+///
+///
+/// extensions
+///
+///
+///
+///
+///
+///
 
 ///
-/// complex
+///
+///
+///
+/// [FListener]
+/// [FPredicatorCombiner]
+/// [FGenerator]
+/// [FMapper]
+/// [FReducer]
+/// [FKeep]
+///
+///
+/// [ConsumerDoubleExtension]
+///
+///
 ///
 
-typedef Applicator<A, T> = Applier<A> Function(T value);
+
+///
+///
+/// listener
+///
+///
+extension FListener on Listener {
+  static void none() {}
+
+  Future<void> delayed(Duration duration) => Future.delayed(duration, this);
+}
+
+///
+/// [isEqual], ...
+///
+/// see [Propositioner] for predication combined from [bool]
+///
+extension FPredicatorCombiner on PredicatorCombiner {
+  ///
+  /// [isEqual], [isDifferent]
+  /// [alwaysTrue], [alwaysFalse]
+  ///
+  static bool isEqual<T>(T valueA, T valueB) => valueA == valueB;
+
+  static bool isDifferent<T>(T valueA, T valueB) => valueA != valueB;
+
+  static bool alwaysTrue<T>(T a, T b) => true;
+
+  static bool alwaysFalse<T>(T a, T b) => false;
+}
+
+///
+///
+/// generator
+///
+/// static methods:
+/// [filled], ...
+/// [ofDouble], ...
+///
+/// instance methods:
+/// [generate], ...
+///
+/// [foldTill], ...
+/// [reduceTill], ...
+///
+/// [linkTill], ...
+///
+///
+extension FGenerator<T> on Generator<T> {
+  static Generator<T> filled<T>(T value) => (i) => value;
+
+  static Generator2D<T> filled2D<T>(T value) => (i, j) => value;
+
+  static double ofDouble(int index) => index.toDouble();
+
+  ///
+  /// [generate]
+  /// [generateToList]
+  ///
+  Iterable<T> generate(int length, [int start = 0]) sync* {
+    for (var i = start; i < length; i++) {
+      yield this(i);
+    }
+  }
+
+  List<T> generateToList(int length, [int start = 0]) =>
+      [for (var i = start; i < length; i++) this(i)];
+
+  ///
+  /// [yielding]
+  /// [yieldingToList]
+  ///
+  Iterable<E> yielding<E>(
+    int length,
+    Mapper<T, E> toVal, [
+    int start = 0,
+  ]) sync* {
+    for (var i = start; i < length; i++) {
+      yield toVal(this(i));
+    }
+  }
+
+  List<E> yieldingToList<E>(
+    int length,
+    Mapper<T, E> toVal, [
+    int start = 0,
+  ]) =>
+      [for (var i = start; i < length; i++) toVal(this(i))];
+
+  ///
+  /// fold, reduce
+  /// [foldTill]
+  /// [foldCollectTill]
+  ///
+  ///
+  /// [reduceTill]
+  ///
+  ///
+  ///
+
+  ///
+  /// [foldTill]
+  ///
+  S foldTill<S>(int length, S initialValue, Companion<S, T> companion) {
+    var val = initialValue;
+    for (var i = 0; i < length; i++) {
+      val = companion(val, this(i));
+    }
+    return val;
+  }
+
+  S foldCollectTill<E, S>(
+    int length,
+    Generator<E> another,
+    S initialValue,
+    Collector<S, T, E> collect,
+  ) {
+    var val = initialValue;
+    for (var i = 0; i < length; i++) {
+      val = collect(val, this(i), another(i));
+    }
+    return val;
+  }
+
+  ///
+  /// [reduceTill]
+  ///
+  T reduceTill(int length, Reducer<T> reducing) {
+    var val = this(0);
+    for (var i = 1; i < length; i++) {
+      val = reducing(val, this(i));
+    }
+    return val;
+  }
+
+  ///
+  /// [linkTill]
+  /// [linkToListTill]
+  ///
+  Iterable<S> linkTill<E, S>(
+    int length,
+    Generator<E> interval,
+    Linker<T, E, S> link,
+  ) sync* {
+    var val = this(0);
+    for (var i = 1; i < length; i++) {
+      final current = this(i);
+      yield link(val, current, interval(i - 1));
+      val = current;
+    }
+  }
+
+  List<S> linkToListTill<E, S>(
+    int length,
+    Generator<E> interval,
+    Linker<T, E, S> link,
+  ) {
+    var list = <S>[];
+    var val = this(0);
+    for (var i = 1; i < length; i++) {
+      final current = this(i);
+      list.add(link(val, current, interval(i - 1)));
+      val = current;
+    }
+    return list;
+  }
+}
+
+///
+///
+///
+///
+///
+///
+///
+///
+/// translator
+///
+///
+///
+///
+///
+///
+///
+///
+extension FMapper on Mapper {
+  static Mapper<int, bool> oddOrEvenCheckerAs(int value) =>
+      value.isOdd ? (v) => v.isOdd : (v) => v.isEven;
+
+  static Mapper<int, bool> oddOrEvenCheckerOpposite(int value) =>
+      value.isOdd ? (v) => v.isEven : (v) => v.isOdd;
+}
+
+///
+///
+/// [keepV1], [keepV2]
+///
+/// [doubleMax], ...
+/// [intMax], ...
+/// [entryKeyIntMax], ...
+///
+/// [stringLine], ...
+/// [durationAdd], ...
+///
+///
+extension FReducer on Reducer {
+  ///
+  /// double
+  ///
+  static double doubleMax(double v1, double v2) => math.max(v1, v2);
+
+  static double doubleMin(double v1, double v2) => math.min(v1, v2);
+
+  static double doubleAdd(double v1, double v2) => v1 + v2;
+
+  static double doubleSubtract(double v1, double v2) => v1 - v2;
+
+  static double doubleMultiply(double v1, double v2) => v1 * v2;
+
+  static double doubleDivide(double v1, double v2) => v1 / v2;
+
+  static double doubleModule(double v1, double v2) => v1 % v2;
+
+  static double doubleDivideToInt(double v1, double v2) =>
+      (v1 ~/ v2).toDouble();
+
+  // chained operation
+  static double doubleAddSquared(double v1, double v2) => v1 * v1 + v2 * v2;
+
+  static double doubleSubtractThenHalf(double v1, double v2) => (v1 - v2) / 2;
+
+  ///
+  /// integer
+  ///
+  static int intMax(int v1, int v2) => math.max(v1, v2);
+
+  static int intMin(int v1, int v2) => math.min(v1, v2);
+
+  static int intAdd(int v1, int v2) => v1 + v2;
+
+  static int intSubtract(int v1, int v2) => v1 - v2;
+
+  static int intMultiply(int v1, int v2) => v1 * v2;
+
+  static int intDivide(int v1, int v2) => v1 ~/ v2;
+
+  static int intAddSquared(int v1, int v2) => v1 * v1 + v2 * v2;
+
+  ///
+  /// entry
+  ///
+
+  // key
+  static MapEntry<int, K> entryKeyIntMax<K>(
+    MapEntry<int, K> v1,
+    MapEntry<int, K> v2,
+  ) =>
+      v1.key > v2.key ? v1 : v2;
+
+  static MapEntry<int, K> entryKeyIntMin<K>(
+    MapEntry<int, K> v1,
+    MapEntry<int, K> v2,
+  ) =>
+      v1.key < v2.key ? v1 : v2;
+
+  static MapEntry<double, K> entryKeyDoubleMax<K>(
+    MapEntry<double, K> v1,
+    MapEntry<double, K> v2,
+  ) =>
+      v1.key > v2.key ? v1 : v2;
+
+  static MapEntry<double, K> entryKeyDoubleMin<K>(
+    MapEntry<double, K> v1,
+    MapEntry<double, K> v2,
+  ) =>
+      v1.key < v2.key ? v1 : v2;
+
+  // value
+  static MapEntry<K, int> entryValueIntMax<K>(
+    MapEntry<K, int> v1,
+    MapEntry<K, int> v2,
+  ) =>
+      v1.value > v2.value ? v1 : v2;
+
+  static MapEntry<K, int> entryValueIntMin<K>(
+    MapEntry<K, int> v1,
+    MapEntry<K, int> v2,
+  ) =>
+      v1.value < v2.value ? v1 : v2;
+
+  static MapEntry<K, double> entryValueDoubleMax<K>(
+    MapEntry<K, double> v1,
+    MapEntry<K, double> v2,
+  ) =>
+      v1.value > v2.value ? v1 : v2;
+
+  static MapEntry<K, double> entryValueDoubleMin<K>(
+    MapEntry<K, double> v1,
+    MapEntry<K, double> v2,
+  ) =>
+      v1.value < v2.value ? v1 : v2;
+
+  ///
+  /// string
+  ///
+  static String stringLine(String v1, String v2) => '$v1\n$v2';
+
+  static String stringTab(String v1, String v2) => '$v1\t$v2';
+
+  static String stringComma(String v1, String v2) => '$v1, $v2';
+
+  ///
+  /// duration
+  ///
+  static Duration durationMax(Duration a, Duration b) => a > b ? a : b;
+
+  static Duration durationMin(Duration a, Duration b) => a < b ? a : b;
+
+  static Duration durationAdd(Duration v1, Duration v2) => v1 + v2;
+
+  static Duration durationSubtract(Duration v1, Duration v2) => v1 - v2;
+}
+
+///
+///
+///
+extension FKeep on Type {
+  static T companion<T, S>(T origin, S another) => origin;
+
+  static T applier<T>(T value) => value;
+
+  static T reduceV1<T>(T v1, T v2) => v1;
+
+  static T reduceV2<T>(T v1, T v2) => v2;
+}
+
+
+///
+///
+///
+extension ConsumerDoubleExtension on Consumer<double> {
+  ///
+  /// [doubleAdd], [doubleSubtract]
+  /// [doubleMultiply], [doubleDivide]
+  ///
+  void doubleAdd(double v1, double v2) => this(v1 + v2);
+
+  void doubleSubtract(double v1, double v2) => this(v1 - v2);
+
+  void doubleMultiply(double v1, double v2) => this(v1 * v2);
+
+  void doubleDivide(double v1, double v2) => this(v1 / v2);
+}

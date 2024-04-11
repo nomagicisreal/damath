@@ -482,7 +482,7 @@ class PropositionCompound extends PropositionComponent {
   /// [declarativesSet]
   ///
   Set<Proposition> get propositionsSet => _foldPropositionsToSet(
-        FApplier.keep,
+        FKeep.applier,
         (value) => value.propositionsSet,
       );
 

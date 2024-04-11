@@ -40,7 +40,7 @@ extension FTextFormFieldValidator on TextFormFieldValidator {
 
 
 ///
-/// focus manager, focus node, global key
+/// focus manager, focus general, global key
 ///
 extension FocusManagerExtension on FocusManager {
   void unFocus() => primaryFocus?.unfocus();

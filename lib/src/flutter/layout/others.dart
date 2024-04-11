@@ -30,12 +30,13 @@
 part of damath_flutter;
 
 
+
 ///
 /// [lerperFrom]
 ///
 Lerper<T> lerperFrom<T>(T begin, T end) {
   try {
-    return FLerper.from(begin, end);
+    return DoubleExtension.lerperFrom(begin, end);
   } on StateError catch (e) {
     if (e.message == KErrorMessage.lerperNoImplementation) {
       return switch (begin) {

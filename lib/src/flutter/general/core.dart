@@ -1,6 +1,9 @@
 ///
 ///
 /// this file contains:
+/// [Decider]
+/// [Supporter]
+/// [Sequencer]
 /// [Extruding2D]
 /// [TextFormFieldValidator]
 ///
@@ -24,6 +27,15 @@
 ///
 ///
 part of damath_flutter;
+
+typedef Decider<T, S> = Consumer<T> Function(S toggle);
+typedef Supporter<T> = T Function(Supplier<int> indexing);
+typedef Sequencer<T, I, S> = Mapper<int, S> Function(
+    T previous,
+    T next,
+    I interval,
+    );
+
 
 
 ///

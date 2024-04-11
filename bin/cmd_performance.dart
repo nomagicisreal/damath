@@ -1,14 +1,13 @@
-
-import 'dart:collection' as collection;
-
+import 'dart:typed_data';
 
 void main() async {
   final watch = Stopwatch();
   print('start');
 
-  watch.start();
-  print('way 1: ${way1()} in ${watch.elapsed}');
-  watch.reset();
+  // watch.start();
+  // print('way 1: ${way1()} in ${watch.elapsed}');
+  // watch.reset();
+
 
   watch.start();
   print('way 2: ${way2()} in ${watch.elapsed}');
@@ -18,31 +17,34 @@ void main() async {
   print('way 3: ${way3()} in ${watch.elapsed}');
   watch.reset();
 
+
   print('end');
 }
 
 String way1() {
-  for (var i = 1e4; i > 1; i--) {
+  // var vector = Point3(x, y, dz);
+  for (var i = 1e9; i > 1; i--) {
+    // vector = (i, i);
   }
   throw UnimplementedError();
-  // return list.length.toString();
+  // return vector.toString();
 }
 
 String way2() {
-  final inQ = collection.Queue.of(List.generate(1e6.toInt(), (index) => index));
-  for (var i = 1e4; i > 1; i--) {
-    inQ.removeFirst();
+  var record = Float32List(2);
+  for (var i = 1e9; i > 1; i--) {
+    record[0] = i;
+    record[1] = i;
   }
-  // throw UnimplementedError();
-  return inQ.length.toString();
+  return record.toString();
 }
 
-
 String way3() {
-  final list = List.generate(1e6.toInt(), (index) => index);
-  for (var i = 1e4; i > 1; i--) {
-    list.removeLast();
+  var record = Float64List(2);
+  for (var i = 1e9; i > 1; i--) {
+    record[0] = i;
+    record[1] = i;
   }
   // throw UnimplementedError();
-  return list.length.toString();
+  return record.toString();
 }
