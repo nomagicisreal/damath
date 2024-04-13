@@ -8,13 +8,14 @@ import 'package:damath/src/typed_data/typed_data.dart';
 
 
 part 'list/iterable.dart';
-part 'iterable/iterator.dart';
-part 'iterable/iterto.dart';
-part 'iterable/iterwith.dart';
+part 'iterator/iterator.dart';
+part 'iterator/iterto.dart';
+part 'iterator/iterwith.dart';
 part 'list/list_linked.dart';
 part 'list/list.dart';
 part 'map/map.dart';
 part 'map/set.dart';
+part 'primary/comparable.dart';
 part 'primary/nested.dart';
 part 'primary/primary.dart';
-part 'primary/validable.dart';
+part 'primary/primary_na.dart';

@@ -24,19 +24,19 @@ extension ItertoExtension<I> on Iterator<I> {
   /// [moveNextSupplyWith]
   ///
   S moveNextSupply<S>(Supplier<S> supply) =>
-      moveNext() ? supply() : throw StateError(KErrorMessage.iteratorNoElement);
+      moveNext() ? supply() : throw StateError(FErrorMessage.iteratorNoElement);
 
   S moveNextSupplyWith<E, S>(Iterator<E> another, Supplier<S> supply) =>
       moveNext() && another.moveNext()
           ? supply()
-          : throw StateError(KErrorMessage.iteratorNoElement);
+          : throw StateError(FErrorMessage.iteratorNoElement);
 
   ///
   /// [leadSupply]
   ///
   S leadSupply<S>(int ahead, Supplier<S> supply) {
     for (var i = -1; i < ahead; i++) {
-      if (!moveNext()) throw StateError(KErrorMessage.iteratorNoElement);
+      if (!moveNext()) throw StateError(FErrorMessage.iteratorNoElement);
     }
     return supply();
   }
@@ -55,7 +55,6 @@ extension ItertoExtension<I> on Iterator<I> {
   ///
   /// [mapToListByIndexUntil]
   /// [mapToListByIndexExistUntil]
-  ///
   ///
 
   ///
@@ -78,9 +77,7 @@ extension ItertoExtension<I> on Iterator<I> {
   }
 
   ///
-  /// [mapToEntries]
-  /// [mapToEntriesByKey]
-  /// [mapToEntriesByValue]
+  /// [mapToEntries], [mapToEntriesByKey], [mapToEntriesByValue]
   ///
   Iterable<MapEntry<K, V>> mapToEntries<K, V>(
     Mapper<I, MapEntry<K, V>> toVal,
@@ -103,9 +100,7 @@ extension ItertoExtension<I> on Iterator<I> {
   }
 
   ///
-  /// [mapToRecord]
-  /// [mapToRecordBy1]
-  /// [mapToRecordBy2]
+  /// [mapToRecord], [mapToRecordBy1], [mapToRecordBy2]
   ///
   Iterable<(A, B)> mapToRecord<A, B>(Mapper<I, (A, B)> toVal) sync* {
     while (moveNext()) {
@@ -128,9 +123,7 @@ extension ItertoExtension<I> on Iterator<I> {
   ///
   /// [mapToList]
   /// [mapToListByIndex]
-  /// [mapToListByList]
-  /// [mapToListBySet]
-  /// [mapToListByMap]
+  /// [mapToListByList], [mapToListBySet], [mapToListByMap]
   ///
   List<T> mapToList<T>(Mapper<I, T> toVal) =>
       [for (; moveNext();) toVal(current)];
@@ -214,7 +207,7 @@ extension ItertoExtension<I> on Iterator<I> {
   }
 
   Iterable<S> mapByIndexExistUntil<S>(
-    PredicatorCombiner<I> testInvalid,
+    PredicatorFusionor<I> testInvalid,
     MapperGenerator<I, S> toVal, {
     bool includeFirst = true,
     bool includeInvalid = false,
@@ -254,7 +247,7 @@ extension ItertoExtension<I> on Iterator<I> {
   }
 
   List<T> mapToListByIndexExistUntil<T>(
-    PredicatorCombiner<I> testInvalid,
+    PredicatorFusionor<I> testInvalid,
     MapperGenerator<I, T> toVal, {
     bool includeFirst = true,
     bool includeFirstInvalid = false,
@@ -325,7 +318,7 @@ extension ItertoExtension<I> on Iterator<I> {
           T() => list..add(element),
           Iterable<T>() => list..addAll(element),
           Iterable<Iterable>() => list..addAll(element.iterator.foldNested()),
-          _ => throw StateError(KErrorMessage.iteratorElementNotNest),
+          _ => throw StateError(FErrorMessage.iteratorElementNotNest),
         },
       );
 

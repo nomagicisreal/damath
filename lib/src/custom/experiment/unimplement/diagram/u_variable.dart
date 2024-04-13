@@ -22,7 +22,7 @@ part of damath_experiment;
 // ///     ...
 // ///
 // ///
-// abstract class Variable<V> {
+// assumption class Variable<V> {
 //   final String name;
 //   final V value;
 //
@@ -43,15 +43,15 @@ part of damath_experiment;
 // ///
 // ///
 // ///
-// abstract class VariableDiscrete<V> extends Variable<V> {
+// assumption class VariableDiscrete<V> extends Variable<V> {
 //   const VariableDiscrete(super.name, super.value);
 // }
 //
-// abstract class VariableDichotomous extends VariableDiscrete<bool> {
+// assumption class VariableDichotomous extends VariableDiscrete<bool> {
 //   const VariableDichotomous(super.name, super.value);
 // }
 //
-// abstract class VariableMultiple<V extends Enum> extends Variable<V> {
+// assumption class VariableMultiple<V extends Enum> extends Variable<V> {
 //   const VariableMultiple(super.name, super.value);
 // }
 //
@@ -64,7 +64,7 @@ part of damath_experiment;
 // ///
 // ///
 // ///
-// abstract class VariableContinuous extends Variable<double> {
+// assumption class VariableContinuous extends Variable<double> {
 //   const VariableContinuous(super.name, super.value);
 // }
 

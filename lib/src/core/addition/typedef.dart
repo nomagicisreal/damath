@@ -6,7 +6,7 @@
 ///
 /// [ConsumerDoubleExtension]
 ///
-/// [FPredicatorCombiner]
+/// [FPredicatorFusionor]
 /// [FGenerator]
 /// [FMapper]
 /// [FReducer]
@@ -35,20 +35,27 @@ typedef Absorber<T, E> = T Function(T value, E e1, E e2);
 typedef Forcer<T, E> = T Function(T v1, T v2, E other);
 typedef Collector<T, A, B> = T Function(T value, A a, B b);
 
-typedef Linker<T, E, S> = S Function(T v1, T v2, E other);
 typedef Mapper<T, S> = S Function(T value);
-typedef Combiner<T, S> = S Function(T v1, T v2);
+typedef Fusionor<T, S> = S Function(T v1, T v2);
 typedef Mixer<T, E, S> = S Function(T value, E element);
-typedef Fusionor<A, B, C, S> = S Function(A a, B b, C c);
+typedef Linker<T, E, S> = S Function(T v1, T v2, E other);
+typedef Synthesizer<A, B, C, S> = S Function(A a, B b, C c);
 
 ///
 /// predicator
 ///
 typedef Predicator<T> = bool Function(T value);
-typedef PredicatorCombiner<T> = bool Function(T v1, T v2);
+typedef PredicatorFusionor<T> = bool Function(T v1, T v2);
 typedef PredicatorMixer<T, E> = bool Function(T value, E element);
-typedef PredicatorFusionor<O, P, Q> = bool Function(O o, P p, Q q);
+typedef PredicatorSynthesizer<O, P, Q> = bool Function(O o, P p, Q q);
 typedef PredicatorGenerator<T> = bool Function(T value, int index);
+
+///
+/// ternarator
+///
+typedef Ternarator<T> = bool? Function(T value);
+typedef TernaratorCombiner<T> = bool? Function(T v1, T v2);
+
 
 ///
 /// indexable
@@ -78,6 +85,7 @@ typedef MixerGenerator<T, E, S> = S Function(T value, E element, int index);
 ///
 /// others
 ///
+typedef Countable<T> = (int, T);
 typedef Differentiator<A, B> = int Function(A a, B b);
 typedef Lerper<T> = T Function(double t);
 
@@ -101,7 +109,7 @@ typedef Lerper<T> = T Function(double t);
 ///
 ///
 /// [FListener]
-/// [FPredicatorCombiner]
+/// [FPredicatorFusionor]
 /// [FGenerator]
 /// [FMapper]
 /// [FReducer]
@@ -130,7 +138,7 @@ extension FListener on Listener {
 ///
 /// see [Propositioner] for predication combined from [bool]
 ///
-extension FPredicatorCombiner on PredicatorCombiner {
+extension FPredicatorFusionor on PredicatorFusionor {
   ///
   /// [isEqual], [isDifferent]
   /// [alwaysTrue], [alwaysFalse]

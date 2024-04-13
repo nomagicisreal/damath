@@ -36,7 +36,7 @@ part of damath_flutter;
 ///
 ///
 class Painting extends CustomPainter {
-  final Combiner<Painting, bool> _shouldRePaint;
+  final Fusionor<Painting, bool> _shouldRePaint;
   final SizingPath sizingPath;
   final PaintFrom paintFrom;
   final PaintingPath paintingPath;
@@ -96,7 +96,7 @@ class Painting extends CustomPainter {
 ///
 class Clipping extends CustomClipper<Path> {
   final SizingPath sizingPath;
-  final Combiner<Clipping, bool> _shouldReClip;
+  final Fusionor<Clipping, bool> _shouldReClip;
 
   @override
   Path getClip(Size size) => sizingPath(size);
@@ -232,12 +232,12 @@ class CurveFR {
   /// [fusionIntervalFlipIn]
   /// [fusionIntervalFlipForSymmetryPeriodSinIn]
   ///
-  static Fusionor<CurveFR, double, double, CurveFR> fusionIntervalFlipIn(
+  static Synthesizer<CurveFR, double, double, CurveFR> fusionIntervalFlipIn(
     int steps,
   ) =>
       (curve, begin, end) => curve.interval(begin / steps, end / steps);
 
-  static Fusionor<int, double, double, CurveFR>
+  static Synthesizer<int, double, double, CurveFR>
       fusionIntervalFlipForSymmetryPeriodSinIn(
     int steps,
   ) =>

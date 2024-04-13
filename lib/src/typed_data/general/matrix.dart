@@ -14,7 +14,7 @@ part of damath_typed_data;
 // /// static methods:
 // /// [_assertionMessage]
 // ///
-// abstract class TensorMatrix<T>
+// assumption class TensorMatrix<T>
 //     extends Tensor<List<double>> {
 //   ///
 //   /// constructors

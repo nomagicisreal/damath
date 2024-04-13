@@ -6,16 +6,65 @@ part of damath_typed_data;
 /// [fibonacci]
 /// [collatzConjecture]
 /// [stoneTakingFinal]
-/// [pascalTriangle], [binomialCoefficient], [combination]
+/// [pascalTriangle], [combination], [binomialCoefficient]
 /// [partition], [partitionGroups]
 ///
 /// instance getters, methods:
 /// [accumulated], ...
+/// [factorized], ...
+/// [leadingValue], ...
 /// [paritySame], ...
-/// [digit], ...
 ///
 ///
 extension IntExtension on int {
+  ///
+  /// [largestInt]
+  /// [primesIn100]
+  ///
+  static const int largestInt = 9223372036854775807; // math.pow(2, 63) - 1
+
+  ///
+  /// ```
+  /// final primes = <int>[2, 3];
+  /// find:
+  /// for (var i = 4; i < 1e2; i++) {
+  ///   for (var prime in primes) {
+  ///     // if (prime > i) break;
+  ///     if (i % prime == 0) continue find;
+  ///   }
+  ///   primes.add(i);
+  /// }
+  /// print(primes);
+  /// ```
+  ///
+  static const List<int> primesIn100 = [
+    2,
+    3,
+    5,
+    7,
+    11,
+    13,
+    17,
+    19,
+    23,
+    29,
+    31,
+    37,
+    41,
+    43,
+    47,
+    53,
+    59,
+    61,
+    67,
+    71,
+    73,
+    79,
+    83,
+    89,
+    97
+  ];
+
   ///
   /// [predicateALess], [predicateALarger]
   ///
@@ -33,15 +82,21 @@ extension IntExtension on int {
   }
 
   ///
-  /// [fibonacci] ([1, 1, 2, 3, 5, 8, 13, ...])
+  /// [fibonacci]
+  ///   [lucas] == false: [1, 1, 2, 3, 5, 8, 13, ...]
+  ///   [lucas] == true:  [1, 3, 4, 7, 11, 18, 29, ...]
   ///
-  static Iterable<int> fibonacci(int k) sync* {
+  static Iterable<int> fibonacci(int k, [bool lucas = false]) sync* {
     assert(k > 0);
-    var a = 0;
-    var b = 1;
+    yield 1;
+    if (k < 2) return;
+    yield lucas ? 3 : 1;
+    if (k < 3) return;
 
-    yield b;
-    for (var i = 1; i < k; i++) {
+    var a = 1;
+    var b = lucas ? 3 : 1;
+    final max = k - 2;
+    for (var i = 0; i < max; i++) {
       final current = a + b;
       yield current;
       a = b;
@@ -75,12 +130,15 @@ extension IntExtension on int {
     int limitLower,
     int limitUpper,
   ) sync* {
-    assert(
-      n > 1 &&
-          total >= n &&
-          limitLower.rangeClose(0, limitUpper) &&
-          limitUpper.rangeClose(limitLower, total),
-    );
+    if (n < 2 ||
+        total < n ||
+        limitLower.outsideClose(0, limitUpper) ||
+        limitUpper.outsideClose(limitLower, total)) {
+      throw ArgumentError(
+        FErrorMessage.intStoneTakingFinal(n, total, limitLower, limitUpper),
+      );
+    }
+
     final interval = limitLower + limitUpper * (n - 1);
     for (var step = interval; step <= total; step += interval) {
       yield step;
@@ -89,7 +147,7 @@ extension IntExtension on int {
 
   ///
   /// [pascalTriangle]
-  /// [binomialCoefficient], [_binomialCoefficient]
+  /// [binomialCoefficient]
   /// [combination]
   ///
 
@@ -131,10 +189,9 @@ extension IntExtension on int {
     int rowStart = 0,
     bool isColumnEndAtK = true,
   }) {
-    assert(
-      n > 0 && k > 0 && k <= n + 1 && rowStart < 4,
-      throw ArgumentError('($n, $k)'),
-    );
+    if (n < 1 || k < 1 || k > n + 1 || rowStart > 3) {
+      throw ArgumentError(FErrorMessage.intPascalTriangle(n, k));
+    }
 
     final rowEnd = n + 1 - rowStart;
     final columnEndOf =
@@ -160,13 +217,15 @@ extension IntExtension on int {
   }
 
   ///
-  /// see the comment above [_binomialCoefficient] for implementation detail
+  /// [combination]
+  /// [binomialCoefficient]
   ///
+  static int combination(int m, int n) => binomialCoefficient(m, n + 1);
+
   static int binomialCoefficient(int n, int k) {
-    assert(
-      n > 0 && k > 0 && k <= n + 1,
-      throw ArgumentError('binomial coefficient for ($n, $k)'),
-    );
+    if (n > 0 && k > 0 && k <= n + 1) {
+      throw ArgumentError(FErrorMessage.intBinomialCoefficient(n, k));
+    }
     return k == 1 || k == n + 1
         ? 1
         : k == 2 || k == n
@@ -214,7 +273,7 @@ extension IntExtension on int {
   ///   if takes more example, it will turn out that [fBegin] = n - [fEnd] #
   ///
   static int _binomialCoefficient(int n, int k) {
-    assert(n > 2 && k > 0 && k <= n + 1, throw ArgumentError('($n, $k)'));
+    assert(n > 2 && k > 0 && k <= n + 1);
 
     final currentFloor = <int>[1, 2, 1];
     final fEnd = k - 1;
@@ -236,9 +295,6 @@ extension IntExtension on int {
     }
     return floorOf(n).first;
   }
-
-  ///
-  static int combination(int m, int n) => binomialCoefficient(m, n + 1);
 
   ///
   /// Generally, these methods return the possible partition of an integer [m],
@@ -273,17 +329,18 @@ extension IntExtension on int {
   /// (1, 1, 1, 1, 1)
   ///
   static int partition(int m, [int? n]) {
-    assert(m.isPositiveOrZero, 'cannot partition negative integer: $m');
+    if (m.isNegative) throw ArgumentError(FErrorMessage.intPartition(m));
     if (n != null) {
-      assert(n <= m, 'cannot partition $m into $n group');
-      return _partition(m, n, container: _partitionContainer<int>(m, n: n));
+      if (n > m) throw ArgumentError(FErrorMessage.intPartitionGroup(m, n));
+      return _partition<int>(m, n, container: _partitionContainer<int>(m, n: n));
     }
 
     final pSpace = _partitionContainer<int>(m);
-    return Iterable.generate(
-      m,
-      (i) => _partition<int>(m, i + 1, container: pSpace),
-    ).reduce(FReducer.intAdd);
+    var sum = 0;
+    for (var i = 0; i < m; i++) {
+      sum += _partition<int>(m, i + 1, container: pSpace);
+    }
+    return sum;
   }
 
   ///
@@ -297,17 +354,14 @@ extension IntExtension on int {
   /// ]
   ///
   static List<List<int>> partitionGroups(int m, int n) {
-    assert(
-      m.isPositiveOrZero && n <= m,
-      'it is impossible to partition $m into $n group',
-    );
-    final groups = _partition<List<List<int>>>(
+    if (m.isNegative || n > m) {
+      throw ArgumentError(FErrorMessage.intPartitionGroup(m, n));
+    }
+    return _partition<List<List<int>>>(
       m,
       n,
       container: _partitionContainer<List<List<int>>>(m, n: n),
-    );
-    assert(groups.every((element) => element.length == n), 'runtime error');
-    return groups..sortAccordingly();
+    )..sortAccordingly();
   }
 
   ///
@@ -395,8 +449,6 @@ extension IntExtension on int {
         List<List<Iterable<List<int>>>>() => () {
             final partitionSpace = container as List<List<Iterable<List<int>>>>;
             late final Generator2D<Iterable<List<int>>> elementOf;
-
-            print('($m, $n)');
 
             List<int> firstOf(int n) => [n];
             List<int> lastOf(int n) => List.filled(n, 1, growable: true);
@@ -515,21 +567,38 @@ extension IntExtension on int {
   /// [accumulated], [factorial]
   ///
   int get accumulated {
-    assert(isPositiveOrZero, 'invalid accumulate integer: $this');
-    int accelerator = 0;
+    if (this < 0) throw ArgumentError(FErrorMessage.invalidInteger(this));
+    var value = 0;
     for (var i = 1; i <= this; i++) {
-      accelerator += i;
+      value += i;
     }
-    return accelerator;
+    return value;
   }
 
   int get factorial {
-    assert(isPositive, 'invalid factorial integer: $this');
-    int accelerator = 1;
+    if (this < 0) throw ArgumentError(FErrorMessage.invalidInteger(this));
+    var value = 1;
     for (var i = 1; i <= this; i++) {
-      accelerator *= i;
+      value *= i;
     }
-    return accelerator;
+    return value;
+  }
+
+  // Iterable<int> get factorized sync* {
+  //   assert(this > 1, 'invalid factorized integer: $this');
+  //   final primes = List.of(IntExtension.primesIn100);
+  //   if (this < 100) {
+  //
+  //   }
+  // }
+
+  ///
+  /// [leadingValue]
+  ///
+  int get leadingValue {
+    num n = abs();
+    for (; n >= 10; n /= 10, n++) {}
+    return n.floor();
   }
 
   ///
@@ -539,21 +608,4 @@ extension IntExtension on int {
 
   bool parityOpposite(int other) =>
       isEven && other.isOdd || isOdd && other.isEven;
-
-  ///
-  /// [digit], [leadingValue]
-  ///
-  int digit([int carry = 10]) {
-    var value = abs();
-    var d = 0;
-    for (var i = 1; i < value; i *= carry, d++) {}
-    return d;
-  }
-
-  int leadingValue([int carry = 10]) {
-    final digit = math.pow(carry, this.digit(carry) - 1);
-    var i = 2;
-    for (; digit * i < this; i++) {}
-    return i - 1;
-  }
 }

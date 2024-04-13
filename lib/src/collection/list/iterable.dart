@@ -7,7 +7,9 @@ part of damath_collection;
 /// [generateFrom], ...
 ///
 /// instance getter and methods
+/// [clone]
 /// [cardinality]
+/// [copyInto], ...
 /// [anyElementWith], ...
 /// [append], ...
 ///
@@ -17,9 +19,9 @@ part of damath_collection;
 ///
 /// [isEqualTo], ...
 /// [interval], ...
-/// [copyInto], ...
 ///
 /// [chunk], ...
+/// [combination2], ...
 ///
 extension IterableExtension<I> on Iterable<I> {
   ///
@@ -27,8 +29,9 @@ extension IterableExtension<I> on Iterable<I> {
   /// [applyAppend]
   ///
   static int toLength<I>(Iterable<I> iterable) => iterable.length;
+
   static Applier<Iterable<I>> applyAppend<I>(I value) =>
-          (iterable) => iterable.append(value);
+      (iterable) => iterable.append(value);
 
   ///
   /// [fill]
@@ -51,12 +54,27 @@ extension IterableExtension<I> on Iterable<I> {
   }
 
   ///
+  /// [clone]
+  ///
+  Iterable<I> get clone sync* {
+    yield* this;
+  }
+
+  ///
   /// [cardinality]
   /// [isVariationTo]
   ///
   int get cardinality => toSet().length;
 
   bool isVariationTo(Iterable<I> another) => another.cardinality == cardinality;
+
+  ///
+  /// [copyInto]
+  ///
+  void copyInto(List<I> out) {
+    assert(length == out.length);
+    iterator.consumeAllByIndex((value, i) => out[i] = value);
+  }
 
   ///
   /// [anyElementWith]
@@ -69,10 +87,10 @@ extension IterableExtension<I> on Iterable<I> {
   }
 
   bool anyElementIsEqualWith(Iterable<I> another) =>
-      anyElementWith(another, FPredicatorCombiner.isEqual);
+      anyElementWith(another, FPredicatorFusionor.isEqual);
 
   bool anyElementIsDifferentWith(Iterable<I> another) =>
-      anyElementWith(another, FPredicatorCombiner.isDifferent);
+      anyElementWith(another, FPredicatorFusionor.isDifferent);
 
   ///
   /// append
@@ -119,13 +137,13 @@ extension IterableExtension<I> on Iterable<I> {
     Iterable<E> another,
     Companion<S, I> companion,
     Companion<S, E> companionAnother,
-    Collapser<S> combine,
+    Collapser<S> collapse,
   ) {
     assert(length == another.length);
     return iterator.interFold(
       initialValue,
       another.iterator,
-      (value, a, b) => combine(
+      (value, a, b) => collapse(
         value,
         companion(value, a),
         companionAnother(value, b),
@@ -140,7 +158,8 @@ extension IterableExtension<I> on Iterable<I> {
   I reduceWith(
       Iterable<I> another, Reducer<I> initialize, Collapser<I> mutual) {
     assert(length == another.length);
-    return iterator.interReduceInitialized(another.iterator, initialize, mutual);
+    return iterator.interReduceInitialized(
+        another.iterator, initialize, mutual);
   }
 
   I reduceTogether(
@@ -149,7 +168,8 @@ extension IterableExtension<I> on Iterable<I> {
     Collapser<I> reducer,
   ) {
     assert(length == another.length);
-    return iterator.interReduceInitialized(another.iterator, initialize, reducer);
+    return iterator.interReduceInitialized(
+        another.iterator, initialize, reducer);
   }
 
   ///
@@ -168,12 +188,12 @@ extension IterableExtension<I> on Iterable<I> {
     Iterable<E> another,
     Mapper<I, Iterable<I>> expanding,
     Mapper<E, Iterable<I>> expandingAnother,
-    Reducer<Iterable<I>> combine,
+    Reducer<Iterable<I>> reducing,
   ) {
     assert(length == another.length);
     return iterator.interExpandTo(
       another.iterator,
-      (p, q) => combine(expanding(p), expandingAnother(q)),
+      (p, q) => reducing(expanding(p), expandingAnother(q)),
     );
   }
 
@@ -182,7 +202,7 @@ extension IterableExtension<I> on Iterable<I> {
   ///
   bool isEqualTo(Iterable<I> another) =>
       length == another.length &&
-      !iterator.interAny(another.iterator, FPredicatorCombiner.isDifferent);
+      !iterator.interAny(another.iterator, FPredicatorFusionor.isDifferent);
 
   ///
   /// [interval]
@@ -190,14 +210,6 @@ extension IterableExtension<I> on Iterable<I> {
   Iterable<S> interval<T, S>(Iterable<T> another, Linker<I, T, S> link) {
     assert(another.length + 1 == length);
     return iterator.intervalBy(another.iterator, link);
-  }
-
-  ///
-  /// [copyInto]
-  ///
-  void copyInto(List<I> out) {
-    assert(length == out.length);
-    iterator.consumeAllByIndex((value, i) => out[i] = value);
   }
 
   ///
@@ -218,6 +230,18 @@ extension IterableExtension<I> on Iterable<I> {
         list.add(iterator.current);
       }
       yield list;
+    }
+  }
+
+  ///
+  /// [combination2]
+  ///
+  Iterable<Iterable<I>> get combination2 sync* {
+    final length = this.length - 1;
+    var iterable = this;
+    for (var i = 0; i < length; i++) {
+      yield* iterable.iterator.combination2FromFirst;
+      iterable = iterable.skip(1);
     }
   }
 }

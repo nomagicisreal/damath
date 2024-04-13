@@ -38,7 +38,7 @@ Lerper<T> lerperFrom<T>(T begin, T end) {
   try {
     return DoubleExtension.lerperFrom(begin, end);
   } on StateError catch (e) {
-    if (e.message == KErrorMessage.lerperNoImplementation) {
+    if (e.message == FErrorMessage.lerperNoImplementation) {
       return switch (begin) {
         Size _ => (t) => Size.lerp(begin, end as Size, t)!,
         Rect _ => (t) => Rect.lerp(begin, end as Rect, t)!,

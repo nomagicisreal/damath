@@ -159,7 +159,7 @@ extension DoubleExtension on double {
   ///
   ///
   static Lerper<T> lerperFrom<T>(T begin, T end) => switch (T) {
-        _ => throw StateError(KErrorMessage.lerperNoImplementation),
+        _ => throw StateError(FErrorMessage.lerperNoImplementation),
       };
 
   static Lerper<T> lerperOf<T>(T value) => (_) => value;
@@ -184,7 +184,7 @@ extension DoubleExtension on double {
   /// [from]
   ///
   static Mapper<double, T> from<T>(T begin, T end) => switch (begin) {
-        _ => throw StateError(KErrorMessage.lerperNoImplementation),
+        _ => throw StateError(FErrorMessage.lerperNoImplementation),
       };
 
   ///

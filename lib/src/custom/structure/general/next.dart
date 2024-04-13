@@ -62,7 +62,7 @@ abstract class Node<T, N extends Node<T, N>> extends Vertex<T> {
   ///
   /// setter, getter
   ///
-  set next(N? node) => throw StateError(KErrorMessage.modifyImmutable);
+  set next(N? node) => throw StateError(FErrorMessage.modifyImmutable);
 
   N? get next;
 
@@ -103,7 +103,7 @@ abstract class _INodeOneDimension<T, N extends Node<T, N>>
     try {
       buffer.write('$prefix${node.data}');
     } on StateError catch (e) {
-      if (e.message != KErrorMessage.vertexDataRequiredNotNull) rethrow;
+      if (e.message != FErrorMessage.vertexDataRequiredNotNull) rethrow;
       buffer.write('$prefix${null}');
     }
     return buffer
@@ -149,10 +149,10 @@ mixin _MixinNodeDirect<T, N extends NodeDirect<T, N>> on Node<T, N>
       i++;
       try {
         for (; true; i++) {
-          n = n?.next ?? (throw RangeError(KErrorMessage.indexOutOfBoundary));
+          n = n?.next ?? (throw RangeError(FErrorMessage.indexOutOfBoundary));
         }
       } on RangeError catch (e) {
-        if (e.message != KErrorMessage.indexOutOfBoundary) rethrow;
+        if (e.message != FErrorMessage.indexOutOfBoundary) rethrow;
       }
     }
     return i;
@@ -161,7 +161,7 @@ mixin _MixinNodeDirect<T, N extends NodeDirect<T, N>> on Node<T, N>
   Node<T, N> _nodeOf(int i) {
     Node<T, N> node = this;
     for (var j = 0; j < i; j++) {
-      node = node.next ?? (throw RangeError(KErrorMessage.indexOutOfBoundary));
+      node = node.next ?? (throw RangeError(FErrorMessage.indexOutOfBoundary));
     }
     return node;
   }
@@ -192,7 +192,7 @@ sealed class NodeDirect<T, N extends NodeDirect<T, N>> extends Node<T, N>
     Generator<T> generator,
     NodeConstructorNext<T, N> construct,
   ) {
-    if (length.isNegative) throw RangeError(KErrorMessage.generateByNegative);
+    if (length.isNegative) throw RangeError(FErrorMessage.generateByNegative);
     N? current;
     for (var i = length - 1; i > -1; i--) {
       current = construct(generator(i), current);
@@ -206,13 +206,13 @@ mixin _MixinNodeDirectHidden<T, N extends NodeDirect<T, N>>
     on NodeDirect<T, N> {
   @override
   set next(covariant N? node) =>
-      throw StateError(KErrorMessage.nodeCannotAssignDirectly);
+      throw StateError(FErrorMessage.nodeCannotAssignDirectly);
 
   @override
   N? get next => _child;
 
   set _child(covariant N? node) =>
-      throw StateError(KErrorMessage.modifyImmutable);
+      throw StateError(FErrorMessage.modifyImmutable);
 
   N? get _child;
 }
@@ -593,7 +593,7 @@ mixin _MixinNodeDirectInsertableIterator<I,
   /// overrides
   ///
   @override
-  I get current => _data ?? (throw StateError(KErrorMessage.iteratorNoElement));
+  I get current => _data ?? (throw StateError(FErrorMessage.iteratorNoElement));
 
   @override
   bool moveNext() {
@@ -766,7 +766,7 @@ abstract class _QueueIterator<I, N extends _NodeDirectInsertableIterator<I, N>>
 
   @override
   I get current =>
-      _node._data ?? (throw StateError(KErrorMessage.iteratorNoElement));
+      _node._data ?? (throw StateError(FErrorMessage.iteratorNoElement));
 
   @override
   bool moveNext() => _node.moveNext();

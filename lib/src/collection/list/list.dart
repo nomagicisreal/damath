@@ -16,7 +16,7 @@ part of damath_collection;
 /// [clone], ...
 /// [copyInto], ...
 /// [splitBy], ...
-/// [reversed]
+/// [reverseToList]
 /// [mapToList], ...
 ///
 /// [interReduce], ...
@@ -267,15 +267,12 @@ extension ListExtension<T> on List<T> {
   }
 
   ///
-  /// [reversed]
-  /// [reversedExcept]
+  /// [reverseToList]
+  /// [reverseToListExcept]
   ///
-  List<T> reversed([bool growable = false]) => List.of(
-        [for (var i = length - 1; i > -1; i--) this[i]],
-        growable: growable,
-      );
+  List<T> get reverseToList => [for (var i = length - 1; i > -1; i--) this[i]];
 
-  List<T> reversedExcept([int count = 1]) =>
+  List<T> reverseToListExcept([int count = 1]) =>
       [...sublist(count), ...sublist(count).reversed];
 
   ///

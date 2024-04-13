@@ -1,17 +1,10 @@
 // import 'dart:math';
-// import 'dart:typed_data';
+
+import 'package:damath/src/collection/collection.dart';
 
 void main(List<String> arguments) async {
-  // final queue = QueteratorCompared.increase(['b', 'be', 'aa', 'z', 'c']);
-  // print(queue..insert('eel'));
-  // print(queue..insert('eel')..insert('vv')..insert('mamx'));
-  // print(queue.current);
+  // print((log(2) / log(10)).toStringAsFixed(20));
+  // print(pow(2, 63) - 1);
 
-  // final list = [2, 2, 4] + [1, 1, 5];
-  // print(list);
-
-  print(switch (''.runtimeType) {
-    String => 'is string',
-    _ => 'nothing',
-  });
+  print([2, 54, 21, 1, 0].combination2.length);
 }

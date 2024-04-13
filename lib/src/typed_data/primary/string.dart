@@ -12,6 +12,8 @@
 /// [KLaTexString], [KLatexStringEquation], [KLatexStringMatrix1N], [KLatexStringMatrix2N], [FLaTexString]
 ///
 ///
+///
+///
 part of damath_typed_data;
 
 
@@ -31,13 +33,13 @@ extension StringExtension on String {
   String get lowercaseFirstChar => replaceFirstMapped(
       RegExp(r'[A-Z]'), (match) => match.group0.toLowerCase());
 
-  MapEntry<String, String> get splitByFirstSpace {
-    late final String key;
-    final value = replaceFirstMapped(RegExp(r'\w '), (match) {
-      key = match.group0.trim();
+  (String, String) get splitByFirstSpace {
+    late final String a;
+    final b = replaceFirstMapped(RegExp(r'\w '), (match) {
+      a = match.group0.trim();
       return '';
     });
-    return MapEntry(key, value);
+    return (a, b);
   }
 
   ///

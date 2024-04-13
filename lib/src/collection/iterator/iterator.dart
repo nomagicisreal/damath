@@ -21,6 +21,7 @@ part of damath_collection;
 /// [expand], ...
 /// [reduce], ...
 ///
+/// [combination2OnFirst], ...
 ///
 ///
 ///
@@ -58,7 +59,8 @@ extension IteratorExtension<I> on Iterator<I> {
     }
   }
 
-  void accompanyByIndex(I value, AccompanierIndexable<I> consume, [int start = 0]) {
+  void accompanyByIndex(I value, AccompanierIndexable<I> consume,
+      [int start = 0]) {
     for (var i = start; moveNext(); i++) {
       consume(current, value, i);
     }
@@ -70,18 +72,18 @@ extension IteratorExtension<I> on Iterator<I> {
   ///
   void moveNextConsume(Consumer<I> consume) => moveNext()
       ? consume(current)
-      : throw StateError(KErrorMessage.iteratorNoElement);
+      : throw StateError(FErrorMessage.iteratorNoElement);
 
   I moveNextApply(Applier<I> apply) => moveNext()
       ? apply(current)
-      : throw StateError(KErrorMessage.iteratorNoElement);
+      : throw StateError(FErrorMessage.iteratorNoElement);
 
   ///
   /// [leadApply]
   ///
   I leadApply(int ahead, Applier<I> apply) {
     for (var i = -1; i < ahead; i++) {
-      if (!moveNext()) throw StateError(KErrorMessage.iteratorNoElement);
+      if (!moveNext()) throw StateError(FErrorMessage.iteratorNoElement);
     }
     return apply(current);
   }
@@ -157,7 +159,7 @@ extension IteratorExtension<I> on Iterator<I> {
   /// [existBy]
   /// [existByFirst]
   ///
-  bool exist(PredicatorCombiner<I> test) => moveNextSupply(() {
+  bool exist(PredicatorFusionor<I> test) => moveNextSupply(() {
         var val = current;
         while (moveNext()) {
           if (test(val, current)) return true;
@@ -168,7 +170,7 @@ extension IteratorExtension<I> on Iterator<I> {
 
   bool existBy<T>(
     Mapper<I, T> toVal,
-    PredicatorCombiner<T> test,
+    PredicatorFusionor<T> test,
   ) =>
       moveNextSupply(() {
         var val = toVal(current);
@@ -180,7 +182,7 @@ extension IteratorExtension<I> on Iterator<I> {
         return false;
       });
 
-  bool existByFirst<T>(Mapper<I, T> toVal, PredicatorCombiner<T> test) =>
+  bool existByFirst<T>(Mapper<I, T> toVal, PredicatorFusionor<T> test) =>
       moveNextSupply(() {
         var val = toVal(current);
         while (moveNext()) {
@@ -195,7 +197,7 @@ extension IteratorExtension<I> on Iterator<I> {
   /// [existAnyForEachGroup]
   /// [existAnyForEachGroupSet]
   ///
-  bool existAny(PredicatorCombiner<I> test) => moveNextSupply(() {
+  bool existAny(PredicatorFusionor<I> test) => moveNextSupply(() {
         final list = <I>[current];
         while (moveNext()) {
           if (list.any((val) => test(val, current))) return true;
@@ -206,7 +208,7 @@ extension IteratorExtension<I> on Iterator<I> {
 
   bool existAnyBy<T>(
     Mapper<I, T> toVal,
-    PredicatorCombiner<T> test,
+    PredicatorFusionor<T> test,
   ) =>
       moveNextSupply(() {
         final list = <T>[toVal(current)];
@@ -221,7 +223,7 @@ extension IteratorExtension<I> on Iterator<I> {
   bool existAnyForEachGroup<K, V>(
     Mapper<I, K> toKey,
     Mapper<I, V> toVal,
-    PredicatorFusionor<Map<K, V>, K, V> fusion,
+    PredicatorSynthesizer<Map<K, V>, K, V> fusion,
   ) =>
       moveNextSupply(() {
         final map = <K, V>{toKey(current): toVal(current)};
@@ -234,7 +236,7 @@ extension IteratorExtension<I> on Iterator<I> {
   bool existAnyForEachGroupSet<K, V>(
     Mapper<I, K> toKey,
     Mapper<I, V> toVal,
-    PredicatorFusionor<Map<K, Set<V>>, K, V> fusion,
+    PredicatorSynthesizer<Map<K, Set<V>>, K, V> fusion,
   ) =>
       moveNextSupply(() {
         final map = <K, Set<V>>{
@@ -252,15 +254,15 @@ extension IteratorExtension<I> on Iterator<I> {
   /// [existEqual]
   /// [existEqualBy]
   ///
-  bool get existDifferent => exist(FPredicatorCombiner.isDifferent);
+  bool get existDifferent => exist(FPredicatorFusionor.isDifferent);
 
   bool existDifferentBy<T>(Mapper<I, T> toId) =>
-      existBy(toId, FPredicatorCombiner.isDifferent);
+      existBy(toId, FPredicatorFusionor.isDifferent);
 
-  bool get existEqual => existAny(FPredicatorCombiner.isEqual);
+  bool get existEqual => existAny(FPredicatorFusionor.isEqual);
 
   bool existEqualBy<T>(Mapper<I, T> toId) =>
-      existAnyBy(toId, FPredicatorCombiner.isEqual);
+      existAnyBy(toId, FPredicatorFusionor.isEqual);
 
   ///
   /// cumulative
@@ -295,7 +297,7 @@ extension IteratorExtension<I> on Iterator<I> {
           T() => 1,
           Iterable<T>() => element.length,
           Iterable<Iterable>() => element.iterator.cumulateLengthNested(),
-          _ => throw StateError(KErrorMessage.iteratorElementNotNest),
+          _ => throw StateError(FErrorMessage.iteratorElementNotNest),
         },
         FReducer.intAdd,
       );
@@ -353,14 +355,14 @@ extension IteratorExtension<I> on Iterator<I> {
     while (moveNext()) {
       if (test(current)) return current;
     }
-    throw StateError(KErrorMessage.iteratorElementNotFound);
+    throw StateError(FErrorMessage.iteratorElementNotFound);
   }
 
   void findConsume(Predicator<I> test, Consumer<I> action) {
     while (moveNext()) {
       if (test(current)) return action(current);
     }
-    throw StateError(KErrorMessage.iteratorElementNotFound);
+    throw StateError(FErrorMessage.iteratorElementNotFound);
   }
 
   ///
@@ -390,7 +392,7 @@ extension IteratorExtension<I> on Iterator<I> {
     while (moveNext()) {
       if (test(current)) return toVal(current);
     }
-    throw StateError(KErrorMessage.iteratorElementNotFound);
+    throw StateError(FErrorMessage.iteratorElementNotFound);
   }
 
   T? findMapOrNull<T>(Predicator<I> test, Mapper<I, T> toVal) {
@@ -421,7 +423,7 @@ extension IteratorExtension<I> on Iterator<I> {
       if (test(current)) return i;
       i++;
     }
-    throw StateError(KErrorMessage.iteratorElementNotFound);
+    throw StateError(FErrorMessage.iteratorElementNotFound);
   }
 
   int findCheck(PredicatorGenerator<I> test) {
@@ -430,7 +432,7 @@ extension IteratorExtension<I> on Iterator<I> {
       if (test(current, i)) return i;
       i++;
     }
-    throw StateError(KErrorMessage.iteratorElementNotFound);
+    throw StateError(FErrorMessage.iteratorElementNotFound);
   }
 
   ///
@@ -441,12 +443,10 @@ extension IteratorExtension<I> on Iterator<I> {
   /// [takeUntil], [takeExistUntil],
   /// [takeFrom],
   /// [takeBetween],
-  /// [mapByIndexExistUntil],
   ///
   /// [takeList], [takeListAll]
   /// [takeListWhile], [takeListExistWhile],
   /// [takeListUntil], [takeListExistUntil],
-  /// [mapToListByIndexUntil], [mapToListByIndexExistUntil]
   ///
   ///
   ///
@@ -461,7 +461,7 @@ extension IteratorExtension<I> on Iterator<I> {
     for (; moveNext() && i < count; i++) {
       yield current;
     }
-    if (count > i) throw RangeError(KErrorMessage.indexOutOfBoundary);
+    if (count > i) throw RangeError(FErrorMessage.indexOutOfBoundary);
   }
 
   Iterable<I> get takeAll sync* {
@@ -497,7 +497,7 @@ extension IteratorExtension<I> on Iterator<I> {
     }
   }
 
-  Iterable<I> takeExistWhile(PredicatorCombiner<I> test) =>
+  Iterable<I> takeExistWhile(PredicatorFusionor<I> test) =>
       moveNextSupply(() sync* {
         final val = current;
         yield val;
@@ -525,7 +525,7 @@ extension IteratorExtension<I> on Iterator<I> {
   }
 
   Iterable<I> takeExistUntil(
-    PredicatorCombiner<I> testInvalid, [
+    PredicatorFusionor<I> testInvalid, [
     bool includeFirstInvalid = false,
   ]) =>
       moveNextSupply(() sync* {
@@ -590,7 +590,7 @@ extension IteratorExtension<I> on Iterator<I> {
     for (; moveNext() && i < count; i++) {
       list.add(current);
     }
-    if (count > i) throw RangeError(KErrorMessage.indexOutOfBoundary);
+    if (count > i) throw RangeError(FErrorMessage.indexOutOfBoundary);
     return list;
   }
 
@@ -628,7 +628,7 @@ extension IteratorExtension<I> on Iterator<I> {
     return list;
   }
 
-  List<I> takeListExistWhile(PredicatorCombiner<I> test) => moveNextSupply(() {
+  List<I> takeListExistWhile(PredicatorFusionor<I> test) => moveNextSupply(() {
         final val = current;
         final list = [val];
         while (moveNext()) {
@@ -658,7 +658,7 @@ extension IteratorExtension<I> on Iterator<I> {
   }
 
   List<I> takeListExistUntil(
-    PredicatorCombiner<I> testInvalid, [
+    PredicatorFusionor<I> testInvalid, [
     bool includeFirstInvalid = false,
   ]) =>
       moveNextSupply(() {
@@ -682,7 +682,7 @@ extension IteratorExtension<I> on Iterator<I> {
   Iterable<I> skip(int count) {
     var i = 0;
     for (; moveNext() && i < count; i++) {}
-    if (count > i) throw RangeError(KErrorMessage.indexOutOfBoundary);
+    if (count > i) throw RangeError(FErrorMessage.indexOutOfBoundary);
     return takeAll;
   }
 
@@ -1002,5 +1002,28 @@ extension IteratorExtension<I> on Iterator<I> {
           ele = after(ele, current, val);
         }
         return val;
+      });
+
+  ///
+  /// [combination2OnFirst], [combination2OnLast]
+  /// [combination2FromFirst]
+  ///
+  Iterable<Iterable<I>> combination2OnFirst(I value) sync* {
+    while (moveNext()) {
+      yield [value, current];
+    }
+  }
+
+  Iterable<Iterable<I>> combination2OnLast(I value) sync* {
+    while (moveNext()) {
+      yield [current, value];
+    }
+  }
+
+  Iterable<Iterable<I>> get combination2FromFirst => moveNextSupply(() sync* {
+        final first = current;
+        while (moveNext()) {
+          yield [first, current];
+        }
       });
 }

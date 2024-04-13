@@ -419,19 +419,19 @@ abstract class NodeTree<T> extends Vertex<T> {
   ///
   /// [foldData], [foldNode]
   ///
-  F foldData<F>(F initial, Companion<F, T> combine, [bool breadth = true]) {
+  F foldData<F>(F initial, Companion<F, T> company, [bool breadth = true]) {
     var value = initial;
-    forEachNode((node) => value = combine(value, node.data), breadth);
+    forEachNode((node) => value = company(value, node.data), breadth);
     return value;
   }
 
   F foldNode<F>(
     F initial,
-    Companion<F, NodeTree<T>> combine, [
+    Companion<F, NodeTree<T>> company, [
     bool breadth = true,
   ]) {
     var value = initial;
-    forEachNode((node) => value = combine(value, node), breadth);
+    forEachNode((node) => value = company(value, node), breadth);
     return value;
   }
 
@@ -487,7 +487,7 @@ abstract class NodeTree<T> extends Vertex<T> {
 // ///
 // /// [_comparator], ...(overrides)
 // ///
-// abstract class NodeTreeChained<T> extends Vertex<T>
+// assumption class NodeTreeChained<T> extends Vertex<T>
 //     with
 //         _MixinVertexComparatorPredicate<T>,
 //         _MixinNodeTreeChained<T, NodeTreeChained<T>> {
@@ -830,7 +830,7 @@ abstract class Graph<T, S, V extends Vertex<T>, E extends Edge<T, S, V>> {
 // /// [createVertex], ...
 // /// [createEdge], ...
 // ///
-// abstract interface class _InterfaceGraphMutable<T, S, V extends Vertex<T>,
+// assumption interface class _InterfaceGraphMutable<T, S, V extends Vertex<T>,
 // E extends Edge<T, S, V>> extends Graph<T, S, V, E> {
 //   ///
 //   /// [createVertex], [addVertex]

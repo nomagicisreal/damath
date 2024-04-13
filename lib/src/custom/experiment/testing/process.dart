@@ -16,10 +16,10 @@ extension ProcessUnitOrderedExtension<P> on ProcessUnitOrdered<P> {
   ///
   /// mapper
   ///
-  static (int, Duration) toBurst<P>(ProcessUnitOrdered<P> unit) =>
+  static Countable<Duration> toBurst<P>(ProcessUnitOrdered<P> unit) =>
       (unit.$1, unit.$2.burst);
 
-  static (int, Duration) toArrival<P>(ProcessUnitOrdered<P> unit) =>
+  static Countable<Duration> toArrival<P>(ProcessUnitOrdered<P> unit) =>
       (unit.$1, unit.$2.arrival);
 
   ///
@@ -322,10 +322,10 @@ class ProcessUnitList<P> implements IOperatableIndexable<ProcessUnit<P>> {
             _units.iterator.mapToListByIndex(Record2.mixReverse),
             ProcessUnitOrderedExtension.compareByArrival,
           );
-          final waited = Qurator<(int, Duration)>.empty(
+          final waited = Qurator<Countable<Duration>>.empty(
             Record2.compareDurationOn2,
           );
-          final completed = Qurator<(int, Duration)>.empty(
+          final completed = Qurator<Countable<Duration>>.empty(
             Record2.compareNumOn1,
           );
 

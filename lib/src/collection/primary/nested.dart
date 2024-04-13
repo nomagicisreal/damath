@@ -62,6 +62,12 @@ extension IteratorSet<K> on Iterator<Set<K>> {
 ///
 extension IterableIterable<I> on Iterable<Iterable<I>> {
   ///
+  /// [predicateChildrenLength]
+  ///
+  static Predicator<Iterable<I>> predicateChildrenLength<I>(int n) =>
+      (element) => element.length == n;
+
+  ///
   /// [size]
   ///
   int get size =>
@@ -121,7 +127,7 @@ extension IterableIterableComparable<C extends Comparable>
   void everyElementSortedThen(Listener listen, [bool increase = true]) =>
       every((element) => element.iterator.isSorted(increase))
           ? listen()
-          : throw IteratorComparable._errorIteratorDisorder();
+          : throw StateError(FErrorMessage.comparableDisordered);
 }
 
 ///

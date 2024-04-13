@@ -25,7 +25,7 @@ part of damath_collection;
 /// ---------------others:
 /// [leadThenInterFold], ...
 /// [interval], ...
-/// [cartesianProduct], ...
+/// [combineToRecord], ...
 ///
 ///
 extension IteratorWithExtension<I> on Iterator<I> {
@@ -62,15 +62,15 @@ extension IteratorWithExtension<I> on Iterator<I> {
   /// [moveNextWith]
   /// [moveNextCompanionWith]
   ///
-  I moveNextWith(Iterator<I> another, Reducer<I> combine) =>
+  I moveNextWith(Iterator<I> another, Reducer<I> reducing) =>
       moveNext() && another.moveNext()
-          ? combine(current, another.current)
-          : throw StateError(KErrorMessage.iteratorNoElement);
+          ? reducing(current, another.current)
+          : throw StateError(FErrorMessage.iteratorNoElement);
 
   I moveNextCompanionWith<E>(Iterator<E> another, Applier<I> apply) =>
       moveNext() && another.moveNext()
           ? apply(current)
-          : throw StateError(KErrorMessage.iteratorNoElement);
+          : throw StateError(FErrorMessage.iteratorNoElement);
 
   ///
   /// [inter], [interIndexable]
@@ -125,9 +125,9 @@ extension IteratorWithExtension<I> on Iterator<I> {
   /// [interTakeOn]
   /// [interTakeCumulate]
   ///
-  Iterable<I> interTake(Iterator<I> another, Reducer<I> combine) sync* {
+  Iterable<I> interTake(Iterator<I> another, Reducer<I> reducing) sync* {
     while (moveNext() && another.moveNext()) {
-      yield combine(current, another.current);
+      yield reducing(current, another.current);
     }
   }
 
@@ -139,15 +139,15 @@ extension IteratorWithExtension<I> on Iterator<I> {
 
   I interTakeCumulate(
     Iterator<I> another,
-    Reducer<I> combine,
+    Reducer<I> fusion,
     Reducer<I> reducing,
   ) =>
       moveNextWith(
         another,
         (v1, v2) {
-          var val = combine(v1, v2);
+          var val = fusion(v1, v2);
           while (moveNext() && another.moveNext()) {
-            val = reducing(val, combine(current, another.current));
+            val = reducing(val, fusion(current, another.current));
           }
           return val;
         },
@@ -218,11 +218,11 @@ extension IteratorWithExtension<I> on Iterator<I> {
   ///
   Iterable<S> interMapIndexable<E, S>(
     Iterator<E> another,
-    MixerGenerator<I, E, S> combine,
+    MixerGenerator<I, E, S> mix,
     int start,
   ) sync* {
     for (var i = start; moveNext() && another.moveNext(); i++) {
-      yield combine(current, another.current, i);
+      yield mix(current, another.current, i);
     }
   }
 
@@ -245,11 +245,11 @@ extension IteratorWithExtension<I> on Iterator<I> {
   ///
   Iterable<S> interExpandToIndexable<E, S>(
     Iterator<E> another,
-    MixerGenerator<I, E, Iterable<S>> combine,
+    MixerGenerator<I, E, Iterable<S>> mix,
     int start,
   ) sync* {
     for (var i = start; moveNext() && another.moveNext(); i++) {
-      yield* combine(current, another.current, i);
+      yield* mix(current, another.current, i);
     }
   }
 
@@ -350,12 +350,12 @@ extension IteratorWithExtension<I> on Iterator<I> {
   ///
   /// [interReduce]
   ///
-  I interReduce(Iterator<I> another, Reducer<I> combine) => moveNextWith(
+  I interReduce(Iterator<I> another, Reducer<I> reducing) => moveNextWith(
         another,
         (v1, v2) {
-          var val = combine(v1, v2);
+          var val = reducing(v1, v2);
           while (moveNext()) {
-            val = combine(current, another.current);
+            val = reducing(current, another.current);
           }
           return val;
         },
@@ -454,14 +454,14 @@ extension IteratorWithExtension<I> on Iterator<I> {
   ///
   Iterable<I> intersection(Iterable<I> another) => interMapWhere(
         another.iterator,
-        FPredicatorCombiner.isEqual,
+        FPredicatorFusionor.isEqual,
         FKeep.reduceV1,
       );
 
   Iterable<int> intersectionIndex(Iterable<I> another, [int start = 0]) =>
       interMapIndexableWhere(
         another.iterator,
-        FPredicatorCombiner.isEqual,
+        FPredicatorFusionor.isEqual,
         (p, q, index) => index,
         start,
       );
@@ -522,7 +522,7 @@ extension IteratorWithExtension<I> on Iterator<I> {
   ///
   Iterable<I> diffTake(
     Iterator<I> another,
-    PredicatorCombiner<I> test,
+    PredicatorFusionor<I> test,
     Reducer<I> reducing,
   ) sync* {
     while (another.moveNext()) {
@@ -537,7 +537,7 @@ extension IteratorWithExtension<I> on Iterator<I> {
 
   Iterable<I> diffTakeByIndex(
     Iterator<I> another,
-    PredicatorCombiner<I> test,
+    PredicatorFusionor<I> test,
     ReducerGenerator<I> reducing, [
     int start = 0,
   ]) sync* {
@@ -841,14 +841,14 @@ extension IteratorWithExtension<I> on Iterator<I> {
   ///
   Iterable<I> difference(Iterable<I> another) => diffTake(
         another.iterator,
-        FPredicatorCombiner.isDifferent,
+        FPredicatorFusionor.isDifferent,
         FKeep.reduceV1,
       );
 
   Iterable<int> differenceIndex(Iterable<I> another, [int start = 0]) =>
       diffMapByIndexWhere(
         another.iterator,
-        FPredicatorCombiner.isDifferent,
+        FPredicatorFusionor.isDifferent,
         (p, q, index) => index,
         (value, index) => index,
         start,
@@ -908,10 +908,10 @@ extension IteratorWithExtension<I> on Iterator<I> {
   /// [interval]
   /// [intervalBy]
   ///
-  Iterable<I> interval(Reducer<I> combine) => moveNextSupply(() sync* {
+  Iterable<I> interval(Reducer<I> reducing) => moveNextSupply(() sync* {
         var previous = current;
         while (moveNext()) {
-          yield combine(previous, current);
+          yield reducing(previous, current);
           previous = current;
         }
       });
@@ -937,23 +937,25 @@ extension IteratorWithExtension<I> on Iterator<I> {
       });
 
   ///
-  /// [cartesianProduct]
-  /// [cartesianProductFlatted]
+  /// [combineToRecord]
+  /// [combineToRecordExpanded]
   ///
 
   ///
   /// listA = [1, 2, 3];
   /// listB = [101, 102];
-  /// result = [cartesianProduct] ([listA, listB]);
+  /// result = [combineToRecord] ([listA, listB]);
   /// print(result); // [
   ///   [MapEntry(1, 101), MapEntry(1, 102)],
   ///   [MapEntry(2, 101), MapEntry(2, 102)],
   ///   [MapEntry(3, 101), MapEntry(3, 102)],
   /// }
   ///
-  Iterable<Iterable<(I, V)>> cartesianProduct<V>(Iterator<V> another) =>
+  Iterable<Iterable<(I, V)>> combineToRecord<V>(Iterator<V> another) =>
       map(another.mapToRecordBy1);
 
-  Iterable<(I, V)> cartesianProductFlatted<V>(Iterator<V> another) =>
+  Iterable<(I, V)> combineToRecordExpanded<V>(Iterator<V> another) =>
       mapExpand(another.mapToRecordBy1);
+
+
 }

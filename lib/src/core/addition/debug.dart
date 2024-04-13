@@ -2,7 +2,7 @@
 ///
 /// this file contains:
 ///
-/// [KErrorMessage]
+/// [FErrorMessage]
 /// [StateErrorExtension]
 ///
 ///
@@ -14,7 +14,6 @@ part of damath_core;
 ///
 ///
 
-
 // this type of comment is used when a file contains more than one class, extension ...
 ///
 ///
@@ -22,7 +21,6 @@ part of damath_core;
 ///
 ///
 /// part of damath_...;
-
 
 // this type of comment is used on extension
 ///
@@ -44,13 +42,11 @@ part of damath_core;
 ///
 ///
 
-
-
 ///
 /// [iteratorNoElement], ...
 ///
-abstract interface class KErrorMessage {
-  const KErrorMessage();
+abstract interface class FErrorMessage {
+  const FErrorMessage();
 
   ///
   /// iterator
@@ -58,6 +54,12 @@ abstract interface class KErrorMessage {
   static const String iteratorNoElement = 'iterator no element';
   static const String iteratorElementNotFound = 'iterator element not found';
   static const String iteratorElementNotNest = 'iterator element not nested';
+
+  ///
+  /// comparable
+  ///
+  static String comparableValueNotProvided = 'comparable value not provided';
+  static String comparableDisordered = 'comparable disordered';
 
   ///
   /// vertex
@@ -80,11 +82,39 @@ abstract interface class KErrorMessage {
   ///
   /// others
   ///
-  static String indexOutOfBoundary = 'index out of boundary';
-  static String generateByNegative = 'invalid to generate by negative';
-  static String modifyImmutable = 'cannot modify immutable value';
-}
+  static const String indexOutOfBoundary = 'index out of boundary';
+  static const String generateByNegative = 'invalid to generate by negative';
+  static const String modifyImmutable = 'cannot modify immutable value';
+  static const String percentileOutOfBoundary = 'percentile out of boundary';
 
+  ///
+  ///
+  ///
+  /// functions
+  ///
+  ///
+  ///
+  static String intStoneTakingFinal(
+    int n,
+    int total,
+    int limitLower,
+    int limitUpper,
+  ) =>
+      'invalid stone taking final argument($n, $total, $limitLower, $limitUpper)';
+  static String intPascalTriangle(int n, int k) =>
+      'invalid pascal triangle argument($n, $k)';
+
+  static String intBinomialCoefficient(int n, int k) =>
+      'invalid binomial coefficient argument($n, $k)';
+
+  static String intPartition(int m) =>
+      'cannot partition negative integer: $m';
+  static String intPartitionGroup(int m, int n) =>
+      'it is impossible to partition $m into $n group';
+
+  static String invalidInteger(int n) => 'invalid integer: $n';
+
+}
 
 ///
 ///

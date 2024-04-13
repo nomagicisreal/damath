@@ -73,7 +73,7 @@ abstract class Vertex<T> {
   ///
   /// getter, setter
   ///
-  set data(T value) => throw StateError(KErrorMessage.modifyImmutable);
+  set data(T value) => throw StateError(FErrorMessage.modifyImmutable);
 
   T get data;
 }
@@ -86,10 +86,10 @@ mixin _MixinVertexHidden<T> on Vertex<T> {
   @override
   T get data =>
       _data ??
-          (throw StateError(KErrorMessage.vertexDataRequiredNotNull));
+          (throw StateError(FErrorMessage.vertexDataRequiredNotNull));
 
   set _data(T? value) =>
-      throw StateError(KErrorMessage.modifyImmutable);
+      throw StateError(FErrorMessage.modifyImmutable);
 
   T? get _data;
 }
