@@ -15,32 +15,6 @@ extension SetExtension<K> on Set<K> {
   ///
   Set<K> get clone => Set.of(this);
 
-  // Set<Set<K>> get powerSet {
-  //   final length = this.length;
-  //   final result = <Set<K>>{{}};
-  //   if (length == 0) return result;
-  //   if (length == 1) return result..add({first});
-  //   if (length == 2) {
-  //     final first = this.first;
-  //     final last = this.last;
-  //     return result
-  //       ..add({first})
-  //       ..add({last})
-  //       ..add({first, last});
-  //   }
-  //
-  //   final tempt = toList(growable: false);
-  //
-  //   // from 1 element to n element
-  //   for (var i = 0; i < length; i++) {
-  //     // in i element, find all possibility
-  //     for (var j = i; j < length; j++) {
-  //
-  //     }
-  //   }
-  //   return result;
-  // }
-
   ///
   /// [isEqualToSet]
   ///

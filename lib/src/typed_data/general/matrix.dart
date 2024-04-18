@@ -93,7 +93,7 @@ part of damath_typed_data;
 //   ///
 //   /// [computeAll]
 //   /// [add], [subtract]
-//   /// [multiply], [divide], [divideToInt], [module]
+//   /// [multiply], [divided], [dividedToInt], [module]
 //   ///
 //   static TensorMatrixDouble computeAll(
 //     TensorMatrixDouble m1,
@@ -122,17 +122,17 @@ part of damath_typed_data;
 //   ) =>
 //       computeAll(m1, m2, TensorVectorDouble.multiply);
 //
-//   static TensorMatrixDouble divide(
+//   static TensorMatrixDouble divided(
 //     TensorMatrixDouble m1,
 //     TensorMatrixDouble m2,
 //   ) =>
-//       computeAll(m1, m2, TensorVectorDouble.divide);
+//       computeAll(m1, m2, TensorVectorDouble.divided);
 //
-//   static TensorMatrixDouble divideToInt(
+//   static TensorMatrixDouble dividedToInt(
 //     TensorMatrixDouble m1,
 //     TensorMatrixDouble m2,
 //   ) =>
-//       computeAll(m1, m2, TensorVectorDouble.divideToInt);
+//       computeAll(m1, m2, TensorVectorDouble.dividedToInt);
 //
 //   static TensorMatrixDouble module(
 //     TensorMatrixDouble m1,
@@ -168,7 +168,7 @@ part of damath_typed_data;
 //
 //   @override
 //   TensorMatrixDouble operator /(covariant TensorMatrixDouble other) =>
-//       divide(this, other);
+//       divided(this, other);
 //
 //   @override
 //   TensorMatrixDouble operator %(covariant TensorMatrixDouble other) =>
@@ -176,7 +176,7 @@ part of damath_typed_data;
 //
 //   @override
 //   TensorMatrixDouble operator ~/(covariant TensorMatrixDouble other) =>
-//       divideToInt(this, other);
+//       dividedToInt(this, other);
 //
 //   // matrix multiplication
 //   @override

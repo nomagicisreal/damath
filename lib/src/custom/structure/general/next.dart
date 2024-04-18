@@ -3,17 +3,10 @@
 /// this file contains:
 /// [Node]
 ///   |##[_INodeOneDimension]
+///   |##[_MixinNodeHiddenNext], ##[_MixinNodeNew], ##[_MixinNodeConstructNext]
 ///   |
 ///   |##[_MixinNodeDirect]
-///   |-[NodeDirect]
-///   |   |##[_MixinNodeDirectHidden]
-///   |   |##[_MixinNodeDirectConstruct]
-///   |   |
-///   |   |-[_ImplNodeDirectImmutable], [_ImplNodeDirectImmutableNullable]
-///   |   |-[_ImplNodeDirectUnmodifiable], [_ImplNodeDirectUnmodifiableNullable]
-///   |   |-[_ImplNodeDirectFixed], [_ImplNodeDirectFixedNullable]
-///   |   |-[_ImplNodeDirectMutable], [_ImplNodeDirectMutableNullable]
-///   |   |
+///   |-[_NodeDirect]
 ///   |   |##[_MixinNodeDirectAppendable]
 ///   |   |-[NodeDirectAppendable]
 ///   |   |   |-[_ImplNodeDirectAppendableImmutable], [_ImplNodeDirectAppendableImmutableNullable]
@@ -32,19 +25,23 @@
 ///   |      ...
 ///   |
 ///   |##[_MixinNodeBidirect]
-///   |-[NodeBidirect] ...
+///   |-[_NodeBidirect] ...
 ///   |
+///   |
+///
+///
+///
+///
 ///
 ///
 part of damath_structure;
 
 ///
 ///
-/// [NodeConstructorNext]
+/// [NodeConstructor]
 ///
 ///
-typedef NodeConstructorNext<T, N extends NodeDirect<T, N>> = N Function(
-    T data, N? next);
+typedef NodeConstructor<T, N extends Node<T, N>> = N Function(T data, N? next);
 
 ///
 ///
@@ -56,7 +53,6 @@ typedef NodeConstructorNext<T, N extends NodeDirect<T, N>> = N Function(
 ///
 /// [next], ...(setter, getter)
 /// [_string], ...(function)
-/// [mapToNext], ...(static method)
 ///
 abstract class Node<T, N extends Node<T, N>> extends Vertex<T> {
   ///
@@ -114,7 +110,7 @@ abstract class _INodeOneDimension<T, N extends Node<T, N>>
 
   static N? mapToNext<T, N extends Node<T, N>>(N n) => n.next;
 
-  static N? mapToPrevious<T, N extends NodeBidirect<T, N>>(N n) => n.next;
+  static N? mapToPrevious<T, N extends _NodeBidirect<T, N>>(N n) => n.next;
 
   ///
   /// getter
@@ -123,7 +119,64 @@ abstract class _INodeOneDimension<T, N extends Node<T, N>>
 }
 
 //
-mixin _MixinNodeDirect<T, N extends NodeDirect<T, N>> on Node<T, N>
+mixin _MixinNodeHiddenNext<T, N extends Node<T, N>> on Node<T, N> {
+  @override
+  set next(covariant N? node) =>
+      throw StateError(FErrorMessage.nodeCannotAssignDirectly);
+
+  @override
+  N? get next => _child;
+
+  set _child(covariant N? node) =>
+      throw StateError(FErrorMessage.modifyImmutable);
+
+  N? get _child;
+}
+
+//
+mixin _MixinNodeNew<T, N extends Node<T, N>> on Node<T, N> {
+  N _new(T data) => _construct(data, null);
+
+  N _newIterable(
+    Iterable<T> iterable,
+    Companion<N, T> companion,
+  ) =>
+      iterable.iterator.reduceToInitialized(
+        (data) => _construct(data, null),
+        companion,
+      );
+
+  NodeConstructor<T, N> get _construct;
+}
+
+//
+mixin _MixinNodeConstructNext<T, N extends Node<T, N>>
+    on Node<T, N>, _MixinNodeNew<T, N> {
+  N _constructNext(T data, Applier<N> applyNotNull) =>
+      next == null ? _new(data) : applyNotNull(next!);
+
+  N _constructNextIterable(
+    Iterable<T> iterable,
+    Companion<N, T> companionNull,
+    Applier<N> applyNotNull,
+  ) =>
+      next == null
+          ? _newIterable(iterable, companionNull)
+          : applyNotNull(next!);
+}
+
+///
+///
+///
+///
+/// direct
+///
+///
+///
+///
+
+//
+mixin _MixinNodeDirect<T, N extends _NodeDirect<T, N>> on Node<T, N>
     implements _INodeOneDimension<T, N> {
   ///
   ///
@@ -170,10 +223,9 @@ mixin _MixinNodeDirect<T, N extends NodeDirect<T, N>> on Node<T, N>
 ///
 ///
 /// [toString], ...(overrides)
-/// [NodeDirect.immutable], ...(factories)
 ///
 ///
-sealed class NodeDirect<T, N extends NodeDirect<T, N>> extends Node<T, N>
+sealed class _NodeDirect<T, N extends _NodeDirect<T, N>> extends Node<T, N>
     with _MixinNodeDirect<T, N> {
   ///
   /// overrides
@@ -184,13 +236,13 @@ sealed class NodeDirect<T, N extends NodeDirect<T, N>> extends Node<T, N>
   ///
   /// constructor
   ///
-  const NodeDirect();
+  const _NodeDirect();
 
   // generate
-  factory NodeDirect.generate(
+  factory _NodeDirect.generate(
     int length,
     Generator<T> generator,
-    NodeConstructorNext<T, N> construct,
+    NodeConstructor<T, N> construct,
   ) {
     if (length.isNegative) throw RangeError(FErrorMessage.generateByNegative);
     N? current;
@@ -199,52 +251,6 @@ sealed class NodeDirect<T, N extends NodeDirect<T, N>> extends Node<T, N>
     }
     return current!;
   }
-}
-
-//
-mixin _MixinNodeDirectHidden<T, N extends NodeDirect<T, N>>
-    on NodeDirect<T, N> {
-  @override
-  set next(covariant N? node) =>
-      throw StateError(FErrorMessage.nodeCannotAssignDirectly);
-
-  @override
-  N? get next => _child;
-
-  set _child(covariant N? node) =>
-      throw StateError(FErrorMessage.modifyImmutable);
-
-  N? get _child;
-}
-
-//
-mixin _MixinNodeDirectConstruct<T, N extends NodeDirect<T, N>>
-    on NodeDirect<T, N> {
-  @override
-  set next(covariant N? node);
-
-  @override
-  N? get next;
-
-  N _constructChild(T data, Applier<N> applyNotNull) =>
-      next == null ? _construct(data, null) : applyNotNull(next!);
-
-  N _constructIterable(Iterable<T> iterable, Companion<N, T> companionNull) =>
-      iterable.iterator.reduceToInitialized(
-        (data) => _construct(data, null),
-        companionNull,
-      );
-
-  N _constructChildren(
-    Iterable<T> iterable,
-    Companion<N, T> companionNull,
-    Applier<N> applyNotNull,
-  ) =>
-      next == null
-          ? _constructIterable(iterable, companionNull)
-          : applyNotNull(next!);
-
-  NodeConstructorNext<T, N> get _construct;
 }
 
 ///
@@ -268,7 +274,7 @@ mixin _MixinNodeDirectConstruct<T, N extends NodeDirect<T, N>>
 /// [replaceBy]
 ///
 mixin _MixinNodeDirectAppendable<T>
-    on _MixinNodeDirectConstruct<T, NodeDirectAppendable<T>> {
+    on _MixinNodeConstructNext<T, NodeDirectAppendable<T>> {
   ///
   /// functions
   ///
@@ -286,7 +292,7 @@ mixin _MixinNodeDirectAppendable<T>
     child!.data = data;
   }
 
-  void appendAll(Iterable<T> iterable) => next = _constructChildren(
+  void appendAll(Iterable<T> iterable) => next = _constructNextIterable(
         iterable,
         (node, data) => node..append(data),
         (child) => child..appendAll(iterable),
@@ -313,15 +319,16 @@ mixin _MixinNodeDirectAppendable<T>
 /// [NodeDirectAppendable.immutable], ...(factories)
 ///
 abstract class NodeDirectAppendable<T>
-    extends NodeDirect<T, NodeDirectAppendable<T>>
+    extends _NodeDirect<T, NodeDirectAppendable<T>>
     with
-        _MixinNodeDirectConstruct<T, NodeDirectAppendable<T>>,
+        _MixinNodeNew<T, NodeDirectAppendable<T>>,
+        _MixinNodeConstructNext<T, NodeDirectAppendable<T>>,
         _MixinNodeDirectAppendable<T> {
   ///
   /// overrides
   ///
   @override
-  final NodeConstructorNext<T, NodeDirectAppendable<T>> _construct;
+  final NodeConstructor<T, NodeDirectAppendable<T>> _construct;
 
   ///
   /// constructor
@@ -364,7 +371,7 @@ abstract class NodeDirectAppendable<T>
   factory NodeDirectAppendable.generate(
     int length,
     Generator<T> generator,
-    NodeConstructorNext<T, NodeDirectAppendable<T>> construct,
+    NodeConstructor<T, NodeDirectAppendable<T>> construct,
   ) {
     NodeDirectAppendable<T>? current;
     for (var i = length - 1; i > -1; i--) {
@@ -484,8 +491,8 @@ class _ImplNodeDirectAppendableMutableNullable<T>
 mixin _MixinNodeDirectInsertable<T, N extends _NodeDirectInsertable<T, N>>
     on
         _MixinVertexHidden<T>,
-        _MixinNodeDirectHidden<T, N>,
-        _MixinNodeDirectConstruct<T, N>
+        _MixinNodeHiddenNext<T, N>,
+        _MixinNodeConstructNext<T, N>
     implements IInsertable<T> {
   ///
   /// overrides
@@ -531,11 +538,12 @@ mixin _MixinNodeDirectInsertable<T, N extends _NodeDirectInsertable<T, N>>
 ///
 ///
 abstract class _NodeDirectInsertable<T, N extends _NodeDirectInsertable<T, N>>
-    extends NodeDirect<T, N>
+    extends _NodeDirect<T, N>
     with
         _MixinVertexHidden<T>,
-        _MixinNodeDirectHidden<T, N>,
-        _MixinNodeDirectConstruct<T, N>,
+        _MixinNodeHiddenNext<T, N>,
+        _MixinNodeNew<T, N>,
+        _MixinNodeConstructNext<T, N>,
         _MixinNodeDirectInsertable<T, N> {
   ///
   /// constructor
@@ -556,7 +564,7 @@ mixin _MixinNodeDirectInsertableByInvalid<C extends Comparable,
   void insertAll(Iterable<C> iterable, [int? invalid]) =>
       iterable.iterator.consumeAll((element) => insert(element, invalid));
 
-  void _insertNext(C element, [int? invalid]) => _child = _constructChild(
+  void _insertNext(C element, [int? invalid]) => _child = _constructNext(
         element,
         (node) => node..insert(element, invalid!),
       );
@@ -579,7 +587,7 @@ mixin _MixinNodeDirectInsertableByInvalidComparator<T,
           .consumeAll((element) => insert(element, invalid, comparator));
 
   void _insertNext(T element, [int? invalid, Comparator<T>? comparator]) =>
-      _child = _constructChild(
+      _child = _constructNext(
         element,
         (node) => node..insert(element, invalid!, comparator!),
       );
@@ -675,7 +683,7 @@ class _NodeQueueIteratorCompared<C extends Comparable>
   /// overrides
   ///
   @override
-  NodeConstructorNext<C, _NodeQueueIteratorCompared<C>> get _construct =>
+  NodeConstructor<C, _NodeQueueIteratorCompared<C>> get _construct =>
       (data, next) => _NodeQueueIteratorCompared(data, next);
 
   ///
@@ -708,7 +716,7 @@ class _NodeQueueIterator<I>
   /// overrides
   ///
   @override
-  NodeConstructorNext<I, _NodeQueueIterator<I>> get _construct =>
+  NodeConstructor<I, _NodeQueueIterator<I>> get _construct =>
       (data, next) => _NodeQueueIterator(data, next);
 
   ///
@@ -810,14 +818,14 @@ class QueteratorCompared<C extends Comparable>
   /// overrides
   ///
   @override
-  void insert(C element) => _node._child = _node._constructChild(
+  void insert(C element) => _node._child = _node._constructNext(
         element,
         (node) => node..insert(element, _invalidChecker),
       );
 
   @override
   void insertAll(Iterable<C> iterable) =>
-      _node._child = _node._constructChildren(
+      _node._child = _node._constructNextIterable(
         iterable,
         (node, element) => node..insert(element, _invalidChecker),
         (child) => child..insertAll(iterable, _invalidChecker),
@@ -851,14 +859,14 @@ class Qurator<I> extends _QueueIterator<I, _NodeQueueIterator<I>> {
   /// overrides
   ///
   @override
-  void insert(I element) => _node._child = _node._constructChild(
+  void insert(I element) => _node._child = _node._constructNext(
         element,
         (child) => child..insert(element, _invalidChecker, _comparator),
       );
 
   @override
   void insertAll(Iterable<I> iterable) =>
-      _node._child = _node._constructChildren(
+      _node._child = _node._constructNextIterable(
         iterable,
         (node, element) => node..insert(element, _invalidChecker, _comparator),
         (child) => child..insertAll(iterable),

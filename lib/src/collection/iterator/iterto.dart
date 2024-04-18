@@ -21,15 +21,9 @@ part of damath_collection;
 extension ItertoExtension<I> on Iterator<I> {
   ///
   /// [moveNextSupply]
-  /// [moveNextSupplyWith]
   ///
   S moveNextSupply<S>(Supplier<S> supply) =>
       moveNext() ? supply() : throw StateError(FErrorMessage.iteratorNoElement);
-
-  S moveNextSupplyWith<E, S>(Iterator<E> another, Supplier<S> supply) =>
-      moveNext() && another.moveNext()
-          ? supply()
-          : throw StateError(FErrorMessage.iteratorNoElement);
 
   ///
   /// [leadSupply]

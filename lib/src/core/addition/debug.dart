@@ -83,6 +83,8 @@ abstract interface class FErrorMessage {
   /// others
   ///
   static const String indexOutOfBoundary = 'index out of boundary';
+  static const String iterableConstraintsOutOfBoundary =
+      'iterable constraints out of boundary';
   static const String generateByNegative = 'invalid to generate by negative';
   static const String modifyImmutable = 'cannot modify immutable value';
   static const String percentileOutOfBoundary = 'percentile out of boundary';
@@ -101,19 +103,22 @@ abstract interface class FErrorMessage {
     int limitUpper,
   ) =>
       'invalid stone taking final argument($n, $total, $limitLower, $limitUpper)';
+
   static String intPascalTriangle(int n, int k) =>
       'invalid pascal triangle argument($n, $k)';
 
   static String intBinomialCoefficient(int n, int k) =>
       'invalid binomial coefficient argument($n, $k)';
 
-  static String intPartition(int m) =>
-      'cannot partition negative integer: $m';
+  static String intPartition(int m) => 'cannot partition negative integer: $m';
+
   static String intPartitionGroup(int m, int n) =>
       'it is impossible to partition $m into $n group';
 
   static String invalidInteger(int n) => 'invalid integer: $n';
 
+  static String invalidIntegerFromBigInt(BigInt i) =>
+      'invalid int from BigInt: $i';
 }
 
 ///

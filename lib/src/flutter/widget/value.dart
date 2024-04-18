@@ -127,7 +127,7 @@ extension WListView on ListView {
 //     Latex.plus => Icons.add,
 //     Latex.minus => Icons.remove,
 //     Latex.multiply => CupertinoIcons.multiply,
-//     Latex.divide => CupertinoIcons.divide,
+//     Latex.divided => CupertinoIcons.divided,
 //     Latex.modulus => CupertinoIcons.percent,
 //   };
 // }

@@ -24,6 +24,7 @@ part of damath_collection;
 /// static methods:
 /// [mix], ...
 /// [predicateKeyEqual], ...
+/// [reduceMaxKeyInt], ...
 ///
 /// instance methods:
 /// [join]
@@ -39,6 +40,7 @@ extension MapEntryExtension<K, V> on MapEntry<K, V> {
   static MapEntry<V, K> mixReverse<K, V>(K k, V v) => MapEntry(v, k);
 
   ///
+  /// predicate
   /// [predicateKeyEqual], [predicateKeyDifferent]
   /// [predicateKeyNumEqual], [predicateKeyNumDifferent], [predicateKeyNumLess], [predicateKeyNumLarger]
   ///
@@ -63,6 +65,59 @@ extension MapEntryExtension<K, V> on MapEntry<K, V> {
   static bool predicateKeyNumLarger<V>(
           MapEntry<num, V> a, MapEntry<num, V> b) =>
       a.key > b.key;
+
+  ///
+  /// reduce
+  ///
+  // key
+  static MapEntry<int, K> reduceMaxKeyInt<K>(
+    MapEntry<int, K> v1,
+    MapEntry<int, K> v2,
+  ) =>
+      v1.key > v2.key ? v1 : v2;
+
+  static MapEntry<int, K> reduceMinKeyInt<K>(
+    MapEntry<int, K> v1,
+    MapEntry<int, K> v2,
+  ) =>
+      v1.key < v2.key ? v1 : v2;
+
+  static MapEntry<double, K> reduceMaxKeyDouble<K>(
+    MapEntry<double, K> v1,
+    MapEntry<double, K> v2,
+  ) =>
+      v1.key > v2.key ? v1 : v2;
+
+  static MapEntry<double, K> reduceMinKeyDouble<K>(
+    MapEntry<double, K> v1,
+    MapEntry<double, K> v2,
+  ) =>
+      v1.key < v2.key ? v1 : v2;
+
+  // value
+  static MapEntry<K, int> reduceMaxValueInt<K>(
+    MapEntry<K, int> v1,
+    MapEntry<K, int> v2,
+  ) =>
+      v1.value > v2.value ? v1 : v2;
+
+  static MapEntry<K, int> reduceMinValueInt<K>(
+    MapEntry<K, int> v1,
+    MapEntry<K, int> v2,
+  ) =>
+      v1.value < v2.value ? v1 : v2;
+
+  static MapEntry<K, double> reduceMaxValueDouble<K>(
+    MapEntry<K, double> v1,
+    MapEntry<K, double> v2,
+  ) =>
+      v1.value > v2.value ? v1 : v2;
+
+  static MapEntry<K, double> reduceMinValueDouble<K>(
+    MapEntry<K, double> v1,
+    MapEntry<K, double> v2,
+  ) =>
+      v1.value < v2.value ? v1 : v2;
 
   ///
   ///

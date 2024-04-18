@@ -7,7 +7,7 @@ part of damath_collection;
 ///
 ///
 /// instance methods:
-/// [moveNextCompanionWith], ...
+/// [moveNextCompanionAccompany], ...
 /// ---------------intersection:
 /// [inter], ...
 /// [interTake], ...
@@ -24,6 +24,7 @@ part of damath_collection;
 /// [difference]
 /// ---------------others:
 /// [leadThenInterFold], ...
+/// [mergeBy], ...
 /// [interval], ...
 /// [combineToRecord], ...
 ///
@@ -59,17 +60,28 @@ extension IteratorWithExtension<I> on Iterator<I> {
   ///
 
   ///
-  /// [moveNextWith]
-  /// [moveNextCompanionWith]
+  /// [moveNextReduceWith]
+  /// [moveNextCompanionAccompany]
+  /// [moveNextSupplyAccompany]
   ///
-  I moveNextWith(Iterator<I> another, Reducer<I> reducing) =>
-      moveNext() && another.moveNext()
+  I moveNextReduceWith(Iterator<I> another, Reducer<I> reducing) =>
+      moveNext() & another.moveNext()
           ? reducing(current, another.current)
           : throw StateError(FErrorMessage.iteratorNoElement);
 
-  I moveNextCompanionWith<E>(Iterator<E> another, Applier<I> apply) =>
-      moveNext() && another.moveNext()
-          ? apply(current)
+  S moveNextSupplyWith<S>(Iterator<I> another, Supplier<S> supply) =>
+      moveNext() & another.moveNext()
+          ? supply()
+          : throw StateError(FErrorMessage.iteratorNoElement);
+
+  I moveNextCompanionAccompany<E>(Iterator<E> another, Companion<I, E> apply) =>
+      moveNext() & another.moveNext()
+          ? apply(current, another.current)
+          : throw StateError(FErrorMessage.iteratorNoElement);
+
+  S moveNextSupplyAccompany<E, S>(Iterator<E> another, Supplier<S> supply) =>
+      moveNext() & another.moveNext()
+          ? supply()
           : throw StateError(FErrorMessage.iteratorNoElement);
 
   ///
@@ -142,7 +154,7 @@ extension IteratorWithExtension<I> on Iterator<I> {
     Reducer<I> fusion,
     Reducer<I> reducing,
   ) =>
-      moveNextWith(
+      moveNextReduceWith(
         another,
         (v1, v2) {
           var val = fusion(v1, v2);
@@ -350,7 +362,7 @@ extension IteratorWithExtension<I> on Iterator<I> {
   ///
   /// [interReduce]
   ///
-  I interReduce(Iterator<I> another, Reducer<I> reducing) => moveNextWith(
+  I interReduce(Iterator<I> another, Reducer<I> reducing) => moveNextReduceWith(
         another,
         (v1, v2) {
           var val = reducing(v1, v2);
@@ -372,7 +384,7 @@ extension IteratorWithExtension<I> on Iterator<I> {
     Reducer<S> init,
     Collapser<S> mutual,
   ) =>
-      moveNextSupplyWith(another, () {
+      moveNextSupplyAccompany(another, () {
         var val = init(toVal(current), toValAnother(another.current));
         while (moveNext() && another.moveNext()) {
           val = mutual(val, toVal(current), toValAnother(another.current));
@@ -388,7 +400,7 @@ extension IteratorWithExtension<I> on Iterator<I> {
     CollapserGenerator<S> mutual,
     int start,
   ) =>
-      moveNextSupplyWith(another, () {
+      moveNextSupplyAccompany(another, () {
         var val = init(toVal(current), toValAnother(another.current));
         for (var i = start + 1; moveNext() && another.moveNext(); i++) {
           val = mutual(val, toVal(current), toValAnother(another.current), i);
@@ -405,7 +417,7 @@ extension IteratorWithExtension<I> on Iterator<I> {
     Mixer<I, E, S> init,
     Collector<S, I, E> mutual,
   ) =>
-      moveNextSupplyWith(another, () {
+      moveNextSupplyAccompany(another, () {
         var val = init(current, another.current);
         while (moveNext() && another.moveNext()) {
           val = mutual(val, current, another.current);
@@ -419,7 +431,7 @@ extension IteratorWithExtension<I> on Iterator<I> {
     CollectorGenerator<S, I, E> mutual,
     int start,
   ) =>
-      moveNextSupplyWith(another, () {
+      moveNextSupplyAccompany(another, () {
         var val = init(current, another.current, start);
         for (var i = start + 1; moveNext() && another.moveNext(); i++) {
           val = mutual(val, current, another.current, i);
@@ -780,7 +792,7 @@ extension IteratorWithExtension<I> on Iterator<I> {
     Collector<S, I, E> mutual,
     Companion<S, I> overflow,
   ) =>
-      moveNextSupplyWith(another, () {
+      moveNextSupplyAccompany(another, () {
         var val = init(current, another.current);
         while (another.moveNext()) {
           if (moveNext()) val = mutual(val, current, another.current);
@@ -798,7 +810,7 @@ extension IteratorWithExtension<I> on Iterator<I> {
     CompanionGenerator<S, I> overflow,
     int start,
   ) =>
-      moveNextSupplyWith(another, () {
+      moveNextSupplyAccompany(another, () {
         var i = start - 1;
         var val = init(current, another.current, ++i);
         while (another.moveNext()) {
@@ -899,6 +911,63 @@ extension IteratorWithExtension<I> on Iterator<I> {
       );
 
   ///
+  /// [mergeWith]
+  ///
+  Iterable<I> mergeWith(Iterator<I> another, PredicatorFusionor<I> keep) =>
+      moveNextSupplyWith(
+        another,
+        () sync* {
+          late final Iterator<I> last;
+          while (true) {
+            if (keep(current, another.current)) {
+              yield current;
+              if (!moveNext()) {
+                last = another;
+                break;
+              }
+              continue;
+            }
+            yield another.current;
+            if (!another.moveNext()) {
+              last = this;
+              break;
+            }
+          }
+          do {
+            yield last.current;
+          } while (last.moveNext());
+        },
+      );
+
+  // List<I> mergeToList(Iterator<I> another, PredicatorFusionor<I> keep) =>
+  //     moveNextSupplyWith(
+  //       another,
+  //           () {
+  //         final result = <I>[];
+  //         late final Iterator<I> last;
+  //         while (true) {
+  //           if (keep(current, another.current)) {
+  //             result.add(current);
+  //             if (!moveNext()) {
+  //               last = another;
+  //               break;
+  //             }
+  //             continue;
+  //           }
+  //           result.add(another.current);
+  //           if (!another.moveNext()) {
+  //             last = this;
+  //             break;
+  //           }
+  //         }
+  //         do {
+  //           result.add(last.current);
+  //         } while (last.moveNext());
+  //         return result;
+  //       },
+  //     );
+
+  ///
   /// interval
   /// [interval]
   /// [intervalBy]
@@ -956,6 +1025,19 @@ extension IteratorWithExtension<I> on Iterator<I> {
 
   Iterable<(I, V)> combineToRecordExpanded<V>(Iterator<V> another) =>
       mapExpand(another.mapToRecordBy1);
-
-
 }
+
+
+
+/// It's better not to get iterator from the same iterator,
+/// ```
+/// final list = [2, 9, 3, 7, 1, 1, 4, 5];
+/// final iterator = list.iterator;
+///
+/// final itA = iterator.take(4).iterator;
+/// final itB = iterator.take(4).iterator;
+/// while (itA.moveNext() & itB.moveNext()) {
+///   print('${itB.current}, ${itB.takeAll}'); // 9, (3, 7, 1)
+///   print('${itA.current}, ${itA.takeAll}'); // 2, (1, 4, 5)
+/// }
+/// ```

@@ -67,23 +67,23 @@ abstract class _VectorFloat<V extends _VectorFloat<V>>
 
   @override
   V operator %(covariant V another) =>
-      _applied(another._storage, FReducer.doubleModule);
+      _applied(another._storage, DoubleExtension.reduceMod);
 
   @override
   V operator *(covariant V another) =>
-      _applied(another._storage, FReducer.doubleMultiply);
+      _applied(another._storage, DoubleExtension.reduceMultiply);
 
   @override
   V operator +(covariant V another) =>
-      _applied(another._storage, FReducer.doubleAdd);
+      _applied(another._storage, DoubleExtension.reducePlus);
 
   @override
   V operator -(covariant V another) =>
-      _applied(another._storage, FReducer.doubleSubtract);
+      _applied(another._storage, DoubleExtension.reduceMinus);
 
   @override
   V operator /(covariant V another) =>
-      _applied(another._storage, FReducer.doubleDivide);
+      _applied(another._storage, DoubleExtension.reduceDivided);
 
   ///
   /// getters

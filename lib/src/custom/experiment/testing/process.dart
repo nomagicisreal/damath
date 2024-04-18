@@ -540,3 +540,24 @@ class ProcessUnitList<P> implements IOperatableIndexable<ProcessUnit<P>> {
 /// the requisition, p4 required (3, 3, 0), on resource (3, 3, 2), is not safe.
 ///
 ///
+
+
+///
+/// peterson's solution
+///
+/// do {
+///   flag[i] = true
+///   turn = j
+///   while (flag[j] && turn == j);
+///
+///   flag[i] = false;
+/// } while (true);
+///
+///
+
+///
+/// short-term scheduler (from ready queue)
+/// medium-term scheduler
+/// long-term scheduler (from job pool)
+///
+///

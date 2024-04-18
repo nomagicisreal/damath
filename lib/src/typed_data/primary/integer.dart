@@ -2,6 +2,9 @@ part of damath_typed_data;
 
 ///
 /// static methods:
+/// [largestInt], ...
+/// [predicateALess], ...
+/// [reduceMax], ...
 /// [accumulation]
 /// [fibonacci]
 /// [collatzConjecture]
@@ -10,10 +13,11 @@ part of damath_typed_data;
 /// [partition], [partitionGroups]
 ///
 /// instance getters, methods:
+/// [isPrime], ...
 /// [accumulated], ...
-/// [factorized], ...
 /// [leadingValue], ...
 /// [paritySame], ...
+/// [toIterable], ...
 ///
 ///
 extension IntExtension on int {
@@ -66,11 +70,34 @@ extension IntExtension on int {
   ];
 
   ///
+  /// predicate
   /// [predicateALess], [predicateALarger]
   ///
   static bool predicateALess(int a, int b) => a < b;
 
   static bool predicateALarger(int a, int b) => a > b;
+
+  ///
+  /// reduce
+  /// [reducePlus], [reduceMinus], [reduceMultiply], [reduceDivided], [reduceMod]
+  /// [reducePlusSquared]
+  ///
+  static int reduceMax(int v1, int v2) => math.max(v1, v2);
+
+  static int reduceMin(int v1, int v2) => math.min(v1, v2);
+
+  static int reducePlus(int v1, int v2) => v1 + v2;
+
+  static int reduceMinus(int v1, int v2) => v1 - v2;
+
+  static int reduceMultiply(int v1, int v2) => v1 * v2;
+
+  static int reduceDivided(int v1, int v2) => v1 ~/ v2;
+
+  static int reduceMod(int v1, int v2) => v1 % v2;
+
+  // chained operation
+  static int reducePlusSquared(int v1, int v2) => v1 * v1 + v2 * v2;
 
   ///
   /// [accumulation] ([1, 3, 6, 10, 15, ...])
@@ -332,7 +359,8 @@ extension IntExtension on int {
     if (m.isNegative) throw ArgumentError(FErrorMessage.intPartition(m));
     if (n != null) {
       if (n > m) throw ArgumentError(FErrorMessage.intPartitionGroup(m, n));
-      return _partition<int>(m, n, container: _partitionContainer<int>(m, n: n));
+      return _partition<int>(m, n,
+          container: _partitionContainer<int>(m, n: n));
     }
 
     final pSpace = _partitionContainer<int>(m);
@@ -564,6 +592,33 @@ extension IntExtension on int {
   }
 
   ///
+  /// [isPrime]
+  /// [isComposite]
+  ///
+  bool get isPrime {
+    if (this < 2) return false;
+    if (this == 2 || this == 3) return true;
+    if (isEven) return false;
+    final max = math.sqrt(this);
+    if (max.isInteger) return false;
+    for (var i = 3; i < max; i += 2) {
+      if (this % i == 0) return false;
+    }
+    return true;
+  }
+
+  bool get isComposite {
+    if (this < 2) return false;
+    if (isEven) return true;
+    final max = math.sqrt(this);
+    if (max.isInteger) return true;
+    for (var i = 3; i < max; i += 2) {
+      if (this % i == 0) return true;
+    }
+    return false;
+  }
+
+  ///
   /// [accumulated], [factorial]
   ///
   int get accumulated {
@@ -578,7 +633,7 @@ extension IntExtension on int {
   int get factorial {
     if (this < 0) throw ArgumentError(FErrorMessage.invalidInteger(this));
     var value = 1;
-    for (var i = 1; i <= this; i++) {
+    for (var i = 2; i <= this; i++) {
       value *= i;
     }
     return value;
@@ -603,9 +658,27 @@ extension IntExtension on int {
 
   ///
   /// [paritySame], [parityOpposite]
+  /// [isCoprime], [modInverseOrNull]
+  /// see also [BigIntExtension.isCoprime], ...
   ///
   bool paritySame(int other) => isEven && other.isEven || isOdd && other.isOdd;
 
   bool parityOpposite(int other) =>
       isEven && other.isOdd || isOdd && other.isEven;
+
+  bool isCoprime(int other) => gcd(other) == 1;
+
+  int? modInverseOrNull(int other) =>
+      isCoprime(other) ? modInverse(other) : null;
+
+  ///
+  /// [toBigInt]
+  /// [toIterable]
+  ///
+  BigInt get toBigInt => BigInt.from(this);
+  Iterable<int> toIterable([int from = 0, int inset = 0]) {
+    final max = this + 1 - inset;
+    return [for (var i = 0; i < max; i++) i];
+  }
+
 }

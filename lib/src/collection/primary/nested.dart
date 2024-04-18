@@ -71,7 +71,7 @@ extension IterableIterable<I> on Iterable<Iterable<I>> {
   /// [size]
   ///
   int get size =>
-      iterator.reduceTo(IterableExtension.toLength, FReducer.intAdd);
+      iterator.reduceTo(IterableExtension.toLength, IntExtension.reducePlus);
 
   ///
   /// [toStringMapJoin]

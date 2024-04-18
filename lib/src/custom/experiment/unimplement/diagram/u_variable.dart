@@ -86,7 +86,7 @@ part of damath_experiment;
 //   plus,
 //   minus,
 //   multiply,
-//   divide,
+//   divided,
 //   modulus;
 //
 //   @override
@@ -94,7 +94,7 @@ part of damath_experiment;
 //     Latex.plus => '+',
 //     Latex.minus => '-',
 //     Latex.multiply => '*',
-//     Latex.divide => '/',
+//     Latex.divided => '/',
 //     Latex.modulus => '%',
 //   };
 //
@@ -102,7 +102,7 @@ part of damath_experiment;
 //     Latex.plus => r'+',
 //     Latex.minus => r'-',
 //     Latex.multiply => r'\times',
-//     Latex.divide => r'\div',
+//     Latex.divided => r'\div',
 //     Latex.modulus => throw UnimplementedError(),
 //   };
 //
@@ -126,10 +126,12 @@ part of damath_experiment;
 //           Latex.plus => a + operation.value,
 //           Latex.minus => a - operation.value,
 //           Latex.multiply => a * operation.value,
-//           Latex.divide => a / operation.value,
+//           Latex.divided => a / operation.value,
 //           Latex.modulus => a % operation.value,
 //         },
 //       );
 // }
 
 
+// standard deviation vs standard error
+// Central limit theorem

@@ -1,8 +1,6 @@
 part of damath_collection;
 
 ///
-///
-///
 /// [hasNextConsume], ...
 /// [moveNextConsume], ...
 ///
@@ -17,12 +15,13 @@ part of damath_collection;
 ///
 /// [take], ...
 /// [skip], ...
+/// [sub], ...
 /// [where], ...
 /// [expand], ...
 /// [reduce], ...
+/// [mergeBy], ...
 ///
-/// [combination2OnFirst], ...
-///
+/// [combination2FromFirst], ...
 ///
 ///
 extension IteratorExtension<I> on Iterator<I> {
@@ -46,6 +45,42 @@ extension IteratorExtension<I> on Iterator<I> {
   void consumeAllByIndex(ConsumerIndexable<I> consume, [int start = 0]) {
     for (var i = start; moveNext(); i++) {
       consume(current, i);
+    }
+  }
+
+  ///
+  /// [consumePaired]
+  /// [consumePairedByIndex]
+  ///
+  void consumePaired(Accompanier<I> accompanying, [Consumer<I>? trailing]) {
+    late I a;
+    late I b;
+    while (moveNext()) {
+      a = current;
+      if (!moveNext()) {
+        if (trailing == null) return;
+        trailing(current);
+      }
+      b = current;
+      accompanying(a, b);
+    }
+  }
+
+  void consumePairedByIndex(
+    AccompanierIndexable<I> accompanying, [
+    Consumer<I>? trailing,
+    int start = 0,
+  ]) {
+    late I a;
+    late I b;
+    for (var i = start; moveNext(); i++) {
+      a = current;
+      if (!moveNext()) {
+        if (trailing == null) return;
+        trailing(current);
+      }
+      b = current;
+      accompanying(a, b, i);
     }
   }
 
@@ -299,7 +334,7 @@ extension IteratorExtension<I> on Iterator<I> {
           Iterable<Iterable>() => element.iterator.cumulateLengthNested(),
           _ => throw StateError(FErrorMessage.iteratorElementNotNest),
         },
-        FReducer.intAdd,
+        IntExtension.reducePlus,
       );
 
   ///
@@ -458,7 +493,7 @@ extension IteratorExtension<I> on Iterator<I> {
   ///
   Iterable<I> take(int count) sync* {
     var i = 0;
-    for (; moveNext() && i < count; i++) {
+    for (; i < count && moveNext(); i++) {
       yield current;
     }
     if (count > i) throw RangeError(FErrorMessage.indexOutOfBoundary);
@@ -587,7 +622,7 @@ extension IteratorExtension<I> on Iterator<I> {
   List<I> takeList(int count) {
     final list = <I>[];
     var i = 0;
-    for (; moveNext() && i < count; i++) {
+    for (; i < count && moveNext(); i++) {
       list.add(current);
     }
     if (count > i) throw RangeError(FErrorMessage.indexOutOfBoundary);
@@ -610,7 +645,7 @@ extension IteratorExtension<I> on Iterator<I> {
         list.add(current);
       } while (moveNext());
     } catch (e) {
-      if (e.runtimeType.toString() != '_TypeError') rethrow; // no element
+      if (!e.runtimeType.isErrorTypeError) rethrow;
     }
     return list;
   }
@@ -684,6 +719,24 @@ extension IteratorExtension<I> on Iterator<I> {
     for (; moveNext() && i < count; i++) {}
     if (count > i) throw RangeError(FErrorMessage.indexOutOfBoundary);
     return takeAll;
+  }
+
+  ///
+  /// [sub]
+  ///
+  Iterable<I> sub(int start, [int? end]) sync* {
+    var i = 0;
+    for (; i < start && moveNext(); i++) {}
+
+    if (end == null) {
+      while (moveNext()) {
+        yield current;
+      }
+      return;
+    }
+    for (; i < end && moveNext(); i++) {
+      yield current;
+    }
   }
 
   ///
@@ -1005,21 +1058,14 @@ extension IteratorExtension<I> on Iterator<I> {
       });
 
   ///
-  /// [combination2OnFirst], [combination2OnLast]
+  /// [mergeBy]
+  ///
+  Iterable<I> mergeBy(int split, PredicatorFusionor<I> keep) =>
+      [...take(split)].iterator.mergeWith(this, keep);
+
+  ///
   /// [combination2FromFirst]
   ///
-  Iterable<Iterable<I>> combination2OnFirst(I value) sync* {
-    while (moveNext()) {
-      yield [value, current];
-    }
-  }
-
-  Iterable<Iterable<I>> combination2OnLast(I value) sync* {
-    while (moveNext()) {
-      yield [current, value];
-    }
-  }
-
   Iterable<Iterable<I>> get combination2FromFirst => moveNextSupply(() sync* {
         final first = current;
         while (moveNext()) {
@@ -1027,3 +1073,24 @@ extension IteratorExtension<I> on Iterator<I> {
         }
       });
 }
+
+///
+/// iterable comes from the same iterator is not consistent.
+/// ```
+///   final itA = iterator.take(4);
+///   print(itA); // (2, 9, 3, 7)
+///   print(itA); // (1, 1, 4, 5)
+/// ```
+/// iterable comes from iterator only yield once,
+/// ```
+///   final another = [2, 5, 2, 4, 3].iterator.sub(2, 10);
+///   print(another); // (2, 4, 3)
+///   print(another); // ()
+/// ```
+/// it's necessary to store values as list
+/// ```
+///   final another = [...[2, 5, 2, 4, 3].iterator.sub(2, 10)];
+///   print(another); // [2, 4, 3]
+///   print(another); // [2, 3, 3]
+/// ```
+///

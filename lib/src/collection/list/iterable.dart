@@ -7,9 +7,9 @@ part of damath_collection;
 /// [generateFrom], ...
 ///
 /// instance getter and methods
-/// [clone]
 /// [cardinality]
 /// [copyInto], ...
+/// [subIterable], ...
 /// [anyElementWith], ...
 /// [append], ...
 ///
@@ -54,13 +54,6 @@ extension IterableExtension<I> on Iterable<I> {
   }
 
   ///
-  /// [clone]
-  ///
-  Iterable<I> get clone sync* {
-    yield* this;
-  }
-
-  ///
   /// [cardinality]
   /// [isVariationTo]
   ///
@@ -74,6 +67,24 @@ extension IterableExtension<I> on Iterable<I> {
   void copyInto(List<I> out) {
     assert(length == out.length);
     iterator.consumeAllByIndex((value, i) => out[i] = value);
+  }
+
+  ///
+  /// [cloneIterable]
+  ///
+  Iterable<I> get cloneIterable sync* {
+    yield* this;
+  }
+
+  ///
+  /// [subIterable]
+  ///
+  Iterable<I> subIterable(int start, [int? end]) {
+    var bound = end ?? length;
+    if (length.constraintsClose(start, bound)) {
+      throw StateError(FErrorMessage.iterableConstraintsOutOfBoundary);
+    }
+    return iterator.sub(start, bound);
   }
 
   ///

@@ -7,7 +7,7 @@
 /// [ListComparable]
 ///
 part of damath_collection;
-
+// ignore_for_file: curly_braces_in_flow_control_structures
 
 ///
 /// static methods:
@@ -80,27 +80,38 @@ extension IteratorComparable<C extends Comparable> on Iterator<C> {
   /// in convention, the validation for [PredicatorFusionor] should pass in order of (lower, upper)
   ///
   static PredicatorFusionor<C> _invalidFor<C extends Comparable>(
-      bool increase,
-      bool close,
-      ) =>
-      close
+    bool increase, [
+    bool strictly = false,
+  ]) =>
+      strictly
           ? increase
-          ? notDecrease
-          : notIncrease
+              ? notDecrease
+              : notIncrease
           : increase
-          ? isIncrease
-          : isDecrease;
+              ? isDecrease
+              : isIncrease;
 
   static TernaratorCombiner<C> _ternarateFor<C extends Comparable>(
-      bool increase,
-      ) =>
+    bool increase,
+  ) =>
       increase ? increaseOrNot : decreaseOrNot;
 
   ///
   /// [isSorted]
   /// [checkSortedForSupply]
   ///
-  bool isSorted(bool increase) => exist(_invalidFor(increase, true));
+  bool isSorted(bool increase) => !exist(_invalidFor(increase));
+
+  void checkSorted([bool increase = true]) {
+    if (!isSorted(increase)) {
+      throw StateError(FErrorMessage.comparableDisordered);
+    }
+  }
+
+  void checkSortedForListen(Listener listen, [bool increase = true]) =>
+      isSorted(increase)
+          ? listen()
+          : throw StateError(FErrorMessage.comparableDisordered);
 
   S checkSortedForSupply<S>(Supplier<S> supply, [bool increase = true]) =>
       isSorted(increase)
@@ -108,24 +119,47 @@ extension IteratorComparable<C extends Comparable> on Iterator<C> {
           : throw StateError(FErrorMessage.comparableDisordered);
 }
 
-
 ///
 ///
 ///
 /// [rangeIn], ...
-///
+/// [mergeSorted], ...
 ///
 ///
 extension IterableComparable<C extends Comparable> on Iterable<C> {
   ///
   /// [rangeIn]
   ///
-  bool rangeIn(C lower, C upper, {bool increase = true, bool isClose = true}) =>
+  bool rangeIn(
+    C lower,
+    C upper, {
+    bool increase = true,
+    bool strictly = false,
+  }) =>
       iterator.checkSortedForSupply(() {
-        final validate = IteratorComparable._invalidFor(increase, isClose);
+        final validate = IteratorComparable._invalidFor(increase, strictly);
         assert(validate(lower, upper));
         return validate(lower, first) && validate(last, upper);
       });
+
+  ///
+  ///
+  /// [mergeSorted]
+  ///
+  ///
+  void mergeSorted(Iterable<C> another, [bool increase = true]) =>
+      iterator.checkSortedForListen(
+        () => iterator.mergeWith(
+          another.iterator.checkSortedForSupply(
+            () => another.iterator,
+            increase,
+          ),
+          increase
+              ? IteratorComparable.isDecrease
+              : IteratorComparable.isIncrease,
+        ),
+        increase,
+      );
 
 // ///
 // /// [groupToIterable]
@@ -148,7 +182,6 @@ extension IterableComparable<C extends Comparable> on Iterable<C> {
 //     );
 }
 
-
 ///
 /// instance methods:
 /// [indexSearch], ...
@@ -157,8 +190,7 @@ extension IterableComparable<C extends Comparable> on Iterable<C> {
 ///
 /// [order], ...
 /// [percentile], ...
-///
-/// [sortMerge], ...
+/// [mergeSorted], ...
 ///
 extension ListComparable<C extends Comparable> on List<C> {
   ///
@@ -263,52 +295,52 @@ extension ListComparable<C extends Comparable> on List<C> {
       // tie to average
       tieToMin == null
           ? (v) {
-        if (v == previous) return rank;
+              if (v == previous) return rank;
 
-        var exist = 0;
-        for (var i = 0; i < length; i++) {
-          final current = sorted[i];
+              var exist = 0;
+              for (var i = 0; i < length; i++) {
+                final current = sorted[i];
 
-          if (exist == 0) {
-            if (current == v) exist++;
+                if (exist == 0) {
+                  if (current == v) exist++;
 
-            // exist != 0
-          } else {
-            if (current != v) {
-              rank = i + (1 - exist) / 2;
+                  // exist != 0
+                } else {
+                  if (current != v) {
+                    rank = i + (1 - exist) / 2;
+                    return rank;
+                  }
+                  exist++;
+                }
+              }
+              rank = length + (1 - exist) / 2;
               return rank;
             }
-            exist++;
-          }
-        }
-        rank = length + (1 - exist) / 2;
-        return rank;
-      }
           : tieToMin
-          ? (v) {
-        if (v == previous) return rank;
+              ? (v) {
+                  if (v == previous) return rank;
 
-        rank = (sorted.indexWhere((s) => s == v) + 1).toDouble();
-        return rank;
-      }
+                  rank = (sorted.indexWhere((s) => s == v) + 1).toDouble();
+                  return rank;
+                }
 
-      // tie to max
-          : (v) {
-        if (v == previous) return rank;
+              // tie to max
+              : (v) {
+                  if (v == previous) return rank;
 
-        var exist = false;
-        for (var i = 0; i < length; i++) {
-          final current = sorted[i];
+                  var exist = false;
+                  for (var i = 0; i < length; i++) {
+                    final current = sorted[i];
 
-          if (current == v) exist = true;
-          if (exist && current != v) {
-            rank = i.toDouble();
-            return rank;
-          }
-        }
-        rank = length.toDouble();
-        return rank;
-      },
+                    if (current == v) exist = true;
+                    if (exist && current != v) {
+                      rank = i.toDouble();
+                      return rank;
+                    }
+                  }
+                  rank = length.toDouble();
+                  return rank;
+                },
     );
   }
 
@@ -372,143 +404,123 @@ extension ListComparable<C extends Comparable> on List<C> {
       });
 
   ///
-  ///
-  /// [sortMerge], [_sortMerge]
-  /// [sortPivot], [_sortPivot]
-  ///
-  ///
-
-  ///
-  /// [sortMerge] aka merge sort:
-  ///   1. regarding current list as the mix of 2 elements sublist, sorting for each sublist
-  ///   2. regarding current list as the mix of sorted sublists, merging sublists into bigger ones
-  ///     (2 elements -> 4 elements -> 8 elements -> ... -> n elements)
-  ///
-  /// when [increasing] = true,
-  /// it's means that when 'list item a' > 'list item b', element a should switch with b.
-  /// see [_sortMerge] for full implementation.
+  /// [sortMerge] is slower than [sort] and collection/collection/[mergeSort] for large list
   ///
   void sortMerge([bool increasing = true]) {
-    final value = increasing ? 1 : -1;
-    final length = this.length;
+    final n = length;
+    final space = List.filled(n, this[0]);
+    final keepFirst = increasing
+        ? IteratorComparable.isIncrease
+        : IteratorComparable.isDecrease;
 
-    final max = length.isEven ? length : length - 1;
-    for (var begin = 0; begin < max; begin += 2) {
-      final a = this[begin];
-      final b = this[begin + 1];
-      if (a.compareTo(b) == value) {
-        this[begin] = b;
-        this[begin + 1] = a;
+    ///
+    /// sort for every 2 element, 4 element, 8 element
+    ///
+    var remainder = n % 16;
+    _Sort.forEverySublist2(this, keepFirst, n);
+    _Sort.forEverySublist4(this, keepFirst, remainder % 4, n);
+    _Sort.forEverySublist8(this, keepFirst, remainder % 8, n);
+    // print(this);
+    // _Sort.forEverySublist16(this, keepFirst, remainder, n, space);
+
+    ///
+    /// sort for every chunked element
+    ///
+    var sorted = 8;
+    // var sorted = 16;
+    var i = 0;
+    var boundary = 0;
+    for (var chunk = sorted << 1; chunk < n; sorted = chunk, chunk <<= 1) {
+      remainder = n % chunk;
+      boundary = n - remainder;
+      for (i = 0; i < boundary; i += chunk) {
+        _sortMerge(space, i, i + sorted, i + chunk, keepFirst);
+      }
+      if (remainder > sorted) {
+        _sortMerge(space, boundary, boundary + sorted, n, keepFirst);
       }
     }
-    int sorted = 2;
 
-    while (sorted * 2 <= length) {
-      final target = sorted * 2;
-      final fixed = length - length % target;
-      int begin = 0;
-
-      for (; begin < fixed; begin += target) {
-        final i = begin + sorted;
-        final end = begin + target;
-        replaceRange(
-          begin,
-          end,
-          _sortMerge(sublist(begin, i), sublist(i, end), increasing),
-        );
-      }
-      if (fixed > 0) {
-        replaceRange(
-          0,
-          length,
-          _sortMerge(sublist(0, fixed), sublist(fixed, length), increasing),
-        );
-      }
-      sorted *= 2;
-    }
+    ///
+    /// merge(sorted sublist, remain sublist)
+    ///
+    if (sorted < n) _sortMerge(space, 0, sorted, n, keepFirst);;
   }
 
   ///
-  /// before calling [_sortMerge], [listA] and [listB] must be sorted.
-  /// when [increase] = true,
-  /// it's means that when 'listA item a' < 'listB item b', result should add a before add b.
+  /// [_sortMerge] is a function that retrieves the current list values range from [start] to [end],
+  /// and assert that the sublist from [start] to [mid] and [mid] to [end] are sorted.
   ///
-  static List<C> _sortMerge<C extends Comparable>(
-      List<C> listA,
-      List<C> listB, [
-        bool increase = true,
-      ]) {
-    final value = increase ? -1 : 1;
-    final result = <C>[];
-    final lengthA = listA.length;
-    final lengthB = listB.length;
-    int i = 0;
-    int j = 0;
-    while (i < lengthA && j < lengthB) {
-      final a = listA[i];
-      final b = listB[j];
-      if (a.compareTo(b) == value) {
-        result.add(a);
-        i++;
-      } else {
-        result.add(b);
-        j++;
-      }
-    }
-    return result..addAll(i < lengthA ? listA.sublist(i) : listB.sublist(j));
-  }
+  /// [tempt] is a cache storing sorted values.
+  /// its position is according to current list due to the convenience of reassignment.
+  /// below is the variables inside the function:
+  ///   - [i] is the dynamic index that represent the first sorted part ([start] to [mid]).
+  ///   - [j] is the dynamic index that represent the second sorted part ([mid] to [end]).
+  ///   - [k] is the dynamic index that going from [start] to [end] for current list or [tempt]
+  ///
+  /// it's a general way but not efficient enough,
+  /// because [_sortMerge] first retrieve values into local variables,
+  /// and then store cache values into [tempt], retrieving values back to current list; its time complexity is O(2n).
+  /// while some implementation in [sortMerge] retrieve values into local variables, too
+  /// but directly reassign those values back to current list without [tempt]; its time complexity is O(n).
+  /// To optimize , trying to implement more chunks without [tempt]
+  ///
+  void _sortMerge(
+    List<C> tempt,
+    int start,
+    int mid,
+    int end,
+    PredicatorFusionor<C> keepFirst,
+  ) {
+    var i = start;
+    var j = mid;
+    var k = start;
 
-  ///
-  /// [sortPivot] separate list by the pivot item,
-  /// continue updating pivot item, sorting elements by comparing to pivot item.
-  /// see [_sortPivot] for full implementation
-  ///
-  void sortPivot([bool isIncreasing = true]) {
-    void sorting(int low, int high) {
-      if (low < high) {
-        final iPivot = _sortPivot(low, high, isIncreasing);
-        sorting(low, iPivot - 1);
-        sorting(iPivot + 1, high);
-      }
+    var iElement = this[i++];
+    var jElement = this[j++];
+
+    void assignReverse() {
+      i--;
+      j = mid;
+      k = end;
+      while (j > i) this[--k] = this[--j];
     }
 
-    if (length > 1) sorting(0, length - 1);
-  }
-
-  ///
-  /// [_sortPivot] partition list by the the pivot item list[high], and return new pivot position.
-  ///
-  /// when [isIncreasing] = true,
-  /// it meas that the pivot point should search for how much item that is less than itself,
-  /// ensuring the items that less/large than pivot are in front of list,
-  /// preparing to switch the larger after the position of 'how much item' that pivot had found less than itself
-  ///
-  int _sortPivot(int low, int high, [bool isIncreasing = true]) {
-    final increasing = isIncreasing ? 1 : -1;
-    final pivot = this[high];
-    var i = low;
-    var j = low;
-
-    for (; j < high; j++) {
-      if (pivot.compareTo(this[j]) == increasing) {
-        i++;
-      } else {
+    late final int kStart;
+    for (; true; iElement = this[i++]) {
+      if (keepFirst(jElement, iElement)) {
+        if (j == end) {
+          assignReverse();
+          this[i] = jElement;
+          return;
+        }
+        kStart = k = i - 1;
+        tempt[kStart] = jElement;
+        jElement = this[j++];
         break;
       }
+      if (i == mid) return;
     }
 
-    for (; j < high; j++) {
-      final current = this[j];
-      if (pivot.compareTo(current) == increasing) {
-        this[j] = this[i];
-        this[i] = current;
-        i++;
+    while (true) {
+      if (keepFirst(iElement, jElement)) {
+        tempt[++k] = iElement;
+        if (i == mid) {
+          j--;
+
+          for (k = kStart; k < j; k++) this[k] = tempt[k];
+          return;
+        }
+        iElement = this[i++];
+      } else {
+        tempt[++k] = jElement;
+        if (j == end) {
+          assignReverse();
+          while (k > kStart) this[--k] = tempt[k];
+          return;
+        }
+        jElement = this[j++];
       }
     }
-
-    this[high] = this[i];
-    this[i] = pivot;
-
-    return i;
   }
 }

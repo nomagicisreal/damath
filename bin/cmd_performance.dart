@@ -1,6 +1,10 @@
+import 'package:collection/collection.dart';
+import 'package:damath/src/collection/collection.dart';
+import 'package:damath/src/typed_data/typed_data.dart';
 
 void main() async {
   final watch = Stopwatch();
+  // print(list);
   print('start');
 
   watch.start();
@@ -18,29 +22,39 @@ void main() async {
   print('end');
 }
 
+// final list = RandomExtension.listDoubleInt(1e7.toInt());
+final list = RandomExtension.sample(1e5.toInt());
+
 String way1() {
-  Iterable value = [];
-  for (var i = 1e8; i > 1; i--) {
-    // value = requireIterable();
+  var result = <double>[];
+  for (var i = 1e2; i > 1; i--) {
+    result = list
+      ..shuffle()
+      ..sort();
   }
   // throw UnimplementedError();
-  return value.toString();
+  return 'finished';
+  // return result.toString();
 }
 
 String way2() {
-  Iterable value = [];
-  for (var i = 1e8; i > 1; i--) {
-    // value = requireList();
+  var result = <double>[];
+  for (var i = 1e2; i > 1; i--) {
+    result = list
+      ..shuffle()
+      ..sortMerge();
   }
-  return value.toString();
+  return 'finished';
+  // return result.toString();
 }
 
 String way3() {
-  // var record = Float64List(2);
-  for (var i = 1e8; i > 1; i--) {
-    // record[0] = i;
-    // record[1] = i;
+  var result = <double>[];
+  for (var i = 1e2; i > 1; i--) {
+    mergeSort(list..shuffle());
+    result = list;
   }
-  throw UnimplementedError();
+  // throw UnimplementedError();
+  return 'finished';
   // return record.toString();
 }

@@ -17,8 +17,8 @@ part of damath_flutter;
 ///
 /// color
 ///
-/// [plusARGB], [minusARGB], [multiplyARGB], [divideARGB],
-/// [plusAllRGB], [minusAllRGB], [multiplyAllRGB], [divideAllRGB],
+/// [plusARGB], [minusARGB], [multiplyARGB], [dividedARGB],
+/// [plusAllRGB], [minusAllRGB], [multiplyAllRGB], [dividedAllRGB],
 ///
 extension ColorExtension on Color {
   Color plusARGB(int alpha, int red, int green, int blue) => Color.fromARGB(
@@ -42,7 +42,7 @@ extension ColorExtension on Color {
     this.blue * blue,
   );
 
-  Color divideARGB(int alpha, int red, int green, int blue) => Color.fromARGB(
+  Color dividedARGB(int alpha, int red, int green, int blue) => Color.fromARGB(
     this.alpha ~/ alpha,
     this.red ~/ red,
     this.green ~/ green,
@@ -58,7 +58,7 @@ extension ColorExtension on Color {
   Color multiplyAllRGB(int value) =>
       Color.fromARGB(alpha, red * value, green * value, blue * value);
 
-  Color divideAllRGB(int value) =>
+  Color dividedAllRGB(int value) =>
       Color.fromARGB(alpha, red ~/ value, green ~/ value, blue ~/ value);
 }
 

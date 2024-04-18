@@ -14,6 +14,27 @@ part of damath_typed_data;
 ///
 extension DurationExtension on Duration {
   ///
+  ///
+  /// static methods
+  ///
+  ///
+  static Duration reduceMax(Duration a, Duration b) => a > b ? a : b;
+
+  static Duration reduceMin(Duration a, Duration b) => a < b ? a : b;
+
+  static Duration reducePlus(Duration v1, Duration v2) => v1 + v2;
+
+  static Duration reduceMinus(Duration v1, Duration v2) => v1 - v2;
+
+  ///
+  ///
+  ///
+  /// instance methods
+  ///
+  ///
+  ///
+
+  ///
   /// [toStringDayMinuteSecond]
   ///
   String toStringDayMinuteSecond({String splitter = ':'}) {

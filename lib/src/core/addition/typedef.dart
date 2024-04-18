@@ -9,7 +9,6 @@
 /// [FPredicatorFusionor]
 /// [FGenerator]
 /// [FMapper]
-/// [FReducer]
 ///
 ///
 /// [FKeep]
@@ -151,6 +150,7 @@ extension FPredicatorFusionor on PredicatorFusionor {
 
   static bool alwaysFalse<T>(T a, T b) => false;
 }
+
 
 ///
 ///
@@ -307,141 +307,21 @@ extension FGenerator<T> on Generator<T> {
 ///
 ///
 extension FMapper on Mapper {
+
+  ///
+  ///
+  ///
+  static double intToDouble(int value) => value.toDouble();
+  static int doubleToInt(double value) => value.toInt();
+
+  ///
+  ///
+  ///
   static Mapper<int, bool> oddOrEvenCheckerAs(int value) =>
       value.isOdd ? (v) => v.isOdd : (v) => v.isEven;
 
   static Mapper<int, bool> oddOrEvenCheckerOpposite(int value) =>
       value.isOdd ? (v) => v.isEven : (v) => v.isOdd;
-}
-
-///
-///
-/// [keepV1], [keepV2]
-///
-/// [doubleMax], ...
-/// [intMax], ...
-/// [entryKeyIntMax], ...
-///
-/// [stringLine], ...
-/// [durationAdd], ...
-///
-///
-extension FReducer on Reducer {
-  ///
-  /// double
-  ///
-  static double doubleMax(double v1, double v2) => math.max(v1, v2);
-
-  static double doubleMin(double v1, double v2) => math.min(v1, v2);
-
-  static double doubleAdd(double v1, double v2) => v1 + v2;
-
-  static double doubleSubtract(double v1, double v2) => v1 - v2;
-
-  static double doubleMultiply(double v1, double v2) => v1 * v2;
-
-  static double doubleDivide(double v1, double v2) => v1 / v2;
-
-  static double doubleModule(double v1, double v2) => v1 % v2;
-
-  static double doubleDivideToInt(double v1, double v2) =>
-      (v1 ~/ v2).toDouble();
-
-  // chained operation
-  static double doubleAddSquared(double v1, double v2) => v1 * v1 + v2 * v2;
-
-  static double doubleSubtractThenHalf(double v1, double v2) => (v1 - v2) / 2;
-
-  ///
-  /// integer
-  ///
-  static int intMax(int v1, int v2) => math.max(v1, v2);
-
-  static int intMin(int v1, int v2) => math.min(v1, v2);
-
-  static int intAdd(int v1, int v2) => v1 + v2;
-
-  static int intSubtract(int v1, int v2) => v1 - v2;
-
-  static int intMultiply(int v1, int v2) => v1 * v2;
-
-  static int intDivide(int v1, int v2) => v1 ~/ v2;
-
-  static int intAddSquared(int v1, int v2) => v1 * v1 + v2 * v2;
-
-  ///
-  /// entry
-  ///
-
-  // key
-  static MapEntry<int, K> entryKeyIntMax<K>(
-    MapEntry<int, K> v1,
-    MapEntry<int, K> v2,
-  ) =>
-      v1.key > v2.key ? v1 : v2;
-
-  static MapEntry<int, K> entryKeyIntMin<K>(
-    MapEntry<int, K> v1,
-    MapEntry<int, K> v2,
-  ) =>
-      v1.key < v2.key ? v1 : v2;
-
-  static MapEntry<double, K> entryKeyDoubleMax<K>(
-    MapEntry<double, K> v1,
-    MapEntry<double, K> v2,
-  ) =>
-      v1.key > v2.key ? v1 : v2;
-
-  static MapEntry<double, K> entryKeyDoubleMin<K>(
-    MapEntry<double, K> v1,
-    MapEntry<double, K> v2,
-  ) =>
-      v1.key < v2.key ? v1 : v2;
-
-  // value
-  static MapEntry<K, int> entryValueIntMax<K>(
-    MapEntry<K, int> v1,
-    MapEntry<K, int> v2,
-  ) =>
-      v1.value > v2.value ? v1 : v2;
-
-  static MapEntry<K, int> entryValueIntMin<K>(
-    MapEntry<K, int> v1,
-    MapEntry<K, int> v2,
-  ) =>
-      v1.value < v2.value ? v1 : v2;
-
-  static MapEntry<K, double> entryValueDoubleMax<K>(
-    MapEntry<K, double> v1,
-    MapEntry<K, double> v2,
-  ) =>
-      v1.value > v2.value ? v1 : v2;
-
-  static MapEntry<K, double> entryValueDoubleMin<K>(
-    MapEntry<K, double> v1,
-    MapEntry<K, double> v2,
-  ) =>
-      v1.value < v2.value ? v1 : v2;
-
-  ///
-  /// string
-  ///
-  static String stringLine(String v1, String v2) => '$v1\n$v2';
-
-  static String stringTab(String v1, String v2) => '$v1\t$v2';
-
-  static String stringComma(String v1, String v2) => '$v1, $v2';
-
-  ///
-  /// duration
-  ///
-  static Duration durationMax(Duration a, Duration b) => a > b ? a : b;
-
-  static Duration durationMin(Duration a, Duration b) => a < b ? a : b;
-
-  static Duration durationAdd(Duration v1, Duration v2) => v1 + v2;
-
-  static Duration durationSubtract(Duration v1, Duration v2) => v1 - v2;
 }
 
 ///

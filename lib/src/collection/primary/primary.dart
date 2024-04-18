@@ -45,7 +45,7 @@ extension IteratorBool on Iterator<bool> {
 ///
 ///
 /// static methods:
-/// [maxDistance], ...
+/// [reduceMaxDistance], ...
 ///
 /// instance methods:
 /// [min], ...
@@ -59,24 +59,34 @@ extension IteratorBool on Iterator<bool> {
 ///
 extension IteratorDouble on Iterator<double> {
   ///
-  /// iterator
   ///
-  static Iterator<double> maxDistance(Iterator<double> a, Iterator<double> b) =>
+  ///
+  /// static methods
+  ///
+  ///
+  ///
+  static Iterator<double> reduceMaxDistance(
+    Iterator<double> a,
+    Iterator<double> b,
+  ) =>
       a.distance > b.distance ? a : b;
 
-  static Iterator<double> minDoubleDistance(
-          Iterator<double> a, Iterator<double> b) =>
+  static Iterator<double> reduceMinDistance(
+    Iterator<double> a,
+    Iterator<double> b,
+  ) =>
       a.distance < b.distance ? a : b;
 
   ///
   /// [min], [max], [mode]
   /// [range], [boundary]
   ///
-  double get min => reduce(FReducer.doubleMin);
+  double get min => reduce(DoubleExtension.reduceMin);
 
-  double get max => reduce(FReducer.doubleMax);
+  double get max => reduce(DoubleExtension.reduceMax);
 
-  double get mode => toMapCounted.reduce(FReducer.entryValueIntMax).key;
+  double get mode =>
+      toMapCounted.reduce(MapEntryExtension.reduceMaxValueInt).key;
 
   double get range => moveNextApply((value) {
         var min = value;
@@ -102,9 +112,9 @@ extension IteratorDouble on Iterator<double> {
   /// [sum], [sumSquared]
   /// [meanArithmetic], [meanGeometric]
   ///
-  double get sum => reduce(FReducer.doubleAdd);
+  double get sum => reduce(DoubleExtension.reducePlus);
 
-  double get sumSquared => reduce(FReducer.doubleAddSquared);
+  double get sumSquared => reduce(DoubleExtension.reduceAddSquared);
 
   double get meanArithmetic => moveNextApply((total) {
         var length = 1;
@@ -127,29 +137,16 @@ extension IteratorDouble on Iterator<double> {
   ///
   /// [distance], [volume]
   ///
-  double get distance => math.sqrt(reduce(FReducer.doubleAddSquared));
+  double get distance => math.sqrt(reduce(DoubleExtension.reduceAddSquared));
 
-  double get volume => reduce(FReducer.doubleMultiply);
+  double get volume => reduce(DoubleExtension.reduceMultiply);
 
   ///
   /// [abs], [rounded], [roundUpTo]
-  /// [takeAllPlus], [takeAllSubtract], [takeAllMultiply], [takeAllDivide], [takeAllDivideToInt]
   ///
   Iterable<double> get abs => takeAllApply((v) => v.abs());
 
   Iterable<double> get rounded => takeAllApply((v) => v.roundToDouble());
-
-  Iterable<double> roundUpTo(int d) => takeAllApply((v) => v.roundUpTo(d));
-
-  Iterable<double> takeAllPlus(int v) => takeAllApply((o) => o + v);
-
-  Iterable<double> takeAllSubtract(int v) => takeAllApply((o) => o - v);
-
-  Iterable<double> takeAllMultiply(int v) => takeAllApply((o) => o * v);
-
-  Iterable<double> takeAllDivide(int v) => takeAllApply((o) => o / v);
-
-  Iterable<int> takeAllDivideToInt(int v) => map((o) => o ~/ v);
 
   ///
   ///
@@ -163,19 +160,19 @@ extension IteratorDouble on Iterator<double> {
   /// [interDistanceCumulate]
   ///
   Iterable<double> interDistanceTo(Iterator<double> destination) =>
-      destination.interTake(this, FReducer.doubleSubtract);
+      destination.interTake(this, DoubleExtension.reduceMinus);
 
   Iterable<double> interDistanceFrom(Iterator<double> source) =>
-      interTake(source, FReducer.doubleSubtract);
+      interTake(source, DoubleExtension.reduceMinus);
 
   Iterable<double> interDistanceHalfTo(Iterator<double> destination) =>
-      destination.interTake(this, FReducer.doubleSubtractThenHalf);
+      destination.interTake(this, DoubleExtension.reduceMinusThenHalf);
 
   Iterable<double> interDistanceHalfFrom(Iterator<double> source) =>
-      interTake(source, FReducer.doubleSubtractThenHalf);
+      interTake(source, DoubleExtension.reduceMinusThenHalf);
 
-  double interDistanceCumulate(Iterator<double> another) =>
-      interTakeCumulate(another, FReducer.doubleSubtract, FReducer.doubleAdd);
+  double interDistanceCumulate(Iterator<double> another) => interTakeCumulate(
+      another, DoubleExtension.reduceMinus, DoubleExtension.reducePlus);
 }
 
 ///
@@ -207,8 +204,8 @@ extension IterableDouble on Iterable<double> {
     assert(length == another.length);
     return iterator.interTakeCumulate(
       another.iterator,
-      FReducer.doubleMultiply,
-      FReducer.doubleAdd,
+      DoubleExtension.reduceMultiply,
+      DoubleExtension.reducePlus,
     );
   }
 
@@ -241,7 +238,7 @@ extension IterableDouble on Iterable<double> {
   /// [normalizeInto]
   ///
   Iterable<double> get normalized =>
-      iterator.takeAllApplyBy(iterator.distance, FReducer.doubleDivide);
+      iterator.takeAllApplyBy(iterator.distance, DoubleExtension.reduceDivided);
 
   void normalizeInto(List<double> out) {
     assert(out.length == length);
@@ -323,7 +320,7 @@ extension IterableInt on Iterable<int> {
   static Iterable<int> seq(int begin, int end) =>
       [for (var i = begin; i <= end; i++) i];
 
-  int get sum => reduce(FReducer.intAdd);
+  int get sum => reduce(IntExtension.reducePlus);
 }
 
 ///

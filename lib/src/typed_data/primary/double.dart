@@ -54,7 +54,7 @@ extension DoubleExtension on double {
 
   static bool predicateInfinite(double value) => value.isInfinite;
 
-  static bool predicateInt(double value) => value.isInt;
+  static bool predicateInt(double value) => value.isInteger;
 
   static bool predicateNearlyInt(double value) => value.isNearlyInt;
 
@@ -77,28 +77,24 @@ extension DoubleExtension on double {
   ///
   ///
   /// applier
-  ///
-  ///
-  ///
-
-  ///
-  ///
   /// [applyKeep], [applyZero]
-  /// [applyOnPlus], [applyOnMinus], [applyOnMultiply], [applyOnDivide]
+  /// [applyOnPlus], [applyOnMinus], [applyOnMultiply], [applyOnDivided], [applyOnMod]
   /// [applyOnTimesFactor]
   /// [applyOnPeriod], [applyOnPeriodSinByTimes], [applyOnPeriodCosByTimes], [applyOnPeriodTanByTimes]
   ///
   ///
 
   ///
-  /// [applyKeep], [applyZero]
-  /// [applyOnPlus], [applyOnMinus], [applyOnMultiply], [applyOnDivide]
+  /// [applyKeep], [applyZero], [applyNegate], [applyRound]
+  /// [applyOnPlus], [applyOnMinus], [applyOnMultiply], [applyOnDivided]
   ///
   static double applyKeep(double v) => v;
 
+  static double applyZero(double value) => 0;
+
   static double applyNegate(double v) => -v;
 
-  static double applyZero(double value) => 0;
+  static double applyRound(double v) => v.roundToDouble();
 
   static Applier<double> applyOnPlus(double value) => (v) => v + value;
 
@@ -106,11 +102,11 @@ extension DoubleExtension on double {
 
   static Applier<double> applyOnMultiply(double value) => (v) => v * value;
 
-  static Applier<double> applyOnDivide(double value) => (v) => v / value;
+  static Applier<double> applyOnDivided(double value) => (v) => v / value;
 
-  static Applier<double> applyOnModule(double value) => (v) => v % value;
+  static Applier<double> applyOnMod(double value) => (v) => v % value;
 
-  static Applier<double> applyOnDivideToInt(double value) =>
+  static Applier<double> applyOnDividedToInt(double value) =>
       (v) => (v ~/ value).toDouble();
 
   ///
@@ -148,6 +144,34 @@ extension DoubleExtension on double {
 
   static Applier<double> applyOnPeriodTanByTimes(int times) =>
       applyOnPeriod(times.toDouble(), math.tan);
+
+  ///
+  /// reduce
+  /// [reducePlus], [reduceMinus], [reduceMultiply], [reduceDivided], [reduceMod]
+  /// [reduceAddSquared], [reduceMinusThenHalf]
+  ///
+  static double reduceMax(double v1, double v2) => math.max(v1, v2);
+
+  static double reduceMin(double v1, double v2) => math.min(v1, v2);
+
+  static double reducePlus(double v1, double v2) => v1 + v2;
+
+  static double reduceMinus(double v1, double v2) => v1 - v2;
+
+  static double reduceMultiply(double v1, double v2) => v1 * v2;
+
+  static double reduceDivided(double v1, double v2) => v1 / v2;
+
+  static double reduceMod(double v1, double v2) => v1 % v2;
+
+  static double reduceDivideToInt(double v1, double v2) =>
+      (v1 ~/ v2).toDouble();
+
+  // chained operation
+  static double reduceAddSquared(double v1, double v2) => v1 * v1 + v2 * v2;
+
+  static double reduceMinusThenHalf(double v1, double v2) => (v1 - v2) / 2;
+
 
   ///
   ///
@@ -211,11 +235,14 @@ extension DoubleExtension on double {
   }
 
   ///
-  /// [isInt], [isNearlyInt]
+  /// [isInteger], [isNearlyInt]
   /// [squared], [squareRoot]
   /// [clampPositive], [clampNegative], [clamp01]
   ///
-  bool get isInt => ceil() == roundToDouble();
+  bool get isInteger {
+    final value =roundToDouble();
+    return value == ceil() && value == floor();
+  }
 
   bool get isNearlyInt => (ceil() - this) <= 0.01;
 

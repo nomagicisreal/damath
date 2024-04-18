@@ -9,6 +9,8 @@ part of damath_collection;
 ///
 /// instance methods:
 /// [isFixed], ...
+/// [swap], ...
+/// []
 ///
 /// [addNext], ...
 ///
@@ -93,11 +95,47 @@ extension ListExtension<T> on List<T> {
 
   ///
   /// [swap]
+  /// [swapIf]
+  /// [swapEvery2If]
   ///
   void swap(int iA, int iB) {
     final temp = this[iA];
     this[iA] = this[iB];
     this[iB] = temp;
+  }
+
+  void swapIf(int iA, int iB, PredicatorFusionor<T> test) {
+    final a = this[iA];
+    final b = this[iB];
+    if (test(a, b)) {
+      this[iA] = b;
+      this[iB] = a;
+    }
+  }
+
+  void swapEvery2If(PredicatorFusionor<T> shouldSwap) {
+    final n = length;
+    final max = n.isEven ? n : n - 1;
+    for (var i = 0; i < max; i += 2) {
+      final a = this[i];
+      final b = this[i + 1];
+      if (shouldSwap(a, b)) {
+        this[i] = b;
+        this[i + 1] = a;
+      }
+    }
+  }
+
+  ///
+  /// [setAll]
+  ///
+  void setAll(Iterable<T> iterable) {
+    final length = this.length;
+    assert(iterable.length == length);
+    final iterator = iterable.iterator;
+    for (var i = 0; i < length && iterator.moveNext(); i++) {
+      this[i] = iterator.current;
+    }
   }
 
   ///
@@ -111,7 +149,7 @@ extension ListExtension<T> on List<T> {
   /// [update], [updateApply]
   /// [updateAll], [updateAllApply]
   ///
-  /// [removeFirst], [removeWhereAndGet]
+  /// [removeWhereAndGet]
   ///
 
   ///
@@ -245,15 +283,23 @@ extension ListExtension<T> on List<T> {
   /// list = [2, 3, 4, 6, 10, 3, 9];
   /// list.split(2); // [[2, 3], [4, 6], [10, 3], [9]]
   ///
-  List<List<T>> splitBy(int count, [int begin = 0, int? end]) {
-    final length = end ?? this.length;
-    assert(begin.rangeClose(0, length) && count < length - begin);
+  List<List<T>> splitBy(
+    int count, {
+    int start = 0,
+    int? end,
+    bool includeTrailing = true,
+  }) {
+    final result = <List<T>>[];
+    final bound = end ?? length;
+    assert(length.constraintsClose(start, bound) && count < bound - start);
 
-    final list = <List<T>>[];
-    for (var i = begin; i < length; i += count) {
-      list.add(sublist(i, i + count < length ? i + count : length));
+    final max = count * (bound ~/ count);
+    var i = start;
+    for (; i < max; i += count) {
+      result.add(sublist(i, i + count));
     }
-    return list;
+    if (includeTrailing) result.add(sublist(i, bound));
+    return result;
   }
 
   List<List<T>> splitAt(List<int> positions, [int begin = 0, int? end]) {
@@ -270,7 +316,10 @@ extension ListExtension<T> on List<T> {
   /// [reverseToList]
   /// [reverseToListExcept]
   ///
-  List<T> get reverseToList => [for (var i = length - 1; i > -1; i--) this[i]];
+  List<T> get reverseToList {
+    final length = this.length;
+    return [for (var i = length - 1; i > -1; i--) this[i]];
+  }
 
   List<T> reverseToListExcept([int count = 1]) =>
       [...sublist(count), ...sublist(count).reversed];
@@ -280,43 +329,55 @@ extension ListExtension<T> on List<T> {
   /// [mapToListWithByNew], [mapToListWithByOld]
   /// [mapToListTogether]
   ///
-  List<E> mapToList<E>(Mapper<T, E> toVal) =>
-      [for (var i = 0; i < length; i++) toVal(this[i])];
+  List<E> mapToList<E>(Mapper<T, E> toVal) {
+    final length = this.length;
+    return [for (var i = 0; i < length; i++) toVal(this[i])];
+  }
 
   List<E> mapToListWithByNew<E>(
     List<E> other,
     Reducer<E> reducing,
     Mapper<T, E> toVal,
-  ) =>
-      [for (var i = 0; i < length; i++) reducing(toVal(this[i]), other[i])];
+  ) {
+    final length = this.length;
+    return [
+      for (var i = 0; i < length; i++) reducing(toVal(this[i]), other[i])
+    ];
+  }
 
   List<E> mapToListWithByOld<E>(
     List<T> other,
     Reducer<T> reducing,
     Mapper<T, E> toVal,
-  ) =>
-      [for (var i = 0; i < length; i++) toVal(reducing(this[i], other[i]))];
+  ) {
+    final length = this.length;
+    return [
+      for (var i = 0; i < length; i++) toVal(reducing(this[i], other[i]))
+    ];
+  }
 
   List<S> mapToListTogether<S, E>(
     List<E> other,
     Reducer<S> reducing,
     Mapper<T, S> toVal,
     Mapper<E, S> toValOther,
-  ) =>
-      [
-        for (var i = 0; i < length; i++)
-          reducing(toVal(this[i]), toValOther(other[i])),
-      ];
+  ) {
+    final length = this.length;
+    return [
+      for (var i = 0; i < length; i++)
+        reducing(toVal(this[i]), toValOther(other[i])),
+    ];
+  }
 
   ///
   /// [mapSublist]
   /// [mapSublistByIndex]
   ///
   List<S> mapSublist<S>(int begin, Mapper<T, S> mapper, [int? end]) {
-    final length = end ?? this.length;
-    assert(this.length.constraintsOpen(begin, length));
+    final bound = end ?? length;
+    assert(length.constraintsOpen(begin, bound));
     final result = <S>[];
-    for (var i = begin; i < length; i++) {
+    for (var i = begin; i < bound; i++) {
       result.add(mapper(this[i]));
     }
     return result;
@@ -327,10 +388,10 @@ extension ListExtension<T> on List<T> {
     MapperGenerator<T, S> mapper, [
     int? end,
   ]) {
-    final length = end ?? this.length;
-    assert(this.length.constraintsOpen(begin, length));
+    final bound = end ?? length;
+    assert(length.constraintsOpen(begin, bound));
     final result = <S>[];
-    for (var i = begin; i < length; i++) {
+    for (var i = begin; i < bound; i++) {
       result.add(mapper(this[i], i));
     }
     return result;
@@ -340,23 +401,29 @@ extension ListExtension<T> on List<T> {
   /// [interReduce]
   /// [interCompanion]
   ///
-  List<T> interReduce(List<T> other, Reducer<T> reducing) =>
-      [for (var i = 0; i < length; i++) reducing(this[i], other[i])];
+  List<T> interReduce(List<T> other, Reducer<T> reducing) {
+    final length = this.length;
+    return [for (var i = 0; i < length; i++) reducing(this[i], other[i])];
+  }
 
-  List<T> interCompanion<E>(List<E> other, Companion<T, E> companion) =>
-      [for (var i = 0; i < length; i++) companion(this[i], other[i])];
+  List<T> interCompanion<E>(List<E> other, Companion<T, E> companion) {
+    final length = this.length;
+    return [for (var i = 0; i < length; i++) companion(this[i], other[i])];
+  }
 
   ///
   /// [filled]
   /// [setFrom]
   ///
   void filled(T value) {
+    final length = this.length;
     for (var i = 0; i < length; i++) {
       this[i] = value;
     }
   }
 
   void setFrom(List<T> another) {
+    final length = this.length;
     assert(length == another.length);
     for (var i = 0; i < length; i++) {
       this[i] = another[i];
@@ -368,12 +435,14 @@ extension ListExtension<T> on List<T> {
   /// [applyByIndex]
   ///
   void apply(Applier<T> toVal) {
+    final length = this.length;
     for (var i = 0; i < length; i++) {
       this[i] = toVal(this[i]);
     }
   }
 
   void applyByIndex(ApplierGenerator<T> toVal) {
+    final length = this.length;
     for (var i = 0; i < length; i++) {
       this[i] = toVal(this[i], i);
     }

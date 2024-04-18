@@ -4,7 +4,10 @@
 ///
 /// [NullableExtension]
 /// [BoolExtension]
+/// [TypeExtension]
+///
 /// [NumExtension]
+/// [BigIntExtension]
 ///
 /// [RandomExtension]
 ///
@@ -57,6 +60,19 @@ extension NullableExtension<T> on T? {
 ///
 extension BoolExtension on bool {
   String get toStringTOrF => this ? 'T' : 'F';
+}
+
+///
+///
+///
+extension TypeExtension on Type {
+  ///
+  ///
+  /// '_TypeError' is happened when something like
+  ///   - invoke typed [Iterator.current], but there is no current value
+  /// ...
+  ///
+  bool get isErrorTypeError => toString() == '_TypeError';
 }
 
 ///
@@ -123,9 +139,9 @@ extension NumExtension on num {
   /// [isPositive]
   /// [squared]
   ///
-  bool get isPositiveOrZero => !isNegative;
-
   bool get isPositive => this > 0;
+
+  bool get isPositiveOrZero => !isNegative;
 
   num get squared => this * this;
 
@@ -169,23 +185,103 @@ extension NumExtension on num {
   /// [constraintsClose]
   /// [constraintsOpen]
   ///
-  bool constraintsClose(int begin, int end, [int from = 0]) =>
-      from <= begin && begin <= end && end <= this;
+  bool constraintsClose(int start, int end, [int from = 0]) =>
+      from <= start && start < end && end <= this;
 
-  bool constraintsOpen(int begin, int end, [int from = -1]) =>
-      from < begin && begin < end && end < this;
+  bool constraintsOpen(int start, int end, [int from = 0]) =>
+      from < start && start < end && end < this;
+}
+
+///
+///
+/// see also [IntExtension.isCoprime], ...
+///
+extension BigIntExtension on BigInt {
+  ///
+  /// [toIntValidated]
+  /// [validateThenMap]
+  ///
+  int get toIntValidated => isValidInt
+      ? toInt()
+      : throw StateError(FErrorMessage.invalidIntegerFromBigInt(this));
+
+  S validateThenMap<S>(Mapper<int, S> toVal) => isValidInt
+      ? toVal(toInt())
+      : throw StateError(FErrorMessage.invalidIntegerFromBigInt(this));
+
+  ///
+  ///
+  /// [isPrime], [isComposite]
+  ///
+  /// see also [IntExtension.isPrime], ...
+  ///
+  bool get isPrime {
+    if (this < BigInt.two) return false;
+    if (this == BigInt.two || this == 3.toBigInt) return true;
+    if (isEven) return false;
+    return validateThenMap((value) {
+      final max = math.sqrt(value);
+      if (max.isInteger) return false;
+      final m = BigInt.from(max);
+      for (var i = 3.toBigInt; i < m; i += BigInt.two) {
+        if (this % i == BigInt.zero) return false;
+      }
+      return true;
+    });
+  }
+
+  bool get isComposite {
+    if (this < BigInt.two) return false;
+    if (isEven) return true;
+    return validateThenMap((value) {
+      final max = math.sqrt(value);
+      if (max.isInteger) return true;
+      final m = BigInt.from(max);
+      for (var i = 3.toBigInt; i < m; i += BigInt.two) {
+        if (this % i == BigInt.zero) return true;
+      }
+      return false;
+    });
+  }
+
+  ///
+  /// [isCoprime], [modInverseOrNull]
+  ///
+  bool isCoprime(BigInt other) => gcd(other) == BigInt.one;
+
+  BigInt? modInverseOrNull(BigInt other) =>
+      isCoprime(other) ? modInverse(other) : null;
+
+  ///
+  /// [isPseudoPrimeTo]
+  ///
+  // 561 is Carmichael Number (is pseudo prime for all Z)
+  bool isPseudoPrimeTo(BigInt base) =>
+      isComposite &&
+      gcd(base) == BigInt.one &&
+      (base.pow((this - BigInt.one).toIntValidated) - BigInt.one) % this ==
+          BigInt.zero;
 }
 
 ///
 ///
 ///
 extension RandomExtension on math.Random {
-  static bool get randomBinary => math.Random().nextBool();
+  ///
+  /// primary
+  ///
+  static bool get binary => math.Random().nextBool();
 
-  static double get randomDoubleIn1 => math.Random().nextDouble();
+  static double get doubleIn1 => math.Random().nextDouble();
 
-  static int randomIntTo(int max) => math.Random().nextInt(max);
+  static int intTo(int max) => math.Random().nextInt(max);
 
-  static double randomDoubleOf(int max, [int digit = 1]) =>
+  static double doubleOf(int max, [int digit = 1]) =>
       (math.Random().nextInt(max) * 0.1.powBy(digit)).toDouble();
+
+  ///
+  /// list
+  ///
+  static List<double> sample(int length, [math.Random? random]) =>
+      List.generate(length, FMapper.intToDouble)..shuffle(random);
 }

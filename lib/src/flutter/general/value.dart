@@ -630,7 +630,7 @@ extension VRandomMaterial on Material {
   ///
   /// material
   ///
-  static Color get colorPrimary => Colors.primaries[RandomExtension.randomIntTo(18)];
+  static Color get colorPrimary => Colors.primaries[RandomExtension.intTo(18)];
 
   static final List<FloatingActionButtonLocation> _fabLocations = [
     FloatingActionButtonLocation.startTop,
@@ -646,6 +646,6 @@ extension VRandomMaterial on Material {
   ];
 
   static FloatingActionButtonLocation get fabLocation =>
-      _fabLocations[RandomExtension.randomIntTo(10)];
+      _fabLocations[RandomExtension.intTo(10)];
 }
 
