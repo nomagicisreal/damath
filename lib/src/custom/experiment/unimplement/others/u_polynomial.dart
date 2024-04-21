@@ -163,7 +163,7 @@ abstract class PolynomialSet extends Polynomial {
   PolynomialSet(this.items)
       : assert(
           !items.anyValues(
-            (decorations) => decorations.iterator.existEqualBy(
+            (decorations) => decorations.iterator.existEqualTo(
               (value) => value.exponent,
             ),
           ),

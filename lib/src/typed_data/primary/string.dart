@@ -2,7 +2,7 @@
 ///
 /// this file contains:
 ///
-///
+/// [RegExpExtension]
 /// [MatchExtension]
 /// [StringExtension]
 /// [StringBufferExtension]
@@ -16,6 +16,17 @@
 ///
 part of damath_typed_data;
 
+///
+///
+extension RegExpExtension on RegExp {
+  ///
+  /// '+' means one or more,
+  /// "*" means zero or more.
+  ///
+  static String wordUntilFor(String source) =>
+      RegExp(r'(\w+)').firstMatch(source)?.group0 ??
+      (throw StateError(FErrorMessage.regexNotMatchAny));
+}
 
 ///
 ///
@@ -23,7 +34,6 @@ part of damath_typed_data;
 extension MatchExtension on Match {
   String get group0 => group(0)!;
 }
-
 
 ///
 /// static methods:
@@ -87,7 +97,6 @@ extension StringBufferExtension on StringBuffer {
   }
 }
 
-
 ///
 ///
 ///
@@ -104,7 +113,6 @@ extension StringBufferExtension on StringBuffer {
 ///
 ///
 ///
-
 
 ///
 ///

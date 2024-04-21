@@ -1,4 +1,5 @@
 part of damath_collection;
+// ignore_for_file: curly_braces_in_flow_control_structures
 
 ///
 ///
@@ -8,23 +9,24 @@ part of damath_collection;
 /// [fill2D], ...
 ///
 /// instance methods:
-/// [isFixed], ...
+/// [addIf], ...
+/// [update], ...
 /// [swap], ...
-/// []
-///
-/// [addNext], ...
-///
-/// [fillUntil], ...
-/// [clone], ...
-/// [copyInto], ...
-/// [splitBy], ...
-/// [reverseToList]
-/// [mapToList], ...
-///
-/// [interReduce], ...
 /// [filled], ...
-/// [apply], ...
 ///
+/// [isFixed], ...
+/// [addNext], ...
+/// [fillFor], ...
+///
+/// [getOrDefault], ...
+///
+/// [removeAtWhere], ...
+///
+/// [clone], ...
+/// [mapToList], ...
+/// [reduceWith], ...
+///
+/// [splitBy], ...
 ///
 extension ListExtension<T> on List<T> {
   ///
@@ -39,12 +41,12 @@ extension ListExtension<T> on List<T> {
   static List<T> generateFrom<T>(
     int length,
     Generator<T> generator, {
-    int begin = 1,
+    int start = 1,
     bool growable = true,
   }) =>
       List.generate(
         length,
-        (index) => generator(index + begin),
+        (index) => generator(index + start),
         growable: growable,
       );
 
@@ -72,31 +74,91 @@ extension ListExtension<T> on List<T> {
       fill2D(size, size, value);
 
   ///
-  /// [_tryRemoveLastAndAdd]
-  /// [isFixed], [isGrowable]
-  /// [isImmutable], [isMutable] (immutable list can be created by 'const' keyword or [List.unmodifiable])
   ///
-  bool _tryRemoveLastAndAdd(Pattern pattern) {
-    try {
-      add(removeLast());
-    } on UnsupportedError catch (e) {
-      return e.message?.contains(pattern) ?? false;
-    }
-    return false;
+  ///
+  ///
+  /// consume
+  /// [addIf], [addWhen], [addWhenNotNull]
+  /// [addAllSupplyIfEmpty], [addAllSupplyIfNotEmpty], [addAllSupplyWhen]
+  ///
+  /// [update], [updateApply]
+  /// [updateAll], [updateAllApply], [updateAllApplyByIndex]
+  ///
+  /// [swap], [swapIf]
+  /// [filled], [fillGenerate], [fillUntil]
+  /// [setAllFromIterable], [setAllFromList]
+  ///
+  ///
+  ///
+  ///
+
+  ///
+  /// [addIf]
+  /// [addWhen]
+  /// [addWhenNotNull]
+  ///
+  void addIf(Predicator<T> test, T element, [Consumer<T>? onNotAdd]) =>
+      test(element) ? add(element) : onNotAdd?.call(element);
+
+  void addWhen(bool shouldAdd, T element, [Consumer<T>? onNotAdd]) =>
+      shouldAdd ? add(element) : onNotAdd?.call(element);
+
+  void addWhenNotNull(T? element, [Listener? onNull]) =>
+      element != null ? add(element) : onNull?.call();
+
+  ///
+  /// [addAllSupplyIfEmpty]
+  /// [addAllSupplyIfNotEmpty]
+  /// [addAllSupplyWhen]
+  ///
+  void addAllSupplyIfEmpty(
+    Supplier<Iterable<T>> supply, [
+    Listener? onNotEmpty,
+  ]) =>
+      isEmpty ? addAll(supply()) : onNotEmpty?.call();
+
+  void addAllSupplyIfNotEmpty(
+    Supplier<Iterable<T>> supply, [
+    Listener? onEmpty,
+  ]) =>
+      isNotEmpty ? addAll(supply()) : onEmpty?.call();
+
+  void addAllSupplyWhen(
+    bool shouldAdd,
+    Supplier<Iterable<T>> supply, [
+    Listener? onNotSupply,
+  ]) =>
+      shouldAdd ? addAll(supply()) : onNotSupply?.call();
+
+  ///
+  /// [update]
+  /// [updateApply]
+  ///
+  void update(int index, T value) => this[index] = value;
+
+  void updateApply(int index, Applier<T> applier) =>
+      this[index] = applier(this[index]);
+
+  ///
+  /// [updateAll]
+  /// [updateAllApply]
+  /// [updateAllApplyByIndex]
+  ///
+  void updateAll(T value) {
+    for (var i = 0; i < length; i++) this[i] = value;
   }
 
-  bool get isFixed => _tryRemoveLastAndAdd('fixed-length list');
+  void updateAllApply(Applier<T> applier) {
+    for (var i = 0; i < length; i++) this[i] = applier(this[i]);
+  }
 
-  bool get isGrowable => !isFixed;
-
-  bool get isImmutable => _tryRemoveLastAndAdd('unmodifiable list');
-
-  bool get isMutable => !isImmutable;
+  void updateAllApplyByIndex(ApplierGenerator<T> applier) {
+    for (var i = 0; i < length; i++) this[i] = applier(this[i], i);
+  }
 
   ///
   /// [swap]
   /// [swapIf]
-  /// [swapEvery2If]
   ///
   void swap(int iA, int iB) {
     final temp = this[iA];
@@ -113,48 +175,76 @@ extension ListExtension<T> on List<T> {
     }
   }
 
-  void swapEvery2If(PredicatorFusionor<T> shouldSwap) {
-    final n = length;
-    final max = n.isEven ? n : n - 1;
-    for (var i = 0; i < max; i += 2) {
-      final a = this[i];
-      final b = this[i + 1];
-      if (shouldSwap(a, b)) {
-        this[i] = b;
-        this[i + 1] = a;
-      }
-    }
+  ///
+  /// [filled]
+  /// [fillGenerate]
+  /// [fillUntil]
+  ///
+  void filled(T value) {
+    for (var i = 0; i < length; i++) this[i] = value;
+  }
+
+  void fillGenerate(Generator<T> generate) {
+    for (var i = 0; i < length; i++) this[i] = generate(i);
+  }
+
+  void fillUntil(int limit, T value) {
+    for (var i = length; i < limit; i++) add(value);
   }
 
   ///
-  /// [setAll]
+  /// [setAllFromIterable]
+  /// [setAllFromList]
   ///
-  void setAll(Iterable<T> iterable) {
-    final length = this.length;
-    assert(iterable.length == length);
-    final iterator = iterable.iterator;
-    for (var i = 0; i < length && iterator.moveNext(); i++) {
-      this[i] = iterator.current;
+  void setAllFromIterable(Iterable<T> iterable) => length == iterable.length
+      ? iterable.iterator.consumeAllByIndex((value, i) => this[i] = value)
+      : throw StateError(FErrorMessage.iterableSizeInvalid);
+
+  void setAllFromList(List<T> another) {
+    if (length == another.length) {
+      throw StateError(FErrorMessage.iterableSizeInvalid);
     }
+    for (var i = 0; i < length; i++) this[i] = another[i];
   }
 
   ///
-  /// add, update, get, remove
+  ///
+  /// predication
+  /// [_tryModify]
+  /// [isFixed], [isGrowable]
+  /// [isImmutable], [isMutable]
+  ///
   /// [addNext]
-  /// [addWhen], [addWhenNotNull]
-  /// [addAllIfEmpty], [addAllIfNotEmpty], [addAllWhen]
   ///
-  /// [getOrDefault]
+  /// [fillFor]
   ///
-  /// [update], [updateApply]
-  /// [updateAll], [updateAllApply]
   ///
-  /// [removeWhereAndGet]
   ///
 
   ///
+  /// [_tryModify]
+  /// [isFixed], [isGrowable]
+  /// [isImmutable], [isMutable]
+  ///
+  bool _tryModify(Mapper<String, bool> catcher) {
+    try {
+      add(removeLast());
+    } on UnsupportedError catch (e) {
+      return e.message.mapNotNullOr(catcher, () => false);
+    }
+    return false;
+  }
+
+  bool get isFixed => _tryModify((m) => m.contains('fixed-length list'));
+
+  bool get isGrowable => !isFixed;
+
+  bool get isImmutable => _tryModify((m) => m.contains('unmodifiable list'));
+
+  bool get isMutable => !isImmutable;
+
+  ///
   /// [addNext]
-  /// [cloneSwitch]
   ///
   bool addNext(T value) {
     try {
@@ -165,84 +255,63 @@ extension ListExtension<T> on List<T> {
   }
 
   ///
-  /// [addWhen]
-  /// [addWhenNotNull]
+  /// [fillFor]
   ///
-  void addWhen(bool shouldAdd, T element) => shouldAdd ? add(element) : null;
-
-  void addWhenNotNull(T? element) => element == null ? null : add(element);
+  bool? fillFor(T value, int limit) {
+    if (length >= limit) return null;
+    if (isFixed || isImmutable) return false;
+    for (var i = length; i < limit; i++) add(value);
+    return true;
+  }
 
   ///
-  /// [addAllIfEmpty]
-  /// [addAllIfNotEmpty]
-  /// [addAllWhen]
   ///
-  void addAllIfEmpty(Supplier<Iterable<T>> supplier) =>
-      isEmpty ? addAll(supplier()) : null;
-
-  void addAllIfNotEmpty(Supplier<Iterable<T>> supplier) =>
-      isNotEmpty ? addAll(supplier()) : null;
-
-  void addAllWhen(bool shouldAdd, Supplier<Iterable<T>> supplier) =>
-      shouldAdd ? addAll(supplier()) : null;
+  ///
+  ///
+  /// [getOrDefault]
+  ///
+  ///
+  ///
 
   ///
   /// [getOrDefault]
   ///
-  T getOrDefault(int position, Supplier<T> defaultValue) =>
-      position < length ? this[position] : defaultValue();
+  T getOrDefault(int position, Supplier<T> onOutOfBound) =>
+      position < length ? this[position] : onOutOfBound();
 
   ///
-  /// [update]
-  /// [updateApply]
   ///
-  void update(int index, T value) => this[index] = value;
-
-  void updateApply(int index, Applier<T> applier) =>
-      this[index] = applier(this[index]);
+  /// [removeAtWhere]
+  /// [removeOn]
+  ///
+  ///
 
   ///
-  /// [updateAll]
-  /// [updateAllApply]
+  /// [removeAtWhere]
+  /// [removeOn]
   ///
-  void updateAll(T value) {
-    for (var i = 0; i < length; i++) {
-      this[i] = value;
-    }
-  }
+  Iterable<T> removeAtWhere(Predicator<T> test) => [
+        for (var i = 0; i < length; i++)
+          if (test(this[i])) removeAt(i)
+      ];
 
-  void updateAllApply(Applier<T> applier) {
-    for (var i = 0; i < length; i++) {
-      this[i] = applier(this[i]);
-    }
-  }
-
-  ///
-  /// [removeWhereAndGet]
-  ///
-  Iterable<T> removeWhereAndGet(Predicator<T> test) sync* {
-    for (var i = 0; i < length; i++) {
-      if (test(this[i])) yield removeAt(i);
-    }
-  }
+  Iterable<T> removeOn(
+    Iterable<bool> positions, [
+    Supplier<Iterable<T>>? onLess,
+    Supplier<Iterable<T>>? onMore,
+  ]) =>
+      (positions.length - length).switchNatural(
+        () => positions.iterator.takeFor(iterator),
+        onLess,
+        onMore,
+      );
 
   ///
   /// fill, copy
-  /// [fillUntil]
-  ///
   /// [clone],
   /// [cloneSwitch], [cloneWithFilling], [cloneByOrder]
   ///
   ///
-
-  ///
-  /// [fillUntil]
-  ///
-  void fillUntil(T value, int boundary) {
-    for (var i = length; i < boundary; i++) {
-      add(value);
-    }
-  }
 
   ///
   /// [clone]
@@ -265,6 +334,82 @@ extension ListExtension<T> on List<T> {
     assert(Iterable.generate(length).isVariationTo(order));
     return [for (var i in order) this[i]];
   }
+
+  ///
+  /// [reverseToList]
+  /// [reverseToListExcept]
+  ///
+  List<T> get reverseToList => [for (var i = length - 1; i > -1; i--) this[i]];
+
+  List<T> reverseToListExcept([int count = 1]) =>
+      [...sublist(count), ...sublist(count).reversed];
+
+  ///
+  /// [mapToList]
+  /// [mapToListWithByNew], [mapToListWithByOld]
+  /// [mapToListTogether]
+  ///
+  List<E> mapToList<E>(Mapper<T, E> toVal) =>
+      [for (var i = 0; i < length; i++) toVal(this[i])];
+
+  List<E> mapToListWithByNew<E>(
+    List<E> other,
+    Reducer<E> reducing,
+    Mapper<T, E> toVal,
+  ) =>
+      [for (var i = 0; i < length; i++) reducing(toVal(this[i]), other[i])];
+
+  List<E> mapToListWithByOld<E>(
+    List<T> other,
+    Reducer<T> reducing,
+    Mapper<T, E> toVal,
+  ) =>
+      [for (var i = 0; i < length; i++) toVal(reducing(this[i], other[i]))];
+
+  List<S> mapToListTogether<S, E>(
+    List<E> other,
+    Reducer<S> reducing,
+    Mapper<T, S> toVal,
+    Mapper<E, S> toValOther,
+  ) =>
+      [
+        for (var i = 0; i < length; i++)
+          reducing(toVal(this[i]), toValOther(other[i])),
+      ];
+
+  ///
+  /// [mapSublist]
+  /// [mapSublistByIndex]
+  ///
+  List<S> mapSublist<S>(int begin, Mapper<T, S> mapping, [int? end]) {
+    if (length.isBoundClose(begin, end)) {
+      throw StateError(FErrorMessage.iterableBoundaryInvalid);
+    }
+    final bound = end ?? length;
+    return [for (var i = begin; i < bound; i++) mapping(this[i])];
+  }
+
+  List<S> mapSublistByIndex<S>(
+    int begin,
+    MapperGenerator<T, S> mapping, [
+    int? end,
+  ]) {
+    if (length.isBoundClose(begin, end)) {
+      throw StateError(FErrorMessage.iterableBoundaryInvalid);
+    }
+    final bound = end ?? length;
+    return [for (var i = begin; i < bound; i++) mapping(this[i], i)];
+  }
+
+  ///
+  /// [reduceWith]
+  /// [companionWith]
+  ///
+  List<T> reduceWith(List<T> other, Reducer<T> reducing) =>
+      [for (var i = 0; i < length; i++) reducing(this[i], other[i])];
+
+  List<T> companionWith<E>(List<E> other, Companion<T, E> companion) =>
+      [for (var i = 0; i < length; i++) companion(this[i], other[i])];
 
   ///
   ///
@@ -291,160 +436,22 @@ extension ListExtension<T> on List<T> {
   }) {
     final result = <List<T>>[];
     final bound = end ?? length;
-    assert(length.constraintsClose(start, bound) && count < bound - start);
+    assert(length.isBoundClose(start, end) && count < bound - start);
 
-    final max = count * (bound ~/ count);
     var i = start;
-    for (; i < max; i += count) {
-      result.add(sublist(i, i + count));
-    }
+    final max = count * (bound ~/ count);
+    for (; i < max; i += count) result.add(sublist(i, i + count));
     if (includeTrailing) result.add(sublist(i, bound));
     return result;
   }
 
-  List<List<T>> splitAt(List<int> positions, [int begin = 0, int? end]) {
-    assert(positions.rangeIn(begin, end ?? length));
-    return positions.iterator.foldAccompanyAfter(
-      [],
-      begin,
-      (result, interval, i) => result..add(sublist(i, interval)),
-      (i, interval) => interval,
-    );
-  }
-
-  ///
-  /// [reverseToList]
-  /// [reverseToListExcept]
-  ///
-  List<T> get reverseToList {
-    final length = this.length;
-    return [for (var i = length - 1; i > -1; i--) this[i]];
-  }
-
-  List<T> reverseToListExcept([int count = 1]) =>
-      [...sublist(count), ...sublist(count).reversed];
-
-  ///
-  /// [mapToList]
-  /// [mapToListWithByNew], [mapToListWithByOld]
-  /// [mapToListTogether]
-  ///
-  List<E> mapToList<E>(Mapper<T, E> toVal) {
-    final length = this.length;
-    return [for (var i = 0; i < length; i++) toVal(this[i])];
-  }
-
-  List<E> mapToListWithByNew<E>(
-    List<E> other,
-    Reducer<E> reducing,
-    Mapper<T, E> toVal,
-  ) {
-    final length = this.length;
-    return [
-      for (var i = 0; i < length; i++) reducing(toVal(this[i]), other[i])
-    ];
-  }
-
-  List<E> mapToListWithByOld<E>(
-    List<T> other,
-    Reducer<T> reducing,
-    Mapper<T, E> toVal,
-  ) {
-    final length = this.length;
-    return [
-      for (var i = 0; i < length; i++) toVal(reducing(this[i], other[i]))
-    ];
-  }
-
-  List<S> mapToListTogether<S, E>(
-    List<E> other,
-    Reducer<S> reducing,
-    Mapper<T, S> toVal,
-    Mapper<E, S> toValOther,
-  ) {
-    final length = this.length;
-    return [
-      for (var i = 0; i < length; i++)
-        reducing(toVal(this[i]), toValOther(other[i])),
-    ];
-  }
-
-  ///
-  /// [mapSublist]
-  /// [mapSublistByIndex]
-  ///
-  List<S> mapSublist<S>(int begin, Mapper<T, S> mapper, [int? end]) {
-    final bound = end ?? length;
-    assert(length.constraintsOpen(begin, bound));
-    final result = <S>[];
-    for (var i = begin; i < bound; i++) {
-      result.add(mapper(this[i]));
-    }
-    return result;
-  }
-
-  List<S> mapSublistByIndex<S>(
-    int begin,
-    MapperGenerator<T, S> mapper, [
-    int? end,
-  ]) {
-    final bound = end ?? length;
-    assert(length.constraintsOpen(begin, bound));
-    final result = <S>[];
-    for (var i = begin; i < bound; i++) {
-      result.add(mapper(this[i], i));
-    }
-    return result;
-  }
-
-  ///
-  /// [interReduce]
-  /// [interCompanion]
-  ///
-  List<T> interReduce(List<T> other, Reducer<T> reducing) {
-    final length = this.length;
-    return [for (var i = 0; i < length; i++) reducing(this[i], other[i])];
-  }
-
-  List<T> interCompanion<E>(List<E> other, Companion<T, E> companion) {
-    final length = this.length;
-    return [for (var i = 0; i < length; i++) companion(this[i], other[i])];
-  }
-
-  ///
-  /// [filled]
-  /// [setFrom]
-  ///
-  void filled(T value) {
-    final length = this.length;
-    for (var i = 0; i < length; i++) {
-      this[i] = value;
-    }
-  }
-
-  void setFrom(List<T> another) {
-    final length = this.length;
-    assert(length == another.length);
-    for (var i = 0; i < length; i++) {
-      this[i] = another[i];
-    }
-  }
-
-  ///
-  /// [apply]
-  /// [applyByIndex]
-  ///
-  void apply(Applier<T> toVal) {
-    final length = this.length;
-    for (var i = 0; i < length; i++) {
-      this[i] = toVal(this[i]);
-    }
-  }
-
-  void applyByIndex(ApplierGenerator<T> toVal) {
-    final length = this.length;
-    for (var i = 0; i < length; i++) {
-      this[i] = toVal(this[i], i);
-    }
-  }
+  List<List<T>> splitAt(List<int> positions, [int begin = 0, int? end]) =>
+      positions.boundIn(begin, end)
+          ? positions.iterator.foldByAfter(
+              [],
+              begin,
+              (result, interval, i) => result..add(sublist(i, interval)),
+              (i, interval) => interval,
+            )
+          : throw StateError(FErrorMessage.iterableBoundaryInvalid);
 }

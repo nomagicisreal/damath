@@ -148,7 +148,7 @@ extension DoubleExtension on double {
   ///
   /// reduce
   /// [reducePlus], [reduceMinus], [reduceMultiply], [reduceDivided], [reduceMod]
-  /// [reduceAddSquared], [reduceMinusThenHalf]
+  /// [reducePlusSquared], [reduceMinusThenHalf]
   ///
   static double reduceMax(double v1, double v2) => math.max(v1, v2);
 
@@ -168,7 +168,7 @@ extension DoubleExtension on double {
       (v1 ~/ v2).toDouble();
 
   // chained operation
-  static double reduceAddSquared(double v1, double v2) => v1 * v1 + v2 * v2;
+  static double reducePlusSquared(double v1, double v2) => v1 * v1 + v2 * v2;
 
   static double reduceMinusThenHalf(double v1, double v2) => (v1 - v2) / 2;
 

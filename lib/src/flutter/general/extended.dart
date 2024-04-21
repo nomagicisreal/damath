@@ -143,28 +143,28 @@ class Clipping extends CustomClipper<Path> {
 ///
 
 ///
-/// [mapper]
+/// [mapping]
 ///
 /// [Curving.sinPeriodOf]
 /// [Curving.cosPeriodOf]
 /// [Curving.tanPeriodOf]
 ///
 class Curving extends Curve {
-  final Applier<double> mapper;
+  final Applier<double> mapping;
 
-  const Curving(this.mapper);
+  const Curving(this.mapping);
 
   Curving.sinPeriodOf(int times)
-      : mapper = DoubleExtension.applyOnPeriodSinByTimes(times);
+      : mapping = DoubleExtension.applyOnPeriodSinByTimes(times);
 
   Curving.cosPeriodOf(int times)
-      : mapper = DoubleExtension.applyOnPeriodCosByTimes(times);
+      : mapping = DoubleExtension.applyOnPeriodCosByTimes(times);
 
   Curving.tanPeriodOf(int times)
-      : mapper = DoubleExtension.applyOnPeriodTanByTimes(times);
+      : mapping = DoubleExtension.applyOnPeriodTanByTimes(times);
 
   @override
-  double transformInternal(double t) => mapper(t);
+  double transformInternal(double t) => mapping(t);
 }
 
 ///
@@ -469,11 +469,11 @@ class CubicOffset {
         Cubic(y.a * scale, y.b * scale, y.c * scale, y.d * scale),
       );
 
-  CubicOffset mapXY(Applier<Cubic> mapper) => CubicOffset(mapper(x), mapper(y));
+  CubicOffset mapXY(Applier<Cubic> mapping) => CubicOffset(mapping(x), mapping(y));
 
-  CubicOffset mapX(Applier<Cubic> mapper) => CubicOffset(mapper(x), y);
+  CubicOffset mapX(Applier<Cubic> mapping) => CubicOffset(mapping(x), y);
 
-  CubicOffset mapY(Applier<Cubic> mapper) => CubicOffset(x, mapper(y));
+  CubicOffset mapY(Applier<Cubic> mapping) => CubicOffset(x, mapping(y));
 
 
 }
@@ -627,6 +627,6 @@ extension IterableIconAction on Iterable<IconAction> {
 
   double maxRadiusFrom(BuildContext context, [double defaultSize = 24]) {
     final size = context.themeIcon.size ?? defaultSize;
-    return iterator.reduceTo((i) => i.icon.size ?? size, math.max);
+    return iterator.induct((i) => i.icon.size ?? size, math.max);
   }
 }

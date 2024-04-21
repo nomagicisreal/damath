@@ -338,7 +338,7 @@ extension MapExtension<K, V> on Map<K, V> {
   /// [joinKeys]
   /// [joinValues]
   ///
-  String join([String entrySeparator = '', String separator = '']) =>
+  String join([String entrySeparator = ', ', String separator = '\n']) =>
       entries.map((entry) => entry.join(entrySeparator)).join(separator);
 
   String joinKeys([String separator = ', ']) => keys.join(separator);
@@ -362,7 +362,7 @@ extension MapExtension<K, V> on Map<K, V> {
   ///
   /// [reduce], [reduceKeys], [reduceValues]
   /// [reduceByIndex]
-  /// [reduceTo], [reduceToByIndex], [reduceToByIndexInitialized]
+  /// [induct], [inductByIndex], [inductByIndexInited]
   ///
 
   ///
@@ -391,7 +391,7 @@ extension MapExtension<K, V> on Map<K, V> {
   ///
   /// [reduce], [reduceKeys], [reduceValues]
   /// [reduceByIndex]
-  /// [reduceTo], [reduceToByIndex], [reduceToByIndexInitialized]
+  /// [induct], [inductByIndex], [inductByIndexInited]
   ///
   MapEntry<K, V> reduce(Reducer<MapEntry<K, V>> reducing) =>
       entries.reduce(reducing);
@@ -406,22 +406,22 @@ extension MapExtension<K, V> on Map<K, V> {
   ]) =>
       entries.iterator.reduceByIndex(reducing, start);
 
-  S reduceTo<S>(Mapper<MapEntry<K, V>, S> toVal, Reducer<S> reducer) =>
-      entries.iterator.reduceTo(toVal, reducer);
+  S induct<S>(Mapper<MapEntry<K, V>, S> toVal, Reducer<S> reducer) =>
+      entries.iterator.induct(toVal, reducer);
 
-  S reduceToByIndex<S>(
+  S inductByIndex<S>(
     Mapper<MapEntry<K, V>, S> toVal,
     ReducerGenerator<S> reducing, [
     int start = 0,
   ]) =>
-      entries.iterator.reduceToByIndex(toVal, reducing, start);
+      entries.iterator.inductByIndex(toVal, reducing, start);
 
-  S reduceToByIndexInitialized<S>(
+  S inductByIndexInited<S>(
     Mapper<MapEntry<K, V>, S> toVal,
     CompanionGenerator<S, MapEntry<K, V>> reducing, [
     int start = 0,
   ]) =>
-      entries.iterator.reduceToInitializedByIndex(toVal, reducing, start);
+      entries.iterator.inductInitedByIndex(toVal, reducing, start);
 
   ///
   /// [mapKeys]

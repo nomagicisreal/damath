@@ -63,7 +63,7 @@ abstract class _VectorFloat<V extends _VectorFloat<V>>
   /// overrides
   ///
   @override
-  V operator -() => clone.._storage.apply(DoubleExtension.applyNegate);
+  V operator -() => clone.._storage.updateAllApply(DoubleExtension.applyNegate);
 
   @override
   V operator %(covariant V another) =>

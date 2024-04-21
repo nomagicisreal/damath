@@ -21,8 +21,8 @@ part of damath_core;
 ///
 typedef Listener = void Function();
 typedef Consumer<T> = void Function(T value);
-typedef Accompanier<T> = void Function(T v1, T v2);
-typedef Intersector<A, B> = void Function(A a, B b);
+typedef Intersector<T> = void Function(T v1, T v2);
+typedef Pairitor<A, B> = void Function(A a, B b);
 typedef Supplier<S> = S Function();
 typedef Generator<S> = S Function(int index);
 
@@ -31,13 +31,14 @@ typedef Reducer<T> = T Function(T v1, T v2);
 typedef Collapser<T> = T Function(T v1, T v2, T v3);
 typedef Companion<T, E> = T Function(T value, E other);
 typedef Absorber<T, E> = T Function(T value, E e1, E e2);
-typedef Forcer<T, E> = T Function(T v1, T v2, E other);
-typedef Collector<T, A, B> = T Function(T value, A a, B b);
+typedef Collector<T, E> = T Function(T v1, T v2, E other);
+typedef Forcer<T, A, B> = T Function(T value, A a, B b);
 
 typedef Mapper<T, S> = S Function(T value);
 typedef Fusionor<T, S> = S Function(T v1, T v2);
 typedef Mixer<T, E, S> = S Function(T value, E element);
 typedef Linker<T, E, S> = S Function(T v1, T v2, E other);
+typedef Chainer<T, E, S> = S Function(S element, T value, E other);
 typedef Synthesizer<A, B, C, S> = S Function(A a, B b, C c);
 
 ///
@@ -60,8 +61,8 @@ typedef TernaratorCombiner<T> = bool? Function(T v1, T v2);
 /// indexable
 ///
 typedef ConsumerIndexable<T> = void Function(T value, int index);
-typedef AccompanierIndexable<T> = void Function(T v1, T v2, int index);
-typedef IntersectorIndexable<A, B> = void Function(A a, B b, int index);
+typedef IntersectorIndexable<T> = void Function(T v1, T v2, int index);
+typedef PairitorIndexable<A, B> = void Function(A a, B b, int index);
 
 ///
 /// generator
@@ -72,19 +73,20 @@ typedef ReducerGenerator<T> = T Function(T v1, T v2, int index);
 typedef CollapserGenerator<T> = T Function(T v1, T v2, T v3, int index);
 typedef CompanionGenerator<T, E> = T Function(T value, E other, int index);
 typedef AbsorberGenerator<T, E> = T Function(T value, E e1, E e2, int index);
-typedef ForcerGenerator<T, E> = T Function(T v1, T v2, E other, int index);
-typedef CollectorGenerator<T, A, B> = T Function(T value, A a, B b, int index);
+typedef CollectorGenerator<T, E> = T Function(T v1, T v2, E other, int index);
+typedef ForcerGenerator<T, A, B> = T Function(T value, A a, B b, int index);
 
 typedef LinkerGenerator<T, E, S> = S Function(T v1, T v2, E other, int index);
-typedef FusionorGenerator<P, Q, R, S> = S Function(P p, Q q, R r, int index);
+typedef FusionorGenerator<T, S> = S Function(T v1, T v2, int index);
 typedef MapperGenerator<T, S> = S Function(T value, int index);
-typedef CombinerGenerator<T, S> = S Function(T v1, T v2, int index);
 typedef MixerGenerator<T, E, S> = S Function(T value, E element, int index);
+typedef SynthesizerGenerator<P, Q, R, S> = S Function(P p, Q q, R r, int index);
 
 ///
 /// others
 ///
 typedef Countable<T> = (int, T);
+typedef List2D<T> = List<List<T>>;
 typedef Differentiator<A, B> = int Function(A a, B b);
 typedef Lerper<T> = T Function(double t);
 
@@ -236,7 +238,7 @@ extension FGenerator<T> on Generator<T> {
     int length,
     Generator<E> another,
     S initialValue,
-    Collector<S, T, E> collect,
+    Forcer<S, T, E> collect,
   ) {
     var val = initialValue;
     for (var i = 0; i < length; i++) {

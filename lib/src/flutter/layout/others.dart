@@ -623,14 +623,14 @@ extension TransformExtension on Transform {
   static bool ifInQuadrant(double radian, int quadrant) {
     final r = Radian.moduleBy360Angle(radian);
     return switch (quadrant) {
-      1 => r.rangeOpen(Radian.angle_270, Radian.angle_360) ||
-          r.rangeOpen(-Radian.angle_90, 0),
-      2 => r.rangeOpen(Radian.angle_180, Radian.angle_270) ||
-          r.rangeOpen(-Radian.angle_180, -Radian.angle_90),
-      3 => r.rangeOpen(Radian.angle_90, Radian.angle_180) ||
-          r.rangeOpen(-Radian.angle_270, -Radian.angle_180),
-      4 => r.rangeOpen(0, Radian.angle_90) ||
-          r.rangeOpen(-Radian.angle_360, -Radian.angle_270),
+      1 => r.isRangeOpen(Radian.angle_270, Radian.angle_360) ||
+          r.isRangeOpen(-Radian.angle_90, 0),
+      2 => r.isRangeOpen(Radian.angle_180, Radian.angle_270) ||
+          r.isRangeOpen(-Radian.angle_180, -Radian.angle_90),
+      3 => r.isRangeOpen(Radian.angle_90, Radian.angle_180) ||
+          r.isRangeOpen(-Radian.angle_270, -Radian.angle_180),
+      4 => r.isRangeOpen(0, Radian.angle_90) ||
+          r.isRangeOpen(-Radian.angle_360, -Radian.angle_270),
       _ => throw UnimplementedError(),
     };
   }

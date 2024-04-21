@@ -14,7 +14,7 @@ typedef ProcessUnitOrdered<P> = (int, ProcessUnit<P>);
 
 extension ProcessUnitOrderedExtension<P> on ProcessUnitOrdered<P> {
   ///
-  /// mapper
+  /// mapping
   ///
   static Countable<Duration> toBurst<P>(ProcessUnitOrdered<P> unit) =>
       (unit.$1, unit.$2.burst);

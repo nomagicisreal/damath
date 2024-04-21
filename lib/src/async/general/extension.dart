@@ -150,23 +150,23 @@ extension TimerExtension on Timer {
   static Timer _nest(
     Duration duration,
     Listener listener,
-    Iterable<MapEntry<Duration, Listener>> children,
+    Iterable<(Duration, Listener)> children,
   ) =>
       Timer(duration, () {
         if (children.isNotEmpty) _sequence(children);
         listener();
       });
 
-  static Timer _sequence(Iterable<MapEntry<Duration, Listener>> elements) {
+  static Timer _sequence(Iterable<(Duration, Listener)> elements) {
     final first = elements.first;
-    return _nest(first.key, first.value, elements.skip(1));
+    return _nest(first.$1, first.$2, elements.skip(1));
   }
 
   static Timer sequencing(
     Iterable<Duration> steps,
     Iterable<Listener> listeners,
   ) =>
-      _sequence(steps.iterator.interMapEntry(listeners.iterator));
+      _sequence(steps.iterator.pairMap(listeners.iterator, Record2.mix));
 }
 
 extension FConsumerTimer on Consumer<Timer> {

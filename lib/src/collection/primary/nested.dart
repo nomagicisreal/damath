@@ -14,24 +14,14 @@
 part of damath_collection;
 
 ///
-/// static methods:
-/// [_errorSetNotIdentical], ...
-///
-/// instance methods:
 /// [everyIdentical], ...
-/// [merged], ...
+/// [reduceMerged]
 ///
 extension IteratorSet<K> on Iterator<Set<K>> {
   ///
-  /// [_errorSetNotIdentical]
-  ///
-  static StateError _errorSetNotIdentical<K>(Set<K> a, Set<K> b) =>
-      StateError('set not identical:\n$a\n$b');
-
-  ///
   /// [everyIdentical]
   ///
-  bool get everyIdentical => moveNextSupply(() {
+  bool get everyIdentical => supplyMoveNext(() {
         final set = current.clone;
         while (moveNext()) {
           if (current.any(set.add)) return false;
@@ -40,18 +30,19 @@ extension IteratorSet<K> on Iterator<Set<K>> {
       });
 
   ///
-  /// [merged]
-  /// [mergedIfIdentical]
+  /// [reduceMerged]
   ///
-  Set<K> get merged => fold({}, (set, other) => set..addAll(other));
-
-  Set<K> get mergedIfIdentical => moveNextSupply(() {
-        final set = current.clone;
-        while (moveNext()) {
-          if (current.any(set.add)) throw _errorSetNotIdentical(set, current);
-        }
-        return set;
-      });
+  Set<K> reduceMerged([bool requireIdentical = false]) => requireIdentical
+      ? supplyMoveNext(() {
+          final set = current.clone;
+          while (moveNext()) {
+            if (current.any(set.add)) {
+              throw StateError(FErrorMessage.setNotIdentical(current, set));
+            }
+          }
+          return set;
+        })
+      : fold({}, (set, other) => set..addAll(other));
 }
 
 ///
@@ -71,17 +62,17 @@ extension IterableIterable<I> on Iterable<Iterable<I>> {
   /// [size]
   ///
   int get size =>
-      iterator.reduceTo(IterableExtension.toLength, IntExtension.reducePlus);
+      iterator.induct(IterableExtension.toLength, IntExtension.reducePlus);
 
   ///
   /// [toStringMapJoin]
   /// [toStringPadLeft]
   ///
   String toStringMapJoin([
-    Mapper<Iterable<I>, String>? mapper,
+    Mapper<Iterable<I>, String>? mapping,
     String separator = "\n",
   ]) =>
-      map(mapper ?? (e) => e.toString()).join(separator);
+      map(mapping ?? (e) => e.toString()).join(separator);
 
   String toStringPadLeft(int space) => toStringMapJoin(
         (row) => row.map((e) => e.toString().padLeft(space)).toString(),
@@ -91,10 +82,10 @@ extension IterableIterable<I> on Iterable<Iterable<I>> {
   /// [isEqualElementsLengthTo]
   ///
   bool isEqualElementsLengthTo<P>(Iterable<Iterable<P>> another) =>
-      !anyElementWith(another, IteratorWithExtension.predicateLengthDifferent);
+      !anyWith(another, IterableExtension.predicateLengthDifferent);
 
   bool isEqualToNested(Iterable<Iterable<I>> another) =>
-      !anyElementWith(another, IteratorWithExtension.predicateDifferent);
+      !anyWith(another, IterableExtension.predicateDifferent);
 
   ///
   /// [foldWith2D]
@@ -102,7 +93,7 @@ extension IterableIterable<I> on Iterable<Iterable<I>> {
   S foldWith2D<S, P>(
     Iterable<Iterable<P>> another,
     S initialValue,
-    Collector<S, I, P> fusionor,
+    Forcer<S, I, P> fusionor,
   ) =>
       foldWith(
         another,
@@ -209,5 +200,5 @@ extension ListSet<I> on List<Set<I>> {
   }
 
   void mergeWhereToTrailing(Predicator<Set<I>> test) =>
-      add(removeWhereAndGet(test).iterator.merged);
+      add(removeAtWhere(test).iterator.reduceMerged());
 }

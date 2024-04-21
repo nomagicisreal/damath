@@ -122,12 +122,12 @@ abstract base class Radian extends BOperatableComparable<Radian>
   /// [complementaryOf], [supplementaryOf]
   ///
   static double complementaryOf(double radian) {
-    assert(radian.rangeClose(0, angle_90));
+    assert(radian.isRangeClose(0, angle_90));
     return fromAngle(90 - angleFromRadian(radian));
   }
 
   static double supplementaryOf(double radian) {
-    assert(radian.rangeClose(0, angle_180));
+    assert(radian.isRangeClose(0, angle_180));
     return fromAngle(180 - angleFromRadian(radian));
   }
 
@@ -195,17 +195,17 @@ abstract base class Radian extends BOperatableComparable<Radian>
   /// [azimuthalInQuadrant]
   ///
   bool azimuthalIn(double lower, double upper) =>
-      rAzimuthal.rangeClose(lower, upper);
+      rAzimuthal.isRangeClose(lower, upper);
 
   bool azimuthalInQuadrant(int quadrant) {
     final r = moduleBy360Angle(rAzimuthal);
     return switch (quadrant) {
-      1 => r.rangeOpen(0, angle_90) || r.rangeOpen(-angle_360, -angle_270),
+      1 => r.isRangeOpen(0, angle_90) || r.isRangeOpen(-angle_360, -angle_270),
       2 =>
-        r.rangeOpen(angle_90, angle_180) || r.rangeOpen(-angle_270, -angle_180),
+        r.isRangeOpen(angle_90, angle_180) || r.isRangeOpen(-angle_270, -angle_180),
       3 =>
-        r.rangeOpen(angle_180, angle_270) || r.rangeOpen(-angle_180, -angle_90),
-      4 => r.rangeOpen(angle_270, angle_360) || r.rangeOpen(-angle_90, 0),
+        r.isRangeOpen(angle_180, angle_270) || r.isRangeOpen(-angle_180, -angle_90),
+      4 => r.isRangeOpen(angle_270, angle_360) || r.isRangeOpen(-angle_90, 0),
       _ => throw StateError('undefined quadrant: $quadrant for $this'),
     };
   }

@@ -141,7 +141,7 @@ mixin _MixinNodeNew<T, N extends Node<T, N>> on Node<T, N> {
     Iterable<T> iterable,
     Companion<N, T> companion,
   ) =>
-      iterable.iterator.reduceToInitialized(
+      iterable.iterator.inductInited(
         (data) => _construct(data, null),
         companion,
       );
@@ -239,18 +239,18 @@ sealed class _NodeDirect<T, N extends _NodeDirect<T, N>> extends Node<T, N>
   const _NodeDirect();
 
   // generate
-  factory _NodeDirect.generate(
-    int length,
-    Generator<T> generator,
-    NodeConstructor<T, N> construct,
-  ) {
-    if (length.isNegative) throw RangeError(FErrorMessage.generateByNegative);
-    N? current;
-    for (var i = length - 1; i > -1; i--) {
-      current = construct(generator(i), current);
-    }
-    return current!;
-  }
+  // factory _NodeDirect.generate(
+  //   int length,
+  //   Generator<T> generator,
+  //   NodeConstructor<T, N> construct,
+  // ) {
+  //   if (length.isNegative) throw RangeError(FErrorMessage.generateByNegative);
+  //   N? current;
+  //   for (var i = length - 1; i > -1; i--) {
+  //     current = construct(generator(i), current);
+  //   }
+  //   return current!;
+  // }
 }
 
 ///
@@ -667,7 +667,7 @@ abstract class _NodeDirectInsertableIterator<I,
     Iterable<I> iterable,
     Mapper<I, N> initialize,
     Companion<N, I> reducing,
-  ) : _child = iterable.iterator.reduceToInitialized<N>(initialize, reducing);
+  ) : _child = iterable.iterator.inductInited<N>(initialize, reducing);
 }
 
 ///

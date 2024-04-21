@@ -23,6 +23,7 @@ part of damath_collection;
 ///
 /// instance getters, methods:
 /// [isSatisfiable], ...
+/// [takeFor], ...
 ///
 ///
 extension IteratorBool on Iterator<bool> {
@@ -40,6 +41,20 @@ extension IteratorBool on Iterator<bool> {
   bool get isContradiction => !any(_keep);
 
   bool get isContingency => existDifferent;
+
+  ///
+  /// [takeFor]
+  /// [takeListFor]
+  ///
+  Iterable<I> takeFor<I>(Iterator<I> source) => [
+        for (; moveNext() && source.moveNext();)
+          if (current) source.current
+      ];
+
+  List<I> takeListFor<I>(Iterator<I> source) => [
+    for (; moveNext() && source.moveNext();)
+      if (current) source.current
+  ];
 }
 
 ///
@@ -88,7 +103,7 @@ extension IteratorDouble on Iterator<double> {
   double get mode =>
       toMapCounted.reduce(MapEntryExtension.reduceMaxValueInt).key;
 
-  double get range => moveNextApply((value) {
+  double get range => applyMoveNext((value) {
         var min = value;
         var max = value;
         while (moveNext()) {
@@ -98,7 +113,7 @@ extension IteratorDouble on Iterator<double> {
         return max - min;
       });
 
-  (double, double) get boundary => moveNextSupply(() {
+  (double, double) get boundary => supplyMoveNext(() {
         var min = current;
         var max = current;
         while (moveNext()) {
@@ -114,9 +129,9 @@ extension IteratorDouble on Iterator<double> {
   ///
   double get sum => reduce(DoubleExtension.reducePlus);
 
-  double get sumSquared => reduce(DoubleExtension.reduceAddSquared);
+  double get sumSquared => reduce(DoubleExtension.reducePlusSquared);
 
-  double get meanArithmetic => moveNextApply((total) {
+  double get meanArithmetic => applyMoveNext((total) {
         var length = 1;
         while (moveNext()) {
           total += current;
@@ -125,7 +140,7 @@ extension IteratorDouble on Iterator<double> {
         return total / length;
       });
 
-  double get meanGeometric => moveNextApply((total) {
+  double get meanGeometric => applyMoveNext((total) {
         var length = 1;
         while (moveNext()) {
           total *= current;
@@ -137,7 +152,7 @@ extension IteratorDouble on Iterator<double> {
   ///
   /// [distance], [volume]
   ///
-  double get distance => math.sqrt(reduce(DoubleExtension.reduceAddSquared));
+  double get distance => math.sqrt(reduce(DoubleExtension.reducePlusSquared));
 
   double get volume => reduce(DoubleExtension.reduceMultiply);
 
@@ -160,18 +175,18 @@ extension IteratorDouble on Iterator<double> {
   /// [interDistanceCumulate]
   ///
   Iterable<double> interDistanceTo(Iterator<double> destination) =>
-      destination.interTake(this, DoubleExtension.reduceMinus);
+      destination.pairTake(this, DoubleExtension.reduceMinus);
 
   Iterable<double> interDistanceFrom(Iterator<double> source) =>
-      interTake(source, DoubleExtension.reduceMinus);
+      pairTake(source, DoubleExtension.reduceMinus);
 
   Iterable<double> interDistanceHalfTo(Iterator<double> destination) =>
-      destination.interTake(this, DoubleExtension.reduceMinusThenHalf);
+      destination.pairTake(this, DoubleExtension.reduceMinusThenHalf);
 
   Iterable<double> interDistanceHalfFrom(Iterator<double> source) =>
-      interTake(source, DoubleExtension.reduceMinusThenHalf);
+      pairTake(source, DoubleExtension.reduceMinusThenHalf);
 
-  double interDistanceCumulate(Iterator<double> another) => interTakeCumulate(
+  double interDistanceCumulate(Iterator<double> another) => interReduce(
       another, DoubleExtension.reduceMinus, DoubleExtension.reducePlus);
 }
 
@@ -202,7 +217,7 @@ extension IterableDouble on Iterable<double> {
   ///
   double dot(Iterable<double> another) {
     assert(length == another.length);
-    return iterator.interTakeCumulate(
+    return iterator.interReduce(
       another.iterator,
       DoubleExtension.reduceMultiply,
       DoubleExtension.reducePlus,
@@ -237,12 +252,12 @@ extension IterableDouble on Iterable<double> {
   /// [normalized]
   /// [normalizeInto]
   ///
-  Iterable<double> get normalized =>
-      iterator.takeAllApplyBy(iterator.distance, DoubleExtension.reduceDivided);
+  Iterable<double> get normalized => iterator.takeAllCompanion(
+      iterator.distance, DoubleExtension.reduceDivided);
 
   void normalizeInto(List<double> out) {
     assert(out.length == length);
-    iterator.accompanyByIndex(
+    iterator.consumeAccompanyByIndex(
       iterator.distance,
       (value, d, i) => out[i] = value / d,
     );

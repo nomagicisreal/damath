@@ -84,6 +84,8 @@ enum Propositioner {
 sealed class PropositionComponent {
   const PropositionComponent();
 
+  static bool mapToValue(PropositionComponent p) => p.value;
+
   String get declarative;
 
   bool get value;
@@ -274,7 +276,7 @@ class PropositionCompound extends PropositionComponent {
   ///
   @override
   String get declarative => _components.iterator
-      .reduceToInitialized(
+      .inductInited(
         (p) => StringBuffer(p.declarative),
         (buffer, p) => buffer
           ..write('\n')
@@ -284,12 +286,19 @@ class PropositionCompound extends PropositionComponent {
       .toString();
 
   @override
-  bool get value => _components.iterator.leadThenInterFold(
-        0,
-        (p) => p.value,
+  bool get value => (_components.iterator..moveNext()).pairIntervalInduct(
         _operations.iterator,
+        PropositionComponent.mapToValue,
         (value, p, fusion) => fusion(value, p.value),
       );
+
+  // @override
+  // bool get value => _components.iterator.leadThenInterFold(
+  //       0,
+  //       (p) => p.value,
+  //       _operations.iterator,
+  //       (value, p, fusion) => fusion(value, p.value),
+  //     );
 
   @override
   int get hashCode => declarative.hashCode;

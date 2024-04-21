@@ -1,4 +1,5 @@
 part of damath_collection;
+// ignore_for_file: curly_braces_in_flow_control_structures
 
 ///
 /// static methods:
@@ -7,21 +8,27 @@ part of damath_collection;
 /// [generateFrom], ...
 ///
 /// instance getter and methods
-/// [cardinality]
+/// [pair], ...
 /// [copyInto], ...
-/// [subIterable], ...
-/// [anyElementWith], ...
+///
+/// [containsAll], ...
+/// [isVariationTo], ...
+/// [anyWith], ...
+///
+/// [reduceTogether], ...
+///
+/// [cloneIterable], ...
 /// [append], ...
+/// [expandWith], ...
+/// [interval], ...
 ///
 /// [foldWith], ...
-/// [reduceWith], ...
-/// [expandWith], ...
 ///
-/// [isEqualTo], ...
-/// [interval], ...
+/// [cardinality], ...
 ///
 /// [chunk], ...
 /// [combination2], ...
+///
 ///
 extension IterableExtension<I> on Iterable<I> {
   ///
@@ -37,75 +44,179 @@ extension IterableExtension<I> on Iterable<I> {
   /// [fill]
   /// [generateFrom]
   ///
-  static Iterable<I> fill<I>(int count, I value) sync* {
-    for (var i = 0; i < count; i++) {
-      yield value;
-    }
-  }
+  static Iterable<I> fill<I>(int count, I value) =>
+      [for (var i = 0; i < count; i++) value];
 
   static Iterable<I> generateFrom<I>(
     int count,
     Generator<I> generator, [
     int start = 1,
-  ]) sync* {
-    for (var i = start; i < count; i++) {
-      yield generator(i);
-    }
-  }
+  ]) =>
+      [for (var i = start; i < count; i++) generator(i)];
 
   ///
-  /// [cardinality]
-  /// [isVariationTo]
+  /// [predicateLengthEqual], [predicateLengthDifferent]
+  /// [predicateEqual], [predicateDifferent]
   ///
-  int get cardinality => toSet().length;
+  static bool predicateLengthEqual<A, B>(Iterable<A> a, Iterable<B> b) =>
+      a.length == b.length;
 
-  bool isVariationTo(Iterable<I> another) => another.cardinality == cardinality;
+  static bool predicateLengthDifferent<A, B>(Iterable<A> a, Iterable<B> b) =>
+      a.length != b.length;
+
+  static bool predicateEqual<I>(Iterable<I> a, Iterable<I> b) => a.isEqualTo(b);
+
+  static bool predicateDifferent<I>(Iterable<I> a, Iterable<I> b) =>
+      a.anyWithDifferent(b);
+
+  ///
+  ///
+  ///
+  ///
+  ///
+  ///
+  ///
+  ///
+
+  void pair(Iterable<I> another, Intersector<I> paring, [Listener? onSizeDiff]) =>
+      length == another.length
+          ? iterator.pair(another.iterator, paring)
+          : onSizeDiff?.call();
 
   ///
   /// [copyInto]
   ///
-  void copyInto(List<I> out) {
-    assert(length == out.length);
-    iterator.consumeAllByIndex((value, i) => out[i] = value);
+  void copyInto(List<I> out, {Listener? onOutLarger, Listener? onOutSmaller}) =>
+      length == out.length
+          ? iterator.consumeAllByIndex((value, i) => out[i] = value)
+          : out.length > length
+              ? onOutLarger?.call()
+              : onOutSmaller?.call();
+
+  ///
+  ///
+  ///
+  ///
+  /// predication
+  /// [containsAll], [notContains], [notContainsAll]
+  /// [isVariationTo], [isEqualTo]
+  /// [anyWith], [anyWithEqual], [anyWithDifferent]
+  ///
+  ///
+  ///
+  ///
+
+  ///
+  /// [containsAll]
+  /// [notContains], [notContainsAll]
+  ///
+  bool containsAll(Iterable<I> another) {
+    for (final element in another) if (notContains(element)) return false;
+    return true;
+  }
+
+  bool notContains(I element) {
+    for (final value in this) if (value == element) return false;
+    return true;
+  }
+
+  bool notContainsAll(Iterable<I> another) {
+    for (final element in another) if (contains(element)) return false;
+    return true;
   }
 
   ///
+  /// [isVariationTo]
+  /// [isEqualTo]
+  ///
+  bool isVariationTo(Iterable<I> another) => another.cardinality == cardinality;
+
+  bool isEqualTo(Iterable<I> another) =>
+      length == another.length &&
+      !iterator.pairAny(another.iterator, FPredicatorFusionor.isDifferent);
+
+  ///
+  /// [anyWith]
+  /// [anyWithEqual]
+  /// [anyWithDifferent]
+  ///
+  bool anyWith<P>(
+    Iterable<P> another,
+    PredicatorMixer<I, P> test, [
+    Supplier<bool>? onSizeDiff,
+  ]) =>
+      length == another.length
+          ? iterator.pairAny(another.iterator, test)
+          : onSizeDiff?.call() ??
+              (throw StateError(FErrorMessage.iterableSizeInvalid));
+
+  bool anyWithEqual(Iterable<I> another, [Supplier<bool>? onSizeDiff]) =>
+      length == another.length
+          ? iterator.pairAny(another.iterator, FPredicatorFusionor.isEqual)
+          : onSizeDiff?.call() ??
+              (throw StateError(FErrorMessage.iterableSizeInvalid));
+
+  bool anyWithDifferent(Iterable<I> another, [Supplier<bool>? onSizeDiff]) =>
+      length == another.length
+          ? iterator.pairAny(another.iterator, FPredicatorFusionor.isDifferent)
+          : onSizeDiff?.call() ??
+              (throw StateError(FErrorMessage.iterableSizeInvalid));
+
+  ///
+  ///
+  /// [reduceTogether]
+  ///
+  ///
+
+  ///
+  /// [reduceTogether]
+  ///
+  I reduceTogether(
+    Iterable<I> another,
+    Reducer<I> initialize,
+    Collapser<I> collapse, [
+    Supplier<I>? onSizeDiff,
+  ]) =>
+      length == another.length
+          ? iterator.pairForcer(another.iterator, initialize, collapse)
+          : onSizeDiff?.call() ??
+              (throw StateError(FErrorMessage.iterableSizeInvalid));
+
+  ///
+  ///
+  /// [cloneIterable], [takeOn], [subIterable]
+  /// [append], [appendAll]
+  /// [stack], [stackAll]
+  /// [expandWith], [expandTogether]
+  /// [interval]
+  ///
+  ///
+  ///
+  ///
+
+  ///
   /// [cloneIterable]
+  /// [takeOn]
+  /// [subIterable]
   ///
   Iterable<I> get cloneIterable sync* {
     yield* this;
   }
 
-  ///
-  /// [subIterable]
-  ///
+  Iterable<I> takeOn(Iterable<bool> where) => length == where.length
+      ? where.iterator.takeFor(iterator)
+      : throw StateError(FErrorMessage.iterableSizeInvalid);
+
   Iterable<I> subIterable(int start, [int? end]) {
-    var bound = end ?? length;
-    if (length.constraintsClose(start, bound)) {
-      throw StateError(FErrorMessage.iterableConstraintsOutOfBoundary);
+    if (length.isBoundClose(start, end)) {
+      throw StateError(FErrorMessage.iterableBoundaryInvalid);
     }
-    return iterator.sub(start, bound);
+    return iterator.sub(start, end ?? length);
   }
 
   ///
-  /// [anyElementWith]
-  /// [anyElementIsEqualWith]
-  /// [anyElementIsDifferentWith]
-  ///
-  bool anyElementWith<P>(Iterable<P> another, PredicatorMixer<I, P> test) {
-    assert(length == another.length);
-    return iterator.interAny(another.iterator, test);
-  }
-
-  bool anyElementIsEqualWith(Iterable<I> another) =>
-      anyElementWith(another, FPredicatorFusionor.isEqual);
-
-  bool anyElementIsDifferentWith(Iterable<I> another) =>
-      anyElementWith(another, FPredicatorFusionor.isDifferent);
-
-  ///
-  /// append
   /// [append], [appendAll]
+  /// [stack], [stackAll]
   ///
   Iterable<I> append(I value) sync* {
     yield* this;
@@ -117,70 +228,14 @@ extension IterableExtension<I> on Iterable<I> {
     yield* other;
   }
 
-  ///
-  ///
-  /// get, fold, reduce, expand
-  /// [takeOn]
-  /// [foldWith], [foldTogether]
-  /// [reduceWith], [reduceTogether]
-  /// [expandWith], [expandTogether]
-  ///
-  Iterable<I> takeOn(Iterable<bool> where) {
-    assert(length == where.length);
-    return iterator.interTakeOn(where.iterator);
+  Iterable<I> stack(I value) sync* {
+    yield value;
+    yield* this;
   }
 
-  ///
-  /// [foldWith]
-  /// [foldTogether]
-  ///
-  S foldWith<S, T>(
-    Iterable<T> another,
-    S initialValue,
-    Collector<S, I, T> companion,
-  ) {
-    assert(length == another.length);
-    return iterator.interFold(initialValue, another.iterator, companion);
-  }
-
-  S foldTogether<E, S>(
-    S initialValue,
-    Iterable<E> another,
-    Companion<S, I> companion,
-    Companion<S, E> companionAnother,
-    Collapser<S> collapse,
-  ) {
-    assert(length == another.length);
-    return iterator.interFold(
-      initialValue,
-      another.iterator,
-      (value, a, b) => collapse(
-        value,
-        companion(value, a),
-        companionAnother(value, b),
-      ),
-    );
-  }
-
-  ///
-  /// [reduceWith]
-  /// [reduceTogether]
-  ///
-  I reduceWith(
-      Iterable<I> another, Reducer<I> initialize, Collapser<I> mutual) {
-    assert(length == another.length);
-    return iterator.interReduceInitialized(
-        another.iterator, initialize, mutual);
-  }
-
-  I reduceTogether(
-    Iterable<I> another,
-    Reducer<I> initialize,
-    Collapser<I> reducer,
-  ) {
-    assert(length == another.length);
-    return iterator.interReduceInitialized(
-        another.iterator, initialize, reducer);
+  Iterable<I> stackAll(Iterable<I> other) sync* {
+    yield* other;
+    yield* this;
   }
 
   ///
@@ -190,38 +245,101 @@ extension IterableExtension<I> on Iterable<I> {
   Iterable<I> expandWith<E>(
     Iterable<E> another,
     Mixer<I, E, Iterable<I>> expanding,
-  ) {
-    assert(length == another.length);
-    return iterator.interExpandTo(another.iterator, expanding);
-  }
+  ) =>
+      length == another.length
+          ? iterator.pairExpand(another.iterator, expanding)
+          : throw StateError(FErrorMessage.iterableSizeInvalid);
 
   Iterable<I> expandTogether<E>(
     Iterable<E> another,
     Mapper<I, Iterable<I>> expanding,
     Mapper<E, Iterable<I>> expandingAnother,
     Reducer<Iterable<I>> reducing,
-  ) {
-    assert(length == another.length);
-    return iterator.interExpandTo(
-      another.iterator,
-      (p, q) => reducing(expanding(p), expandingAnother(q)),
-    );
-  }
-
-  ///
-  /// [isEqualTo]
-  ///
-  bool isEqualTo(Iterable<I> another) =>
-      length == another.length &&
-      !iterator.interAny(another.iterator, FPredicatorFusionor.isDifferent);
+  ) =>
+      length == another.length
+          ? iterator.pairExpand(
+              another.iterator,
+              (p, q) => reducing(expanding(p), expandingAnother(q)),
+            )
+          : throw StateError(FErrorMessage.iterableSizeInvalid);
 
   ///
   /// [interval]
   ///
-  Iterable<S> interval<T, S>(Iterable<T> another, Linker<I, T, S> link) {
-    assert(another.length + 1 == length);
-    return iterator.intervalBy(another.iterator, link);
-  }
+  Iterable<S> interval<T, S>(Iterable<T> another, Linker<I, T, S> link) =>
+      another.length + 1 == length
+          ? iterator.pairInterval(another.iterator, link)
+          : throw StateError(FErrorMessage.iterableSizeInvalid);
+
+  ///
+  ///
+  ///
+  /// [foldWith], [foldTogether]
+  ///
+  ///
+  ///
+
+  ///
+  ///
+  /// [foldWith]
+  /// [foldTogether]
+  ///
+  S foldWith<S, T>(
+    Iterable<T> another,
+    S initialValue,
+    Forcer<S, I, T> companion,
+  ) =>
+      length == another.length
+          ? iterator.pairFold(initialValue, another.iterator, companion)
+          : throw StateError(FErrorMessage.iterableSizeInvalid);
+
+  S foldTogether<E, S>(
+    S initialValue,
+    Iterable<E> another,
+    Companion<S, I> companion,
+    Companion<S, E> companionAnother,
+    Collapser<S> collapse,
+  ) =>
+      length == another.length
+          ? iterator.pairFold(
+              initialValue,
+              another.iterator,
+              (value, a, b) => collapse(
+                value,
+                companion(value, a),
+                companionAnother(value, b),
+              ),
+            )
+          : throw StateError(FErrorMessage.iterableSizeInvalid);
+
+  ///
+  ///
+  ///
+  ///
+  /// [cardinality]
+  ///
+  ///
+  ///
+  ///
+
+  ///
+  /// [cardinality]
+  ///
+  int get cardinality => toSet().length;
+
+  ///
+  ///
+  ///
+  ///
+  ///
+  ///
+  /// [chunk]
+  /// [combination2]
+  ///
+  ///
+  ///
+  ///
+  ///
 
   ///
   /// [chunk]

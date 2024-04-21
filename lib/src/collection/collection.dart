@@ -8,8 +8,8 @@ import 'package:damath/src/typed_data/typed_data.dart';
 
 
 part 'iterator/iterator.dart';
-part 'iterator/iterto.dart';
-part 'iterator/iterwith.dart';
+part 'iterator/iteratorto.dart';
+part 'iterator/itertogether.dart';
 part 'list/iterable.dart';
 part 'list/list_linked.dart';
 part 'list/list.dart';

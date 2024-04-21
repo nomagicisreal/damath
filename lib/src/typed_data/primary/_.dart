@@ -2,6 +2,7 @@
 ///
 /// this file contains:
 ///
+/// [ObjectExtension]
 /// [NullableExtension]
 /// [BoolExtension]
 /// [TypeExtension]
@@ -18,15 +19,27 @@
 part of damath_typed_data;
 
 ///
+///
+///
+extension ObjectExtension<T> on T {
+  ///
+  /// [consuming]
+  /// [applying]
+  ///
+  void consuming(Consumer<T> consumer) => consumer(this);
+
+  T applying(Applier<T> applier) => applier(this);
+
+  S mapping<S>(Mapper<T, S> toVal) => toVal(this);
+}
+
+///
 /// nullable
 ///
 extension NullableExtension<T> on T? {
   ///
-  /// [nullOr]
   /// [nullOrMap]
   ///
-  S? nullOr<S>(S value) => this == null ? null : value;
-
   S? nullOrMap<S>(Mapper<T, S> toVal) => this == null ? null : toVal(this!);
 
   ///
@@ -49,9 +62,9 @@ extension NullableExtension<T> on T? {
   ///
   Iterable<S> expandTo<S>(
     Mapper<T, Iterable<S>> expanding, [
-    Supplier<Iterable<S>>? supplyNull,
+    Supplier<Iterable<S>>? onNull,
   ]) =>
-      this == null ? supplyNull?.call() ?? Iterable.empty() : expanding(this!);
+      this == null ? onNull?.call() ?? Iterable.empty() : expanding(this!);
 }
 
 ///
@@ -72,7 +85,7 @@ extension TypeExtension on Type {
   ///   - invoke typed [Iterator.current], but there is no current value
   /// ...
   ///
-  bool get isErrorTypeError => toString() == '_TypeError';
+  bool get isTypeError => toString() == '_TypeError';
 }
 
 ///
@@ -82,8 +95,8 @@ extension TypeExtension on Type {
 ///
 /// instance methods:
 /// [squared], [isPositive]
-/// [rangeClose], ...
-/// [constraintsClose], ...
+/// [isRangeClose], ...
+/// [isConstraintsClose], ...
 /// [digit], ...
 ///
 extension NumExtension on num {
@@ -135,13 +148,15 @@ extension NumExtension on num {
   }
 
   ///
-  /// [isPositiveOrZero]
+  /// [isNatural]
   /// [isPositive]
   /// [squared]
   ///
+  bool get isNatural => this > -1;
+
   bool get isPositive => this > 0;
 
-  bool get isPositiveOrZero => !isNegative;
+  bool get isNotPositive => this < 1;
 
   num get squared => this * this;
 
@@ -151,45 +166,81 @@ extension NumExtension on num {
   num powBy(num x) => math.pow(x, this);
 
   ///
-  /// [rangeClose]
-  /// [rangeOpen], [rangeOpenLower], [rangeOpenUpper]
+  /// [isPositiveClose], [isPositiveOpen], [isNotPositiveClose], [isNotPositiveOpen]
+  /// [isNegativeClose], [isNegativeOpen], [isNotNegativeClose]. [isNotNegativeOpen]
+  /// [isRangeClose], [isRangeOpen], [isRangeOpenLower], [isRangeOpenUpper]
+  /// [isOutsideClose], [isOutsideOpen], [isOutsideOpenLower], [isOutsideOpenUpper]
+  /// [isConstraintsClose], [isConstraintsOpen]
+  /// [isBoundClose], [isBoundOpen]
   ///
-  /// [outsideClose]
-  /// [outsideOpen], [outsideOpenLower], [outsideOpenUpper]
   ///
+
+  ///
+  /// positive
+  ///
+  bool isPositiveClose(num upper) => this > 0 && this <= upper;
+
+  bool isPositiveOpen(num upper) => this > 0 && this < upper;
+
+  bool isNotPositiveClose(num upper) => this <= 0 || this > upper;
+
+  bool isNotPositiveOpen(num upper) => this <= 0 || this >= upper;
+
+  ///
+  /// negative
+  ///
+  bool isNegativeClose(num lower) => lower <= this && this < 0;
+
+  bool isNegativeOpen(num lower) => lower < this && this < 0;
+
+  bool isNotNegativeClose(num lower) => lower > this || this >= 0;
+
+  bool isNotNegativeOpen(num lower) => lower >= this || this >= 0;
 
   /// [ lower, upper ]
-  bool rangeClose(num lower, num upper) => this >= lower && this <= upper;
-
   /// ( lower, upper )
   /// ( lower, upper ]
   /// [ lower, upper )
-  bool rangeOpen(num lower, num upper) => this > lower && this < upper;
+  bool isRangeClose(num lower, num upper) => this >= lower && this <= upper;
 
-  bool rangeOpenLower(num lower, num upper) => this > lower && this <= upper;
+  bool isRangeOpen(num lower, num upper) => this > lower && this < upper;
 
-  bool rangeOpenUpper(num lower, num upper) => this >= lower && this < upper;
+  bool isRangeOpenLower(num lower, num upper) => this > lower && this <= upper;
 
-  ///
-  /// reverse to range
-  ///
-  bool outsideClose(num lower, num upper) => this <= lower || this >= upper;
-
-  bool outsideOpen(num lower, num upper) => this < lower || this > upper;
-
-  bool outsideOpenLower(num lower, num upper) => this < lower || this >= upper;
-
-  bool outsideOpenUpper(num lower, num upper) => this <= lower || this > upper;
+  bool isRangeOpenUpper(num lower, num upper) => this >= lower && this < upper;
 
   ///
-  /// [constraintsClose]
-  /// [constraintsOpen]
+  /// outside
   ///
-  bool constraintsClose(int start, int end, [int from = 0]) =>
+  bool isOutsideClose(num lower, num upper) => this <= lower || this >= upper;
+
+  bool isOutsideOpen(num lower, num upper) => this < lower || this > upper;
+
+  bool isOutsideOpenLower(num lower, num upper) =>
+      this < lower || this >= upper;
+
+  bool isOutsideOpenUpper(num lower, num upper) =>
+      this <= lower || this > upper;
+
+  ///
+  /// constrains
+  ///
+  bool isConstraintsClose(int start, int end, [int from = 0]) =>
       from <= start && start < end && end <= this;
 
-  bool constraintsOpen(int start, int end, [int from = 0]) =>
+  bool isConstraintsOpen(int start, int end, [int from = 0]) =>
       from < start && start < end && end < this;
+
+  ///
+  /// bound
+  ///
+  bool isBoundClose(int start, int? end, [int from = 0]) => end == null
+      ? from <= start && start < this
+      : from <= start && start < end && end <= this;
+
+  bool isBoundOpen(int start, int? end, [int from = 0]) => end == null
+      ? from <= start && start < this
+      : from < start && start < end && end < this;
 }
 
 ///

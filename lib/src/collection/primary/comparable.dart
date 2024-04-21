@@ -6,6 +6,8 @@
 /// [IterableComparable]
 /// [ListComparable]
 ///
+///
+///
 part of damath_collection;
 // ignore_for_file: curly_braces_in_flow_control_structures
 
@@ -16,6 +18,7 @@ part of damath_collection;
 ///
 /// instance methods:
 /// [isSorted], ...
+/// [consecutiveCounted], ...
 ///
 ///
 extension IteratorComparable<C extends Comparable> on Iterator<C> {
@@ -79,6 +82,18 @@ extension IteratorComparable<C extends Comparable> on Iterator<C> {
   /// [_ternarateFor]
   /// in convention, the validation for [PredicatorFusionor] should pass in order of (lower, upper)
   ///
+  static PredicatorFusionor<C> _validFor<C extends Comparable>(
+    bool increase, [
+    bool strictly = false,
+  ]) =>
+      strictly
+          ? increase
+              ? isIncrease
+              : isDecrease
+          : increase
+              ? notDecrease
+              : notIncrease;
+
   static PredicatorFusionor<C> _invalidFor<C extends Comparable>(
     bool increase, [
     bool strictly = false,
@@ -98,10 +113,15 @@ extension IteratorComparable<C extends Comparable> on Iterator<C> {
 
   ///
   /// [isSorted]
-  /// [checkSortedForSupply]
   ///
-  bool isSorted(bool increase) => !exist(_invalidFor(increase));
+  bool isSorted(bool increase, [bool identical = false]) =>
+      !exist(_invalidFor(increase, identical));
 
+  ///
+  /// [checkSorted]
+  /// [checkSortedForSupply]
+  /// [checkSortedForListen]
+  ///
   void checkSorted([bool increase = true]) {
     if (!isSorted(increase)) {
       throw StateError(FErrorMessage.comparableDisordered);
@@ -121,27 +141,14 @@ extension IteratorComparable<C extends Comparable> on Iterator<C> {
 
 ///
 ///
-///
-/// [rangeIn], ...
+/// instance methods:
 /// [mergeSorted], ...
+/// [isOrdered], ...
+/// [permutations], ...
+/// [consecutive], ...
 ///
 ///
 extension IterableComparable<C extends Comparable> on Iterable<C> {
-  ///
-  /// [rangeIn]
-  ///
-  bool rangeIn(
-    C lower,
-    C upper, {
-    bool increase = true,
-    bool strictly = false,
-  }) =>
-      iterator.checkSortedForSupply(() {
-        final validate = IteratorComparable._invalidFor(increase, strictly);
-        assert(validate(lower, upper));
-        return validate(lower, first) && validate(last, upper);
-      });
-
   ///
   ///
   /// [mergeSorted]
@@ -149,7 +156,7 @@ extension IterableComparable<C extends Comparable> on Iterable<C> {
   ///
   void mergeSorted(Iterable<C> another, [bool increase = true]) =>
       iterator.checkSortedForListen(
-        () => iterator.mergeWith(
+        () => iterator.pairMerge(
           another.iterator.checkSortedForSupply(
             () => another.iterator,
             increase,
@@ -160,6 +167,84 @@ extension IterableComparable<C extends Comparable> on Iterable<C> {
         ),
         increase,
       );
+
+  ///
+  /// [isOrdered]
+  ///
+  bool isOrdered([bool strictly = false]) =>
+      !iterator.existEvery(IteratorComparable._validFor(true, strictly)) ||
+      !iterator.existEvery(IteratorComparable._validFor(false, strictly));
+
+  ///
+  /// [rangeIn]
+  /// [boundIn]
+  ///
+  bool rangeIn(
+    C lower,
+    C upper, [
+    bool increase = true,
+    bool strictly = false,
+  ]) =>
+      iterator.checkSortedForSupply(() {
+        final validate = IteratorComparable._invalidFor(increase, strictly);
+        return validate(lower, upper)
+            ? validate(lower, first) && validate(last, upper)
+            : throw StateError(FErrorMessage.iterableBoundaryInvalid);
+      });
+
+  bool boundIn(
+    C lower,
+    C? upper, {
+    bool increase = true,
+    bool strictly = false,
+  }) =>
+      upper != null
+          ? rangeIn(lower, upper, increase, strictly)
+          : iterator.checkSortedForSupply(
+              () => IteratorComparable._invalidFor(increase, strictly)(
+                  lower, first),
+            );
+
+  ///
+  /// [permutations]
+  ///
+  int permutations([bool requireIdentical = false]) {
+    if (!isOrdered(requireIdentical)) {
+      throw StateError(FErrorMessage.comparableDisordered);
+    }
+    if (requireIdentical) return length.factorial;
+
+    final iterator = this.iterator..moveNext();
+    var previous = iterator.current;
+    var val = 1;
+    var frequency = 1;
+    for (var i = 2; iterator.moveNext(); i++) {
+      val *= i;
+      if (previous == iterator.current) {
+        frequency++;
+        continue;
+      }
+      if (frequency > 1) val ~/= frequency.factorial;
+      previous = iterator.current;
+      frequency = 1;
+    }
+    if (frequency > 1) val ~/= frequency.factorial;
+    return val;
+  }
+
+  ///
+  /// [consecutive]
+  /// [consecutiveOccurred]
+  ///
+  Iterable<(C, int)> consecutive([bool onlyRepeated = true]) => isOrdered(false)
+      ? onlyRepeated
+          ? iterator.consecutiveRepeated
+          : iterator.consecutiveCounted
+      : throw StateError(FErrorMessage.comparableDisordered);
+
+  Iterable<int> get consecutiveOccurred => isOrdered(false)
+      ? iterator.consecutiveOccurred
+      : throw StateError(FErrorMessage.comparableDisordered);
 
 // ///
 // /// [groupToIterable]
@@ -193,14 +278,16 @@ extension IterableComparable<C extends Comparable> on Iterable<C> {
 /// [mergeSorted], ...
 ///
 extension ListComparable<C extends Comparable> on List<C> {
+  // static Iterable<List<C>> permutations<C extends Comparable>(List<C> list)
+
   ///
   /// [indexSearch], (binary search)
   ///
-  int indexSearch(C value, [bool requireIncrease = true]) {
-    assert(iterator.isSorted(requireIncrease));
+  int indexSearch(C value, [bool requireIncreased = true]) {
+    assert(iterator.isSorted(requireIncreased));
     var min = 0;
     var max = length;
-    final ternarate = IteratorComparable._ternarateFor(requireIncrease);
+    final ternarate = IteratorComparable._ternarateFor(requireIncreased);
     while (min < max) {
       final mid = min + ((max - min) >> 1);
       switch (ternarate(this[mid], value)) {
@@ -359,7 +446,7 @@ extension ListComparable<C extends Comparable> on List<C> {
   ///
   ///
   C percentile(double value) {
-    if (!value.rangeClose(0, 1)) {
+    if (!value.isRangeClose(0, 1)) {
       throw StateError(FErrorMessage.percentileOutOfBoundary);
     }
     late final C element;
@@ -404,123 +491,49 @@ extension ListComparable<C extends Comparable> on List<C> {
       });
 
   ///
-  /// [sortMerge] is slower than [sort] and collection/collection/[mergeSort] for large list
+  /// [sortMerge] is slower than [sort],
+  /// but faster than collection/collection/[mergeSort] or flutter/foundation/[mergeSort]
   ///
+  /// for sorting a 1e5 elements list in 1e2 times,
+  /// this function cost 2.92 seconds, while sort cost 2.42 seconds (test at 04/22),
+  /// it doesn't make sense if merge sort has lower time complexity than quick sort.
+  ///
+  @Deprecated("it's slower than build-in sort")
   void sortMerge([bool increasing = true]) {
     final n = length;
-    final space = List.filled(n, this[0]);
+    final space = List.filled(n - 1, this[0]);
     final keepFirst = increasing
         ? IteratorComparable.isIncrease
         : IteratorComparable.isDecrease;
 
     ///
-    /// sort for every 2 element, 4 element, 8 element
+    /// sort for every 2 element, 4 element, 8 element ...
     ///
-    var remainder = n % 16;
+    var remainder = n % 32;
     _Sort.forEverySublist2(this, keepFirst, n);
     _Sort.forEverySublist4(this, keepFirst, remainder % 4, n);
-    _Sort.forEverySublist8(this, keepFirst, remainder % 8, n);
-    // print(this);
-    // _Sort.forEverySublist16(this, keepFirst, remainder, n, space);
+    _Sort.forEverySublist8(this, space, keepFirst, remainder % 8, n);
+    _Sort.forEverySublist16(this, space, keepFirst, remainder % 16, n);
+    _Sort.forEverySublist32(this, space, keepFirst, remainder, n);
 
     ///
     /// sort for every chunked element
     ///
-    var sorted = 8;
-    // var sorted = 16;
-    var i = 0;
-    var boundary = 0;
+    var sorted = 32;
     for (var chunk = sorted << 1; chunk < n; sorted = chunk, chunk <<= 1) {
       remainder = n % chunk;
-      boundary = n - remainder;
-      for (i = 0; i < boundary; i += chunk) {
-        _sortMerge(space, i, i + sorted, i + chunk, keepFirst);
-      }
-      if (remainder > sorted) {
-        _sortMerge(space, boundary, boundary + sorted, n, keepFirst);
-      }
+      final boundary = n - remainder;
+      _Sort.mergeSortPreempt(this, space, keepFirst, sorted, chunk, boundary);
+
+      if (remainder < sorted + 1) continue;
+      _Sort.mergeSortPreemptRemain(this, space, keepFirst, sorted, boundary, n);
     }
 
     ///
-    /// merge(sorted sublist, remain sublist)
+    /// sort for final chunked
     ///
-    if (sorted < n) _sortMerge(space, 0, sorted, n, keepFirst);;
-  }
-
-  ///
-  /// [_sortMerge] is a function that retrieves the current list values range from [start] to [end],
-  /// and assert that the sublist from [start] to [mid] and [mid] to [end] are sorted.
-  ///
-  /// [tempt] is a cache storing sorted values.
-  /// its position is according to current list due to the convenience of reassignment.
-  /// below is the variables inside the function:
-  ///   - [i] is the dynamic index that represent the first sorted part ([start] to [mid]).
-  ///   - [j] is the dynamic index that represent the second sorted part ([mid] to [end]).
-  ///   - [k] is the dynamic index that going from [start] to [end] for current list or [tempt]
-  ///
-  /// it's a general way but not efficient enough,
-  /// because [_sortMerge] first retrieve values into local variables,
-  /// and then store cache values into [tempt], retrieving values back to current list; its time complexity is O(2n).
-  /// while some implementation in [sortMerge] retrieve values into local variables, too
-  /// but directly reassign those values back to current list without [tempt]; its time complexity is O(n).
-  /// To optimize , trying to implement more chunks without [tempt]
-  ///
-  void _sortMerge(
-    List<C> tempt,
-    int start,
-    int mid,
-    int end,
-    PredicatorFusionor<C> keepFirst,
-  ) {
-    var i = start;
-    var j = mid;
-    var k = start;
-
-    var iElement = this[i++];
-    var jElement = this[j++];
-
-    void assignReverse() {
-      i--;
-      j = mid;
-      k = end;
-      while (j > i) this[--k] = this[--j];
-    }
-
-    late final int kStart;
-    for (; true; iElement = this[i++]) {
-      if (keepFirst(jElement, iElement)) {
-        if (j == end) {
-          assignReverse();
-          this[i] = jElement;
-          return;
-        }
-        kStart = k = i - 1;
-        tempt[kStart] = jElement;
-        jElement = this[j++];
-        break;
-      }
-      if (i == mid) return;
-    }
-
-    while (true) {
-      if (keepFirst(iElement, jElement)) {
-        tempt[++k] = iElement;
-        if (i == mid) {
-          j--;
-
-          for (k = kStart; k < j; k++) this[k] = tempt[k];
-          return;
-        }
-        iElement = this[i++];
-      } else {
-        tempt[++k] = jElement;
-        if (j == end) {
-          assignReverse();
-          while (k > kStart) this[--k] = tempt[k];
-          return;
-        }
-        jElement = this[j++];
-      }
-    }
+    if (sorted == n) return;
+    _Sort.mergeSortArrange(this, space, keepFirst, 0, sorted, n);
+    // _Sort.mergeSortPreemptFinal(this, space, keepFirst, sorted, n);
   }
 }

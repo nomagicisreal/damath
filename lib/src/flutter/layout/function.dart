@@ -692,19 +692,19 @@ extension FOnAnimateMatrix4 on Matrix4 {
   static Matrix4 scaling(Matrix4 matrix4, Point3 value) =>
       matrix4.scaledOf(value);
 
-// with mapper
-  static OnAnimateMatrix4 mapTranslating(Applier<Point3> mapper) =>
+// with mapping
+  static OnAnimateMatrix4 mapTranslating(Applier<Point3> mapping) =>
           (matrix4, value) => matrix4
         ..identityPerspective
-        ..translateOf(mapper(value));
+        ..translateOf(mapping(value));
 
-  static OnAnimateMatrix4 mapRotating(Applier<Point3> mapper) =>
+  static OnAnimateMatrix4 mapRotating(Applier<Point3> mapping) =>
           (matrix4, value) => matrix4
         ..setRotation(
-            (Matrix4.identity()..rotateOf(mapper(value))).getRotation());
+            (Matrix4.identity()..rotateOf(mapping(value))).getRotation());
 
-  static OnAnimateMatrix4 mapScaling(Applier<Point3> mapper) =>
-          (matrix4, value) => matrix4.scaledOf(mapper(value));
+  static OnAnimateMatrix4 mapScaling(Applier<Point3> mapping) =>
+          (matrix4, value) => matrix4.scaledOf(mapping(value));
 
   // with fixed value
   static OnAnimateMatrix4 fixedTranslating(Point3 fixed) =>

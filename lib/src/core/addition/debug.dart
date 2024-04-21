@@ -49,11 +49,13 @@ abstract interface class FErrorMessage {
   const FErrorMessage();
 
   ///
-  /// iterator
+  /// iterator, iterable
   ///
   static const String iteratorNoElement = 'iterator no element';
   static const String iteratorElementNotFound = 'iterator element not found';
   static const String iteratorElementNotNest = 'iterator element not nested';
+  static const String iterableBoundaryInvalid = 'iterable boundary invalid';
+  static const String iterableSizeInvalid = 'iterable size invalid';
 
   ///
   /// comparable
@@ -67,8 +69,7 @@ abstract interface class FErrorMessage {
   static const String vertexDataCannotAssignDirectly =
       'cannot assign data directly';
   static const String vertexDataRequiredNotNull = 'data require not null';
-  static const String vertexDataLazyNotInitialized =
-      'lazy data not been initialized';
+  static const String vertexDataLazyNotInited = 'lazy data not been inited';
 
   ///
   /// general
@@ -83,11 +84,15 @@ abstract interface class FErrorMessage {
   /// others
   ///
   static const String indexOutOfBoundary = 'index out of boundary';
-  static const String iterableConstraintsOutOfBoundary =
-      'iterable constraints out of boundary';
   static const String generateByNegative = 'invalid to generate by negative';
   static const String modifyImmutable = 'cannot modify immutable value';
   static const String percentileOutOfBoundary = 'percentile out of boundary';
+  static const String unsupportedSwitchCase = 'unsupported switch case';
+  static const String intFactorialOverflow =
+      'integer factorial over 20 require BigInt';
+  static const String numberNatural = 'number is natural';
+
+  static const String regexNotMatchAny = 'regex not match any';
 
   ///
   ///
@@ -110,15 +115,21 @@ abstract interface class FErrorMessage {
   static String intBinomialCoefficient(int n, int k) =>
       'invalid binomial coefficient argument($n, $k)';
 
-  static String intPartition(int m) => 'cannot partition negative integer: $m';
+  static String intPartitionM(int m) => 'cannot partition negative integer: $m';
 
-  static String intPartitionGroup(int m, int n) =>
+  static String intPartitionN(int m, int n) =>
       'it is impossible to partition $m into $n group';
 
   static String invalidInteger(int n) => 'invalid integer: $n';
 
   static String invalidIntegerFromBigInt(BigInt i) =>
       'invalid int from BigInt: $i';
+
+  ///
+  /// set
+  ///
+  static String setNotIdentical<K>(Set<K> a, Set<K> b) =>
+      'set not identical:\n$a\n$b';
 }
 
 ///

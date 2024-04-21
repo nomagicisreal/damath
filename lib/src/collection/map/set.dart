@@ -64,7 +64,7 @@ extension SetExtension<K> on Set<K> {
   ///   each of the groups is identical on value
   ///
   bool consistentBy<E, V>(Mapper<K, E> toKey, Mapper<K, V> toVal) => !iterator
-      .existAnyForEachGroup(toKey, toVal, MapExtension.predicateInputYet);
+      .existAnyToEachGroup(toKey, toVal, MapExtension.predicateInputYet);
 
   ///
   /// [complementTo]

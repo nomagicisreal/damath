@@ -1,10 +1,8 @@
-import 'package:collection/collection.dart';
 import 'package:damath/src/collection/collection.dart';
 import 'package:damath/src/typed_data/typed_data.dart';
 
 void main() async {
   final watch = Stopwatch();
-  // print(list);
   print('start');
 
   watch.start();
@@ -22,7 +20,6 @@ void main() async {
   print('end');
 }
 
-// final list = RandomExtension.listDoubleInt(1e7.toInt());
 final list = RandomExtension.sample(1e5.toInt());
 
 String way1() {
@@ -51,7 +48,7 @@ String way2() {
 String way3() {
   var result = <double>[];
   for (var i = 1e2; i > 1; i--) {
-    mergeSort(list..shuffle());
+    // mergeSort(list..shuffle());
     result = list;
   }
   // throw UnimplementedError();

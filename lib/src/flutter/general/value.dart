@@ -376,9 +376,9 @@ extension KMapperCubicPointsPermutation on Applier<Map<Offset, List<Offset>>> {
         ),
       );
 
-  static Applier<Map<Offset, List<Offset>>> of(Applier<List<Offset>> mapper) =>
+  static Applier<Map<Offset, List<Offset>>> of(Applier<List<Offset>> mapping) =>
       (points) => points
-          .map((points, cubicPoints) => MapEntry(points, mapper(cubicPoints)));
+          .map((points, cubicPoints) => MapEntry(points, mapping(cubicPoints)));
 }
 
 ///
