@@ -206,7 +206,7 @@ abstract interface class KCore {
 
   ///
   ///
-  /// partition, see also [IntExtension.partition]
+  /// partition, see also [CountingExtension.partition]
   ///
   /// let m be the index of outer list
   /// when [m] == 2,
@@ -240,7 +240,7 @@ abstract interface class KCore {
 
   ///
   ///
-  /// partition set, see also [IntExtension.partitionSet]
+  /// partition set, see also [CountingExtension.partitionSet]
   ///
   /// let m be the index of outer list
   /// when [m] == 2,

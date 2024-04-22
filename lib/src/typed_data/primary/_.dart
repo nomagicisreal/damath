@@ -88,6 +88,10 @@ extension TypeExtension on Type {
   bool get isTypeError => toString() == '_TypeError';
 }
 
+// extension RangeErrorExtension on RangeError {
+//   bool get isNotInInclusiveRange => message == ;
+// }
+
 ///
 ///
 /// static methods:

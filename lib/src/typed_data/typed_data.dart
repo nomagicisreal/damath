@@ -14,9 +14,10 @@ part 'general/dataframe.dart';
 part 'general/direction.dart';
 part 'general/matrix.dart';
 
+part 'primary/_.dart';
 part 'primary/double.dart';
 part 'primary/integer.dart';
-part 'primary/_.dart';
+part 'primary/integer_counting.dart';
 part 'primary/time.dart';
 part 'primary/string.dart';
 

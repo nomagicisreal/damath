@@ -1,33 +1,41 @@
-import 'package:damath/src/collection/collection.dart';
+import 'package:damath/src/core/core.dart';
 import 'package:damath/src/typed_data/typed_data.dart';
+
+void comparing(Stopwatch watch, int count, Generator<String> process) {
+  print('start');
+  for (var i = 1; i <= count; i++) {
+    watch.start();
+    print('way $i: ${process(i)} in ${watch.elapsed}');
+    watch.reset();
+  }
+  print('end');
+}
 
 void main() async {
   final watch = Stopwatch();
-  print('start');
-
-  watch.start();
-  print('way 1: ${way1()} in ${watch.elapsed}');
-  watch.reset();
-
-  watch.start();
-  print('way 2: ${way2()} in ${watch.elapsed}');
-  watch.reset();
-
-  // watch.start();
-  // print('way 3: ${way3()} in ${watch.elapsed}');
-  // watch.reset();
-
-  print('end');
+  comparing(
+    watch,
+    2,
+    (i) => switch (i) {
+      1 => way1(),
+      2 => way2(),
+      3 => way3(),
+      _ => throw UnimplementedError(),
+    },
+  );
 }
 
 final list = RandomExtension.sample(1e5.toInt());
 
 String way1() {
-  var result = <double>[];
-  for (var i = 1e2; i > 1; i--) {
-    result = list
-      ..shuffle()
-      ..sort();
+  dynamic result;
+  for (var i = 1; i < 1e5; i++) {
+    // result = list
+    //   ..shuffle()
+    //   ..sort();
+    result = CountingExtension.partitionSpace<int>(i + 100, i + 51, true).mapping(
+      (value) => CountingExtension.partitionByIterative(value, i + 100, i + 51),
+    );
   }
   // throw UnimplementedError();
   return 'finished';
@@ -35,19 +43,22 @@ String way1() {
 }
 
 String way2() {
-  var result = <double>[];
-  for (var i = 1e2; i > 1; i--) {
-    result = list
-      ..shuffle()
-      ..sortMerge();
+  dynamic result;
+  for (var i = 1; i < 1e5; i++) {
+    // result = list
+    //   ..shuffle()
+    //   ..sortMerge();
+    result = CountingExtension.partitionSpace<int>(i + 100, i + 51).mapping(
+      (value) => CountingExtension.partitionByRecursive(value, i + 100, i + 51),
+    );
   }
   return 'finished';
   // return result.toString();
 }
 
 String way3() {
-  var result = <double>[];
-  for (var i = 1e2; i > 1; i--) {
+  dynamic result;
+  for (var i = 1; i < 1e5; i++) {
     // mergeSort(list..shuffle());
     result = list;
   }

@@ -98,3 +98,10 @@ const induction = '';
 // Tree: n (vertices in tree include root, height exclude root, n <= 2^(tree.height + 1) - 1)
 //
 //
+
+const counting = '';
+//
+//
+//
+//
+//
