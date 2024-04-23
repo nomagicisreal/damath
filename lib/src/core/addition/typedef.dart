@@ -54,7 +54,7 @@ typedef PredicatorGenerator<T> = bool Function(T value, int index);
 /// ternarator
 ///
 typedef Ternarator<T> = bool? Function(T value);
-typedef TernaratorCombiner<T> = bool? Function(T v1, T v2);
+typedef TernaratorFusionor<T> = bool? Function(T v1, T v2);
 
 
 ///
@@ -89,6 +89,7 @@ typedef Countable<T> = (int, T);
 typedef List2D<T> = List<List<T>>;
 typedef Differentiator<A, B> = int Function(A a, B b);
 typedef Lerper<T> = T Function(double t);
+typedef Applicator<T, E> = void Function(T element, Applier<E> apply);
 
 ///
 ///

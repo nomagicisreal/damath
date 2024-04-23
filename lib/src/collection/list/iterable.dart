@@ -15,6 +15,8 @@ part of damath_collection;
 /// [isVariationTo], ...
 /// [anyWith], ...
 ///
+/// [joinToLines], ...
+///
 /// [reduceTogether], ...
 ///
 /// [cloneIterable], ...
@@ -78,7 +80,8 @@ extension IterableExtension<I> on Iterable<I> {
   ///
   ///
 
-  void pair(Iterable<I> another, Intersector<I> paring, [Listener? onSizeDiff]) =>
+  void pair(Iterable<I> another, Intersector<I> paring,
+          [Listener? onSizeDiff]) =>
       length == another.length
           ? iterator.pair(another.iterator, paring)
           : onSizeDiff?.call();
@@ -163,6 +166,12 @@ extension IterableExtension<I> on Iterable<I> {
               (throw StateError(FErrorMessage.iterableSizeInvalid));
 
   ///
+  /// [joinToLines]
+  ///
+  String get joinToLines => join('\n');
+
+
+  ///
   ///
   /// [reduceTogether]
   ///
@@ -196,11 +205,20 @@ extension IterableExtension<I> on Iterable<I> {
 
   ///
   /// [cloneIterable]
+  /// [mapToListWhere]
   /// [takeOn]
   /// [subIterable]
   ///
   Iterable<I> get cloneIterable sync* {
     yield* this;
+  }
+
+  List<I> mapToListWhere(Predicator<I> test) {
+    final result = <I>[];
+    for (var element in this) {
+      if (test(element)) result.add(element);
+    }
+    return result;
   }
 
   Iterable<I> takeOn(Iterable<bool> where) => length == where.length

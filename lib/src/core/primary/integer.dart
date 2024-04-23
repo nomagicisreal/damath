@@ -289,6 +289,117 @@ extension IntExtension on int {
   }
 
   ///
+  /// [partition]
+  /// [partitionSet]
+  /// [partitionPredicate]
+  ///
+  ///
+
+  ///
+  /// [partition] returns the integer representing the possible partition in [n] groups for [m] equal elements.
+  ///
+  /// for example, when [m] = 7, [n] = 4,
+  /// this function return 3 because there are 3 possible partitions in 4 groups for 7:
+  ///   1. [4, 1, 1, 1]
+  ///   2. [3, 2, 1, 1]
+  ///   3. [2, 2, 2, 1]
+  /// for another example, when [m] = 5, [n] = null,
+  /// this function return 7 because there are 7 possible partitions for 5:
+  ///   1. [5]
+  ///   2. [4, 1]
+  ///   3. [3, 2]
+  ///   4. [3, 1, 1]
+  ///   5. [2, 2, 1]
+  ///   6. [2, 1, 1, 1]
+  ///   7. [1, 1, 1, 1, 1]
+  ///
+  static int partition(int m, [int? n]) {
+    if (m.isNegative) throw ArgumentError(FErrorMessage.intPartitionM(m));
+    if (n != null) {
+      if (n.isNotPositiveClose(m)) {
+        throw ArgumentError(FErrorMessage.intPartitionN(m, n));
+      }
+      return _partitionSet(m)
+          .map(IterableExtension.toLength)
+          .iterator
+          .toMapCounted[n]!;
+    }
+    var sum = 0;
+    for (var i = 1; i <= m; i++) {
+      sum += _partitionSet(m)
+          .map(IterableExtension.toLength)
+          .iterator
+          .toMapCounted[i]!;
+    }
+    return sum;
+  }
+
+  ///
+  /// [partitionSet] returns a list representing the possible partition set in [n] groups for [m] equal elements.
+  ///
+  /// for example, when [m] = 8, [n] = 4, this function returns a list with elements:
+  ///   - [5, 1, 1, 1]
+  ///   - [4, 2, 1, 1]
+  ///   - [3, 3, 1, 1]
+  ///   - [3, 2, 2, 1]
+  ///   - [2, 2, 2, 2]
+  /// for another example, when [m] = 3, [n] = null, this function returns a list with elements:
+  ///   - [3]
+  ///   - [2, 1]
+  ///   - [1, 1, 1]
+  ///
+  static Iterable<int> partitionSet(int m, [int? n]) sync* {
+    if (m.isNegative) throw ArgumentError(FErrorMessage.intPartitionM(m));
+    if (n != null) {
+      if (n.isNotPositiveClose(m)) {
+        throw ArgumentError(FErrorMessage.intPartitionN(m, n));
+      }
+      yield* _partitionSet(m).where((element) => element.length == n).flatted;
+    }
+    for (var i = 1; i <= m; i++) {
+      yield* _partitionSet(m)
+          .where(IterableIterable.predicateChildrenLength(i))
+          .flatted;
+    }
+  }
+
+  ///
+  /// [partitionPredicate] predicates if an [Iterable]<[int]> is a valid partition for [m] and [n].
+  ///
+  /// for example, when [m] = 4, [n] = 2,
+  /// this functions returns true only if [integers] is one of [3, 1], [1, 3], [2, 2].
+  ///
+  static bool partitionPredicate(Iterable<int> integers, int m, int n) {
+    if (m.isNotPositive) throw ArgumentError(FErrorMessage.intPartitionM(m));
+    if (n.isNotPositiveClose(m)) {
+      throw ArgumentError(FErrorMessage.intPartitionN(m, n));
+    }
+    return integers.length == n && integers.sum == m;
+  }
+
+
+  //
+  static Iterable<Iterable<int>> _partitionSet(int m) sync* {
+    final list = List.filled(m, 0);
+    list[0] = m;
+    yield list.take(1);
+    for (var k = 0; list[0] != 1; k++) {
+      var val = 0;
+      for (; k >= 0 && list[k] == 1; k--) {
+        val += list[k];
+      }
+      list[k]--;
+      val++;
+      for (; val > list[k]; k++) {
+        list[k + 1] = list[k];
+        val -= list[k];
+      }
+      list[k + 1] = val;
+      yield list.take(k + 2);
+    }
+  }
+
+  ///
   /// [isPrime]
   /// [isComposite]
   ///

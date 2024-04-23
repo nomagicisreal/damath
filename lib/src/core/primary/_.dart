@@ -41,7 +41,7 @@ extension NullableExtension<T> on T? {
   ///
   /// [nullOrMap]
   ///
-  S? nullOrMap<S>(Mapper<T, S> toVal) => this == null ? null : toVal(this!);
+  S? nullOrMap<S>(Mapper<T, S> toVal) => this == null ? null : toVal(this as T);
 
   ///
   /// [applyNotNullOr]
@@ -65,7 +65,7 @@ extension NullableExtension<T> on T? {
     Mapper<T, Iterable<S>> expanding, [
     Supplier<Iterable<S>>? onNull,
   ]) =>
-      this == null ? onNull?.call() ?? Iterable.empty() : expanding(this!);
+      this == null ? onNull?.call() ?? Iterable.empty() : expanding(this as T);
 }
 
 ///

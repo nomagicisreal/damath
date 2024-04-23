@@ -853,13 +853,13 @@ base class Point3 extends Point {
   bool operator <(covariant Point3 other) => super < other && dz < other.dz;
 
   @override
-  bool operator >(covariant Point3 other) => super > other && dz > other.dz;
+  bool operator >(covariant Point3 another) => super > another && dz > another.dz;
 
   @override
-  bool operator <=(covariant Point3 other) => super <= other && dz <= other.dz;
+  bool operator <=(covariant Point3 another) => super <= another && dz <= another.dz;
 
   @override
-  bool operator >=(covariant Point3 other) => super >= other && dz >= other.dz;
+  bool operator >=(covariant Point3 another) => super >= another && dz >= another.dz;
 
   @override
   Point3 operator ~/(covariant Point3 other) => Point3(

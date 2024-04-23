@@ -31,10 +31,6 @@ String way1() {
     // result = list
     //   ..shuffle()
     //   ..sort();
-    result =
-        CountingExtension.partitionSpace<int>(i + 100, i + 51, true).mapping(
-      (value) => CountingExtension.partitionByIterative(value, i + 100, i + 51),
-    );
   }
   // throw UnimplementedError();
   return 'finished';
@@ -47,9 +43,6 @@ String way2() {
     // result = list
     //   ..shuffle()
     //   ..sortMerge();
-    result = CountingExtension.partitionSpace<int>(i + 100, i + 51).mapping(
-      (value) => CountingExtension.partitionByRecursive(value, i + 100, i + 51),
-    );
   }
   return 'finished';
   // return result.toString();

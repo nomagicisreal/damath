@@ -78,7 +78,7 @@ extension ListExtension<T> on List<T> {
   ///
   ///
   /// consume
-  /// [addIf], [addWhen], [addWhenNotNull]
+  /// [addIf], [addWhen], [addIfNotNull]
   /// [addAllSupplyIfEmpty], [addAllSupplyIfNotEmpty], [addAllSupplyWhen]
   ///
   /// [update], [updateApply]
@@ -95,16 +95,16 @@ extension ListExtension<T> on List<T> {
   ///
   /// [addIf]
   /// [addWhen]
-  /// [addWhenNotNull]
+  /// [addIfNotNull]
   ///
   void addIf(Predicator<T> test, T element, [Consumer<T>? onNotAdd]) =>
       test(element) ? add(element) : onNotAdd?.call(element);
 
-  void addWhen(bool shouldAdd, T element, [Consumer<T>? onNotAdd]) =>
-      shouldAdd ? add(element) : onNotAdd?.call(element);
-
-  void addWhenNotNull(T? element, [Listener? onNull]) =>
+  void addIfNotNull(T? element, [Listener? onNull]) =>
       element != null ? add(element) : onNull?.call();
+
+  void addWhen(bool shouldAdd, Supplier<T> supply, [Consumer<T>? onNotAdd]) =>
+      shouldAdd ? add(supply()) : onNotAdd?.call(supply());
 
   ///
   /// [addAllSupplyIfEmpty]
@@ -144,6 +144,8 @@ extension ListExtension<T> on List<T> {
   /// [updateAllApply]
   /// [updateAllApplyByIndex]
   ///
+  /// [updateReduce]
+  ///
   void updateAll(T value) {
     for (var i = 0; i < length; i++) this[i] = value;
   }
@@ -154,6 +156,12 @@ extension ListExtension<T> on List<T> {
 
   void updateAllApplyByIndex(ApplierGenerator<T> applier) {
     for (var i = 0; i < length; i++) this[i] = applier(this[i], i);
+  }
+
+  void updateReduce(Reducer<T> reducing, List<T> another) {
+    for (var i = 0; i < another.length; i++) {
+      this[i] = reducing(this[i], another[i]);
+    }
   }
 
   ///
@@ -320,6 +328,8 @@ extension ListExtension<T> on List<T> {
   /// [cloneByOrder]
   ///
   List<T> clone([bool growable = false]) => List.of(this, growable: growable);
+
+  List<T> get cloneFixed => List.of(this, growable: false);
 
   List<T> cloneSwitch([int interval = 1]) =>
       [...sublist(interval), ...sublist(0, interval)];

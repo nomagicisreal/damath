@@ -35,8 +35,8 @@ base class PolynomialItemDecoration
   PolynomialItemDecoration(this.coefficient, this.exponent);
 
   @override
-  int compareTo(PolynomialItemDecoration other) =>
-      exponent.compareTo(other.exponent);
+  int compareTo(PolynomialItemDecoration another) =>
+      exponent.compareTo(another.exponent);
 
   @override
   PolynomialItemDecoration operator -() {

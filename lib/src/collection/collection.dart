@@ -4,7 +4,6 @@ import 'dart:math' as math;
 import 'dart:collection';
 
 import 'package:damath/src/core/core.dart';
-import 'package:damath/src/typed_data/typed_data.dart';
 
 
 part 'iterator/iterator.dart';

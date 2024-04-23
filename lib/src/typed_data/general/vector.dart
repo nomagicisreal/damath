@@ -22,15 +22,18 @@ abstract class _VectorOperatable<T, O>
   /// overrides
   ///
   
+  @override
   String toString() => 'Vector$_list';
 
   ///
   /// implementation for operatable
   ///
   
+  @override
   T operator [](int i) => _list[i];
 
   
+  @override
   void operator []=(int i, T value) => _list[i] = value;
 
   ///

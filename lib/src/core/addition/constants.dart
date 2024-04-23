@@ -5,7 +5,7 @@ part of damath_core;
 /// [primesIn100],
 /// [accumulatedIn100],
 /// [factorialIn20],
-/// [partitionsIn20], [partitionsSetIn8]
+/// [partitionsIn20], [partitionsSetIn6]
 ///
 /// [durationMilli1], ...
 ///
@@ -215,7 +215,7 @@ abstract interface class KCore {
   /// "[1, 1, 1]" indicates that there is only 1 way to partition integer 3 into, 1 group, 2 group, 3 group.
   ///
   ///
-  static const List<List<int>> partitionsIn20 = [
+  static const List2D<int> partitionsIn20 = [
     [1],
     [1, 1],
     [1, 1, 1],
@@ -236,110 +236,6 @@ abstract interface class KCore {
     [1, 9, 27, 47, 57, 58, 49, 40, 30, 22, 15, 11, 7, 5, 3, 2, 1, 1],
     [1, 9, 30, 54, 70, 71, 65, 52, 41, 30, 22, 15, 11, 7, 5, 3, 2, 1, 1],
     [1, 10, 33, 64, 84, 90, 82, 70, 54, 42, 30, 22, 15, 11, 7, 5, 3, 2, 1, 1],
-  ];
-
-  ///
-  ///
-  /// partition set, see also [CountingExtension.partitionSet]
-  ///
-  /// let m be the index of outer list
-  /// when [m] == 2,
-  /// "[[2], [1, 1]]" indicates the partitions set of 2:
-  /// 1. there is only 1 way to partition integer 2 into 1 group, 2.
-  /// 2. there is only 1 way to partition integer 2 into 2 group, 1 + 1.
-  /// when [m] == 4,
-  /// "[[4], [3, 1], [2, 2], ...]" indicates the partitions set of 4:
-  /// 1. there is only 1 way to partition integer 4 into, 1 group, 4.
-  /// 2. there are 2 way to partition integer 4 into, 2 group, 3 + 1 and 2 + 2.
-  /// 3. there is only 1 way to partition integer 4 into, 3 group, 2 + 1 + 1.
-  /// 4. there is only 1 way to partition integer 4 into, 4 group, 1 + 1 + 1 + 1.
-  ///
-  /// notice that the order for partitions start from maximum to minimum in the convenience of discussion,
-  /// and the permutation for each partition doesn't matters, which is also in the convenience of discussion.
-  ///
-  static const List<List<List<int>>> partitionsSetIn8 = [
-    [
-      [1]
-    ],
-    [
-      [2],
-      [1, 1],
-    ],
-    [
-      [3],
-      [2, 1],
-      [1, 1, 1],
-    ],
-    [
-      [4],
-      [3, 1],
-      [2, 2],
-      [2, 1, 1],
-      [1, 1, 1, 1], // 1 + 2 + 1 + 1
-    ],
-    [
-      [5],
-      [4, 1],
-      [3, 2],
-      [3, 1, 1],
-      [2, 2, 1],
-      [2, 1, 1, 1],
-      [1, 1, 1, 1, 1], // 1 + 2 + 2 + 1 + 1
-    ],
-    [
-      [6],
-      [5, 1],
-      [4, 2],
-      [3, 3],
-      [4, 1, 1],
-      [3, 2, 1],
-      [2, 2, 2],
-      [3, 1, 1, 1],
-      [2, 2, 1, 1],
-      [2, 1, 1, 1, 1],
-      [1, 1, 1, 1, 1, 1], // 1 + 3 + 3 + 2 + 1 + 1
-    ],
-    [
-      [7],
-      [6, 1],
-      [5, 2],
-      [4, 3],
-      [5, 1, 1],
-      [4, 2, 1],
-      [3, 3, 1],
-      [3, 2, 2],
-      [4, 1, 1, 1],
-      [3, 2, 1, 1],
-      [2, 2, 2, 1],
-      [3, 1, 1, 1, 1],
-      [2, 2, 1, 1, 1],
-      [2, 1, 1, 1, 1, 1],
-      [1, 1, 1, 1, 1, 1, 1], // 1 + 3 + 4 + 3 + 2 + 1 + 1
-    ],
-    [
-      [8],
-      [7, 1],
-      [6, 2],
-      [5, 3],
-      [4, 4],
-      [6, 1, 1],
-      [5, 2, 1],
-      [4, 3, 1],
-      [4, 2, 2],
-      [3, 3, 2],
-      [5, 1, 1, 1],
-      [4, 2, 1, 1],
-      [3, 3, 1, 1],
-      [3, 2, 2, 1],
-      [2, 2, 2, 2],
-      [4, 1, 1, 1, 1],
-      [3, 2, 1, 1, 1],
-      [2, 2, 1, 1, 1],
-      [3, 1, 1, 1, 1, 1],
-      [2, 2, 1, 1, 1, 1],
-      [2, 1, 1, 1, 1, 1, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1], // 1 + 4 + 5 + 5 + 3 + 2 + 1 + 1
-    ],
   ];
 
   ///

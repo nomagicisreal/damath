@@ -3,7 +3,9 @@
 /// this file contains:
 /// [Node]
 ///   |##[_INodeOneDimension]
-///   |##[_MixinNodeHiddenNext], ##[_MixinNodeNew], ##[_MixinNodeConstructNext]
+///   |##[_MixinNodeNew], ##[_MixinNodeHiddenNext], ##[_MixinNodeConstructNext]
+///   |##[_MixinNodeInsertCurrent]
+///   |##[_MixinNodeNextIterator]
 ///   |
 ///   |##[_MixinNodeDirect]
 ///   |-[_NodeDirect]
@@ -14,20 +16,20 @@
 ///   |   |   |-[_ImplNodeDirectAppendableFixed], [_ImplNodeDirectAppendableFixedNullable]
 ///   |   |   |-[_ImplNodeDirectAppendableMutable], [_ImplNodeDirectAppendableMutableNullable]
 ///   |   |
-///   |   |##[_MixinNodeDirectInsertable]
 ///   |   |-[_NodeDirectInsertable]
 ///   |      |##[_MixinNodeDirectInsertableByInvalid], [_MixinNodeDirectInsertableByInvalidComparator]
 ///   |      |
-///   |      |##[_MixinNodeDirectInsertableIterator]
-///   |      |-[_NodeDirectInsertableIterator]                                    |-[_QueueIterator]
-///   |      |   |-[_NodeQueueIteratorCompared]     >>     [QueteratorCompared]-|
-///   |      |   |-[_NodeQueueIterator]             >>             [Qurator]-|
+///   |      |##[_MixinNodeDirectInsertableIterator]                                  |-[_NodeQueueIterator]
+///   |      |-[_NodeDirectInsertableIterator]                                  |-[_Qurator]
+///   |      |   |-[_NodeQueueCompared]             >>     [QueteratorCompared]-|
+///   |      |   |-[_NodeQueue]                     >>                [Qurator]-|
 ///   |      ...
 ///   |
 ///   |##[_MixinNodeBidirect]
 ///   |-[_NodeBidirect] ...
 ///   |
 ///   |
+///
 ///
 ///
 ///
@@ -42,13 +44,6 @@ part of damath_structure;
 ///
 ///
 typedef NodeConstructor<T, N extends Node<T, N>> = N Function(T data, N? next);
-
-///
-///
-///
-///
-///
-///
 
 ///
 /// [next], ...(setter, getter)
@@ -115,22 +110,7 @@ abstract class _INodeOneDimension<T, N extends Node<T, N>>
   ///
   /// getter
   ///
-  int get length;
-}
-
-//
-mixin _MixinNodeHiddenNext<T, N extends Node<T, N>> on Node<T, N> {
-  @override
-  set next(covariant N? node) =>
-      throw StateError(FErrorMessage.nodeCannotAssignDirectly);
-
-  @override
-  N? get next => _child;
-
-  set _child(covariant N? node) =>
-      throw StateError(FErrorMessage.modifyImmutable);
-
-  N? get _child;
+  Object get length;
 }
 
 //
@@ -149,7 +129,22 @@ mixin _MixinNodeNew<T, N extends Node<T, N>> on Node<T, N> {
   NodeConstructor<T, N> get _construct;
 }
 
-//
+// hidden next
+mixin _MixinNodeHiddenNext<T, N extends Node<T, N>> on Node<T, N> {
+  @override
+  set next(covariant N? node) =>
+      throw StateError(FErrorMessage.nodeCannotAssignDirectly);
+
+  @override
+  N? get next => _next;
+
+  set _next(covariant N? node) =>
+      throw StateError(FErrorMessage.modifyImmutable);
+
+  N? get _next;
+}
+
+// construct next
 mixin _MixinNodeConstructNext<T, N extends Node<T, N>>
     on Node<T, N>, _MixinNodeNew<T, N> {
   N _constructNext(T data, Applier<N> applyNotNull) =>
@@ -163,6 +158,42 @@ mixin _MixinNodeConstructNext<T, N extends Node<T, N>>
       next == null
           ? _newIterable(iterable, companionNull)
           : applyNotNull(next!);
+}
+
+// insert current
+mixin _MixinNodeInsertCurrent<T, N extends Node<T, N>>
+    on
+        _MixinVertexHidden<T>,
+        _MixinNodeHiddenNext<T, N>,
+        _MixinNodeNew<T, N>,
+        _MixinNodeConstructNext<T, N>
+    implements IInsertable<T> {
+  void _insertCurrent(T data) {
+    _next = _construct(this.data, _next);
+    _data = data;
+  }
+
+  void _insertNext(T data, Applier<N> applyNotNull) =>
+      _next = _constructNext(data, applyNotNull);
+}
+
+//
+mixin _MixinNodeNextIterator<I, N extends _MixinNodeHiddenNext<I, N>>
+    on _MixinVertexHidden<I>, _MixinNodeHiddenNext<I, N>, Iterator<I> {
+  @override
+  I get current => _data ?? (throw StateError(FErrorMessage.iteratorNoElement));
+
+  @override
+  bool moveNext() {
+    final node = _next;
+    if (node == null) {
+      _data = null;
+      return false;
+    }
+    _data = node.data;
+    _next = node._next;
+    return true;
+  }
 }
 
 ///
@@ -238,19 +269,19 @@ sealed class _NodeDirect<T, N extends _NodeDirect<T, N>> extends Node<T, N>
   ///
   const _NodeDirect();
 
-  // generate
-  // factory _NodeDirect.generate(
-  //   int length,
-  //   Generator<T> generator,
-  //   NodeConstructor<T, N> construct,
-  // ) {
-  //   if (length.isNegative) throw RangeError(FErrorMessage.generateByNegative);
-  //   N? current;
-  //   for (var i = length - 1; i > -1; i--) {
-  //     current = construct(generator(i), current);
-  //   }
-  //   return current!;
-  // }
+// generate
+// factory _NodeDirect.generate(
+//   int length,
+//   Generator<T> generator,
+//   NodeConstructor<T, N> construct,
+// ) {
+//   if (length.isNegative) throw RangeError(FErrorMessage.generateByNegative);
+//   N? current;
+//   for (var i = length - 1; i > -1; i--) {
+//     current = construct(generator(i), current);
+//   }
+//   return current!;
+// }
 }
 
 ///
@@ -478,57 +509,14 @@ class _ImplNodeDirectAppendableMutableNullable<T>
 ///
 ///
 ///
-///
-/// insertable
-///
-///
-///
-///
-///
-///
-
-//
-mixin _MixinNodeDirectInsertable<T, N extends _NodeDirectInsertable<T, N>>
-    on
-        _MixinVertexHidden<T>,
-        _MixinNodeHiddenNext<T, N>,
-        _MixinNodeConstructNext<T, N>
-    implements IInsertable<T> {
-  ///
-  /// overrides
-  ///
-  @override
-  void insert(T element);
-
-  @override
-  void insertAll(Iterable<T> iterable) => iterable.iterator.consumeAll(insert);
-
-  ///
-  /// functions
-  ///
-  void _insertCurrent(T data) {
-    _child = _construct(this.data, _child);
-    _data = data;
-  }
-
-// void _insertNext(T element) => _child = _constructChild(
-//       data,
-//       (general) => general..insert(element),
-//     );
-}
-
-///
-///
-///
-///
 /// [_NodeDirectInsertable]
 ///   |##[_MixinNodeDirectInsertableByInvalid]
 ///   |##[_MixinNodeDirectInsertableByInvalidComparator]
 ///   |
 ///   |##[_MixinNodeDirectInsertableIterator]
-///   |-[_NodeDirectInsertableIterator]                               |-[_QueueIterator]
-///   |   |-[_NodeQueueIteratorCompared]     >>     [QueteratorCompared]-|
-///   |   |-[_NodeQueueIterator]             >>             [Qurator]-|
+///   |-[_NodeDirectInsertableIterator]                               |-[_Qurator]
+///   |   |-[_NodeQueueCompared]     >>     [QueteratorCompared]-|
+///   |   |-[_NodeQueue]             >>             [Qurator]-|
 ///
 ///
 ///
@@ -544,7 +532,7 @@ abstract class _NodeDirectInsertable<T, N extends _NodeDirectInsertable<T, N>>
         _MixinNodeHiddenNext<T, N>,
         _MixinNodeNew<T, N>,
         _MixinNodeConstructNext<T, N>,
-        _MixinNodeDirectInsertable<T, N> {
+        _MixinNodeInsertCurrent<T, N> {
   ///
   /// constructor
   ///
@@ -558,16 +546,11 @@ mixin _MixinNodeDirectInsertableByInvalid<C extends Comparable,
   @override
   void insert(C element, [int? invalid]) => data.compareTo(element) == invalid
       ? _insertCurrent(element)
-      : _insertNext(element, invalid);
+      : _insertNext(element, (node) => node..insert(element, invalid!));
 
   @override
   void insertAll(Iterable<C> iterable, [int? invalid]) =>
       iterable.iterator.consumeAll((element) => insert(element, invalid));
-
-  void _insertNext(C element, [int? invalid]) => _child = _constructNext(
-        element,
-        (node) => node..insert(element, invalid!),
-      );
 }
 
 //
@@ -578,19 +561,16 @@ mixin _MixinNodeDirectInsertableByInvalidComparator<T,
   void insert(T element, [int? invalid, Comparator<T>? comparator]) =>
       comparator!(data, element) == invalid
           ? _insertCurrent(element)
-          : _insertNext(element, invalid, comparator);
+          : _insertNext(
+              element,
+              (node) => node..insert(element, invalid!, comparator),
+            );
 
   @override
   void insertAll(Iterable<T> iterable,
           [int? invalid, Comparator<T>? comparator]) =>
       iterable.iterator
           .consumeAll((element) => insert(element, invalid, comparator));
-
-  void _insertNext(T element, [int? invalid, Comparator<T>? comparator]) =>
-      _child = _constructNext(
-        element,
-        (node) => node..insert(element, invalid!, comparator!),
-      );
 }
 
 //
@@ -598,29 +578,14 @@ mixin _MixinNodeDirectInsertableIterator<I,
         N extends _NodeDirectInsertableIterator<I, N>>
     on _NodeDirectInsertable<I, N> implements IIteratorPrevious<I> {
   ///
-  /// overrides
+  /// see also [_MixinNodeBidirectInsertableIterator.movePrevious]
   ///
-  @override
-  I get current => _data ?? (throw StateError(FErrorMessage.iteratorNoElement));
-
-  @override
-  bool moveNext() {
-    final node = _child;
-    if (node == null) {
-      _data = null;
-      return false;
-    }
-    _data = node.data;
-    _child = node._child;
-    return true;
-  }
-
   @override
   bool movePrevious() {
     final data = _data;
     if (data == null) return false;
     _data = null;
-    _child = _construct(data, _child);
+    _next = _construct(data, _next);
     return true;
   }
 
@@ -634,21 +599,19 @@ mixin _MixinNodeDirectInsertableIterator<I,
 ///
 ///
 /// [_NodeDirectInsertableIterator]
-///     |-[_NodeQueueIteratorCompared]
-///     |-[_NodeQueueIterator]
+///     |-[_NodeQueueCompared]
+///     |-[_NodeQueue]
 ///
 ///
-///
-///
-///
-
 ///
 ///
 ///
 abstract class _NodeDirectInsertableIterator<I,
         N extends _NodeDirectInsertableIterator<I, N>>
     extends _NodeDirectInsertable<I, N>
-    with _MixinNodeDirectInsertableIterator<I, N> {
+    with
+        _MixinNodeDirectInsertableIterator<I, N>,
+        _MixinNodeNextIterator<I, N> {
   ///
   /// overrides
   ///
@@ -656,47 +619,47 @@ abstract class _NodeDirectInsertableIterator<I,
   I? _data;
 
   @override
-  N? _child;
+  N? _next;
 
   ///
   /// constructor
   ///
-  _NodeDirectInsertableIterator(this._data, [this._child]);
+  _NodeDirectInsertableIterator(this._data, [this._next]);
 
   _NodeDirectInsertableIterator._fromIterable(
     Iterable<I> iterable,
     Mapper<I, N> initialize,
     Companion<N, I> reducing,
-  ) : _child = iterable.iterator.inductInited<N>(initialize, reducing);
+  ) : _next = iterable.iterator.inductInited<N>(initialize, reducing);
 }
 
 ///
 ///
 /// [_construct], ...(overrides)
-/// [_NodeIteratorComparable.fromIterable], ...(constructors)
+/// [_NodeQueueCompared.fromIterable], ...(constructors)
 ///
 ///
-class _NodeQueueIteratorCompared<C extends Comparable>
-    extends _NodeDirectInsertableIterator<C, _NodeQueueIteratorCompared<C>>
-    with _MixinNodeDirectInsertableByInvalid<C, _NodeQueueIteratorCompared<C>> {
+class _NodeQueueCompared<C extends Comparable>
+    extends _NodeDirectInsertableIterator<C, _NodeQueueCompared<C>>
+    with _MixinNodeDirectInsertableByInvalid<C, _NodeQueueCompared<C>> {
   ///
   /// overrides
   ///
   @override
-  NodeConstructor<C, _NodeQueueIteratorCompared<C>> get _construct =>
-      (data, next) => _NodeQueueIteratorCompared(data, next);
+  NodeConstructor<C, _NodeQueueCompared<C>> get _construct =>
+      (data, next) => _NodeQueueCompared(data, next);
 
   ///
   /// constructors
   ///
-  _NodeQueueIteratorCompared([super.data, super._next]);
+  _NodeQueueCompared([super.data, super._next]);
 
-  _NodeQueueIteratorCompared._init(C super._data);
+  _NodeQueueCompared._init(C super._data);
 
-  _NodeQueueIteratorCompared.fromIterable(Iterable<C> iterable, int invalid)
+  _NodeQueueCompared.fromIterable(Iterable<C> iterable, int invalid)
       : super._fromIterable(
           iterable,
-          _NodeQueueIteratorCompared<C>._init,
+          _NodeQueueCompared<C>._init,
           (node, element) => node..insert(element, invalid),
         );
 }
@@ -704,35 +667,32 @@ class _NodeQueueIteratorCompared<C extends Comparable>
 ///
 ///
 /// [_construct], ...(overrides)
-/// [_NodeQueueIterator.fromIterable], ...(constructors)
+/// [_NodeQueue.fromIterable], ...(constructors)
 ///
 ///
-class _NodeQueueIterator<I>
-    extends _NodeDirectInsertableIterator<I, _NodeQueueIterator<I>>
-    with
-        _MixinNodeDirectInsertableByInvalidComparator<I,
-            _NodeQueueIterator<I>> {
+class _NodeQueue<I> extends _NodeDirectInsertableIterator<I, _NodeQueue<I>>
+    with _MixinNodeDirectInsertableByInvalidComparator<I, _NodeQueue<I>> {
   ///
   /// overrides
   ///
   @override
-  NodeConstructor<I, _NodeQueueIterator<I>> get _construct =>
-      (data, next) => _NodeQueueIterator(data, next);
+  NodeConstructor<I, _NodeQueue<I>> get _construct =>
+      (data, next) => _NodeQueue(data, next);
 
   ///
   /// constructors
   ///
-  _NodeQueueIterator([super._data, super._next]);
+  _NodeQueue([super._data, super._next]);
 
-  _NodeQueueIterator._init(I super._data);
+  _NodeQueue._init(I super._data);
 
-  _NodeQueueIterator.fromIterable(
+  _NodeQueue.fromIterable(
     Iterable<I> iterable,
     int invalid,
     Comparator<I> comparator,
   ) : super._fromIterable(
           iterable,
-          _NodeQueueIterator<I>._init,
+          _NodeQueue<I>._init,
           (node, element) => node..insert(element, invalid, comparator),
         );
 }
@@ -743,7 +703,7 @@ class _NodeQueueIterator<I>
 ///
 ///
 ///
-/// [_QueueIterator]
+/// [_Qurator]
 ///     |-[QueteratorCompared]
 ///     |-[Qurator]
 ///
@@ -756,22 +716,28 @@ class _NodeQueueIterator<I>
 
 ///
 ///
-/// [_QueueIterator] contains subclass of [_NodeDirectInsertableIterator] to instruct how to prioritize data.
+///
+abstract class _NodeQueueIterator<I, N extends _MixinNodeHiddenNext<I, N>>
+    implements IIteratorPrevious<I>, IInsertable<I> {
+  @override
+  String toString() => 'Queue: ${_node._next?._string()}';
+
+  final N _node;
+  const _NodeQueueIterator(this._node);
+}
+
+///
+///
+/// [_Qurator] contains subclass of [_NodeDirectInsertableIterator] to instruct how to prioritize data.
 /// it holds necessary comparison data once, instead of duplicate comparators or predicators for each general.
 ///
-/// to assign predicator for each general, see [_NodeOrdable], [NodeCompared], [NodeLined]
-/// to assign comparator for each general, see [NodeTreeChained]
-/// to iterate though nodes on each general, see [NodeQueterator]
 ///
-///
-abstract class _QueueIterator<I, N extends _NodeDirectInsertableIterator<I, N>>
+abstract class _Qurator<I, N extends _NodeDirectInsertableIterator<I, N>>
+    extends _NodeQueueIterator<I, N>
     implements IIteratorPrevious<I>, IInsertable<I> {
   ///
   /// overrides
   ///
-  @override
-  String toString() => 'Queue: ${_node._child?._string()}';
-
   @override
   I get current =>
       _node._data ?? (throw StateError(FErrorMessage.iteratorNoElement));
@@ -787,25 +753,24 @@ abstract class _QueueIterator<I, N extends _NodeDirectInsertableIterator<I, N>>
   ///
   int get length => _node.length;
 
-  bool get isNotEmpty => _node._child != null;
+  bool get isNotEmpty => _node._next != null;
 
-  bool get isEmpty => _node._child == null;
+  bool get isEmpty => _node._next == null;
 
-  bool get isCleared => _node._data == null && _node._child == null;
+  bool get isCleared => _node._data == null && _node._next == null;
 
-  bool get isNotCleared => _node._data != null || _node._child != null;
+  bool get isNotCleared => _node._data != null || _node._next != null;
 
   final int _invalidChecker;
-  final N _node;
 
   ///
   /// constructors
   ///
-  const _QueueIterator(this._node, this._invalidChecker);
+  const _Qurator(super._node, this._invalidChecker);
 
-  const _QueueIterator.increase(this._node) : _invalidChecker = 1;
+  const _Qurator.increase(super._node) : _invalidChecker = 1;
 
-  const _QueueIterator.decrease(this._node) : _invalidChecker = -1;
+  const _Qurator.decrease(super._node) : _invalidChecker = -1;
 }
 
 ///
@@ -813,19 +778,19 @@ abstract class _QueueIterator<I, N extends _NodeDirectInsertableIterator<I, N>>
 ///
 ///
 class QueteratorCompared<C extends Comparable>
-    extends _QueueIterator<C, _NodeQueueIteratorCompared<C>> {
+    extends _Qurator<C, _NodeQueueCompared<C>> {
   ///
   /// overrides
   ///
   @override
-  void insert(C element) => _node._child = _node._constructNext(
+  void insert(C element) => _node._next = _node._constructNext(
         element,
         (node) => node..insert(element, _invalidChecker),
       );
 
   @override
   void insertAll(Iterable<C> iterable) =>
-      _node._child = _node._constructNextIterable(
+      _node._next = _node._constructNextIterable(
         iterable,
         (node, element) => node..insert(element, _invalidChecker),
         (child) => child..insertAll(iterable, _invalidChecker),
@@ -835,17 +800,17 @@ class QueteratorCompared<C extends Comparable>
   /// constructor
   ///
   QueteratorCompared.increase(Iterable<C> iterable)
-      : super(_NodeQueueIteratorCompared.fromIterable(iterable, 1), 1);
+      : super.increase(_NodeQueueCompared.fromIterable(iterable, 1));
 
   QueteratorCompared.decrease(Iterable<C> iterable)
-      : super(_NodeQueueIteratorCompared.fromIterable(iterable, -1), -1);
+      : super.decrease(_NodeQueueCompared.fromIterable(iterable, -1));
 
   QueteratorCompared.empty([bool increase = true])
-      : super(_NodeQueueIteratorCompared(), increase ? 1 : -1);
+      : super(_NodeQueueCompared(), increase ? 1 : -1);
 
   QueteratorCompared.of(C value, [bool increase = true])
       : super(
-          _NodeQueueIteratorCompared(null, _NodeQueueIteratorCompared(value)),
+          _NodeQueueCompared(null, _NodeQueueCompared(value)),
           increase ? 1 : -1,
         );
 }
@@ -854,19 +819,19 @@ class QueteratorCompared<C extends Comparable>
 ///
 ///
 ///
-class Qurator<I> extends _QueueIterator<I, _NodeQueueIterator<I>> {
+class Qurator<I> extends _Qurator<I, _NodeQueue<I>> {
   ///
   /// overrides
   ///
   @override
-  void insert(I element) => _node._child = _node._constructNext(
+  void insert(I element) => _node._next = _node._constructNext(
         element,
         (child) => child..insert(element, _invalidChecker, _comparator),
       );
 
   @override
   void insertAll(Iterable<I> iterable) =>
-      _node._child = _node._constructNextIterable(
+      _node._next = _node._constructNextIterable(
         iterable,
         (node, element) => node..insert(element, _invalidChecker, _comparator),
         (child) => child..insertAll(iterable),
@@ -882,22 +847,19 @@ class Qurator<I> extends _QueueIterator<I, _NodeQueueIterator<I>> {
   ///
   Qurator.increase(Iterable<I> iterable, Comparator<I> comparator)
       : _comparator = comparator,
-        super.increase(
-            _NodeQueueIterator.fromIterable(iterable, 1, comparator));
+        super.increase(_NodeQueue.fromIterable(iterable, 1, comparator));
 
   Qurator.decrease(Iterable<I> iterable, Comparator<I> comparator)
       : _comparator = comparator,
-        super.decrease(
-            _NodeQueueIterator.fromIterable(iterable, -1, comparator));
+        super.decrease(_NodeQueue.fromIterable(iterable, -1, comparator));
 
   Qurator.empty(Comparator<I> comparator, [bool increase = true])
       : _comparator = comparator,
-        super(_NodeQueueIterator(), increase ? 1 : -1);
+        super(_NodeQueue(), increase ? 1 : -1);
 
   Qurator.of(I value, Comparator<I> comparator, [bool increase = true])
       : _comparator = comparator,
-        super(_NodeQueueIterator(null, _NodeQueueIterator(value)),
-            increase ? 1 : -1);
+        super(_NodeQueue(null, _NodeQueue(value)), increase ? 1 : -1);
 }
 
 // class Queterable<I> with Iterable<I> {

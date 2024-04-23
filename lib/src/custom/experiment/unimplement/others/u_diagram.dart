@@ -4,25 +4,53 @@
 ///
 ///
 ///
-///
-///
-///
 part of damath_experiment;
 
-// analyze on variable set (translated or not)
-// translate spss
+// venn diagram (<= 3 subset)
 
-// standard deviation vs standard error
-// Central limit theorem
-// Statistical hypothesis test
-// Statistical power analysis, statistical significant
-// one-sample t-test
-// effect size
+// histogram, poly, bar, pie
+
+// stem and leaf
 
 
+///
+///
+/// dominoe
+///
+/// polyominoe is the tiling that use identically congruent squares that are connected along their edges.
+///
+///
+///
 
+// sealed class Polyominoe {
+//   final double size;
+//
+//   const Polyominoe(this.size);
+//
+//   double get area;
+// }
+//
+// abstract class Dominoe extends Polyominoe {
+//   const Dominoe(super.size);
+//
+//   @override
+//   double get area => size.squared * 2;
+// }
+//
+// abstract class Triomino extends Polyominoe {
+//   const Triomino(super.size);
+//
+//   @override
+//   double get area => size.squared * 3;
+// }
 
-
+///
+///
+///
+/// variable
+///
+///
+///
 
 //
 // ///
@@ -67,6 +95,4 @@ part of damath_experiment;
 // assumption class VariableContinuous extends Variable<double> {
 //   const VariableContinuous(super.name, super.value);
 // }
-
-
 

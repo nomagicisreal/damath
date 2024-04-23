@@ -106,7 +106,7 @@ extension IteratorComparable<C extends Comparable> on Iterator<C> {
               ? isDecrease
               : isIncrease;
 
-  static TernaratorCombiner<C> _ternarateFor<C extends Comparable>(
+  static TernaratorFusionor<C> _ternarateFor<C extends Comparable>(
     bool increase,
   ) =>
       increase ? increaseOrNot : decreaseOrNot;

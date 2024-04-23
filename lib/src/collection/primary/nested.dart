@@ -100,6 +100,45 @@ extension IterableIterable<I> on Iterable<Iterable<I>> {
         initialValue,
         (value, e, eAnother) => value = e.foldWith(eAnother, value, fusionor),
       );
+
+  ///
+  /// [whereLengthIs]
+  ///
+  Iterable<Iterable<I>> whereLengthIs(int n) =>
+      where(predicateChildrenLength(n));
+
+  ///
+  /// [mapToListWhereLengthIs]
+  /// [mapToListListWhereLengthIs]
+  ///
+  List<Iterable<I>> mapToListWhereLengthIs(int n) =>
+      [...where(predicateChildrenLength(n))];
+
+  List<List<I>> mapToListListWhereLengthIs(int n) {
+    final result = <List<I>>[];
+    for (final element in this) {
+      result.addWhen(element.length == n, () => element.toList());
+    }
+    return result;
+  }
+
+  ///
+  /// [flatted]
+  /// [flattedList]
+  ///
+  Iterable<I> get flatted sync* {
+    for (final element in this) {
+      yield* element;
+    }
+  }
+
+  List<I> get flattedList {
+    final result = <I>[];
+    for (final element in this) {
+      result.addAll(element);
+    }
+    return result;
+  }
 }
 
 ///
@@ -132,6 +171,26 @@ extension IterableIterableComparable<C extends Comparable>
 ///
 ///
 ///
+extension ListList<T> on List2D<T> {
+  ///
+  /// [copyIntoIdentity]
+  ///
+  List2D<T> copyIntoIdentity(Reducer<T> reducing, int length, T fill) {
+    final identity = List.filled(length, fill);
+    return mapToList((t) => identity.cloneFixed..updateReduce(reducing, t));
+  }
+}
+
+///
+///
+///
+extension ListListInt on List2D<int> {
+  ///
+  /// [summationIntoIdentity]
+  ///
+  List2D<int> summationIntoIdentity(int length) =>
+      copyIntoIdentity(IntExtension.reducePlus, length, 1);
+}
 
 ///
 /// static methods:
@@ -140,31 +199,22 @@ extension IterableIterableComparable<C extends Comparable>
 /// instance methods:
 /// [sortByFirst], ...
 ///
-extension ListListComparable<C extends Comparable> on List<List<C>> {
+extension ListListComparable<C extends Comparable> on List2D<C> {
   ///
-  /// [accordinglyIncrease]
-  /// [accordinglyDecrease]
+  /// [_accordinglySort]
   ///
-  static int accordinglyIncrease<C extends Comparable>(List<C> a, List<C> b) {
-    final maxIndex = math.max(a.length, b.length);
-    int compareBy(int i) {
-      final value = Comparable.compare(a[i], b[i]);
-      return value == 0 && i < maxIndex ? compareBy(i + 1) : value;
-    }
+  static Comparator<List<C>> _accordinglySort<C extends Comparable>(
+    Comparator<C> keepAFirst,
+  ) =>
+      (a, b) {
+        final maxIndex = math.max(a.length, b.length);
+        int compareBy(int i) {
+          final value = keepAFirst(a[i], b[i]);
+          return value != 0 || i == maxIndex - 1 ? value : compareBy(i + 1);
+        }
 
-    return compareBy(0);
-  }
-
-  // it's redundant
-  static int accordinglyDecrease<C extends Comparable>(List<C> a, List<C> b) {
-    final maxIndex = math.max(a.length, b.length);
-    int compareBy(int i) {
-      final value = IteratorComparable.compare(a[i], b[i]);
-      return value == 0 && i < maxIndex ? compareBy(i + 1) : value;
-    }
-
-    return compareBy(0);
-  }
+        return compareBy(0);
+      };
 
   ///
   /// [sortByFirst]
@@ -176,8 +226,9 @@ extension ListListComparable<C extends Comparable> on List<List<C>> {
             : (a, b) => b.first.compareTo(a.first),
       );
 
-  void sortAccordingly([bool increase = true]) =>
-      sort(increase ? accordinglyIncrease : accordinglyDecrease);
+  void sortAccordingly([bool increase = true]) => sort(_accordinglySort(
+        increase ? Comparable.compare : IteratorComparable.compare,
+      ));
 }
 
 ///
