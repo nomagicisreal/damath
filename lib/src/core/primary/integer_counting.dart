@@ -1,4 +1,4 @@
-part of damath_typed_data;
+part of damath_core;
 
 ///
 /// static methods:
@@ -387,22 +387,19 @@ extension CountingExtension on int {
   ///       for example: m = 50, n = 10, remain = 40                                     \
   ///         - ∃ decreasing floors (1th ~ 10th)                                          |
   ///         - ∃ convergent floors (30th ~ 39th)                                       /
-  ///         - ∃ horizontal floors (10th ~ 30th) (convergent start after n, 29 > 10)   ---
+  ///         - ∃ horizontal floors (10th ~ 29th) (convergent start after n, 29 > 10)   ---
   ///         - it's not efficient but convenient to calculate all the values in horizontal floors.
   ///
   /// conclusion:
   ///   - when n ≥ remain, it's possible to construct target floor by a single loop.
   ///   - when n < remain, it's a challenge coming up with an optimal iterative way.
   ///
-  /// note that decreasing floors is optional when m is relatively small.
-  /// whether decreasing floors is optional is according to [KCore.partitionsIn20] and [KCore.partitionsSetIn8].
+  /// some floors are optional when m is relatively small.
+  /// whether floors are optional is according to [KCore.partitionsIn20] and [KCore.partitionsSetIn8].
   ///
+  /// note that only when m > about 1e5,
+  /// then [partitionByIterative] is faster than [partitionByRecursive] for now.
   ///
-  ///
-  ///
-
-  ///
-  /// note that [partitionByIterative] is faster than [partitionByRecursive] when m > about 1e5 for now.
   ///
   static int partitionByIterative(List2D<int> space, int m, int n) {
     if (n == 1) return 1;
@@ -413,54 +410,52 @@ extension CountingExtension on int {
 
     var f = 21;
 
-    // it's not verified for n < remain
-    if (n < remain) {
-      void valueFloorTo(int kBound) {
-        final current = space[f - 1];
-        for (var k = 2; k <= kBound; k++) {
-          current[k - 1] = space[f - k - 1].take(k).sum;
-        }
+    // decreasing floors
+    final decreasingBound = math.min(n, remain);
+    for (; f <= decreasingBound; f++) {
+      final current = space[f - 1];
+      final notCopyable = f ~/ 2 + 1;
+      var k = 2;
+      for (; k < notCopyable; k++) {
+        current[k - 1] = space[f - k - 1].take(k).sum;
       }
-
-      // decreasing floor
-      final kTarget = math.min(n, remain);
-      for (; f <= kTarget; f++) {
-        valueFloorTo(f - 1);
-      }
-
-      // horizontal floor
-      for (; f < kTarget - n; f++) {
-        valueFloorTo(n);
-      }
-
-      // convergent floors
-      // for (var kNecessary = n; kNecessary > 1; f++, kNecessary--) {
-      //   valueFloorTo(kNecessary);
-      // }
-
-      f = remain;
-      valueFloorTo(n);
-
-      print('iterative final($remain): ${space[remain - 1]}');
-
-
-    } else {
-      for (; f <= remain; f++) {
-        final current = space[f - 1];
-        final notCopyable = f ~/ 2 + 1;
-        var k = 2;
-        for (; k < notCopyable; k++) {
-          current[k - 1] = space[f - k - 1].take(k).sum;
-        }
-        final previous = space[f - 2];
-        for (; k < f - 1; k++) {
-          current[k - 1] = previous[k - 2];
-        }
+      final previous = space[f - 2];
+      for (; k < f - 1; k++) {
+        current[k - 1] = previous[k - 2];
       }
     }
 
+    if (n > remain) return space[remain - 1].sum;
+
+    void flooring(int kBound) {
+      final current = space[f - 1];
+      for (var k = 2; k <= kBound; k++) {
+        current[k - 1] = space[f - k - 1].take(k).sum;
+      }
+    }
+
+    // horizontal floors
+    final hEnd = remain - n;
+    for (; f < hEnd; f++) {
+      flooring(n);
+    }
+
+    // convergent floors
+    for (var kNecessary = n; f <= remain; f++, kNecessary--) {
+      flooring(kNecessary);
+    }
+
+    // target floor
+    f = remain;
+    flooring(n);
+
     return space[remain - 1].sum;
   }
+
+  //
+  // static List2D<int> paritionSetByIterative(List2D<int> space, int m, int n) {
+  //
+  // }
 
   //
   static int partitionByRecursive(List2D<int> space, int m, int n) {
@@ -486,10 +481,6 @@ extension CountingExtension on int {
     );
 
     return elementOf(m, n);
-
-    // final result = elementOf(m, n);
-    // print('recursive final(${m - n}): ${space[m - n - 4]}');
-    // return result;
   }
 
   //

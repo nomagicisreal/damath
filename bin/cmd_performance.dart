@@ -1,15 +1,15 @@
+// ignore_for_file: unused_local_variable
 import 'package:damath/src/core/core.dart';
-import 'package:damath/src/typed_data/typed_data.dart';
 
-void comparing(Stopwatch watch, int count, Generator<String> process) {
-  print('start');
-  for (var i = 1; i <= count; i++) {
-    watch.start();
-    print('way $i: ${process(i)} in ${watch.elapsed}');
-    watch.reset();
-  }
-  print('end');
-}
+///
+///
+/// [way1]
+/// [way2]
+/// [way3]
+/// [comparing]
+///
+///
+final list = RandomExtension.sample(1e5.toInt());
 
 void main() async {
   final watch = Stopwatch();
@@ -25,15 +25,14 @@ void main() async {
   );
 }
 
-final list = RandomExtension.sample(1e5.toInt());
-
 String way1() {
   dynamic result;
   for (var i = 1; i < 1e5; i++) {
     // result = list
     //   ..shuffle()
     //   ..sort();
-    result = CountingExtension.partitionSpace<int>(i + 100, i + 51, true).mapping(
+    result =
+        CountingExtension.partitionSpace<int>(i + 100, i + 51, true).mapping(
       (value) => CountingExtension.partitionByIterative(value, i + 100, i + 51),
     );
   }
@@ -65,4 +64,16 @@ String way3() {
   // throw UnimplementedError();
   return 'finished';
   // return record.toString();
+}
+
+
+
+void comparing(Stopwatch watch, int count, Generator<String> process) {
+  print('start');
+  for (var i = 1; i <= count; i++) {
+    watch.start();
+    print('way $i: ${process(i)} in ${watch.elapsed}');
+    watch.reset();
+  }
+  print('end');
 }

@@ -7,7 +7,7 @@
 /// [DateTimeExtension]
 ///
 ///
-part of damath_typed_data;
+part of damath_core;
 
 ///
 /// duration

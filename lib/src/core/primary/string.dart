@@ -14,7 +14,7 @@
 ///
 ///
 ///
-part of damath_typed_data;
+part of damath_core;
 
 ///
 ///
@@ -114,15 +114,59 @@ extension StringBufferExtension on StringBuffer {
 ///
 ///
 
-///
-///
-///
-///
-/// latex string
-///
-///
-///
-///
+//
+//
+// //
+// enum Latex {
+//   plus,
+//   minus,
+//   multiply,
+//   divided,
+//   modulus;
+//
+//   @override
+//   String toString() => switch (this) {
+//     Latex.plus => '+',
+//     Latex.minus => '-',
+//     Latex.multiply => '*',
+//     Latex.divided => '/',
+//     Latex.modulus => '%',
+//   };
+//
+//   String get symbol => switch (this) {
+//     Latex.plus => r'+',
+//     Latex.minus => r'-',
+//     Latex.multiply => r'\times',
+//     Latex.divided => r'\div',
+//     Latex.modulus => throw UnimplementedError(),
+//   };
+//
+//   ///
+//   /// latex operation
+//   ///
+//   String latexOperationOf(String a, String b) => "$a $symbol $b";
+//
+//   String latexOperationOfDouble(double a, double b, {int fix = 0}) =>
+//       "${a.toStringAsFixed(fix)} "
+//           "$symbol "
+//           "${b.toStringAsFixed(fix)}";
+//
+//   static double operateAll(
+//       double value,
+//       Iterable<MapEntry<Latex, double>> operations,
+//       ) =>
+//       operations.fold(
+//         value,
+//             (a, operation) => switch (operation.key) {
+//           Latex.plus => a + operation.value,
+//           Latex.minus => a - operation.value,
+//           Latex.multiply => a * operation.value,
+//           Latex.divided => a / operation.value,
+//           Latex.modulus => a % operation.value,
+//         },
+//       );
+// }
+
 //
 // extension KLaTexString on String {
 //   static const quadraticRoots = r"{-b \pm \sqrt{b^2-4ac} \over 2a}";
