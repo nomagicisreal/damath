@@ -105,7 +105,7 @@ abstract class _INodeOneDimension<T, N extends Node<T, N>>
 
   static N? mapToNext<T, N extends Node<T, N>>(N n) => n.next;
 
-  static N? mapToPrevious<T, N extends _NodeBidirect<T, N>>(N n) => n.next;
+  // static N? mapToPrevious<T, N extends _NodeBidirect<T, N>>(N n) => n.next;
 
   ///
   /// getter
