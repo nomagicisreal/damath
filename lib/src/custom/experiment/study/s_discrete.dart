@@ -4,16 +4,8 @@
 /// [basic]
 /// [number]
 /// [induction]
+/// [counting]
 ///
-///
-///
-///
-
-const before = '';
-
-///
-///
-/// Basic
 ///
 ///
 ///
@@ -45,12 +37,6 @@ const basic = '';
 // 5. bool matrix, and its operation(join (|), meet(&), product(multiply to &, adding to |), power)
 
 // cashier algorithm (find the minimum amount of coins/tickets from pocket, which summarized to be the prize)
-
-///
-///
-/// number
-///
-///
 
 const number = '';
 //

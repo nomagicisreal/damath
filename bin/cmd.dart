@@ -1,5 +1,4 @@
 
-
 void main(List<String> arguments) async {
   // final result = <bool>[];
   // var list = RandomExtension.sample(11);
@@ -16,4 +15,5 @@ void main(List<String> arguments) async {
   //   result.add(list.isVariationTo(sorted));
   // }
   // print(result.iterator.isTautology);
+
 }

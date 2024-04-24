@@ -91,7 +91,6 @@ abstract interface class FErrorMessage {
   static const String intFactorialOverflow =
       'integer factorial over 20 require BigInt';
   static const String numberNatural = 'number is natural';
-
   static const String regexNotMatchAny = 'regex not match any';
 
   ///

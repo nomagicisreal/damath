@@ -316,14 +316,14 @@ class ProcessUnitList<P> implements IOperatableIndexable<ProcessUnit<P>> {
       //   ProcessUnit(Future.value(''), KCore.durationSecond6, KCore.durationSecond2),
       // ]).completionTimesOf(ProcessSchedule.shortestJob)); // except to be 5, 8, 14, 10
       ProcessSchedule.shortestJob => () {
-          final notArrived = Qurator<ProcessUnitOrdered<P>>.increase(
+          final notArrived = Qurator<ProcessUnitOrdered<P>>.increaseExpired(
             _units.iterator.mapToListByIndex(Record2.mixReverse),
             ProcessUnitOrderedExtension.compareByArrival,
           );
-          final waited = Qurator<Countable<Duration>>.empty(
+          final waited = Qurator<Countable<Duration>>.emptyExpired(
             Record2.compareDurationOn2,
           );
-          final completed = Qurator<Countable<Duration>>.empty(
+          final completed = Qurator<Countable<Duration>>.emptyExpired(
             Record2.compareNumOn1,
           );
 
