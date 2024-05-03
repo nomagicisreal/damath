@@ -638,7 +638,7 @@ base class Point2 extends Point {
 /// which means:
 ///   [Point3.x] is getting bigger to [Direction3DIn6.back], getting lower to [Direction3DIn6.front]
 ///   [Point3.y] is getting bigger to [Direction3DIn6.right], getting lower to [Direction3DIn6.left],
-///   [Point3.dz] is getting bigger to [Direction3DIn6.top], getting lower to [Direction3DIn6.bottom]
+///   [Point3.z] is getting bigger to [Direction3DIn6.top], getting lower to [Direction3DIn6.bottom]
 /// see also [Point3.rotate], [Space3.fromDirection] for direction
 ///
 ///
@@ -656,39 +656,39 @@ base class Point2 extends Point {
 /// to compute efficiently without creating a class, see [RecordDouble3]
 ///
 base class Point3 extends Point {
-  final double dz;
+  final double z;
 
   ///
   ///
   /// constructors
   ///
   ///
-  const Point3(super.x, super.y, this.dz);
+  const Point3(super.x, super.y, this.z);
 
   const Point3.ofX(super.dx)
-      : dz = 0,
+      : z = 0,
         super.ofX();
 
   const Point3.ofY(super.dy)
-      : dz = 0,
+      : z = 0,
         super.ofY();
 
-  const Point3.ofZ(this.dz) : super.square(0);
+  const Point3.ofZ(this.z) : super.square(0);
 
   const Point3.cube(super.value)
-      : dz = value,
+      : z = value,
         super.square();
 
   const Point3.ofXY(super.value)
-      : dz = 0,
+      : z = 0,
         super.square();
 
   const Point3.ofYZ(double value)
-      : dz = value,
+      : z = value,
         super(0, value);
 
   const Point3.ofXZ(double value)
-      : dz = value,
+      : z = value,
         super(value, 0);
 
   ///
@@ -808,13 +808,13 @@ base class Point3 extends Point {
   ///
   ///
   @override
-  String toString() => 'Point3${(x, y, dz).toStringAsFixed(1)}';
+  String toString() => 'Point3${(x, y, z).toStringAsFixed(1)}';
 
   @override
-  bool operator ==(covariant Point3 other) => super == other && dz == other.dz;
+  bool operator ==(covariant Point3 other) => super == other && z == other.z;
 
   @override
-  int get hashCode => Object.hash(x, y, dz);
+  int get hashCode => Object.hash(x, y, z);
 
   ///
   ///
@@ -822,27 +822,27 @@ base class Point3 extends Point {
   ///
   ///
   @override
-  Point3 operator -() => Point3(-x, -y, -dz);
+  Point3 operator -() => Point3(-x, -y, -z);
 
   @override
   Point3 operator +(covariant Point3 other) =>
-      Point3(x + other.x, y + other.y, dz + other.dz);
+      Point3(x + other.x, y + other.y, z + other.z);
 
   @override
   Point3 operator -(covariant Point3 other) =>
-      Point3(x - other.x, y - other.y, dz - other.dz);
+      Point3(x - other.x, y - other.y, z - other.z);
 
   @override
   Point3 operator *(covariant Point3 other) =>
-      Point3(x * other.x, y * other.y, dz * other.dz);
+      Point3(x * other.x, y * other.y, z * other.z);
 
   @override
   Point3 operator /(covariant Point3 other) =>
-      Point3(x / other.x, y / other.y, dz / other.dz);
+      Point3(x / other.x, y / other.y, z / other.z);
 
   @override
   Point3 operator %(covariant Point3 other) =>
-      Point3(x % other.x, y % other.y, dz % other.dz);
+      Point3(x % other.x, y % other.y, z % other.z);
 
   ///
   ///
@@ -850,22 +850,22 @@ base class Point3 extends Point {
   ///
   ///
   @override
-  bool operator <(covariant Point3 other) => super < other && dz < other.dz;
+  bool operator <(covariant Point3 other) => super < other && z < other.z;
 
   @override
-  bool operator >(covariant Point3 another) => super > another && dz > another.dz;
+  bool operator >(covariant Point3 another) => super > another && z > another.z;
 
   @override
-  bool operator <=(covariant Point3 another) => super <= another && dz <= another.dz;
+  bool operator <=(covariant Point3 another) => super <= another && z <= another.z;
 
   @override
-  bool operator >=(covariant Point3 another) => super >= another && dz >= another.dz;
+  bool operator >=(covariant Point3 another) => super >= another && z >= another.z;
 
   @override
   Point3 operator ~/(covariant Point3 other) => Point3(
         (x ~/ other.x).toDouble(),
         (y ~/ other.y).toDouble(),
-        (dz ~/ other.dz).toDouble(),
+        (z ~/ other.z).toDouble(),
       );
 
   ///
@@ -875,10 +875,10 @@ base class Point3 extends Point {
   ///
 
   ///
-  /// ([x], [y], [dz]) can be treated as [Record] to use the getters, functions in [RecordDouble3]
+  /// ([x], [y], [z]) can be treated as [Record] to use the getters, functions in [RecordDouble3]
   ///
   @override
-  (double, double, double) get toRecord => (x, y, dz);
+  (double, double, double) get toRecord => (x, y, z);
 
   @override
   Point3 middleTo(covariant Point3 p) => (p - this) / Point3.cube(2);
@@ -896,17 +896,17 @@ base class Point3 extends Point {
   ///
   bool get withoutXY => x == 0 && y == 0;
 
-  bool get withoutYZ => y == 0 && dz == 0;
+  bool get withoutYZ => y == 0 && z == 0;
 
-  bool get withoutXZ => x == 0 && dz == 0;
+  bool get withoutXZ => x == 0 && z == 0;
 
   Point3 get retainXY => Point3(x, y, 0);
 
-  Point3 get retainYZAsXY => Point3(y, dz, 0);
+  Point3 get retainYZAsXY => Point3(y, z, 0);
 
-  Point3 get retainXZAsXY => Point3(x, dz, 0);
+  Point3 get retainXZAsXY => Point3(x, z, 0);
 
-  Point3 get retainYZAsYX => Point3(dz, y, 0);
+  Point3 get retainYZAsYX => Point3(z, y, 0);
 
-  Point3 get retainXZAsYX => Point3(dz, x, 0);
+  Point3 get retainXZAsYX => Point3(z, x, 0);
 }

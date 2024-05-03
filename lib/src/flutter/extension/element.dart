@@ -4,7 +4,7 @@
 /// [ColorExtension]
 ///
 /// [FBoxShadow]
-/// [FBorderSide], [FBorderBox], [FBorderOutlined], [FBorderInput]
+/// [FBorderSide], [FBorderBox], [FBorderInput], [FBorderOutlined]
 /// [FDecorationBox], [FDecorationShape], [FDecorationInput]
 ///
 ///
@@ -22,32 +22,32 @@ part of damath_flutter;
 ///
 extension ColorExtension on Color {
   Color plusARGB(int alpha, int red, int green, int blue) => Color.fromARGB(
-    this.alpha + alpha,
-    this.red + red,
-    this.green + green,
-    this.blue + blue,
-  );
+        this.alpha + alpha,
+        this.red + red,
+        this.green + green,
+        this.blue + blue,
+      );
 
   Color minusARGB(int alpha, int red, int green, int blue) => Color.fromARGB(
-    this.alpha - alpha,
-    this.red - red,
-    this.green - green,
-    this.blue - blue,
-  );
+        this.alpha - alpha,
+        this.red - red,
+        this.green - green,
+        this.blue - blue,
+      );
 
   Color multiplyARGB(int alpha, int red, int green, int blue) => Color.fromARGB(
-    this.alpha * alpha,
-    this.red * red,
-    this.green * green,
-    this.blue * blue,
-  );
+        this.alpha * alpha,
+        this.red * red,
+        this.green * green,
+        this.blue * blue,
+      );
 
   Color dividedARGB(int alpha, int red, int green, int blue) => Color.fromARGB(
-    this.alpha ~/ alpha,
-    this.red ~/ red,
-    this.green ~/ green,
-    this.blue ~/ blue,
-  );
+        this.alpha ~/ alpha,
+        this.red ~/ red,
+        this.green ~/ green,
+        this.blue ~/ blue,
+      );
 
   Color plusAllRGB(int value) =>
       Color.fromARGB(alpha, red + value, green + value, blue + value);
@@ -61,7 +61,6 @@ extension ColorExtension on Color {
   Color dividedAllRGB(int value) =>
       Color.fromARGB(alpha, red ~/ value, green ~/ value, blue ~/ value);
 }
-
 
 ///
 ///
@@ -140,10 +139,14 @@ extension FBoxShadow on BoxShadow {
 ///   [FBorderSide.solidCenter]
 ///   [FBorderSide.solidOutside]
 ///
-///
 /// [FBorderBox]
 ///   [FBorderBox.sideSolidCenter]
 ///   [FBorderBox.directionalSideSolidCenter]
+///
+/// [FBorderInput]
+///   [FBorderInput.outline]
+///   [FBorderInput.outlineSolidInside]
+///   [FBorderInput.underline]
 ///
 /// [FBorderOutlined]
 ///   [FBorderOutlined.star]
@@ -154,11 +157,6 @@ extension FBoxShadow on BoxShadow {
 ///   [FBorderOutlined.continuousRectangle]
 ///   [FBorderOutlined.circle]
 ///   [FBorderOutlined.oval]
-///
-/// [FBorderInput]
-///   [FBorderInput.outline]
-///   [FBorderInput.outlineSolidInside]
-///   [FBorderInput.underline]
 ///
 /// see https://api.flutter.dev/flutter/painting/ShapeBorder-class.html for more detail about [ShapeBorder]
 /// [FBorderOutlined.linear] usually used with [ButtonStyle.shape] by invoking [TextButton.styleFrom]
@@ -221,6 +219,44 @@ extension FBorderBox on BoxBorder {
     final side = FBorderSide.solidCenter(color: color, width: width);
     return BorderDirectional(top: side, start: side, end: side, bottom: side);
   }
+}
+
+// input border
+extension FBorderInput on InputBorder {
+  static OutlineInputBorder outline({
+    BorderSide borderSide = const BorderSide(),
+    double gapPadding = 4.0,
+    required BorderRadius borderRadius,
+  }) =>
+      OutlineInputBorder(
+        borderSide: borderSide,
+        borderRadius: borderRadius,
+        gapPadding: gapPadding,
+      );
+
+  static OutlineInputBorder outlineSolidInside({
+    Color color = Colors.blueGrey,
+    double width = 1.5,
+    double gapPadding = 4.0,
+    required BorderRadius borderRadius,
+  }) =>
+      OutlineInputBorder(
+        borderSide: FBorderSide.solidInside(
+          color: color,
+          width: width,
+        ),
+        borderRadius: borderRadius,
+        gapPadding: gapPadding,
+      );
+
+  static UnderlineInputBorder underline({
+    BorderSide borderSide = const BorderSide(),
+    BorderRadius borderRadius = KBorderRadius.top_4,
+  }) =>
+      UnderlineInputBorder(
+        borderSide: borderSide,
+        borderRadius: borderRadius,
+      );
 }
 
 // outlined border
@@ -299,44 +335,6 @@ extension FBorderOutlined on OutlinedBorder {
       OvalBorder(side: side, eccentricity: eccentricity);
 }
 
-// input border
-extension FBorderInput on InputBorder {
-  static OutlineInputBorder outline({
-    BorderSide borderSide = const BorderSide(),
-    double gapPadding = 4.0,
-    required BorderRadius borderRadius,
-  }) =>
-      OutlineInputBorder(
-        borderSide: borderSide,
-        borderRadius: borderRadius,
-        gapPadding: gapPadding,
-      );
-
-  static OutlineInputBorder outlineSolidInside({
-    Color color = Colors.blueGrey,
-    double width = 1.5,
-    double gapPadding = 4.0,
-    required BorderRadius borderRadius,
-  }) =>
-      OutlineInputBorder(
-        borderSide: FBorderSide.solidInside(
-          color: color,
-          width: width,
-        ),
-        borderRadius: borderRadius,
-        gapPadding: gapPadding,
-      );
-
-  static UnderlineInputBorder underline({
-    BorderSide borderSide = const BorderSide(),
-    BorderRadius borderRadius = KBorderRadius.top_4,
-  }) =>
-      UnderlineInputBorder(
-        borderSide: borderSide,
-        borderRadius: borderRadius,
-      );
-}
-
 ///
 ///
 ///
@@ -351,8 +349,9 @@ extension FBorderInput on InputBorder {
 ///   [FDecorationBox.circle]
 ///
 /// [FDecorationShape]
-///   [FDecorationShape.stadiumBorder]
-///   [FDecorationShape.outlineInputBorder]
+///   [FDecorationShape.box]
+///   [FDecorationShape.input]
+///   [FDecorationShape.outlined]
 ///
 /// [FDecorationInput]
 ///   [FDecorationInput.rowLabelIconText]
@@ -368,13 +367,14 @@ extension FBorderInput on InputBorder {
 
 // box decoration
 extension FDecorationBox on BoxDecoration {
-  static BoxDecoration rectangle(
-      {Color? color,
-        DecorationImage? image,
-        Border? border,
-        BorderRadiusGeometry? borderRadius,
-        List<BoxShadow>? boxShadow,
-        BlendMode? backgroundBlendMode}) =>
+  static BoxDecoration rectangle({
+    Color? color,
+    DecorationImage? image,
+    Border? border,
+    BorderRadiusGeometry? borderRadius,
+    List<BoxShadow>? boxShadow,
+    BlendMode? backgroundBlendMode,
+  }) =>
       BoxDecoration(
         color: color,
         image: image,
@@ -406,37 +406,45 @@ extension FDecorationBox on BoxDecoration {
 
 // shape decoration
 extension FDecorationShape on ShapeDecoration {
-  static ShapeDecoration stadiumBorder({
-    required BorderSide side,
+  static ShapeDecoration box({
+    required BoxBorder shape,
     Color? color,
     DecorationImage? image,
     List<BoxShadow>? shadows,
     Gradient? gradient,
   }) =>
       ShapeDecoration(
-        shape: StadiumBorder(side: side),
+        shape: shape,
         color: color,
         image: image,
         gradient: gradient,
         shadows: shadows,
       );
 
-  static ShapeDecoration outlineInputBorder({
-    required BorderSide side,
+  static ShapeDecoration input({
+    required InputBorder shape,
     Color? color,
     DecorationImage? image,
     List<BoxShadow>? shadows,
     Gradient? gradient,
-    BorderSide borderSide = const BorderSide(),
-    BorderRadius borderRadius = KBorderRadius.allCircular_4,
-    double gapPadding = 4.0,
   }) =>
       ShapeDecoration(
-        shape: OutlineInputBorder(
-          borderSide: borderSide,
-          borderRadius: borderRadius,
-          gapPadding: gapPadding,
-        ),
+        shape: shape,
+        color: color,
+        image: image,
+        gradient: gradient,
+        shadows: shadows,
+      );
+
+  static ShapeDecoration outlined({
+    required OutlinedBorder shape,
+    Color? color,
+    DecorationImage? image,
+    List<BoxShadow>? shadows,
+    Gradient? gradient,
+  }) =>
+      ShapeDecoration(
+        shape: shape,
         color: color,
         image: image,
         gradient: gradient,

@@ -605,7 +605,7 @@ extension TransformExtension on Transform {
   ///
   static Point2 translateSpace2(Point2 p) => Point2(p.x, -p.y);
 
-  static Point3 translateSpace3(Point3 p) => Point3(p.x, -p.dz, -p.y);
+  static Point3 translateSpace3(Point3 p) => Point3(p.x, -p.z, -p.y);
 
   ///
   ///

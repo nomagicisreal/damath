@@ -365,7 +365,7 @@ abstract class VectorFloat3 extends _VectorFloat<VectorFloat3>
   /// ----------------------------------------------------------------
   ///
   /// let ([x], [y], [z]) represent the record before [rotate] finished.
-  /// let ([Point3.x], [Point3.y], [Point3.dz]) represent the result of [rotate].
+  /// let ([Point3.x], [Point3.y], [Point3.z]) represent the result of [rotate].
   /// let rP, rA represent the origin state of polar and azimuthal.
   /// let rP', rA' represent the [radian] rotation of polar and azimuthal.
   /// which means "rP + rP'", "rA + rA'" are the rotated rotation of polar and azimuthal.
@@ -376,8 +376,8 @@ abstract class VectorFloat3 extends _VectorFloat<VectorFloat3>
   ///
   /// when rP' grows from 0 ~ π,
   ///   the vector can be separate into the general that parallel to z axis, and the general that parallel to xy plane.
-  ///   the general that parallel to z axis directly effect the result [Point3.dz] without consideration of rA'.
-  ///   [Point3.dz] = cos(rP + rP')
+  ///   the general that parallel to z axis directly effect the result [Point3.z] without consideration of rA'.
+  ///   [Point3.z] = cos(rP + rP')
   ///
   ///   the general that parallel to xy plane projects a positive distance on xy plane, sin(rP + rP'),
   ///   which is also [Point3.x] * sec(rA + rA'), [Point3.y] * csc(rA + rA').

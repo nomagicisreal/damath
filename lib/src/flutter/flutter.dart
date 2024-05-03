@@ -7,7 +7,6 @@ import 'package:damath/src/custom/experiment/experiment.dart';
 import 'package:damath/src/typed_data/typed_data.dart';
 
 import 'package:flutter/material.dart';
-// import 'package:flutter/cupertino.dart';
 import 'package:vector_math/vector_math_64.dart' as v64 show Vector3;
 
 part 'diagram/diagram.dart';

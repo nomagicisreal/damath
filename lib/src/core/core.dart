@@ -10,7 +10,6 @@ part 'addition/extension.dart';
 part 'addition/interface.dart';
 part 'addition/typedef.dart';
 
-
 part 'primary/_.dart';
 part 'primary/double.dart';
 part 'primary/integer.dart';
