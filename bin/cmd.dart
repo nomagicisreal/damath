@@ -16,7 +16,7 @@ void main(List<String> arguments) async {
   //   result.add(sorted.iterator.isSorted(true));
   //   result.add(list.isVariationTo(sorted));
   // }
-  // print(result.iterator.isTautology);
+  // print(result.iterator.isTautology);x
 
   var value = 10;
   print(value-- / 3);
