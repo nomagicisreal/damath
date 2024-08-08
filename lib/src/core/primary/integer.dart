@@ -9,7 +9,7 @@ part of damath_core;
 /// [fibonacci]
 /// [collatzConjecture]
 /// [stoneTakingFinal]
-/// [pascalTriangle], [combination], [binomialCoefficient]
+/// [pascalTriangle], [combination]
 /// [partition], ...
 ///
 /// instance getters, methods:
@@ -207,85 +207,16 @@ extension IntExtension on int {
 
   ///
   /// [combination]
-  /// [binomialCoefficient]
   ///
-  static int combination(int m, int n) => binomialCoefficient(m, n + 1);
-
-  static int binomialCoefficient(int n, int k) {
-    if (n.isNotPositive || k.isNotPositive || k > n + 1) {
+  static int combination(int n, int k) {
+    if (n.isNotPositive || k.isNegative || k > n) {
       throw ArgumentError(FErrorMessage.intBinomialCoefficient(n, k));
     }
-    return k == 1 || k == n + 1
-        ? 1
-        : k == 2 || k == n
-            ? n
-            : _binomialCoefficient(n, k);
-  }
-
-  ///
-  /// Let "row( [n] )" be list of binomial coefficient, for example:
-  ///   row( 2 ) = [1, 2, 1]
-  ///   row( 3 ) = [1, 3, 3, 1]
-  ///
-  /// Let "floor" represents all the essential values in a "row", for example, when ([n] = 10, [k] = 9),
-  ///   row( 8 ) = [... 28,    8,    1]
-  ///   row( 9 ) = [...  ?,   36,    9]
-  ///   row( 10 ) = [...  ?,    ?,   45]
-  /// Because '45' comes from '36+9', '36' comes from '18+8', '9' comes from '8+1',
-  /// it's redundant to calculate '?', which are unnecessary values. solution for it required the values below:
-  ///   floor( 2 ) = [1, 2, 1]
-  ///   floor( 3 ) = [3, 3, 1]
-  ///   floor( 4 ) = [6,  4,  1]
-  ///   floor( 5 ) = [10,  5,  1]
-  ///   floor( 6 ) = [15,  6,  1]
-  ///   floor( 7 ) = [21,  7,  1]
-  ///   floor( 8 ) = [28,  8,  1]
-  ///   floor( 9 ) = [36,  9]
-  ///   floor( 10 ) = [45]
-  ///
-  /// the description below shows what variables been used in this function,
-  /// [fEnd] --- the last floor that corresponding row([fEnd])[k] is 1.
-  ///   take the sample above ([n] == 10, [k] == 9) for example,
-  ///     floor(10) = [45],
-  ///     floor(9) = [36,  9],
-  ///     floor(8) = [28,  8,  1]
-  ///     floor(8) is the last floor that row(8)[9] == 1,
-  ///     [fEnd] == 8 #.
-  ///   if takes more example, it turns out that [fEnd] = k - 1 #
-  ///
-  /// [fBegin] --- the first floor that "floor.length" == floor([fEnd]).length,
-  ///   take the sample above ([n] = 10, [k] = 9) for example,
-  ///     floor([fEnd]) == floor(8)
-  ///     3 == floor(8).length == floor(7).length == floor(6).length == ... == floor(2).length
-  ///     floor(2) is the first floor that floor.length == floor(8).length
-  ///     [fBegin] = 2 #
-  ///   if takes more example, it will turn out that [fBegin] = n - [fEnd] #
-  ///
-  static int _binomialCoefficient(int n, int k) {
-    assert(n > 2 && k > 0 && k <= n + 1);
-
-    final fEnd = k - 1;
-    final fBegin = n - fEnd;
-    final floorCurrent = <int>[1, 2, 1];
-    final floorNext = List.filled(fBegin + 1, -1, growable: false);
-    void nextFloor(int f) {
-      final length = floorCurrent.length;
-      var k = 0;
-      if (f <= fBegin) floorNext[k++] = 1;
-      for (var j = 1; j < length; j++) {
-        floorNext[k++] = floorCurrent[j - 1] + floorCurrent[j];
-      }
-      if (f <= fEnd) floorNext[k] = 1;
+    var value = 1.0;
+    while (k > 0) {
+      value *= n-- / k--;
     }
-
-    for (var f = 3; f < n; f++) {
-      nextFloor(f);
-      floorCurrent
-        ..clear()
-        ..addAll(floorNext);
-    }
-    nextFloor(n);
-    return floorNext[0];
+    return value.toInt();
   }
 
   ///
@@ -376,7 +307,6 @@ extension IntExtension on int {
     }
     return integers.length == n && integers.sum == m;
   }
-
 
   //
   static Iterable<Iterable<int>> _partitionSet(int m) sync* {

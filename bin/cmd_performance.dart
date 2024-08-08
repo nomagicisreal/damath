@@ -6,15 +6,14 @@ import 'package:damath/src/core/core.dart';
 /// [way1]
 /// [way2]
 /// [way3]
-/// [comparing]
+/// [comparisonBy]
 ///
 ///
 final list = RandomExtension.sample(1e5.toInt());
 
 void main() async {
-  final watch = Stopwatch();
-  comparing(
-    watch,
+  comparisonBy(
+    Stopwatch(),
     2,
     (i) => switch (i) {
       1 => way1(),
@@ -31,6 +30,7 @@ String way1() {
     // result = list
     //   ..shuffle()
     //   ..sort();
+    result = IntExtension.combination(100, 50);
   }
   // throw UnimplementedError();
   return 'finished';
@@ -61,7 +61,7 @@ String way3() {
 
 
 
-void comparing(Stopwatch watch, int count, Generator<String> process) {
+void comparisonBy(Stopwatch watch, int count, Generator<String> process) {
   print('start');
   for (var i = 1; i <= count; i++) {
     watch.start();

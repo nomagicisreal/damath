@@ -559,3 +559,27 @@ class ProcessUnitList<P> implements IOperatableIndexable<ProcessUnit<P>> {
 /// long-term scheduler (from job pool)
 ///
 ///
+
+
+///
+///
+///
+/// demand paging
+///
+/// lazy swapper
+///
+///
+
+///
+/// belady's anomaly
+///
+///
+/// optimal page-replacement algorithm
+///
+
+
+///
+///
+/// thrashing
+///
+///

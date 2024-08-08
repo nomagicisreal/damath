@@ -1,4 +1,6 @@
 
+// import 'package:damath/src/core/core.dart';
+
 void main(List<String> arguments) async {
   // final result = <bool>[];
   // var list = RandomExtension.sample(11);
@@ -16,4 +18,6 @@ void main(List<String> arguments) async {
   // }
   // print(result.iterator.isTautology);
 
+  var value = 10;
+  print(value-- / 3);
 }

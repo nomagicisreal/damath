@@ -2,7 +2,6 @@
 ///
 /// this file contains:
 /// [KColor]
-/// [KTextStyle]
 ///
 /// [KSize]
 /// [KSize2Ratio3]
@@ -41,64 +40,10 @@
 part of damath_flutter;
 // ignore_for_file: non_constant_identifier_names, constant_identifier_names
 
-
+///
+///
+///
 extension KColor on Color {
-  /// R
-  static const redB1 = Color(0xFFffdddd);
-  static const redB2 = Color(0xFFeecccc);
-  static const redB3 = Color(0xFFdd9999);
-  static const redPrimary = Color(0xFFdd7777);
-  static const redD3 = Color(0xFFbb4444);
-  static const redD2 = Color(0xFFaa1111);
-  static const redD1 = Color(0xFF880000);
-
-  /// G
-  static const greenB1 = Color(0xFFddffdd);
-  static const greenB2 = Color(0xFFcceecc);
-  static const greenB3 = Color(0xFFaaddaa);
-  static const greenPrimary = Color(0xFF88aa88);
-  static const greenD3 = Color(0xFF559955);
-  static const greenD2 = Color(0xFF227722);
-  static const greenD1 = Color(0xFF005500);
-
-  /// B
-  static const blueB1 = Color(0xFFddddff);
-  static const blueB2 = Color(0xFFbbbbee);
-  static const blueB3 = Color(0xFF8888dd);
-  static const bluePrimary = Color(0xFF6666cc);
-  static const blueD3 = Color(0xFF4444bb);
-  static const blueD2 = Color(0xFF222288);
-  static const blueD1 = Color(0xFF111155);
-
-  /// oranges that G over B oranges
-  static const orangeB1 = Color(0xFFffeecc);
-  static const orangeB2 = Color(0xFFffccaa);
-  static const orangeB3 = Color(0xFFeeaa88);
-  static const orangePrimary = Color(0xFFcc8866);
-  static const orangeD3 = Color(0xFFaa5533);
-  static const orangeD2 = Color(0xFF773322);
-  static const orangeD1 = Color(0xFF551100);
-
-  /// yellows that R over G
-  static const yellowB1 = Color(0xFFffffbb);
-  static const yellowB1_1 = Color(0xFFeeeeaa);
-  static const yellowB2 = Color(0xFFeedd99);
-  static const yellowB3 = Color(0xFFddcc66);
-  static const yellowPrimary = Color(0xffccbb22);
-  static const yellowD3 = Color(0xFFccbb33);
-  static const yellowD2 = Color(0xFFbbaa22);
-  static const yellowD1 = Color(0xFF998811);
-
-  /// purples that B over R
-  static const purpleB1 = Color(0xFFeeccff);
-  static const purpleB2 = Color(0xFFddbbee);
-  static const purpleB3 = Color(0xFFaa88dd);
-  static const purpleB4 = Color(0xFF9977cc);
-  static const purplePrimary = Color(0xff8866cc);
-  static const purpleD3 = Color(0xFF8844bb);
-  static const purpleD2 = Color(0xFF6622aa);
-  static const purpleD1 = Color(0xFF440099);
-
   ///
   ///
   ///
@@ -144,53 +89,6 @@ extension KColor on Color {
   static const Color maroon = Color(0xFF800000);
   static const Color red = Color(0xFFe6194b);
   static const Color pink = Color(0xFFfabed4);
-}
-
-///
-///
-///
-/// [KTextStyle]
-///
-///
-///
-
-extension KTextStyle on TextStyle {
-  static const size_10 = TextStyle(fontSize: 10);
-  static const size_20 = TextStyle(fontSize: 20);
-  static const size_30 = TextStyle(fontSize: 30);
-  static const size_40 = TextStyle(fontSize: 40);
-  static const size_50 = TextStyle(fontSize: 50);
-  static const white = TextStyle(color: Colors.white);
-  static const black = TextStyle(color: Colors.black);
-  static const black12 = TextStyle(color: Colors.black12);
-  static const black26 = TextStyle(color: Colors.black26);
-  static const black38 = TextStyle(color: Colors.black38);
-  static const black45 = TextStyle(color: Colors.black45);
-  static const black54 = TextStyle(color: Colors.black54);
-  static const black87 = TextStyle(color: Colors.black87);
-
-  static const white_24 = TextStyle(color: Colors.white, fontSize: 24);
-  static const white_28 = TextStyle(color: Colors.white, fontSize: 28);
-  static const boldWhite = TextStyle(
-    fontWeight: FontWeight.bold,
-    color: Colors.white,
-  );
-  static const boldBlack = TextStyle(
-    fontWeight: FontWeight.bold,
-    color: Colors.black,
-  );
-
-  static const boldBlack_30 = TextStyle(
-    fontWeight: FontWeight.bold,
-    color: Colors.black,
-    fontSize: 30,
-  );
-
-  static const italicGrey_12 = TextStyle(
-    fontStyle: FontStyle.italic,
-    color: Colors.grey,
-    fontSize: 12,
-  );
 }
 
 ///
