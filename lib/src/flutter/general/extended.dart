@@ -56,13 +56,13 @@ class Painting extends CustomPainter {
   static bool _rePaintNever(Painting oldP, Painting p) => false;
 
   const Painting.rePaintWhenUpdate({
-    this.paintingPath = FPaintingPath.draw,
+    required this.paintingPath,
     required this.sizingPath,
     required this.paintFrom,
   }) : _shouldRePaint = _rePaintWhenUpdate;
 
   const Painting.rePaintNever({
-    this.paintingPath = FPaintingPath.draw,
+    required this.paintingPath,
     required this.paintFrom,
     required this.sizingPath,
   }) : _shouldRePaint = _rePaintNever;
@@ -75,6 +75,7 @@ class Painting extends CustomPainter {
     RRegularPolygonCubicOnEdge polygon,
   ) =>
       Painting.rePaintNever(
+        paintingPath: FPaintingPath.draw,
         paintFrom: paintFrom,
         sizingPath: FSizingPath.polygonCubic(polygon.cubicPoints),
       );

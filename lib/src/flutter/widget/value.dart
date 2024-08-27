@@ -67,11 +67,11 @@ extension WProgressIndicator on ProgressIndicator {
 
 extension WImage on Image {
   static assetsInDimension(
-      String path,
-      double dimension, {
-        Alignment alignment = Alignment.center,
-        FilterQuality filterQuality = FilterQuality.medium,
-      }) =>
+    String path,
+    double dimension, {
+    Alignment alignment = Alignment.center,
+    FilterQuality filterQuality = FilterQuality.medium,
+  }) =>
       Image.asset(
         path,
         height: dimension,
@@ -105,14 +105,14 @@ extension WDrawer on Drawer {
 ///
 ///
 extension WListView on ListView {
-  static ListView get bigSmall_25 => ListView.builder(
-        padding: KEdgeInsets.symV_8,
+  static ListView get fakeBigSmall_25 => ListView.builder(
+        padding: KEdgeInsets.vertical * 8,
         itemCount: 25,
         itemBuilder: (context, index) => Container(
-          margin: KEdgeInsets.symHV_24_8,
+          margin: KEdgeInsets.horizontal * 24 + KEdgeInsets.vertical * 8,
           height: index.isOdd ? 128 : 36,
           decoration: BoxDecoration(
-            borderRadius: KBorderRadius.allCircular_1 * 8,
+            borderRadius: KBorderRadius.circularAll * 8,
             color: Colors.grey.shade600,
           ),
         ),
@@ -227,80 +227,17 @@ extension WSizedBox on SizedBox {
   static const none = SizedBox();
   static const shrink = SizedBox.shrink();
   static const expand = SizedBox.expand();
-  static const expandW = SizedBox(width: double.infinity);
-  static const expandH = SizedBox(height: double.infinity);
 
-  // square
-  static const square5 = SizedBox.square(dimension: 5);
-  static const square10 = SizedBox.square(dimension: 10);
-  static const square50 = SizedBox.square(dimension: 50);
-  static const square100 = SizedBox.square(dimension: 100);
+  ///
+  ///
+  /// height, width, square
+  ///
+  ///
+  static SizedBox height(double dimension, {Widget? child}) =>
+      SizedBox(height: dimension, child: child);
 
-  // height
-  static const h5 = SizedBox(height: 5);
-  static const h10 = SizedBox(height: 10);
-  static const h16 = SizedBox(height: 16);
-  static const h20 = SizedBox(height: 20);
-  static const h30 = SizedBox(height: 30);
-  static const h32 = SizedBox(height: 32);
-  static const h40 = SizedBox(height: 40);
-  static const h50 = SizedBox(height: 50);
-  static const h60 = SizedBox(height: 60);
-  static const h70 = SizedBox(height: 70);
-  static const h80 = SizedBox(height: 80);
-  static const h90 = SizedBox(height: 90);
-  static const h100 = SizedBox(height: 100);
-  static const h110 = SizedBox(height: 110);
-  static const h120 = SizedBox(height: 120);
-  static const h130 = SizedBox(height: 130);
-  static const h140 = SizedBox(height: 140);
-  static const h150 = SizedBox(height: 150);
-  static const h160 = SizedBox(height: 160);
-  static const h170 = SizedBox(height: 170);
-  static const h180 = SizedBox(height: 180);
-  static const h190 = SizedBox(height: 190);
-  static const h200 = SizedBox(height: 200);
-
-  // width
-  static const w5 = SizedBox(width: 5);
-  static const w10 = SizedBox(width: 10);
-  static const w16 = SizedBox(width: 16);
-  static const w20 = SizedBox(width: 20);
-  static const w30 = SizedBox(width: 30);
-  static const w32 = SizedBox(width: 32);
-  static const w40 = SizedBox(width: 40);
-  static const w50 = SizedBox(width: 50);
-  static const w60 = SizedBox(width: 60);
-  static const w70 = SizedBox(width: 70);
-  static const w80 = SizedBox(width: 80);
-  static const w90 = SizedBox(width: 90);
-  static const w100 = SizedBox(width: 100);
-  static const w110 = SizedBox(width: 110);
-  static const w120 = SizedBox(width: 120);
-  static const w130 = SizedBox(width: 130);
-  static const w140 = SizedBox(width: 140);
-  static const w150 = SizedBox(width: 150);
-  static const w160 = SizedBox(width: 160);
-  static const w170 = SizedBox(width: 170);
-  static const w180 = SizedBox(width: 180);
-  static const w190 = SizedBox(width: 190);
-  static const w200 = SizedBox(width: 200);
-
-  // infinite width
-  static const infiniteW_100H = SizedBox(height: 100, width: double.infinity);
-  static const infiniteW_200H = SizedBox(height: 200, width: double.infinity);
-  static const infiniteW_300H = SizedBox(height: 300, width: double.infinity);
-  static const infiniteW_400H = SizedBox(height: 400, width: double.infinity);
-  static const infiniteW_500H = SizedBox(height: 500, width: double.infinity);
-  static const infiniteW_128H = SizedBox(height: 128, width: double.infinity);
-  static const infiniteW_256H = SizedBox(height: 256, width: double.infinity);
-  static const infiniteW_512H = SizedBox(height: 512, width: double.infinity);
-
-  // infinite height
-  static const infiniteH_16W = SizedBox(height: double.infinity, width: 16);
-  static const infiniteH_32W = SizedBox(height: double.infinity, width: 32);
-  static const infiniteH_64W = SizedBox(height: double.infinity, width: 64);
-  static const infiniteH_128W = SizedBox(height: double.infinity, width: 128);
+  static SizedBox width(double dimension, {Widget? child}) =>
+      SizedBox(width: dimension, child: child);
 
   static SizedBox squareColored({
     required double dimension,
@@ -313,6 +250,29 @@ extension WSizedBox on SizedBox {
           color: color ?? VRandomMaterial.colorPrimary,
           child: child,
         ),
+      );
+
+  ///
+  /// expand
+  ///
+  static SizedBox expandWidth(double height, {Widget? child}) =>
+      SizedBox(height: height, width: double.infinity);
+
+  static SizedBox expandHeight(double width, {Widget? child}) =>
+      SizedBox(height: double.infinity, width: width);
+
+  static SizedBox expandColored(Color color) =>
+      SizedBox.expand(child: ColoredBox(color: color));
+
+  static SizedBox expandCenter({required Widget child}) =>
+      SizedBox.expand(child: Center(child: child));
+
+  static SizedBox expandCenterColored({
+    required Color color,
+    Widget? child,
+  }) =>
+      SizedBox.expand(
+        child: Center(child: ColoredBox(color: color, child: child)),
       );
 }
 
@@ -327,54 +287,52 @@ extension WColoredBox on ColoredBox {
   static const ColoredBox purple = ColoredBox(color: Colors.purple);
 }
 
-
 extension WTransform on Transform {
   static Transform transformFromDirection(
-      Direction3DIn6 direction, {
-        Point3 initialRadian = Point3.zero,
-        double zDeep = 100,
-        required Widget child,
-      }) {
+    Direction3DIn6 direction, {
+    Point3 initialRadian = Point3.zero,
+    double zDeep = 100,
+    required Widget child,
+  }) {
     Matrix4 instance() => Matrix4.identity();
     return initialRadian == Point3.zero
         ? switch (direction) {
-      Direction3DIn6.front => Transform(
-        transform: instance(),
-        alignment: Alignment.center,
-        child: child,
-      ),
-      Direction3DIn6.back => Transform(
-        alignment: Alignment.center,
-        transform: instance()..translateOf(Point3.ofZ(-zDeep)),
-        child: child,
-      ),
-      Direction3DIn6.left => Transform(
-        alignment: Alignment.centerLeft,
-        transform: instance()..rotateY(Radian.angle_90),
-        child: child,
-      ),
-      Direction3DIn6.right => Transform(
-        alignment: Alignment.centerRight,
-        transform: instance()..rotateY(-Radian.angle_90),
-        child: child,
-      ),
-      Direction3DIn6.top => Transform(
-        alignment: Alignment.topCenter,
-        transform: instance()..rotateX(-Radian.angle_90),
-        child: child,
-      ),
-      Direction3DIn6.bottom => Transform(
-        alignment: Alignment.bottomCenter,
-        transform: instance()..rotateX(Radian.angle_90),
-        child: child,
-      ),
-    }
+            Direction3DIn6.front => Transform(
+                transform: instance(),
+                alignment: Alignment.center,
+                child: child,
+              ),
+            Direction3DIn6.back => Transform(
+                alignment: Alignment.center,
+                transform: instance()..translateOf(Point3.ofZ(-zDeep)),
+                child: child,
+              ),
+            Direction3DIn6.left => Transform(
+                alignment: Alignment.centerLeft,
+                transform: instance()..rotateY(Radian.angle_90),
+                child: child,
+              ),
+            Direction3DIn6.right => Transform(
+                alignment: Alignment.centerRight,
+                transform: instance()..rotateY(-Radian.angle_90),
+                child: child,
+              ),
+            Direction3DIn6.top => Transform(
+                alignment: Alignment.topCenter,
+                transform: instance()..rotateX(-Radian.angle_90),
+                child: child,
+              ),
+            Direction3DIn6.bottom => Transform(
+                alignment: Alignment.bottomCenter,
+                transform: instance()..rotateX(Radian.angle_90),
+                child: child,
+              ),
+          }
         : throw UnimplementedError();
   }
 }
 
-
-
+///
 ///
 ///
 /// painting
@@ -382,11 +340,40 @@ extension WTransform on Transform {
 ///
 ///
 extension WCustomPaint on CustomPaint {
+  static CustomPaint repaintNever({
+    PaintingPath paintingPath = FPaintingPath.draw,
+    required PaintFrom paintFrom,
+    required SizingPath sizingPath,
+  }) =>
+      CustomPaint(
+        painter: Painting.rePaintNever(
+          paintingPath: paintingPath,
+          paintFrom: paintFrom,
+          sizingPath: sizingPath,
+        ),
+      );
+
+  static CustomPaint repaintWhenUpdate({
+    PaintingPath paintingPath = FPaintingPath.draw,
+    required PaintFrom paintFrom,
+    required SizingPath sizingPath,
+  }) =>
+      CustomPaint(
+        painter: Painting.rePaintWhenUpdate(
+          paintingPath: paintingPath,
+          paintFrom: paintFrom,
+          sizingPath: sizingPath,
+        ),
+      );
+
+  ///
+  ///
+  ///
   static CustomPaint drawRRegularPolygon(
-      RRegularPolygonCubicOnEdge polygon, {
-        required PaintFrom pathFrom,
-        Widget? child,
-      }) =>
+    RRegularPolygonCubicOnEdge polygon, {
+    required PaintFrom pathFrom,
+    Widget? child,
+  }) =>
       CustomPaint(
         painter: Painting.rRegularPolygon(pathFrom, polygon),
         child: child,
@@ -406,9 +393,9 @@ extension WCustomPaint on CustomPaint {
 ///
 /// [WClipPath.rRectColored]
 ///
-/// [WClipPath.pathReClipNever]
-/// [WClipPath.pathRectFromZeroToSize]
-/// [WClipPath.pathPolygonRRegular]
+/// [WClipPath.reClipNever]
+/// [WClipPath.rectFromZeroToSize]
+/// [WClipPath.polygonRRegular]
 /// [WClipPath.pathPolygonRRegularDecoratedBox]
 ///
 ///
@@ -416,26 +403,13 @@ extension WCustomPaint on CustomPaint {
 ///
 ///
 extension WClipPath on ClipPath {
-  static Widget _shape({
-    required Key? key,
-    required ShapeBorder shape,
-    required Clip clipBehavior,
-    required Widget? child,
-  }) =>
-      ClipPath.shape(
-        key: key,
-        shape: shape,
-        clipBehavior: clipBehavior,
-        child: child,
-      );
-
   static Widget shapeCircle({
     Key? key,
     Clip clipBehavior = Clip.antiAlias,
     Widget? child,
     double eccentricity = 0.0,
   }) =>
-      _shape(
+      ClipPath.shape(
         key: key,
         shape: CircleBorder(side: BorderSide.none, eccentricity: eccentricity),
         clipBehavior: clipBehavior,
@@ -448,7 +422,7 @@ extension WClipPath on ClipPath {
     Widget? child,
     double eccentricity = 1.0,
   }) =>
-      _shape(
+      ClipPath.shape(
         key: key,
         shape: OvalBorder(side: BorderSide.none, eccentricity: eccentricity),
         clipBehavior: clipBehavior,
@@ -466,7 +440,7 @@ extension WClipPath on ClipPath {
     double rotation = 0,
     double squash = 0,
   }) =>
-      _shape(
+      ClipPath.shape(
         key: key,
         shape: StarBorder(
           side: BorderSide.none,
@@ -486,7 +460,7 @@ extension WClipPath on ClipPath {
     Clip clipBehavior = Clip.antiAlias,
     Widget? child,
   }) =>
-      _shape(
+      ClipPath.shape(
         key: key,
         shape: const StadiumBorder(side: BorderSide.none),
         clipBehavior: clipBehavior,
@@ -499,7 +473,7 @@ extension WClipPath on ClipPath {
     Widget? child,
     required BorderRadius borderRadius,
   }) =>
-      _shape(
+      ClipPath.shape(
         key: key,
         shape: BeveledRectangleBorder(
           side: BorderSide.none,
@@ -515,7 +489,7 @@ extension WClipPath on ClipPath {
     Widget? child,
     required BorderRadius borderRadius,
   }) =>
-      _shape(
+      ClipPath.shape(
         key: key,
         shape: RoundedRectangleBorder(
           side: BorderSide.none,
@@ -531,7 +505,7 @@ extension WClipPath on ClipPath {
     Widget? child,
     required BorderRadius borderRadius,
   }) =>
-      _shape(
+      ClipPath.shape(
         key: key,
         shape: ContinuousRectangleBorder(
           side: BorderSide.none,
@@ -541,6 +515,12 @@ extension WClipPath on ClipPath {
         child: child,
       );
 
+  ///
+  ///
+  /// with build-in clipper
+  ///
+  ///
+  ///
   static ClipRRect rRectColored({
     required BorderRadius borderRadius,
     required Color color,
@@ -552,10 +532,7 @@ extension WClipPath on ClipPath {
         clipper: clipper,
         clipBehavior: clipBehavior,
         borderRadius: borderRadius,
-        child: ColoredBox(
-          color: color,
-          child: child,
-        ),
+        child: ColoredBox(color: color, child: child),
       );
 
   ///
@@ -565,7 +542,7 @@ extension WClipPath on ClipPath {
   ///
   ///
   ///
-  static ClipPath pathReClipNever({
+  static ClipPath reClipNever({
     Clip clipBehavior = Clip.antiAlias,
     required SizingPath sizingPath,
     required Widget child,
@@ -576,7 +553,7 @@ extension WClipPath on ClipPath {
         child: child,
       );
 
-  static ClipPath pathRectFromZeroToSize({
+  static ClipPath rectFromZeroToSize({
     Clip clipBehavior = Clip.antiAlias,
     required Size size,
     required Widget child,
@@ -587,13 +564,13 @@ extension WClipPath on ClipPath {
         child: child,
       );
 
-  static ClipPath pathPolygonRRegular(
-      RRegularPolygonCubicOnEdge polygon, {
-        Key? key,
-        Clip clipBehavior = Clip.antiAlias,
-        Widget? child,
-        Companion<CubicOffset, Size> adjust = CubicOffset.companionSizeAdjustCenter,
-      }) =>
+  static ClipPath polygonRRegular(
+    RRegularPolygonCubicOnEdge polygon, {
+    Key? key,
+    Clip clipBehavior = Clip.antiAlias,
+    Widget? child,
+    Companion<CubicOffset, Size> adjust = CubicOffset.companionSizeAdjustCenter,
+  }) =>
       ClipPath(
         key: key,
         clipBehavior: clipBehavior,
@@ -604,11 +581,11 @@ extension WClipPath on ClipPath {
       );
 
   static ClipPath pathPolygonRRegularDecoratedBox(
-      Decoration decoration,
-      RRegularPolygonCubicOnEdge polygon, {
-        DecorationPosition position = DecorationPosition.background,
-        Widget? child,
-      }) =>
+    Decoration decoration,
+    RRegularPolygonCubicOnEdge polygon, {
+    DecorationPosition position = DecorationPosition.background,
+    Widget? child,
+  }) =>
       ClipPath(
         clipper: Clipping.rRegularPolygon(polygon),
         child: DecoratedBox(

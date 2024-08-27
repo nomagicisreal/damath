@@ -1,6 +1,6 @@
 name: damath
 description: math collection for dart.
-version: 0.0.22
+version: 0.0.23
 repository: https://github.com/nomagicisreal/damath
 
 environment:

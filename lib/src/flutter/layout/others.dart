@@ -29,8 +29,6 @@
 ///
 part of damath_flutter;
 
-
-
 ///
 /// [lerperFrom]
 ///
@@ -45,61 +43,58 @@ Lerper<T> lerperFrom<T>(T begin, T end) {
         Color _ => (t) => Color.lerp(begin, end as Color, t)!,
         EdgeInsets _ => (t) => EdgeInsets.lerp(begin, end as EdgeInsets?, t)!,
         RelativeRect _ => (t) =>
-        RelativeRect.lerp(begin, end as RelativeRect?, t)!,
+            RelativeRect.lerp(begin, end as RelativeRect?, t)!,
         AlignmentGeometry _ => (t) =>
-        AlignmentGeometry.lerp(begin, end as AlignmentGeometry?, t)!,
+            AlignmentGeometry.lerp(begin, end as AlignmentGeometry?, t)!,
         SizingPath _ => throw ArgumentError(
-          'Use BetweenPath instead of Between<SizingPath>',
-        ),
+            'Use BetweenPath instead of Between<SizingPath>',
+          ),
         Decoration _ => switch (begin) {
-          BoxDecoration _ => end is BoxDecoration && begin.shape == end.shape
-              ? (t) => BoxDecoration.lerp(begin, end, t)!
-              : throw UnimplementedError(
-              'BoxShape should not be interpolated'),
-          ShapeDecoration _ => switch (end) {
-            ShapeDecoration _ => begin.shape == end.shape
-                ? (t) => ShapeDecoration.lerp(begin, end, t)!
-                : switch (begin.shape) {
-              CircleBorder _ || RoundedRectangleBorder _ => switch (
-              end.shape) {
-                CircleBorder _ || RoundedRectangleBorder _ => (t) =>
-                Decoration.lerp(begin, end, t)!,
-                _ => throw UnimplementedError(
-                  "'$begin shouldn't be interpolated to $end'",
-                ),
+            BoxDecoration _ => end is BoxDecoration && begin.shape == end.shape
+                ? (t) => BoxDecoration.lerp(begin, end, t)!
+                : throw UnimplementedError(
+                    'BoxShape should not be interpolated'),
+            ShapeDecoration _ => switch (end) {
+                ShapeDecoration _ => begin.shape == end.shape
+                    ? (t) => ShapeDecoration.lerp(begin, end, t)!
+                    : switch (begin.shape) {
+                        CircleBorder _ || RoundedRectangleBorder _ => switch (
+                              end.shape) {
+                            CircleBorder _ || RoundedRectangleBorder _ => (t) =>
+                                Decoration.lerp(begin, end, t)!,
+                            _ => throw UnimplementedError(
+                                "'$begin shouldn't be interpolated to $end'",
+                              ),
+                          },
+                        _ => throw UnimplementedError(
+                            "'$begin shouldn't be interpolated to $end'",
+                          ),
+                      },
+                _ => throw UnimplementedError(),
               },
-              _ => throw UnimplementedError(
-                "'$begin shouldn't be interpolated to $end'",
-              ),
-            },
             _ => throw UnimplementedError(),
           },
-          _ => throw UnimplementedError(),
-        },
         ShapeBorder _ => switch (begin) {
-          BoxBorder _ => switch (end) {
-            BoxBorder _ => (t) => BoxBorder.lerp(begin, end, t)!,
+            BoxBorder _ => switch (end) {
+                BoxBorder _ => (t) => BoxBorder.lerp(begin, end, t)!,
+                _ => throw UnimplementedError(),
+              },
+            InputBorder _ => switch (end) {
+                InputBorder _ => (t) => ShapeBorder.lerp(begin, end, t)!,
+                _ => throw UnimplementedError(),
+              },
+            OutlinedBorder _ => switch (end) {
+                OutlinedBorder _ => (t) => OutlinedBorder.lerp(begin, end, t)!,
+                _ => throw UnimplementedError(),
+              },
             _ => throw UnimplementedError(),
           },
-          InputBorder _ => switch (end) {
-            InputBorder _ => (t) => ShapeBorder.lerp(begin, end, t)!,
-            _ => throw UnimplementedError(),
-          },
-          OutlinedBorder _ => switch (end) {
-            OutlinedBorder _ => (t) => OutlinedBorder.lerp(begin, end, t)!,
-            _ => throw UnimplementedError(),
-          },
-          _ => throw UnimplementedError(),
-        },
         _ => Tween<T>(begin: begin, end: end).transform,
       } as Lerper<T>;
     }
     rethrow;
   }
 }
-
-
-
 
 ///
 ///
@@ -416,9 +411,6 @@ extension BoxConstraintsExtension on BoxConstraints {
       constraints.loosen();
 }
 
-
-
-
 ///
 ///
 ///
@@ -568,6 +560,8 @@ extension PositionedExtension on Positioned {
 }
 
 ///
+/// 
+/// [identity]
 ///
 /// [TransformExtension] is an extension for translating from "my coordinate system" to "dart coordinate system".
 /// the discussion here follows the definitions in the comment above [Radian3.direct].
@@ -601,19 +595,24 @@ extension PositionedExtension on Positioned {
 ///
 extension TransformExtension on Transform {
   ///
+  /// 
+  /// 
+  /// 
+  static Transform identity({
+    required Applier<Matrix4> apply,
+    required Widget child,
+  }) =>
+      Transform(
+        transform: apply(Matrix4.identity()),
+        child: child,
+      );
+
+  ///
   /// [translateSpace2], [translateSpace3], ...
   ///
   static Point2 translateSpace2(Point2 p) => Point2(p.x, -p.y);
 
   static Point3 translateSpace3(Point3 p) => Point3(p.x, -p.z, -p.y);
-
-  ///
-  ///
-  ///
-  static List<Direction3DIn6> visibleFacesOf(Radian3 radian) {
-    // final faces = Direction3DIn6.visibleFacesOf(radian);
-    throw UnimplementedError();
-  }
 
   ///
   /// [ifInQuadrant]
@@ -644,8 +643,16 @@ extension TransformExtension on Transform {
 
   static bool ifOnBottom(double radian) =>
       Radian.ifWithinAngle0_180(Radian.moduleBy360Angle(radian));
-}
 
+
+  ///
+  ///
+  ///
+  static List<Direction3DIn6> visibleFacesOf(Radian3 radian) {
+    // final faces = Direction3DIn6.visibleFacesOf(radian);
+    throw UnimplementedError();
+  }
+}
 
 ///
 ///
