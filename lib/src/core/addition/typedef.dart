@@ -23,8 +23,6 @@ typedef Listener = void Function();
 typedef Consumer<T> = void Function(T value);
 typedef Intersector<T> = void Function(T v1, T v2);
 typedef Pairitor<A, B> = void Function(A a, B b);
-typedef Supplier<S> = S Function();
-typedef Generator<S> = S Function(int index);
 
 typedef Applier<T> = T Function(T value);
 typedef Reducer<T> = T Function(T v1, T v2);
@@ -34,6 +32,8 @@ typedef Absorber<T, E> = T Function(T value, E e1, E e2);
 typedef Collector<T, E> = T Function(T v1, T v2, E other);
 typedef Forcer<T, A, B> = T Function(T value, A a, B b);
 
+typedef Supplier<S> = S Function();
+typedef Generator<S> = S Function(int index);
 typedef Mapper<T, S> = S Function(T value);
 typedef Fusionor<T, S> = S Function(T v1, T v2);
 typedef Mixer<T, E, S> = S Function(T value, E element);

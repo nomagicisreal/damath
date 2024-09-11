@@ -40,7 +40,7 @@ extension IteratorTo<I> on Iterator<I> {
   ///
   ///
   /// map / [Iterable.map]
-  /// [map], [mapByIndex]
+  /// [map], [mapByIndex], [mapCurrentOrDefault], [mapRemain]
   /// [mapToEntriesByKey], [mapToEntriesByValue]
   /// [mapToRecordBy1], [mapToRecordBy2]
   /// [mapToList], [mapToListByIndex], [mapToListByList], [mapToListBySet], [mapToListByMap]
@@ -61,6 +61,7 @@ extension IteratorTo<I> on Iterator<I> {
   ///
   /// [map]
   /// [mapByIndex]
+  /// [mapCurrentOrDefault]
   /// [mapRemain]
   ///
   Iterable<S> map<S>(Mapper<I, S> toVal) =>
@@ -69,7 +70,16 @@ extension IteratorTo<I> on Iterator<I> {
   Iterable<S> mapByIndex<S>(MapperGenerator<I, S> toVal, [int start = 0]) =>
       [for (var i = start; moveNext(); i++) toVal(current, i)];
 
-  Iterable<S> mapRemain<S>(Mapper<I, S> toVal) => getCurrentOrDefault(
+  S mapCurrentOrDefault<S>(Mapper<I, S> toVal, S ifAbsent) {
+    try {
+      return toVal(current);
+    } catch (e) {
+      if (!e.runtimeType.isTypeError) rethrow;
+    }
+    return ifAbsent;
+  }
+
+  Iterable<S> mapRemain<S>(Mapper<I, S> toVal) => mapCurrentOrDefault(
         (value) => [toVal(value), for (; moveNext();) toVal(current)],
         Iterable.empty(),
       );

@@ -29,18 +29,6 @@ part of damath_collection;
 ///
 extension IteratorExtension<I> on Iterator<I> {
   ///
-  ///
-  ///
-  S getCurrentOrDefault<S>(Mapper<I, S> toVal, S ifAbsent) {
-    try {
-      return toVal(current);
-    } catch (e) {
-      if (!e.runtimeType.isTypeError) rethrow;
-    }
-    return ifAbsent;
-  }
-
-  ///
   /// consume
   /// [consumeHasNext]
   /// [consumeMoveNext]
@@ -441,7 +429,7 @@ extension IteratorExtension<I> on Iterator<I> {
 
   Iterable<I> get takeAll => [for (; moveNext();) current];
 
-  Iterable<I> get takeRemain => getCurrentOrDefault(
+  Iterable<I> get takeRemain => mapCurrentOrDefault(
         (value) => [value, for (; moveNext();) current],
         Iterable.empty(),
       );

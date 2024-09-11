@@ -494,7 +494,7 @@ class ColumnText extends StatelessWidget {
   const ColumnText(
       this.text, {
         super.key,
-        this.interval = WSizedBox.h10,
+        this.interval = WSizedBox.none,
         this.lineBuilder = none,
         this.alignment = MainAxisAlignment.center,
       });
