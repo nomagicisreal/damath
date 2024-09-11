@@ -251,7 +251,7 @@ extension FBorderInput on InputBorder {
 
   static UnderlineInputBorder underline({
     BorderSide borderSide = const BorderSide(),
-    BorderRadius borderRadius = KBorderRadius.top_4,
+    BorderRadius borderRadius = KBorderRadius.circularTop,
   }) =>
       UnderlineInputBorder(
         borderSide: borderSide,
@@ -477,15 +477,15 @@ extension FDecorationInput on InputDecoration {
         enabledBorder: enabledBorder,
         focusedBorder: OutlineInputBorder(
           borderSide: BorderSide(color: Colors.blueGrey, width: 1.5),
-          borderRadius: KBorderRadius.allCircular_10,
+          borderRadius: KBorderRadius.circularAll * 10,
         ),
         errorBorder: OutlineInputBorder(
           borderSide: BorderSide(color: Colors.red, width: 1.5),
-          borderRadius: KBorderRadius.allCircular_10,
+          borderRadius: KBorderRadius.circularAll * 10,
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderSide: BorderSide(color: Colors.red, width: 1.5),
-          borderRadius: KBorderRadius.allCircular_10,
+          borderRadius: KBorderRadius.circularAll * 10,
         ),
       );
 }
