@@ -1,4 +1,4 @@
-part of damath_collection;
+part of '../collection.dart';
 
 ///
 ///

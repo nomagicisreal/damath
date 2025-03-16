@@ -1,10 +1,7 @@
-library damath_collection;
-
 import 'dart:math' as math;
 import 'dart:collection';
 
 import 'package:damath/src/core/core.dart';
-
 
 part 'iterator/iterator.dart';
 part 'iterator/iteratorto.dart';

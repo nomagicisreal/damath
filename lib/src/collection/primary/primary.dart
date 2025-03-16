@@ -15,7 +15,7 @@
 /// 'flutter pub add statistics' for advance statistic analyze
 ///
 ///
-part of damath_collection;
+part of '../collection.dart';
 
 ///
 /// static methods:

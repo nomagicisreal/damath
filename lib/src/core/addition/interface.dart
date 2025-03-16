@@ -17,7 +17,7 @@
 ///
 ///
 ///
-part of damath_core;
+part of '../core.dart';
 
 ///
 ///

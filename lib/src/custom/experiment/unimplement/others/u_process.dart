@@ -8,7 +8,7 @@
 ///
 ///
 ///
-part of damath_experiment;
+part of '../../experiment.dart';
 
 typedef ProcessUnitOrdered<P> = (int, ProcessUnit<P>);
 

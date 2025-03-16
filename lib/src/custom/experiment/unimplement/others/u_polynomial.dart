@@ -12,7 +12,7 @@
 ///
 ///
 ///
-part of damath_experiment;
+part of '../../experiment.dart';
 
 //
 sealed class Polynomial implements IOperatableDirectable<Polynomial, Polynomial> {

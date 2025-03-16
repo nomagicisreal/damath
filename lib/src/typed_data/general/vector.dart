@@ -4,7 +4,7 @@
 ///
 ///
 ///
-part of damath_typed_data;
+part of '../typed_data.dart';
 
 
 ///

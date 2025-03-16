@@ -22,7 +22,7 @@
 ///
 ///
 ///
-part of damath_async;
+part of '../async.dart';
 
 ///
 ///

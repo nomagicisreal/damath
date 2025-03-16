@@ -14,7 +14,7 @@
 ///
 ///
 ///
-part of damath_collection;
+part of '../collection.dart';
 
 ///
 /// [Record] is lightly efficient than [MapEntry] in creation

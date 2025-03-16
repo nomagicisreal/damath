@@ -1,7 +1,4 @@
-library damath_core;
-
 import 'dart:math' as math;
-
 import 'package:damath/src/collection/collection.dart';
 
 part 'addition/constants.dart';

@@ -31,7 +31,7 @@
 ///
 ///
 ///
-part of damath_experiment;
+part of '../../experiment.dart';
 
 // //
 // mixin _MixinVertexLazyFinal<T> on Vertex<T> {

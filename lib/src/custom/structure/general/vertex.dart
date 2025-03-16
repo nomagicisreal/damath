@@ -20,7 +20,7 @@
 ///
 ///
 ///
-part of damath_structure;
+part of '../structure.dart';
 
 ///
 /// [hashCode], ...(overrides)

@@ -17,7 +17,7 @@
 ///
 ///
 ///
-part of damath_experiment;
+part of '../../experiment.dart';
 
 ///
 class HuffManCode<S> {

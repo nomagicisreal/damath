@@ -1,4 +1,4 @@
-part of damath_collection;
+part of '../collection.dart';
 // ignore_for_file: curly_braces_in_flow_control_structures
 
 ///

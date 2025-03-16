@@ -16,7 +16,7 @@
 /// 'flutter pub add rational' for rational number
 ///
 ///
-part of damath_core;
+part of '../core.dart';
 
 
 ///
