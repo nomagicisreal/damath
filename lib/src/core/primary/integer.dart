@@ -24,7 +24,9 @@ extension IntExtension on int {
   ///
   /// [largestInt]
   ///
-  static const int largestInt = 9223372036854775807; // math.pow(2, 63) - 1
+  /// can't be represent in javascript
+  ///
+  // static const int largestInt = 9223372036854775807; // math.pow(2, 63) - 1
 
   ///
   /// predicate

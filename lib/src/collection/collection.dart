@@ -12,7 +12,6 @@ part 'list/list.dart';
 part 'map/map.dart';
 part 'map/set.dart';
 part 'primary/comparable.dart';
-part 'primary/comparable_sort.dart';
 part 'primary/nested.dart';
 part 'primary/primary.dart';
 part 'primary/primary_na.dart';

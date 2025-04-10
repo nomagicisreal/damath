@@ -2,13 +2,16 @@
 // import 'package:damath/src/core/core.dart';
 
 // import 'package:flutter/cupertino.dart';
+// import 'package:collection/collection.dart';
 
 void main(List<String> arguments) async {
+  // mergeSort(elements);
+
   // final result = <bool>[];
   // var list = RandomExtension.sample(11);
   // print(list);
   // final result = List.of(list)..sortMerge();
-  // print(result);
+  // print(result);’
   // print(list.isVariationTo(result));
   // print(result.iterator.isSorted(true));
 

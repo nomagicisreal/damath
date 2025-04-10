@@ -2,7 +2,3 @@
 # Created by `dart pub`
 .dart_tool/
 .idea/
-android/
-build/
-ios/
-web/
