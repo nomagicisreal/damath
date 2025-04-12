@@ -317,9 +317,9 @@ extension MapExtension<K, V> on Map<K, V> {
 
   ///
   /// when calling [input], there are three conditions:
-  ///   1. value set absent: return [absentReturn]
-  ///   2. [value] has exist in value set: return `false`
-  ///   3. [value] not yet contained in value set: return `true`
+  ///   1. return [absentReturn] if key is absent
+  ///   2. [value] equal to old value returns `false`
+  ///   3. update old value to new [value] returns `true`
   /// see also [MapValueSet.inputSet], [Set.add]
   ///
   bool input(K key, V value, [bool absentReturn = true]) {

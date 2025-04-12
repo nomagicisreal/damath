@@ -32,7 +32,8 @@ extension RegExpExtension on RegExp {
 ///
 ///
 extension MatchExtension on Match {
-  String get group0 => group(0)!;
+  String? get group0 => group(0);
+  String? get group1 => group(1);
 }
 
 ///
@@ -63,12 +64,12 @@ extension StringExtension on String {
   ///
   ///
   String get lowercaseFirstChar => replaceFirstMapped(
-      RegExp(r'[A-Z]'), (match) => match.group0.toLowerCase());
+      RegExp(r'^[A-Z]'), (match) => match.group0!.toLowerCase());
 
   (String, String) get splitByFirstSpace {
     late final String a;
     final b = replaceFirstMapped(RegExp(r'\w '), (match) {
-      a = match.group0.trim();
+      a = match.group0!.trim();
       return '';
     });
     return (a, b);
@@ -79,11 +80,11 @@ extension StringExtension on String {
   ///
 
   String get fromUnderscoreToCamelBody => splitMapJoin(RegExp(r'_[a-z]'),
-      onMatch: (match) => match.group0[1].toUpperCase());
+      onMatch: (match) => match.group0![1].toUpperCase());
 
   String get fromCamelToUnderscore =>
       lowercaseFirstChar.splitMapJoin(RegExp(r'[a-z][A-Z]'), onMatch: (match) {
-        final s = match.group0;
+        final s = match.group0!;
         return '${s[0]}_${s[1].toLowerCase()}';
       });
 }

@@ -18,7 +18,6 @@
 ///
 part of '../core.dart';
 
-
 ///
 ///
 ///
@@ -338,6 +337,6 @@ extension RandomExtension on math.Random {
   ///
   /// list
   ///
-  static List<double> sample(int length, [math.Random? random]) =>
-      List.generate(length, FMapper.intToDouble)..shuffle(random);
+  static T get1FromList<T>(List<T> list) =>
+      list[math.Random().nextInt(list.length)];
 }

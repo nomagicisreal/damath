@@ -52,9 +52,61 @@ extension DurationExtension on Duration {
 ///
 extension DateTimeExtension on DateTime {
   ///
+  ///
+  /// constants
+  ///
+  ///
+  static const String sunday_chinese = '（日）';
+  static const String monday_chinese = '（一）';
+  static const String tuesday_chinese = '（二）';
+  static const String wednesday_chinese = '（三）';
+  static const String thursday_chinese = '（四）';
+  static const String friday_chinese = '（五）';
+  static const String saturday_chinese = '（六）';
+
+  ///
+  ///
+  /// static methods
+  ///
+  ///
+  //
+  // sample output: 2025-04-06（日） ~ 2025-04-12（六）
+  //
+  static String nowWeek({
+    int from = DateTime.sunday,
+    String sep = " ~ ",
+    bool dayName = true,
+    Duration after = Duration.zero,
+  }) {
+    final now = DateTime.now().add(after);
+    late final String dateStart;
+    late final String dateEnd;
+    if (from == DateTime.sunday) {
+      if (now.weekday == DateTime.sunday) {
+        dateStart = now.date;
+        dateEnd = now.addDays(6).date;
+      } else {
+        final start = now.addDays(-now.weekday);
+        dateStart = start.date;
+        dateEnd = start.addDays(6).date;
+      }
+      return '$dateStart${dayName ? sunday_chinese : ''}'
+          '$sep'
+          '$dateEnd${dayName ? saturday_chinese : ''}';
+    }
+    throw UnimplementedError();
+  }
+
+  ///
+  ///
+  /// [parseTimestamp]
   /// [predicateSameYear], [predicateSameMonth], [predicateSameDay]
   /// [predicateSameDate]
   ///
+  ///
+  static String parseTimestamp(String string) =>
+      DateTime.fromMillisecondsSinceEpoch(int.parse(string)).toIso8601String();
+
   static bool predicateSameYear(DateTime? a, DateTime? b) =>
       a == null || b == null ? false : a.year == b.year;
 
@@ -78,7 +130,6 @@ extension DateTimeExtension on DateTime {
   ///
   ///
   ///
-
   String get date => toString().split(' ').first; // $y-$m-$d
 
   String get time => toString().split(' ').last; // $h:$min:$sec.$ms$us
@@ -105,7 +156,11 @@ extension DateTimeExtension on DateTime {
     _ => throw UnimplementedError(),
   };
 
-  static String parseTimestamp(String string) =>
-      DateTime.fromMillisecondsSinceEpoch(int.parse(string)).toIso8601String();
+  ///
+  ///
+  ///
+  DateTime addDays(int days) => add(Duration(days: days));
+
+  DateTime addHours(int hours) => add(Duration(hours: hours));
 }
 
