@@ -11,7 +11,7 @@
 ///
 ///
 ///
-part of '../typed_data.dart';
+part of '../core.dart';
 
 ///
 ///

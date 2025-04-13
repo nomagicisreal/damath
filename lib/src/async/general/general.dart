@@ -1,22 +1,17 @@
 ///
 ///
 /// this file contains:
-/// [StreamExtension]
-/// [StreamIterableExtension]
+/// classes:
+/// [DurationFR]
+///
+/// extensions:
+/// [FutureExtension]
+/// [StreamExtension], [StreamIterableExtension]
 /// [IterableStreamSubscriptionsExtension]
-/// [FStream]
-///
-///
-///
-/// [TimerExtension]
-/// [FConsumerTimer]
 /// [IterableTimer]
 ///
-///
-///
-///
-///
-///
+/// [FStream]
+/// [FTimer], [FConsumerTimer]
 ///
 ///
 ///
@@ -27,10 +22,62 @@ part of '../async.dart';
 ///
 ///
 ///
+base class DurationFR {
+  final Duration forward;
+  final Duration reverse;
+
+  const DurationFR(this.forward, this.reverse);
+
+  const DurationFR.constant(Duration duration)
+      : forward = duration,
+        reverse = duration;
+
+  ///
+  /// constants
+  ///
+  static const DurationFR zero = DurationFR.constant(Duration.zero);
+  static const DurationFR milli100 =
+      DurationFR.constant(KCore.durationMilli100);
+  static const DurationFR second1 = DurationFR.constant(KCore.durationSecond1);
+  static const DurationFR min1 = DurationFR.constant(KCore.durationMin1);
+
+  ///
+  /// implementation for [Object]
+  ///
+  @override
+  int get hashCode => Object.hash(forward, reverse);
+
+  @override
+  bool operator ==(covariant DurationFR other) => hashCode == other.hashCode;
+
+  @override
+  String toString() => 'DurationFR(f: $forward, r:$reverse)';
+
+  ///
+  ///
+  ///
+  DurationFR operator +(DurationFR other) =>
+      DurationFR(forward + other.forward, reverse + other.reverse);
+
+  DurationFR operator -(DurationFR other) =>
+      DurationFR(forward - other.forward, reverse - other.reverse);
+
+  DurationFR operator &(Duration value) =>
+      DurationFR(forward + value, reverse + value);
+
+  DurationFR operator ^(Duration value) =>
+      DurationFR(forward - value, reverse - value);
+
+  DurationFR operator ~/(int value) =>
+      DurationFR(forward ~/ value, reverse ~/ value);
+}
+
+///
+///
+///
 extension FutureExtension<T> on Future<T> {
   static final delayedZero = Future.delayed(Duration.zero);
 }
-
 
 ///
 /// stream
@@ -82,7 +129,28 @@ extension IterableStreamSubscriptionsExtension on Iterable<StreamSubscription> {
   void cancelAll() => fold<void>(null, (_, stream) => stream.cancel());
 }
 
-//
+///
+///
+///
+extension IterableTimer on Iterable<Timer> {
+  void cancelAll() {
+    for (var t in this) {
+      t.cancel();
+    }
+  }
+}
+
+///
+///
+///
+/// takeaway
+///
+///
+///
+
+///
+///
+///
 extension FStream<T> on Stream<T> {
   ///
   /// of
@@ -137,14 +205,7 @@ extension FStream<T> on Stream<T> {
 ///
 ///
 ///
-///
-/// timer
-///
-///
-///
-
-//
-extension TimerExtension on Timer {
+extension FTimer on Timer {
   static final Timer zero = Timer(Duration.zero, FListener.none);
 
   static Timer _nest(
@@ -169,6 +230,9 @@ extension TimerExtension on Timer {
       _sequence(steps.iterator.pairMap(listeners.iterator, Record2.mix));
 }
 
+///
+///
+///
 extension FConsumerTimer on Consumer<Timer> {
   static Consumer<Timer> periodicProcessUntil(int n, Listener listener) {
     int count = 0;
@@ -197,16 +261,5 @@ extension FConsumerTimer on Consumer<Timer> {
       listenIf(shouldListen());
       count++;
     };
-  }
-}
-
-///
-///
-///
-extension IterableTimer on Iterable<Timer> {
-  void cancelAll() {
-    for (var t in this) {
-      t.cancel();
-    }
   }
 }

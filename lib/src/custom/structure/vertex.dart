@@ -1,3 +1,5 @@
+part of '../custom.dart';
+
 ///
 ///
 /// this file contains:
@@ -20,7 +22,7 @@
 ///
 ///
 ///
-part of '../structure.dart';
+
 
 ///
 /// [hashCode], ...(overrides)

@@ -1,3 +1,5 @@
+part of '../../custom.dart';
+
 ///
 /// this file contains:
 ///
@@ -16,7 +18,6 @@
 ///
 ///
 ///
-part of damath_assumption;
 
 ///
 /// proof aka implication, see also [Propositioner.implication]

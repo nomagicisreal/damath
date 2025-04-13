@@ -1,3 +1,5 @@
+part of '../../custom.dart';
+
 ///
 /// this file contains:
 ///
@@ -20,7 +22,6 @@
 /// [PropositionEquivalenceLaw], ...
 /// [PropositionRulesInference], ...
 ///
-part of damath_assumption;
 
 ///
 /// [Propositioner] enums all the possibility of proposition operation.

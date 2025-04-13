@@ -1,7 +1,8 @@
+part of '../../custom.dart';
+
 ///
 ///
 /// this file contains:
-///
 ///
 /// [RegularPolygon]
 ///   [RegularPolygonRadiusSingle]
@@ -9,7 +10,7 @@
 ///
 ///
 ///
-part of '../../experiment.dart';
+
 
 ///
 ///

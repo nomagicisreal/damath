@@ -1,4 +1,4 @@
-part of damath_assumption;
+part of '../../custom.dart';
 
 ///
 /// SROI ?

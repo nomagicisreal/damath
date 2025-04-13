@@ -1,3 +1,5 @@
+part of '../../custom.dart';
+
 ///
 ///
 /// this file contains:
@@ -25,8 +27,6 @@
 ///
 ///
 ///
-part of '../../experiment.dart';
-
 
 // extension GraphAlgorithm<C extends Comparable> on List<List<C>> {
 //   ///

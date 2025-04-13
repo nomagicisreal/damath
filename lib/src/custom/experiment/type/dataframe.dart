@@ -1,10 +1,12 @@
+part of '../../custom.dart';
+
 ///
 ///
 /// this file contains:
 ///
 ///
 ///
-part of '../typed_data.dart';
+
 
 ///
 ///

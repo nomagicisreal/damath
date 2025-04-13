@@ -1,3 +1,5 @@
+part of '../../custom.dart';
+
 ///
 ///
 /// this file contains:
@@ -18,7 +20,7 @@
 ///
 ///
 ///
-part of '../typed_data.dart';
+
 
 ///
 ///
@@ -441,12 +443,10 @@ base class Radian3 extends Radian {
 ///
 
 ///
-///
 /// [x], [y]
 /// [Point.square], ...(constructors)
 /// [toRecord], ...(getters)
 /// [middleTo], ...(methods)
-///
 ///
 sealed class Point extends BOperatableComparable<Point>
     implements
@@ -642,9 +642,9 @@ base class Point2 extends Point {
 /// see also [Point3.rotate], [Space3.fromDirection] for direction
 ///
 ///
-/// [Point3.cube], ... (constructor)
-/// [Point3.fromDirection], ... (factories)
-/// [zero], ... (constants)
+/// [Point3.cube], ...
+/// [Point3.fromDirection], ...
+/// [zero], ...
 ///
 /// [toString], ...(implementations for [Object])
 /// [-], ...(implementations for [Space])

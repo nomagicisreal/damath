@@ -12,3 +12,4 @@ part 'primary/double.dart';
 part 'primary/integer.dart';
 part 'primary/string.dart';
 part 'primary/time.dart';
+part 'primary/record.dart';

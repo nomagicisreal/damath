@@ -1,10 +1,4 @@
-///
-///
-/// this file contains:
-///
-///
-///
-part of '../../experiment.dart';
+part of '../../custom.dart';
 
 // venn diagram (<= 3 subset)
 

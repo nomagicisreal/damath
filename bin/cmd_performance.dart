@@ -1,4 +1,5 @@
 // ignore_for_file: unused_local_variable
+import 'package:damath/damath.dart';
 import 'package:damath/src/core/core.dart';
 
 ///
@@ -9,7 +10,7 @@ import 'package:damath/src/core/core.dart';
 /// [comparisonBy]
 ///
 ///
-final list = RandomExtension.sample(1e5.toInt());
+final list = List.generate(1e5.toInt(), (i) => i)..shuffle();
 
 void main() async {
   comparisonBy(

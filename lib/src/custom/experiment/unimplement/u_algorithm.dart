@@ -1,3 +1,5 @@
+part of '../../custom.dart';
+
 ///
 ///
 /// this file contains:
@@ -17,7 +19,6 @@
 ///
 ///
 ///
-part of '../../experiment.dart';
 
 ///
 class HuffManCode<S> {
@@ -187,8 +188,6 @@ extension SequencingUtil<C extends Comparable> on List<List<C>> {
     });
   }
 }
-
-
 
 ///
 ///

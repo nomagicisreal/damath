@@ -1,11 +1,4 @@
-///
-///
-/// this file contains:
-///
-///
-///
-///
-part of '../typed_data.dart';
+part of '../../custom.dart';
 
 //
 // ///

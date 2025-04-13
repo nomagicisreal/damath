@@ -1,3 +1,5 @@
+part of '../custom.dart';
+
 ///
 ///
 /// [Node]
@@ -39,7 +41,7 @@
 ///
 ///
 ///
-part of '../structure.dart';
+
 
 ///
 ///

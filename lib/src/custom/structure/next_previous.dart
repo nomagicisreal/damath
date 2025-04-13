@@ -1,9 +1,4 @@
-///
-///
-/// this file contains:
-///
-///
-part of '../structure.dart';
+part of '../custom.dart';
 
 // ///
 // ///

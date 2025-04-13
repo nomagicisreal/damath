@@ -1,3 +1,5 @@
+part of '../../custom.dart';
+
 ///
 ///
 /// this file contains:
@@ -12,10 +14,10 @@
 ///
 ///
 ///
-part of '../../experiment.dart';
 
 //
-sealed class Polynomial implements IOperatableDirectable<Polynomial, Polynomial> {
+sealed class Polynomial
+    implements IOperatableDirectable<Polynomial, Polynomial> {
   const Polynomial();
 }
 
