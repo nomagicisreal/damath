@@ -53,8 +53,9 @@ extension NullableExtension<T> on T? {
   S mapNotNullOr<S>(Mapper<T, S> toVal, Supplier<S> ifNull) =>
       this == null ? ifNull() : toVal(this as T);
 
-  void consumeNotNull(Consumer<T> consume) {
-    if (this != null) consume(this as T);
+  void consumeNotNull(Consumer<T> consume, [Listener? ifNull]) {
+    if (this != null) return consume(this as T);
+    ifNull?.call();
   }
 
   ///
