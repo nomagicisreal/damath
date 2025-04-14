@@ -62,14 +62,17 @@ base class DurationFR {
   DurationFR operator -(DurationFR other) =>
       DurationFR(forward - other.forward, reverse - other.reverse);
 
+  DurationFR operator *(int value) =>
+      DurationFR(forward * value, reverse * value);
+
+  DurationFR operator ~/(int value) =>
+      DurationFR(forward ~/ value, reverse ~/ value);
+
   DurationFR operator &(Duration value) =>
       DurationFR(forward + value, reverse + value);
 
   DurationFR operator ^(Duration value) =>
       DurationFR(forward - value, reverse - value);
-
-  DurationFR operator ~/(int value) =>
-      DurationFR(forward ~/ value, reverse ~/ value);
 }
 
 ///

@@ -1,22 +1,27 @@
+part of '../core.dart';
+
 ///
 ///
 /// this file contains:
 /// [Listener]...
+/// [Applier], ...
+/// [Supplier], ...
+///
+/// [Predicator], ...
+/// [ConsumerIndexable], ...
+/// [Generator], ..., [LinkerGenerator], ...
+/// [Countable], ...
 ///
 ///
-/// [ConsumerDoubleExtension]
-///
+/// [FListener]
 /// [FPredicatorFusionor]
 /// [FGenerator]
 /// [FMapper]
-///
-///
 /// [FKeep]
 ///
 ///
-///
-part of '../core.dart';
 
+///
 ///
 ///
 typedef Listener = void Function();
@@ -24,6 +29,9 @@ typedef Consumer<T> = void Function(T value);
 typedef Intersector<T> = void Function(T v1, T v2);
 typedef Pairitor<A, B> = void Function(A a, B b);
 
+///
+///
+///
 typedef Applier<T> = T Function(T value);
 typedef Reducer<T> = T Function(T v1, T v2);
 typedef Collapser<T> = T Function(T v1, T v2, T v3);
@@ -32,8 +40,10 @@ typedef Absorber<T, E> = T Function(T value, E e1, E e2);
 typedef Collector<T, E> = T Function(T v1, T v2, E other);
 typedef Forcer<T, A, B> = T Function(T value, A a, B b);
 
+///
+///
+///
 typedef Supplier<S> = S Function();
-typedef Generator<S> = S Function(int index);
 typedef Mapper<T, S> = S Function(T value);
 typedef Fusionor<T, S> = S Function(T v1, T v2);
 typedef Mixer<T, E, S> = S Function(T value, E element);
@@ -42,31 +52,27 @@ typedef Chainer<T, E, S> = S Function(S element, T value, E other);
 typedef Synthesizer<A, B, C, S> = S Function(A a, B b, C c);
 
 ///
-/// predicator
+///
 ///
 typedef Predicator<T> = bool Function(T value);
 typedef PredicatorFusionor<T> = bool Function(T v1, T v2);
 typedef PredicatorMixer<T, E> = bool Function(T value, E element);
 typedef PredicatorSynthesizer<O, P, Q> = bool Function(O o, P p, Q q);
 typedef PredicatorGenerator<T> = bool Function(T value, int index);
-
-///
-/// ternarator
-///
 typedef Ternarator<T> = bool? Function(T value);
 typedef TernaratorFusionor<T> = bool? Function(T v1, T v2);
 
-
 ///
-/// indexable
+///
 ///
 typedef ConsumerIndexable<T> = void Function(T value, int index);
 typedef IntersectorIndexable<T> = void Function(T v1, T v2, int index);
 typedef PairitorIndexable<A, B> = void Function(A a, B b, int index);
 
 ///
-/// generator
 ///
+///
+typedef Generator<S> = S Function(int index);
 typedef Generator2D<S> = S Function(int i, int j);
 typedef ApplierGenerator<T> = T Function(T value, int index);
 typedef ReducerGenerator<T> = T Function(T v1, T v2, int index);
@@ -76,6 +82,9 @@ typedef AbsorberGenerator<T, E> = T Function(T value, E e1, E e2, int index);
 typedef CollectorGenerator<T, E> = T Function(T v1, T v2, E other, int index);
 typedef ForcerGenerator<T, A, B> = T Function(T value, A a, B b, int index);
 
+///
+///
+///
 typedef LinkerGenerator<T, E, S> = S Function(T v1, T v2, E other, int index);
 typedef FusionorGenerator<T, S> = S Function(T v1, T v2, int index);
 typedef MapperGenerator<T, S> = S Function(T value, int index);
@@ -83,50 +92,22 @@ typedef MixerGenerator<T, E, S> = S Function(T value, E element, int index);
 typedef SynthesizerGenerator<P, Q, R, S> = S Function(P p, Q q, R r, int index);
 
 ///
-/// others
 ///
-typedef Countable<T> = (int, T);
+///
 typedef List2D<T> = List<List<T>>;
-typedef Differentiator<A, B> = int Function(A a, B b);
-typedef Lerper<T> = T Function(double t);
+typedef Countable<T> = (int, T);
 typedef Applicator<T, E> = void Function(T element, Applier<E> apply);
+typedef Lerper<T> = T Function(double t);
+typedef Differentiator<A, B> = int Function(A a, B b);
+typedef Decider<T, S> = Consumer<T> Function(S toggle);
+typedef Supporter<T, S> = T Function(Supplier<S> taging);
+typedef Sequencer<T, I, S> = Mapper<int, S> Function(
+  T previous,
+  T next,
+  I interval,
+);
 
 ///
-///
-///
-///
-///
-///
-///
-/// extensions
-///
-///
-///
-///
-///
-///
-
-///
-///
-///
-///
-/// [FListener]
-/// [FPredicatorFusionor]
-/// [FGenerator]
-/// [FMapper]
-/// [FReducer]
-/// [FKeep]
-///
-///
-/// [ConsumerDoubleExtension]
-///
-///
-///
-
-
-///
-///
-/// listener
 ///
 ///
 extension FListener on Listener {
@@ -136,15 +117,9 @@ extension FListener on Listener {
 }
 
 ///
-/// [isEqual], ...
 ///
-/// see [Propositioner] for predication combined from [bool]
 ///
 extension FPredicatorFusionor on PredicatorFusionor {
-  ///
-  /// [isEqual], [isDifferent]
-  /// [alwaysTrue], [alwaysFalse]
-  ///
   static bool isEqual<T>(T valueA, T valueB) => valueA == valueB;
 
   static bool isDifferent<T>(T valueA, T valueB) => valueA != valueB;
@@ -154,78 +129,47 @@ extension FPredicatorFusionor on PredicatorFusionor {
   static bool alwaysFalse<T>(T a, T b) => false;
 }
 
-
 ///
-///
-/// generator
-///
-/// static methods:
-/// [filled], ...
-/// [ofDouble], ...
-///
+/// static methods: [of], [of2D]
 /// instance methods:
-/// [generate], ...
-///
+/// [yielding], ...
 /// [foldTill], ...
 /// [reduceTill], ...
-///
 /// [linkTill], ...
 ///
-///
 extension FGenerator<T> on Generator<T> {
-  static Generator<T> filled<T>(T value) => (i) => value;
+  ///
+  ///
+  ///
+  static Generator<T> of<T>(T value) => (i) => value;
 
-  static Generator2D<T> filled2D<T>(T value) => (i, j) => value;
-
-  static double ofDouble(int index) => index.toDouble();
+  static Generator2D<T> of2D<T>(T value) => (i, j) => value;
 
   ///
-  /// [generate]
-  /// [generateToList]
   ///
-  Iterable<T> generate(int length, [int start = 0]) sync* {
+  ///
+  Iterable<T> yielding(int length, [int start = 0]) sync* {
     for (var i = start; i < length; i++) {
       yield this(i);
     }
   }
 
-  List<T> generateToList(int length, [int start = 0]) =>
+  List<T> yieldingToList(int length, [int start = 0]) =>
       [for (var i = start; i < length; i++) this(i)];
 
-  ///
-  /// [yielding]
-  /// [yieldingToList]
-  ///
-  Iterable<E> yielding<E>(
-    int length,
-    Mapper<T, E> toVal, [
-    int start = 0,
-  ]) sync* {
+  Iterable<E> yieldingMap<E>(int length, Mapper<T, E> toVal,
+      [int start = 0]) sync* {
     for (var i = start; i < length; i++) {
       yield toVal(this(i));
     }
   }
 
-  List<E> yieldingToList<E>(
-    int length,
-    Mapper<T, E> toVal, [
-    int start = 0,
-  ]) =>
+  List<E> yieldingMapToList<E>(int length, Mapper<T, E> toVal,
+          [int start = 0]) =>
       [for (var i = start; i < length; i++) toVal(this(i))];
 
   ///
-  /// fold, reduce
-  /// [foldTill]
-  /// [foldCollectTill]
   ///
-  ///
-  /// [reduceTill]
-  ///
-  ///
-  ///
-
-  ///
-  /// [foldTill]
   ///
   S foldTill<S>(int length, S initialValue, Companion<S, T> companion) {
     var val = initialValue;
@@ -249,7 +193,7 @@ extension FGenerator<T> on Generator<T> {
   }
 
   ///
-  /// [reduceTill]
+  ///
   ///
   T reduceTill(int length, Reducer<T> reducing) {
     var val = this(0);
@@ -260,8 +204,7 @@ extension FGenerator<T> on Generator<T> {
   }
 
   ///
-  /// [linkTill]
-  /// [linkToListTill]
+  ///
   ///
   Iterable<S> linkTill<E, S>(
     int length,
@@ -295,31 +238,11 @@ extension FGenerator<T> on Generator<T> {
 ///
 ///
 ///
-///
-///
-///
-///
-///
-/// translator
-///
-///
-///
-///
-///
-///
-///
-///
 extension FMapper on Mapper {
-
-  ///
-  ///
-  ///
   static double intToDouble(int value) => value.toDouble();
+
   static int doubleToInt(double value) => value.toInt();
 
-  ///
-  ///
-  ///
   static Mapper<int, bool> oddOrEvenCheckerAs(int value) =>
       value.isOdd ? (v) => v.isOdd : (v) => v.isEven;
 
@@ -338,22 +261,8 @@ extension FKeep on Type {
   static T reduceV1<T>(T v1, T v2) => v1;
 
   static T reduceV2<T>(T v1, T v2) => v2;
-}
 
+  static double generateDouble(int index) => index.toDouble();
 
-///
-///
-///
-extension ConsumerDoubleExtension on Consumer<double> {
-  ///
-  /// [doubleAdd], [doubleSubtract]
-  /// [doubleMultiply], [doubleDivide]
-  ///
-  void doubleAdd(double v1, double v2) => this(v1 + v2);
-
-  void doubleSubtract(double v1, double v2) => this(v1 - v2);
-
-  void doubleMultiply(double v1, double v2) => this(v1 * v2);
-
-  void doubleDivide(double v1, double v2) => this(v1 / v2);
+  static int generate(int index) => index;
 }

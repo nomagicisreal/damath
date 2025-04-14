@@ -1,9 +1,5 @@
-part of '../../custom.dart';
+part of '../core.dart';
 
-///
-///
-/// this file contains:
-///
 ///
 /// [Radian]
 ///   [Radian2]
@@ -14,22 +10,6 @@ part of '../../custom.dart';
 /// [Point]
 ///   [Point2]
 ///   [Point3]
-///
-///
-///
-///
-///
-///
-
-
-///
-///
-///
-///
-/// radian
-///
-///
-///
 ///
 ///
 

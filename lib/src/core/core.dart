@@ -6,6 +6,9 @@ part 'addition/debug.dart';
 part 'addition/extension.dart';
 part 'addition/interface.dart';
 part 'addition/typedef.dart';
+part 'geometry/constable.dart';
+part 'geometry/direction.dart';
+part 'geometry/shape.dart';
 
 part 'primary/_.dart';
 part 'primary/double.dart';

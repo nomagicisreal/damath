@@ -1,4 +1,4 @@
-part of '../../custom.dart';
+part of '../core.dart';
 
 ///
 ///

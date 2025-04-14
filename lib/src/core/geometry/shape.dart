@@ -1,8 +1,7 @@
-part of '../../custom.dart';
+part of '../core.dart';
 
 ///
 ///
-/// this file contains:
 ///
 /// [RegularPolygon]
 ///   [RegularPolygonRadiusSingle]
