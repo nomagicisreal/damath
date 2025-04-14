@@ -28,18 +28,21 @@ base class DurationFR {
 
   const DurationFR(this.forward, this.reverse);
 
-  const DurationFR.constant(Duration duration)
+  const DurationFR.of(Duration duration)
       : forward = duration,
         reverse = duration;
+
+  const DurationFR.rated(Duration duration, double rate)
+      : forward = duration,
+        reverse = duration * rate;
 
   ///
   /// constants
   ///
-  static const DurationFR zero = DurationFR.constant(Duration.zero);
-  static const DurationFR milli100 =
-      DurationFR.constant(KCore.durationMilli100);
-  static const DurationFR second1 = DurationFR.constant(KCore.durationSecond1);
-  static const DurationFR min1 = DurationFR.constant(KCore.durationMin1);
+  static const DurationFR zero = DurationFR.of(Duration.zero);
+  static const DurationFR milli100 = DurationFR.of(KCore.durationMilli100);
+  static const DurationFR second1 = DurationFR.of(KCore.durationSecond1);
+  static const DurationFR min1 = DurationFR.of(KCore.durationMin1);
 
   ///
   /// implementation for [Object]
