@@ -177,7 +177,7 @@ extension ListList<T> on List2D<T> {
   ///
   List2D<T> copyIntoIdentity(Reducer<T> reducing, int length, T fill) {
     final identity = List.filled(length, fill);
-    return mapToList((t) => identity.cloneFixed..updateReduce(reducing, t));
+    return mapToList((t) => identity..updateReduce(reducing, t));
   }
 }
 
@@ -251,5 +251,5 @@ extension ListSet<I> on List<Set<I>> {
   }
 
   void mergeWhereToTrailing(Predicator<Set<I>> test) =>
-      add(removeAtWhere(test).iterator.reduceMerged());
+      add(removalWhere(test).iterator.reduceMerged());
 }

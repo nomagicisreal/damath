@@ -1,73 +1,46 @@
-// ignore_for_file: unused_local_variable
 import 'package:damath/damath.dart';
-import 'package:damath/src/core/core.dart';
-
-///
-///
-/// [way1]
-/// [way2]
-/// [way3]
-/// [comparisonBy]
-///
-///
-final list = List.generate(1e5.toInt(), (i) => i)..shuffle();
 
 void main() async {
-  comparisonBy(
-    Stopwatch(),
-    2,
-    (i) => switch (i) {
-      1 => way1(),
-      2 => way2(),
-      3 => way3(),
-      _ => throw UnimplementedError(),
-    },
-  );
-}
+  final watch = Stopwatch();
+  final process = [
+    way1,
+    way2,
+  ];
 
-String way1() {
-  dynamic result;
-  for (var i = 1; i < 1e5; i++) {
-    // result = list
-    //   ..shuffle()
-    //   ..sort();
-    result = IntExtension.combination(100, 50);
-  }
-  // throw UnimplementedError();
-  return 'finished';
-  // return result.toString();
-}
-
-String way2() {
-  dynamic result;
-  for (var i = 1; i < 1e5; i++) {
-    // result = list
-    //   ..shuffle()
-    //   ..sortMerge();
-  }
-  return 'finished';
-  // return result.toString();
-}
-
-String way3() {
-  dynamic result;
-  for (var i = 1; i < 1e5; i++) {
-    // mergeSort(list..shuffle());
-    result = list;
-  }
-  // throw UnimplementedError();
-  return 'finished';
-  // return record.toString();
-}
-
-
-
-void comparisonBy(Stopwatch watch, int count, Generator<String> process) {
   print('start');
-  for (var i = 1; i <= count; i++) {
+  for (var i = 0; i < process.length; i++) {
     watch.start();
-    print('way $i: ${process(i)} in ${watch.elapsed}');
+    print('way $i: ${process[i]()} in ${watch.elapsed}');
     watch.reset();
   }
   print('end');
+}
+
+///
+///
+///
+String way1() {
+  dynamic result = 'finished';
+  final listA = [1, 2, 3, 4];
+  final listB = [100, 200, 300];
+  for (var i = 1; i < 1e5; i++) {
+    result = listA.sandwich(listB);
+  }
+  return result.toString();
+}
+
+String way2() {
+  dynamic result = 'finished';
+  final listA = [1, 2, 3, 4];
+  final listB = [100, 200, 300];
+  for (var i = 1; i < 1e5; i++) {
+    result = listA.sandwich(listB);
+  }
+  return result.toString();
+}
+
+String way3() {
+  dynamic result = 'finished';
+  for (var i = 1; i < 1e5; i++) {}
+  return result.toString();
 }

@@ -1,7 +1,5 @@
 part of '../collection.dart';
-// ignore_for_file: curly_braces_in_flow_control_structures
 
-///
 ///
 /// static methods:
 /// [applyAdd], ...
@@ -17,15 +15,11 @@ part of '../collection.dart';
 /// [isFixed], ...
 /// [addNext], ...
 /// [fillFor], ...
-///
 /// [getOrDefault], ...
-///
-/// [removeAtWhere], ...
 ///
 /// [clone], ...
 /// [mapToList], ...
 /// [reduceWith], ...
-///
 /// [splitBy], ...
 ///
 extension ListExtension<T> on List<T> {
@@ -51,27 +45,28 @@ extension ListExtension<T> on List<T> {
       );
 
   static List<List<T>> generate2D<T>(
-    int rowCount,
-    int columnCount,
-    Generator2D<T> generator,
-  ) =>
+          int rowCount, int columnCount, Generator2D<T> generator,
+          {bool growable = false}) =>
       List.generate(
         rowCount,
-        (i) => List.generate(columnCount, (j) => generator(i, j)),
+        (i) => List.generate(columnCount, (j) => generator(i, j),
+            growable: growable),
+        growable: growable,
       );
 
   static List<List<T>> generate2DSquare<T>(int d, Generator2D<T> generator) =>
-      generate2D(d, d, generator);
+      generate2D(d, d, generator, growable: false);
 
   ///
   /// [fill2D]
   /// [fill2DSquare]
   ///
-  static List<List<T>> fill2D<T>(int rowCount, int columnCount, T value) =>
-      generate2D(rowCount, columnCount, (i, j) => value);
+  static List<List<T>> fill2D<T>(int rowCount, int columnCount, T value,
+          {bool growable = false}) =>
+      generate2D(rowCount, columnCount, (i, j) => value, growable: growable);
 
   static List<List<T>> fill2DSquare<T>(int size, T value) =>
-      fill2D(size, size, value);
+      fill2D(size, size, value, growable: false);
 
   ///
   ///
@@ -273,71 +268,37 @@ extension ListExtension<T> on List<T> {
   }
 
   ///
-  ///
-  ///
-  ///
   /// [getOrDefault]
+  /// [removalWhere]
   ///
-  ///
-  ///
+  T getOrDefault(int position, Supplier<T> onInvalidPosition) =>
+      position.isNatural && position < length
+          ? this[position]
+          : onInvalidPosition();
 
-  ///
-  /// [getOrDefault]
-  ///
-  T getOrDefault(int position, Supplier<T> onOutOfBound) =>
-      position < length ? this[position] : onOutOfBound();
-
-  ///
-  ///
-  /// [removeAtWhere]
-  /// [removeOn]
-  ///
-  ///
-
-  ///
-  /// [removeAtWhere]
-  /// [removeOn]
-  ///
-  Iterable<T> removeAtWhere(Predicator<T> test) => [
-        for (var i = 0; i < length; i++)
-          if (test(this[i])) removeAt(i)
-      ];
-
-  Iterable<T> removeOn(
-    Iterable<bool> positions, [
-    Supplier<Iterable<T>>? onLess,
-    Supplier<Iterable<T>>? onMore,
-  ]) =>
-      (positions.length - length).switchNatural(
-        () => positions.iterator.takeFor(iterator),
-        onLess,
-        onMore,
-      );
+  Iterable<T> removalWhere(Predicator<T> test) sync* {
+    for (var i = 0; i < length; i++) if (test(this[i])) yield removeAt(i);
+  }
 
   ///
   /// fill, copy
   /// [clone],
-  /// [cloneSwitch], [cloneWithFilling], [cloneByOrder]
+  /// [cloneHeadTailSwitch], [cloneWithFilling], [cloneByOrder]
   ///
   ///
 
   ///
-  /// [clone]
-  /// [cloneSwitch]
+  /// [cloneHeadTailSwitch]
   /// [cloneWithFilling]
   /// [cloneByOrder]
   ///
-  List<T> clone([bool growable = false]) => List.of(this, growable: growable);
-
-  List<T> get cloneFixed => List.of(this, growable: false);
-
-  List<T> cloneSwitch([int interval = 1]) =>
+  List<T> cloneHeadTailSwitch([int interval = 1]) =>
       [...sublist(interval), ...sublist(0, interval)];
 
-  List<T> cloneWithFilling(int total, T value, [bool trailing = true]) => [
-        if (!trailing) ...List.filled(total - length, value, growable: false),
+  List<T> cloneWithFilling(int total, T value, [bool fillOnTail = true]) => [
+        if (!fillOnTail) ...List.filled(total - length, value, growable: false),
         ...this,
-        if (trailing) ...List.filled(total - length, value, growable: false),
+        if (fillOnTail) ...List.filled(total - length, value, growable: false),
       ];
 
   List<T> cloneByOrder(Iterable<int> order) {
@@ -355,9 +316,8 @@ extension ListExtension<T> on List<T> {
       [...sublist(count), ...sublist(count).reversed];
 
   ///
-  /// [mapToList]
-  /// [mapToListWithByNew], [mapToListWithByOld]
-  /// [mapToListTogether]
+  /// [mapToList], ...
+  /// [mapSublist], ...
   ///
   List<E> mapToList<E>(Mapper<T, E> toVal) =>
       [for (var i = 0; i < length; i++) toVal(this[i])];
@@ -388,8 +348,7 @@ extension ListExtension<T> on List<T> {
       ];
 
   ///
-  /// [mapSublist]
-  /// [mapSublistByIndex]
+  ///
   ///
   List<S> mapSublist<S>(int begin, Mapper<T, S> mapping, [int? end]) {
     if (length.isBoundClose(begin, end)) {
@@ -412,8 +371,7 @@ extension ListExtension<T> on List<T> {
   }
 
   ///
-  /// [reduceWith]
-  /// [companionWith]
+  ///
   ///
   List<T> reduceWith(List<T> other, Reducer<T> reducing) =>
       [for (var i = 0; i < length; i++) reducing(this[i], other[i])];
@@ -421,13 +379,17 @@ extension ListExtension<T> on List<T> {
   List<T> companionWith<E>(List<E> other, Companion<T, E> companion) =>
       [for (var i = 0; i < length; i++) companion(this[i], other[i])];
 
-  ///
-  ///
-  /// split
-  /// [splitBy], [splitAt]
-  ///
-  ///
-  ///
+  List<T> sandwich(List<T> meat) {
+    if (length != meat.length + 1) throw Exception('invalid sandwich');
+    // return iterator.sandwich(meat.iterator); // bad performance
+    final result = <T>[];
+    var i = 0;
+    for (; i < meat.length; i++) {
+      result.add(this[i]);
+      result.add(meat[i]);
+    }
+    return result..add(this[i]);
+  }
 
   ///
   /// [splitBy]

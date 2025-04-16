@@ -1,5 +1,4 @@
 part of '../collection.dart';
-// ignore_for_file: curly_braces_in_flow_control_structures
 
 ///
 /// static methods:
@@ -30,6 +29,7 @@ part of '../collection.dart';
 ///
 /// [chunk], ...
 /// [combination2], ...
+/// [toMapByFilterOr], ...
 ///
 ///
 extension IterableExtension<I> on Iterable<I> {
@@ -170,7 +170,6 @@ extension IterableExtension<I> on Iterable<I> {
   ///
   String get joinToLines => join('\n');
 
-
   ///
   ///
   /// [reduceTogether]
@@ -292,6 +291,13 @@ extension IterableExtension<I> on Iterable<I> {
   ///
   ///
   ///
+  Iterable<I> takeFor(Iterable<bool> positions) => positions.length == length
+      ? positions.iterator.takeFor(iterator)
+      : throw StateError(FErrorMessage.iterableSizeInvalid);
+
+  ///
+  ///
+  ///
   /// [foldWith], [foldTogether]
   ///
   ///
@@ -391,4 +397,10 @@ extension IterableExtension<I> on Iterable<I> {
       iterable = iterable.skip(1);
     }
   }
+
+  ///
+  ///
+  ///
+  Map<I, V> toMapByFilterOr<V>(Map<I, V> keyValue, V nullFill) =>
+      Map.fromIterables(this, map((key) => keyValue[key] ?? nullFill));
 }

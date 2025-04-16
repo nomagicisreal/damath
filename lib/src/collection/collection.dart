@@ -3,10 +3,10 @@ import 'dart:collection';
 
 import 'package:damath/src/core/core.dart';
 
-part 'iterator/iterator.dart';
-part 'iterator/iteratorto.dart';
-part 'iterator/itertogether.dart';
-part 'list/iterable.dart';
+part 'iterable/iterator.dart';
+part 'iterable/iteratorto.dart';
+part 'iterable/itertogether.dart';
+part 'iterable/iterable.dart';
 part 'list/list_linked.dart';
 part 'list/list.dart';
 part 'map/map.dart';

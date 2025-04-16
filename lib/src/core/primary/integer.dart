@@ -419,21 +419,4 @@ extension IntExtension on int {
     final max = this + 1 - inset;
     return [for (var i = 0; i < max; i++) i];
   }
-
-  ///
-  /// [switchNatural]
-  ///
-  S switchNatural<S>(
-    Supplier<S> onZero,
-    Supplier<S>? onNegative,
-    Supplier<S>? onPositive, [
-    Error? notProvidedError,
-  ]) =>
-      switch (this) {
-        0 => onZero(),
-        < 0 => onNegative?.call(),
-        > 0 => onPositive?.call(),
-        _ => throw UnsupportedError(FErrorMessage.numberNatural),
-      } ??
-      (throw notProvidedError ?? UnimplementedError());
 }

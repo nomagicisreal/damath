@@ -1,5 +1,5 @@
 part of '../collection.dart';
-// ignore_for_file: curly_braces_in_flow_control_structures
+
 
 ///
 ///
@@ -8,10 +8,11 @@ part of '../collection.dart';
 ///
 ///
 /// instance methods:
-/// [moveNextTogetherReduce], ...(moveNext)
+/// [moveNextTogetherReduce], ...
 ///
-/// [pair], ...(consume)
-///   |- [pairFold], ...(to value)
+/// [pair], ...
+///   |- [pairAny], ...(predication)
+///   |- [pairFold], ...(fold, collapse, force)
 ///   |- [pairMap], ...(to [Iterable]/[List]/[Map]...)
 ///       |- [pairFollowMapWhereIndexable], ...
 ///       |
@@ -22,27 +23,19 @@ part of '../collection.dart';
 ///       |     |- [interReduce], ...
 ///       |
 ///       |- [combination2FromFirst], ...
-///       |
 ///
+/// [sandwich], ...
 ///
 ///
 ///
 extension IteratorTogether<I> on Iterator<I> {
-  ///
-  ///
-  ///
-  /// move next ...
-  ///
-  ///
-  ///
-
   ///
   /// [moveNextTogetherReduce]
   /// [moveNextTogetherSupply]
   /// [moveNextTogetherCompanion]
   ///
   I moveNextTogetherReduce(Iterator<I> another, Reducer<I> reducing) =>
-      moveNext() & another.moveNext()
+      moveNext() && another.moveNext()
           ? reducing(current, another.current)
           : throw StateError(FErrorMessage.iteratorNoElement);
 
@@ -50,31 +43,14 @@ extension IteratorTogether<I> on Iterator<I> {
     Iterator<E> another,
     Companion<I, E> companion,
   ) =>
-      moveNext() & another.moveNext()
+      moveNext() && another.moveNext()
           ? companion(current, another.current)
           : throw StateError(FErrorMessage.iteratorNoElement);
 
   S moveNextTogetherSupply<T, S>(Iterator<T> another, Supplier<S> supply) =>
-      moveNext() & another.moveNext()
+      moveNext() && another.moveNext()
           ? supply()
           : throw StateError(FErrorMessage.iteratorNoElement);
-
-  ///
-  ///
-  ///
-  ///
-  ///
-  ///
-  /// consumer
-  /// [pair], [pairIndexable]
-  /// [pairAny]
-  ///
-  ///
-  ///
-  ///
-  ///
-  ///
-  ///
 
   ///
   /// [pair]
@@ -121,23 +97,6 @@ extension IteratorTogether<I> on Iterator<I> {
     }
     while (moveNext()) overflow(current, ++i);
   }
-
-  ///
-  ///
-  ///
-  ///
-  ///
-  ///
-  /// predication
-  ///
-  ///
-  ///
-  ///
-  ///
-  ///
-  ///
-  ///
-  ///
 
   ///
   /// [pairAny]
@@ -535,6 +494,29 @@ extension IteratorTogether<I> on Iterator<I> {
   ///
   ///
   ///
+  Iterable<I> sandwich(Iterator<I> meat) sync* {
+    while (moveNext() && meat.moveNext()) {
+      yield current;
+      yield meat.current;
+    }
+    try {
+      yield current;
+      try {
+        final remains = [meat.current, ...meat.takeAll];
+        throw StateError('excess meat: $remains');
+      } on Error {
+        return;
+      }
+    } on Error {
+      try {
+        final remains = [meat.current, ...meat.takeAll];
+        throw StateError('inadequate bread for meat: $remains');
+      } on Error {
+        throw StateError('lack of last bread');
+      }
+    }
+  }
+
 
   ///
   /// [combination2FromFirst]

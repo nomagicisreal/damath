@@ -1,5 +1,34 @@
 part of '../collection.dart';
-// ignore_for_file: curly_braces_in_flow_control_structures
+
+///
+///
+/// iterable comes from the same iterator is iterating, which is not consistent.
+/// ```
+///   final itA = iterator.take(4);
+///   print(itA); // (2, 9, 3, 7)
+///   print(itA); // (1, 1, 4, 5)
+/// ```
+///
+/// iterable comes from iterator only yield once,
+/// ```
+///   final another = [2, 5, 2, 4, 3].iterator.sub(2, 10);
+///   print(another); // (2, 4, 3)
+///   print(another); // ()
+/// ```
+///
+/// It's better not to get iterator from the same iterator,
+/// ```
+///   final list = [2, 9, 3, 7, 1, 1, 4, 5];
+///   final iterator = list.iterator;
+///
+///   final itA = iterator.take(4).iterator;
+///   final itB = iterator.take(4).iterator;
+///   while (itA.moveNext() && itB.moveNext()) {
+///     print('${itB.current}, ${itB.takeAll}'); // 9, (3, 7, 1)
+///     print('${itA.current}, ${itA.takeAll}'); // 2, (1, 4, 5)
+///   }
+/// ```
+
 
 ///
 ///
@@ -978,42 +1007,3 @@ extension IteratorExtension<I> on Iterator<I> {
         IntExtension.reducePlus,
       );
 }
-
-///
-///
-/// iterable comes from the same iterator is not consistent.
-/// ```
-///   final itA = iterator.take(4);
-///   print(itA); // (2, 9, 3, 7)
-///   print(itA); // (1, 1, 4, 5)
-/// ```
-///
-///
-/// iterable comes from iterator only yield once,
-/// ```
-///   final another = [2, 5, 2, 4, 3].iterator.sub(2, 10);
-///   print(another); // (2, 4, 3)
-///   print(another); // ()
-/// ```
-///
-///
-/// it's necessary to store values as list
-/// ```
-///   final another = [...[2, 5, 2, 4, 3].iterator.sub(2, 10)];
-///   print(another); // [2, 4, 3]
-///   print(another); // [2, 3, 3]
-/// ```
-///
-///
-/// It's better not to get iterator from the same iterator,
-/// ```
-///   final list = [2, 9, 3, 7, 1, 1, 4, 5];
-///   final iterator = list.iterator;
-///
-///   final itA = iterator.take(4).iterator;
-///   final itB = iterator.take(4).iterator;
-///   while (itA.moveNext() & itB.moveNext()) {
-///     print('${itB.current}, ${itB.takeAll}'); // 9, (3, 7, 1)
-///     print('${itA.current}, ${itA.takeAll}'); // 2, (1, 4, 5)
-///   }
-/// ```

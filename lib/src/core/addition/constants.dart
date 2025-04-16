@@ -5,7 +5,7 @@ part of '../core.dart';
 /// [primesIn100],
 /// [accumulatedIn100],
 /// [factorialIn20],
-/// [partitionsIn20], [partitionsSetIn6]
+/// [partitionsIn20]
 ///
 /// [durationMilli1], ...
 ///
@@ -253,4 +253,6 @@ abstract interface class KCore {
   static const durationMilli900 = Duration(milliseconds: 900);
   static const durationSecond1 = Duration(seconds: 1);
   static const durationMin1 = Duration(minutes: 1);
+  static const durationHour1 = Duration(hours: 1);
+
 }
