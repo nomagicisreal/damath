@@ -3,10 +3,6 @@ part of '../collection.dart';
 
 ///
 ///
-/// static methods:
-/// ...
-///
-///
 /// instance methods:
 /// [moveNextTogetherReduce], ...
 ///
@@ -28,7 +24,7 @@ part of '../collection.dart';
 ///
 ///
 ///
-extension IteratorTogether<I> on Iterator<I> {
+extension DamathIteratorTogether<I> on Iterator<I> {
   ///
   /// [moveNextTogetherReduce]
   /// [moveNextTogetherSupply]

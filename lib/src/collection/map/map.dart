@@ -1,23 +1,21 @@
-///
-///
-/// this file contains:
-///
-/// [MapEntryExtension]
-///
-///
-/// [MapExtension]
-/// [MapKeyComparable]
-///
-/// [MapValueInt]
-/// [MapValueDouble]
-/// [MapValueSet]
-///
-///
-///
 part of '../collection.dart';
 
 ///
-/// [Record] is lightly efficient than [MapEntry] in creation
+///
+/// [DamathMapEntry]
+/// [DamathListMapEntry]
+///
+/// [DamathMap]
+/// [DamathMapKeyComparable]
+///
+/// [DamathMapNullable]
+/// [DamathMapValueInt]
+/// [DamathMapValueDouble]
+/// [DamathMapValueSet]
+///
+///
+/// [Record] is efficient than [MapEntry] in creation
+///
 ///
 
 ///
@@ -31,7 +29,7 @@ part of '../collection.dart';
 /// [record], [recordReversed]
 ///
 ///
-extension MapEntryExtension<K, V> on MapEntry<K, V> {
+extension DamathMapEntry<K, V> on MapEntry<K, V> {
   ///
   /// [mix], [mixReverse]
   ///
@@ -146,6 +144,15 @@ extension MapEntryExtension<K, V> on MapEntry<K, V> {
 
 ///
 ///
+///
+extension DamathListMapEntry<K, V> on List<MapEntry<K, V?>> {
+  void reset({V? fill}) => updateAllApply((entry) => MapEntry(entry.key, fill));
+}
+
+
+
+///
+///
 /// [iteratorKeys], ...
 /// [notContainsKey], ...
 /// [putIfAbsentWhen], ...
@@ -163,7 +170,7 @@ extension MapEntryExtension<K, V> on MapEntry<K, V> {
 /// [updateDifference], [updateIntersection]
 /// [migrateInto]
 ///
-extension MapExtension<K, V> on Map<K, V> {
+extension DamathMap<K, V> on Map<K, V> {
   ///
   /// [predicateInputYet]
   /// [predicateInputNew]
@@ -320,7 +327,7 @@ extension MapExtension<K, V> on Map<K, V> {
   ///   1. return [absentReturn] if key is absent
   ///   2. [value] equal to old value returns `false`
   ///   3. update old value to new [value] returns `true`
-  /// see also [MapValueSet.inputSet], [Set.add]
+  /// see also [DamathMapValueSet.inputSet], [Set.add]
   ///
   bool input(K key, V value, [bool absentReturn = true]) {
     var vOld = this[key];
@@ -482,14 +489,14 @@ extension MapExtension<K, V> on Map<K, V> {
 ///
 ///
 ///
-extension MapKeyComparable<K extends Comparable, V> on Map<K, V> {
+extension DamathMapKeyComparable<K extends Comparable, V> on Map<K, V> {
   ///
   /// [keysSorted]
   /// [valuesBySortedKeys]
   /// [entriesBySortedKeys]
   ///
   List<K> keysSorted([bool increase = true]) => keys.toList(growable: false)
-    ..sort(IteratorComparable.comparator(increase));
+    ..sort(DamathIteratorComparable.comparator(increase));
 
   List<V> valuesBySortedKeys([bool increase = true]) =>
       keysSorted(increase).mapToList((key) => this[key]!);
@@ -499,16 +506,23 @@ extension MapKeyComparable<K extends Comparable, V> on Map<K, V> {
 }
 
 ///
+///
+///
+extension DamathMapNullable<K, V> on Map<K, V?> {
+  void reset({V? fill}) => updateAll((_, __) => fill);
+}
+
+///
 /// [plusOn]
 ///
-extension MapValueInt<K> on Map<K, int> {
+extension DamathMapValueInt<K> on Map<K, int> {
   void plusOn(K key) => update(key, (value) => ++value, ifAbsent: () => 1);
 }
 
 ///
 /// [plusOn]
 ///
-extension MapValueDouble<K> on Map<K, double> {
+extension DamathMapValueDouble<K> on Map<K, double> {
   void plusOn(K key) => update(key, (value) => ++value, ifAbsent: () => 1);
 }
 
@@ -521,7 +535,7 @@ extension MapValueDouble<K> on Map<K, double> {
 /// [inputSet], ...
 ///
 ///
-extension MapValueSet<K, V> on Map<K, Set<V>> {
+extension DamathMapValueSet<K, V> on Map<K, Set<V>> {
   ///
   ///
   /// static methods
@@ -561,7 +575,7 @@ extension MapValueSet<K, V> on Map<K, Set<V>> {
   ///   1. value set absent: return [absentReturn]
   ///   2. [value] has exist in value set: return `false`
   ///   3. [value] not yet contained in value set: return `true`
-  /// see also [Set.add], [MapExtension.input]
+  /// see also [Set.add], [DamathMap.input]
   ///
   bool inputSet(K key, V value, [bool absentReturn = true]) {
     var set = this[key];

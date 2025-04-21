@@ -1,21 +1,22 @@
+part of '../collection.dart';
+
 ///
 ///
-/// this file contains:
+/// [DamathIteratorBool]
+/// [DamathIteratorDouble]
 ///
-/// [IteratorBool]
-/// [IteratorDouble]
-/// [IterableMapEntry]
+/// [DamathIterableMapEntry]
+/// [DamathIterableDouble]
+/// [DamathIterableInt]
 ///
-/// [IterableDouble]
-/// [IterableInt]
+/// [DamathListDouble]
 ///
-/// [ListDouble]
-///
+/// [DamathIteratorNullable]
+/// [DamathIterableNullable]
 ///
 /// 'flutter pub add statistics' for advance statistic analyze
 ///
 ///
-part of '../collection.dart';
 
 ///
 /// static methods:
@@ -26,7 +27,7 @@ part of '../collection.dart';
 /// [takeFor], ...
 ///
 ///
-extension IteratorBool on Iterator<bool> {
+extension DamathIteratorBool on Iterator<bool> {
   static bool _keep(bool value) => value;
 
   static bool _reverse(bool value) => !value;
@@ -72,7 +73,7 @@ extension IteratorBool on Iterator<bool> {
 ///
 ///
 ///
-extension IteratorDouble on Iterator<double> {
+extension DamathIteratorDouble on Iterator<double> {
   ///
   ///
   ///
@@ -101,7 +102,7 @@ extension IteratorDouble on Iterator<double> {
   double get max => reduce(DoubleExtension.reduceMax);
 
   double get mode =>
-      toMapCounted.reduce(MapEntryExtension.reduceMaxValueInt).key;
+      toMapCounted.reduce(DamathMapEntry.reduceMaxValueInt).key;
 
   double get range => applyMoveNext((value) {
         var min = value;
@@ -193,7 +194,7 @@ extension IteratorDouble on Iterator<double> {
 ///
 ///
 ///
-extension IterableMapEntry<K, V> on Iterable<MapEntry<K, V>> {
+extension DamathIterableMapEntry<K, V> on Iterable<MapEntry<K, V>> {
   ///
   /// [toMap], [keys], [values]
   ///
@@ -211,7 +212,7 @@ extension IterableMapEntry<K, V> on Iterable<MapEntry<K, V>> {
 /// [statisticAnalyze], ...
 ///
 ///
-extension IterableDouble on Iterable<double> {
+extension DamathIterableDouble on Iterable<double> {
   ///
   /// [dot]
   ///
@@ -325,23 +326,20 @@ extension IterableDouble on Iterable<double> {
 /// static methods:
 /// [sequence], ...
 ///
-/// instance methods:
-/// [sum], ...
 ///
-extension IterableInt on Iterable<int> {
+extension DamathIterableInt on Iterable<int> {
   static Iterable<int> sequence(int length, [int start = 1]) =>
       Iterable.generate(length, (i) => start + i);
 
   static Iterable<int> seq(int begin, int end) =>
       [for (var i = begin; i <= end; i++) i];
 
-  int get sum => reduce(IntExtension.reducePlus);
 }
 
 ///
 /// [interquartileRange]
 ///
-extension ListDouble on List<double> {
+extension DamathListDouble on List<double> {
   ///
   /// [interquartileRange]
   ///
@@ -349,4 +347,50 @@ extension ListDouble on List<double> {
     final interquartile = percentileQuartile;
     return interquartile.last - interquartile.first;
   }
+}
+
+
+///
+///
+/// [validFrequencies]
+///
+///
+extension DamathIteratorNullable<I> on Iterator<I?> {
+  ///
+  /// [validFrequencies]
+  ///
+  Map<I, double> validFrequencies([bool lengthValid = true]) {
+    final map = <I, double>{};
+    var length = 0;
+
+    final Consumer<I?> consume = lengthValid
+        ? (current) => current.consumeNotNull((key) {
+      map.plusOn(key);
+      length++;
+    })
+        : (current) {
+      current.consumeNotNull(map.plusOn);
+      length++;
+    };
+
+    while (moveNext()) {
+      consume(current);
+    }
+    return map..updateAll((key, value) => value / length);
+  }
+}
+
+
+
+///
+///
+/// [validLength]
+///
+///
+extension DamathIterableNullable<I> on Iterable<I?> {
+  ///
+  /// [validLength]
+  ///
+  int get validLength =>
+      iterator.fold(0, (value, current) => current == null ? value : ++value);
 }

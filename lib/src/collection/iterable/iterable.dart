@@ -32,7 +32,7 @@ part of '../collection.dart';
 /// [toMapByFilterOr], ...
 ///
 ///
-extension IterableExtension<I> on Iterable<I> {
+extension DamathIterable<I> on Iterable<I> {
   ///
   /// [toLength]
   /// [applyAppend]

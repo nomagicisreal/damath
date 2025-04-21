@@ -2,7 +2,6 @@ part of '../core.dart';
 
 ///
 /// static methods:
-/// [largestInt], ...
 /// [predicateALess], ...
 /// [reduceMax], ...
 /// [accumulation]
@@ -188,7 +187,7 @@ extension IntExtension on int {
     final columnEndOf =
         isColumnEndAtK ? (i) => i + rowStart < k ? i + 1 : k : (i) => i + 1;
 
-    final array = ListExtension.generate2D<int>(
+    final array = DamathListExtension.generate2D<int>(
       rowEnd,
       k,
       (i, j) => j == 0 || j == i + rowStart
@@ -253,14 +252,14 @@ extension IntExtension on int {
         throw ArgumentError(FErrorMessage.intPartitionN(m, n));
       }
       return _partitionSet(m)
-          .map(IterableExtension.toLength)
+          .map(DamathIterable.toLength)
           .iterator
           .toMapCounted[n]!;
     }
     var sum = 0;
     for (var i = 1; i <= m; i++) {
       sum += _partitionSet(m)
-          .map(IterableExtension.toLength)
+          .map(DamathIterable.toLength)
           .iterator
           .toMapCounted[i]!;
     }
@@ -291,7 +290,7 @@ extension IntExtension on int {
     }
     for (var i = 1; i <= m; i++) {
       yield* _partitionSet(m)
-          .where(IterableIterable.predicateChildrenLength(i))
+          .where(DamathIterableIterable.predicateChildrenLength(i))
           .flatted;
     }
   }

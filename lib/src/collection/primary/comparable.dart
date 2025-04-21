@@ -1,19 +1,17 @@
-///
-///
-/// this file contains:
-///
-/// [IteratorComparable]
-/// [IterableComparable]
-/// [ListComparable]
-///
-///
-///
 part of '../collection.dart';
+
+///
+///
+/// [DamathIteratorComparable]
+/// [DamathIterableComparable]
+/// [DamathListComparable]
+///
+///
 
 
 ///
 /// static methods:
-/// [comparator], [compare]
+/// [comparator], [compareReverse]
 /// [isEqual], ...
 ///
 /// instance methods:
@@ -21,15 +19,15 @@ part of '../collection.dart';
 /// [consecutiveCounted], ...
 ///
 ///
-extension IteratorComparable<C extends Comparable> on Iterator<C> {
+extension DamathIteratorComparable<C extends Comparable> on Iterator<C> {
   ///
-  /// [comparator], [compare]
+  /// [comparator], [compareReverse]
   ///
   static Comparator<C> comparator<C extends Comparable>(bool increase) =>
-      increase ? Comparable.compare : compare;
+      increase ? Comparable.compare : DamathIteratorComparable.compareReverse;
 
   /// it is the reverse version of [Comparable.compare]
-  static int compare<C extends Comparable>(C a, C b) => b.compareTo(a);
+  static int compareReverse<C extends Comparable>(C a, C b) => b.compareTo(a);
 
   ///
   /// [isEqual], [notEqual]
@@ -148,7 +146,7 @@ extension IteratorComparable<C extends Comparable> on Iterator<C> {
 /// [consecutive], ...
 ///
 ///
-extension IterableComparable<C extends Comparable> on Iterable<C> {
+extension DamathIterableComparable<C extends Comparable> on Iterable<C> {
   ///
   ///
   /// [mergeSorted]
@@ -162,8 +160,8 @@ extension IterableComparable<C extends Comparable> on Iterable<C> {
             increase,
           ),
           increase
-              ? IteratorComparable.isDecrease
-              : IteratorComparable.isIncrease,
+              ? DamathIteratorComparable.isDecrease
+              : DamathIteratorComparable.isIncrease,
         ),
         increase,
       );
@@ -172,8 +170,8 @@ extension IterableComparable<C extends Comparable> on Iterable<C> {
   /// [isOrdered]
   ///
   bool isOrdered([bool strictly = false]) =>
-      !iterator.existEvery(IteratorComparable._validFor(true, strictly)) ||
-      !iterator.existEvery(IteratorComparable._validFor(false, strictly));
+      !iterator.existEvery(DamathIteratorComparable._validFor(true, strictly)) ||
+      !iterator.existEvery(DamathIteratorComparable._validFor(false, strictly));
 
   ///
   /// [rangeIn]
@@ -186,7 +184,7 @@ extension IterableComparable<C extends Comparable> on Iterable<C> {
     bool strictly = false,
   ]) =>
       iterator.checkSortedForSupply(() {
-        final validate = IteratorComparable._invalidFor(increase, strictly);
+        final validate = DamathIteratorComparable._invalidFor(increase, strictly);
         return validate(lower, upper)
             ? validate(lower, first) && validate(last, upper)
             : throw StateError(FErrorMessage.iterableBoundaryInvalid);
@@ -201,7 +199,7 @@ extension IterableComparable<C extends Comparable> on Iterable<C> {
       upper != null
           ? rangeIn(lower, upper, increase, strictly)
           : iterator.checkSortedForSupply(
-              () => IteratorComparable._invalidFor(increase, strictly)(
+              () => DamathIteratorComparable._invalidFor(increase, strictly)(
                   lower, first),
             );
 
@@ -277,7 +275,7 @@ extension IterableComparable<C extends Comparable> on Iterable<C> {
 /// [percentile], ...
 /// [mergeSorted], ...
 ///
-extension ListComparable<C extends Comparable> on List<C> {
+extension DamathListComparable<C extends Comparable> on List<C> {
   // static Iterable<List<C>> permutations<C extends Comparable>(List<C> list)
 
   ///
@@ -287,7 +285,7 @@ extension ListComparable<C extends Comparable> on List<C> {
     assert(iterator.isSorted(requireIncreased));
     var min = 0;
     var max = length;
-    final ternarate = IteratorComparable._ternarateFor(requireIncreased);
+    final ternarate = DamathIteratorComparable._ternarateFor(requireIncreased);
     while (min < max) {
       final mid = min + ((max - min) >> 1);
       switch (ternarate(this[mid], value)) {
@@ -308,10 +306,7 @@ extension ListComparable<C extends Comparable> on List<C> {
   C median([bool evenPrevious = true]) =>
       length.isEven ? this[length ~/ 2 - 1] : this[length ~/ 2];
 
-  ///
-  /// [cloneSorted]
-  ///
-  List<C> cloneSorted([bool increase = true]) => List.of(this)..sort();
+  List<C> cloneSorted([bool increase = false]) => List.of(this)..sort(DamathIteratorComparable.comparator(increase));
 
   ///
   ///

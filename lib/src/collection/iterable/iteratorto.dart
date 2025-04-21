@@ -1,6 +1,5 @@
 part of '../collection.dart';
 
-
 ///
 ///
 /// [supplyMoveNext], ...
@@ -15,7 +14,7 @@ part of '../collection.dart';
 ///
 ///
 ///
-extension IteratorTo<I> on Iterator<I> {
+extension DamathIteratorTo<I> on Iterator<I> {
   ///
   /// [supplyMoveNext]
   /// [supplyLead]
@@ -497,6 +496,18 @@ extension IteratorTo<I> on Iterator<I> {
   }
 
   ///
+  ///
+  ///
+  Iterable<MapEntry<I, V?>> toIterableEntryKeys<V>({V? fill}) =>
+      map((key) => MapEntry(key, fill));
+
+  Iterable<MapEntry<K?, I>> toIterableEntryValues<K>({K? fill}) =>
+      map((value) => MapEntry(fill, value));
+
+  Map<I, V?> toMapKeys<V>({V? fill}) =>
+      Map.fromEntries(toIterableEntryKeys(fill: fill));
+
+  ///
   /// [groupBy]
   /// [groupToListBy]
   ///
@@ -505,7 +516,7 @@ extension IteratorTo<I> on Iterator<I> {
         (map, value) => map
           ..update(
             toKey(value),
-            IterableExtension.applyAppend(value),
+            DamathIterable.applyAppend(value),
             ifAbsent: () => [value],
           ),
       );
@@ -515,7 +526,7 @@ extension IteratorTo<I> on Iterator<I> {
         (map, value) => map
           ..update(
             toKey(value),
-            ListExtension.applyAdd(value),
+            DamathListExtension.applyAdd(value),
             ifAbsent: () => [value],
           ),
       );

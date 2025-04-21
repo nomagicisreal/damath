@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'package:collection/collection.dart' hide IterableExtension;
 import 'package:damath/src/collection/collection.dart';
 
 part 'addition/constants.dart';

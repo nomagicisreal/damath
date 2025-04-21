@@ -1,28 +1,26 @@
-///
-///
-/// this file contains:
-///
-/// [IteratorSet]
-///
-/// [IterableIterable]
-/// [IterableIterableComparable]
-///
-/// [ListListComparable]
-/// [ListSet]
-///
-///
 part of '../collection.dart';
+
+///
+/// [DamathIteratorSet]
+///
+/// [DamathIterableIterable]
+/// [DamathIterableIterableComparable]
+///
+/// [DamathListListComparable]
+/// [DamathListSet]
+///
+
 
 ///
 /// [everyIdentical], ...
 /// [reduceMerged]
 ///
-extension IteratorSet<K> on Iterator<Set<K>> {
+extension DamathIteratorSet<K> on Iterator<Set<K>> {
   ///
   /// [everyIdentical]
   ///
   bool get everyIdentical => supplyMoveNext(() {
-        final set = current.clone;
+        final set = Set.of(current);
         while (moveNext()) {
           if (current.any(set.add)) return false;
         }
@@ -34,7 +32,7 @@ extension IteratorSet<K> on Iterator<Set<K>> {
   ///
   Set<K> reduceMerged([bool requireIdentical = false]) => requireIdentical
       ? supplyMoveNext(() {
-          final set = current.clone;
+          final set = Set.of(current);
           while (moveNext()) {
             if (current.any(set.add)) {
               throw StateError(FErrorMessage.setNotIdentical(current, set));
@@ -51,7 +49,7 @@ extension IteratorSet<K> on Iterator<Set<K>> {
 /// [isEqualElementsLengthTo]
 /// [foldWith2D]
 ///
-extension IterableIterable<I> on Iterable<Iterable<I>> {
+extension DamathIterableIterable<I> on Iterable<Iterable<I>> {
   ///
   /// [predicateChildrenLength]
   ///
@@ -62,7 +60,7 @@ extension IterableIterable<I> on Iterable<Iterable<I>> {
   /// [size]
   ///
   int get size =>
-      iterator.induct(IterableExtension.toLength, IntExtension.reducePlus);
+      iterator.induct(DamathIterable.toLength, IntExtension.reducePlus);
 
   ///
   /// [toStringMapJoin]
@@ -82,10 +80,10 @@ extension IterableIterable<I> on Iterable<Iterable<I>> {
   /// [isEqualElementsLengthTo]
   ///
   bool isEqualElementsLengthTo<P>(Iterable<Iterable<P>> another) =>
-      !anyWith(another, IterableExtension.predicateLengthDifferent);
+      !anyWith(another, DamathIterable.predicateLengthDifferent);
 
   bool isEqualToNested(Iterable<Iterable<I>> another) =>
-      !anyWith(another, IterableExtension.predicateDifferent);
+      !anyWith(another, DamathIterable.predicateDifferent);
 
   ///
   /// [foldWith2D]
@@ -145,7 +143,7 @@ extension IterableIterable<I> on Iterable<Iterable<I>> {
 ///
 ///
 ///
-extension IterableIterableComparable<C extends Comparable>
+extension DamathIterableIterableComparable<C extends Comparable>
     on Iterable<Iterable<C>> {
   ///
   /// [everyElementSorted]
@@ -199,7 +197,7 @@ extension ListListInt on List2D<int> {
 /// instance methods:
 /// [sortByFirst], ...
 ///
-extension ListListComparable<C extends Comparable> on List2D<C> {
+extension DamathListListComparable<C extends Comparable> on List2D<C> {
   ///
   /// [_accordinglySort]
   ///
@@ -227,14 +225,14 @@ extension ListListComparable<C extends Comparable> on List2D<C> {
       );
 
   void sortAccordingly([bool increase = true]) => sort(_accordinglySort(
-        increase ? Comparable.compare : IteratorComparable.compare,
+        increase ? Comparable.compare : DamathIteratorComparable.compareReverse,
       ));
 }
 
 ///
 /// [mergeToThis], ...
 ///
-extension ListSet<I> on List<Set<I>> {
+extension DamathListSet<I> on List<Set<I>> {
   ///
   /// [mergeToThis]
   /// [mergeToThat]

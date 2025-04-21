@@ -56,7 +56,7 @@ part of '../collection.dart';
 /// [combination2FromFirst], ...
 ///
 ///
-extension IteratorExtension<I> on Iterator<I> {
+extension DamathIterator<I> on Iterator<I> {
   ///
   /// consume
   /// [consumeHasNext]

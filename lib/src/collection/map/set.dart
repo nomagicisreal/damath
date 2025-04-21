@@ -2,19 +2,13 @@ part of '../collection.dart';
 
 ///
 ///
-/// [clone], ...
 /// [isEqualToSet], ...
 /// [consistentBy], ...
 /// [complementTo], ...
 /// [toMap], ...
 ///
 ///
-extension SetExtension<K> on Set<K> {
-  ///
-  /// [clone]
-  ///
-  Set<K> get clone => Set.of(this);
-
+extension DamathSet<K> on Set<K> {
   ///
   /// [isEqualToSet]
   ///
@@ -64,7 +58,7 @@ extension SetExtension<K> on Set<K> {
   ///   each of the groups is identical on value
   ///
   bool consistentBy<E, V>(Mapper<K, E> toKey, Mapper<K, V> toVal) => !iterator
-      .existAnyToEachGroup(toKey, toVal, MapExtension.predicateInputYet);
+      .existAnyToEachGroup(toKey, toVal, DamathMap.predicateInputYet);
 
   ///
   /// [complementTo]
