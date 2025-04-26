@@ -1,9 +1,7 @@
+part of '../core.dart';
+
 ///
 ///
-/// this file contains:
-///
-/// [ObjectExtension]
-/// [NullableExtension]
 /// [BoolExtension]
 /// [TypeExtension]
 ///
@@ -13,60 +11,7 @@
 /// [RandomExtension]
 ///
 ///
-/// 'flutter pub add rational' for rational number
-///
-///
-part of '../core.dart';
 
-///
-///
-///
-extension ObjectExtension<T> on T {
-  ///
-  /// [consuming]
-  /// [applying]
-  ///
-  void consuming(Consumer<T> consumer) => consumer(this);
-
-  T applying(Applier<T> applier) => applier(this);
-
-  S mapping<S>(Mapper<T, S> toVal) => toVal(this);
-}
-
-///
-/// nullable
-///
-extension NullableExtension<T> on T? {
-  ///
-  /// [nullOrMap]
-  ///
-  S? nullOrMap<S>(Mapper<T, S> toVal) => this == null ? null : toVal(this as T);
-
-  ///
-  /// [applyNotNullOr]
-  /// [mapNotNullOr]
-  /// [consumeNotNull]
-  ///
-  T applyNotNullOr(Applier<T> apply, Supplier<T> ifNull) =>
-      this == null ? ifNull() : apply(this as T);
-
-  S mapNotNullOr<S>(Mapper<T, S> toVal, Supplier<S> ifNull) =>
-      this == null ? ifNull() : toVal(this as T);
-
-  void consumeNotNull(Consumer<T> consume, [Listener? ifNull]) {
-    if (this != null) return consume(this as T);
-    ifNull?.call();
-  }
-
-  ///
-  /// [expandTo]
-  ///
-  Iterable<S> expandTo<S>(
-    Mapper<T, Iterable<S>> expanding, [
-    Supplier<Iterable<S>>? onNull,
-  ]) =>
-      this == null ? onNull?.call() ?? Iterable.empty() : expanding(this as T);
-}
 
 ///
 ///
@@ -89,14 +34,10 @@ extension TypeExtension on Type {
   bool get isTypeError => toString() == '_TypeError';
 }
 
-// extension RangeErrorExtension on RangeError {
-//   bool get isNotInInclusiveRange => message == ;
-// }
-
 ///
 ///
-/// static methods:
-/// [predicateALess], ...
+/// statics:
+/// [log10_2], ...
 ///
 /// instance methods:
 /// [squared], [isPositive]
@@ -133,13 +74,6 @@ extension NumExtension on num {
   static const num log10_83 = 1.91907809237607396291;
   static const num log10_89 = 1.94939000664491257631;
   static const num log10_97 = 1.98677173426624475994;
-
-  ///
-  /// [predicateALess], [predicateALarger]
-  ///
-  static bool predicateALess(num a, num b) => a < b;
-
-  static bool predicateALarger(num a, num b) => a > b;
 
   ///
   /// [digit]

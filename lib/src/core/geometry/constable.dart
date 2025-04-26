@@ -552,13 +552,11 @@ base class Point2 extends Point {
   ///
   /// static methods
   ///
-  static Point2 lerp(Point2 begin, Point2 end, double t) {
-    assert(t.isRangeClose(0, 1));
-    return Point2(
-      begin.x * (1.0 - t) + end.x * t,
-      begin.y * (1.0 - t) + end.y * t,
-    );
-  }
+  static Lerper<Point2> lerp(Point2 begin, Point2 end) =>
+      (t) => Point2(
+        begin.x * (1.0 - t) + end.x * t,
+        begin.y * (1.0 - t) + end.y * t,
+      );
 
   ///
   ///
@@ -777,14 +775,12 @@ base class Point3 extends Point {
   ///
   /// static methods
   ///
-  static Point3 lerp(Point3 begin, Point3 end, double t) {
-    assert(t.isRangeClose(0, 1));
-    return Point3(
-      begin.x * (1.0 - t) + end.x * t,
-      begin.y * (1.0 - t) + end.y * t,
-      begin.z * (1.0 - t) + end.z * t,
-    );
-  }
+  static Lerper<Point3> lerp(Point3 begin, Point3 end) =>
+      (t) => Point3(
+        begin.x * (1.0 - t) + end.x * t,
+        begin.y * (1.0 - t) + end.y * t,
+        begin.z * (1.0 - t) + end.z * t,
+      );
 
   ///
   ///

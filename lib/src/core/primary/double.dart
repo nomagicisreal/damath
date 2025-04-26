@@ -6,7 +6,7 @@ part of '../core.dart';
 /// [sqrt2], ...
 /// [proximateInfinityOf], ...
 /// [predicateFinite], ...
-/// [lerperClamp], ...
+/// [lerp], ...
 ///
 /// instances:
 /// [filterInfinity], ...
@@ -67,13 +67,6 @@ extension DoubleExtension on double {
   static bool predicateNaN(double value) => value.isNaN;
 
   ///
-  /// [predicateALess], [predicateALarger]
-  ///
-  static bool predicateALess(double a, double b) => a < b;
-
-  static bool predicateALarger(double a, double b) => a > b;
-
-  ///
   ///
   ///
   /// applier
@@ -131,9 +124,11 @@ extension DoubleExtension on double {
     double period, [
     Applier<double> transform = math.sin,
   ]) {
-    assert(transform == math.sin || transform == math.cos);
+    if (transform != math.sin && transform != math.cos) {
+      throw UnimplementedError('$transform');
+    }
     final times = math.pi * 2 * period;
-    return lerperClamp((value) => transform(times * value), 0.0, 1.0);
+    return (value) => transform(times * value);
   }
 
   static Applier<double> applyOnPeriodSinByTimes(int times) =>
@@ -172,44 +167,10 @@ extension DoubleExtension on double {
 
   static double reduceMinusThenHalf(double v1, double v2) => (v1 - v2) / 2;
 
-
   ///
   ///
-  ///
-  ///
-  /// [lerperOf], [lerperClamp]
-  /// [lerperClamp01], [lerperClampPositive], [lerperClampNegative]
-  ///
-  ///
-  ///
-  static Lerper<T> lerperFrom<T>(T begin, T end) => switch (T) {
-        _ => throw StateError(FErrorMessage.lerperNoImplementation),
-      };
-
-  static Lerper<T> lerperOf<T>(T value) => (_) => value;
-
-  static Lerper<T> lerperClamp<T>(
-    Lerper<T> transform,
-    double lowerLimit,
-    double upperLimit,
-  ) =>
-      (value) => transform(value.clampDouble(lowerLimit, upperLimit));
-
-  static Lerper<T> lerperClamp01<T>(Lerper<T> transform) =>
-      (value) => transform(value.clamp01);
-
-  static Lerper<T> lerperClampPositive<T>(Lerper<T> transform) =>
-      (value) => transform(value.clampPositive);
-
-  static Lerper<T> lerperClampNegative<T>(Lerper<T> transform) =>
-      (value) => transform(value.clampNegative);
-
-  ///
-  /// [from]
-  ///
-  static Mapper<double, T> from<T>(T begin, T end) => switch (begin) {
-        _ => throw StateError(FErrorMessage.lerperNoImplementation),
-      };
+  static Lerper<double> lerp(double begin, double end) =>
+      (t) => begin * (1.0 - t) + end * t;
 
   ///
   /// [filterInfinity]
@@ -217,10 +178,10 @@ extension DoubleExtension on double {
   /// [clampDouble]
   ///
   double filterInfinity(double precision) => switch (this) {
-        double.infinity => proximateInfinityOf(precision),
-        double.negativeInfinity => proximateNegativeInfinityOf(precision),
-        _ => this,
-      };
+    double.infinity => proximateInfinityOf(precision),
+    double.negativeInfinity => proximateNegativeInfinityOf(precision),
+    _ => this,
+  };
 
   double roundUpTo(int digit) {
     final value = math.pow(10, digit);
@@ -240,7 +201,7 @@ extension DoubleExtension on double {
   /// [clampPositive], [clampNegative], [clamp01]
   ///
   bool get isInteger {
-    final value =roundToDouble();
+    final value = roundToDouble();
     return value == ceil() && value == floor();
   }
 
@@ -249,10 +210,4 @@ extension DoubleExtension on double {
   double get squared => this * this;
 
   double get squareRoot => math.sqrt(this);
-
-  double get clampPositive => clampDouble(0, double.infinity);
-
-  double get clampNegative => clampDouble(double.negativeInfinity, 0);
-
-  double get clamp01 => clampDouble(0, 1);
 }

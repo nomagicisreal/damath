@@ -6,3 +6,4 @@ void main(List<String> arguments) {
   print(list.everyRangeIn(-1, 10, inclusiveMin: false, inclusiveMax: false));
   // print(list.rangeIn(0, 10, inclusiveMin: true, inclusiveMax: true));
 }
+

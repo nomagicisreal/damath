@@ -78,8 +78,6 @@ abstract interface class FErrorMessage {
       'cannot assign next general directly';
   static const String nodeNotHoldComparator = 'general not hold comparator';
 
-  static const String lerperNoImplementation = 'lerper no implementation';
-
   ///
   /// others
   ///
