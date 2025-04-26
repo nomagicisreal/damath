@@ -184,9 +184,11 @@ abstract base class Radian extends BOperatableComparable<Radian>
     return switch (quadrant) {
       1 => r.isRangeOpen(0, angle_90) || r.isRangeOpen(-angle_360, -angle_270),
       2 =>
-        r.isRangeOpen(angle_90, angle_180) || r.isRangeOpen(-angle_270, -angle_180),
+        r.isRangeOpen(angle_90, angle_180) ||
+            r.isRangeOpen(-angle_270, -angle_180),
       3 =>
-        r.isRangeOpen(angle_180, angle_270) || r.isRangeOpen(-angle_180, -angle_90),
+        r.isRangeOpen(angle_180, angle_270) ||
+            r.isRangeOpen(-angle_180, -angle_90),
       4 => r.isRangeOpen(angle_270, angle_360) || r.isRangeOpen(-angle_90, 0),
       _ => throw StateError('undefined quadrant: $quadrant for $this'),
     };
@@ -275,9 +277,7 @@ base class Radian3 extends Radian {
   ///
   ///
   const Radian3(super.rAzimuthal, this.rPolar)
-      : assert(
-          rPolar >= 0 && rPolar <= Radian.angle_180,
-        );
+    : assert(rPolar >= 0 && rPolar <= Radian.angle_180);
 
   const Radian3.polar1(double rAzimuthal) : this(rAzimuthal, Radian.angle_1);
 
@@ -435,14 +435,13 @@ sealed class Point extends BOperatableComparable<Point>
         IOperatableStepable,
         IOperatableModuleable {
   ///
-  ///
   /// overrides
   ///
-  ///
   @override
-  int compareTo(Point other) => x < other.x && y < other.y
-      ? -1
-      : x > other.x && y > other.y
+  int compareTo(Point other) =>
+      x < other.x && y < other.y
+          ? -1
+          : x > other.x && y > other.y
           ? 1
           : 0;
 
@@ -460,9 +459,7 @@ sealed class Point extends BOperatableComparable<Point>
   Point middleTo(Point p);
 
   ///
-  ///
   /// constructors
-  ///
   ///
   const Point(this.x, this.y);
 
@@ -499,10 +496,7 @@ base class Point2 extends Point {
   const Point2.ofY(super.dy) : super.ofY();
 
   Point2.fromDirection(double direction, [double distance = 1])
-      : super(
-          distance * math.cos(direction),
-          distance * math.sin(direction),
-        );
+    : super(distance * math.cos(direction), distance * math.sin(direction));
 
   ///
   ///
@@ -545,7 +539,6 @@ base class Point2 extends Point {
   ///
   static const Point2 zero = Point2(0.0, 0.0);
   static const Point2 one = Point2(1.0, 1.0);
-
   static const top = Point2(0, -1);
   static const left = Point2(-1, 0);
   static const right = Point2(1, 0);
@@ -555,6 +548,17 @@ base class Point2 extends Point {
   static const topRight = Point2(math.sqrt1_2, -math.sqrt1_2);
   static const bottomLeft = Point2(-math.sqrt1_2, math.sqrt1_2);
   static const bottomRight = Point2.square(math.sqrt1_2);
+
+  ///
+  /// static methods
+  ///
+  static Point2 lerp(Point2 begin, Point2 end, double t) {
+    assert(t.isRangeClose(0, 1));
+    return Point2(
+      begin.x * (1.0 - t) + end.x * t,
+      begin.y * (1.0 - t) + end.y * t,
+    );
+  }
 
   ///
   ///
@@ -645,31 +649,19 @@ base class Point3 extends Point {
   ///
   const Point3(super.x, super.y, this.z);
 
-  const Point3.ofX(super.dx)
-      : z = 0,
-        super.ofX();
+  const Point3.ofX(super.dx) : z = 0, super.ofX();
 
-  const Point3.ofY(super.dy)
-      : z = 0,
-        super.ofY();
+  const Point3.ofY(super.dy) : z = 0, super.ofY();
 
   const Point3.ofZ(this.z) : super.square(0);
 
-  const Point3.cube(super.value)
-      : z = value,
-        super.square();
+  const Point3.cube(super.value) : z = value, super.square();
 
-  const Point3.ofXY(super.value)
-      : z = 0,
-        super.square();
+  const Point3.ofXY(super.value) : z = 0, super.square();
 
-  const Point3.ofYZ(double value)
-      : z = value,
-        super(0, value);
+  const Point3.ofYZ(double value) : z = value, super(0, value);
 
-  const Point3.ofXZ(double value)
-      : z = value,
-        super(value, 0);
+  const Point3.ofXZ(double value) : z = value, super(value, 0);
 
   ///
   ///
@@ -783,6 +775,18 @@ base class Point3 extends Point {
   static const backTopLeft = Point3.cube(-DoubleExtension.sqrt1_3);
 
   ///
+  /// static methods
+  ///
+  static Point3 lerp(Point3 begin, Point3 end, double t) {
+    assert(t.isRangeClose(0, 1));
+    return Point3(
+      begin.x * (1.0 - t) + end.x * t,
+      begin.y * (1.0 - t) + end.y * t,
+      begin.z * (1.0 - t) + end.z * t,
+    );
+  }
+
+  ///
   ///
   /// implementations for [Object]
   ///
@@ -836,17 +840,19 @@ base class Point3 extends Point {
   bool operator >(covariant Point3 another) => super > another && z > another.z;
 
   @override
-  bool operator <=(covariant Point3 another) => super <= another && z <= another.z;
+  bool operator <=(covariant Point3 another) =>
+      super <= another && z <= another.z;
 
   @override
-  bool operator >=(covariant Point3 another) => super >= another && z >= another.z;
+  bool operator >=(covariant Point3 another) =>
+      super >= another && z >= another.z;
 
   @override
   Point3 operator ~/(covariant Point3 other) => Point3(
-        (x ~/ other.x).toDouble(),
-        (y ~/ other.y).toDouble(),
-        (z ~/ other.z).toDouble(),
-      );
+    (x ~/ other.x).toDouble(),
+    (y ~/ other.y).toDouble(),
+    (z ~/ other.z).toDouble(),
+  );
 
   ///
   ///

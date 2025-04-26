@@ -36,22 +36,23 @@ extension DamathListExtension<T> on List<T> {
     Generator<T> generator, {
     int start = 1,
     bool growable = true,
-  }) =>
-      List.generate(
-        length,
-        (index) => generator(index + start),
-        growable: growable,
-      );
+  }) => List.generate(
+    length,
+    (index) => generator(index + start),
+    growable: growable,
+  );
 
   static List<List<T>> generate2D<T>(
-          int rowCount, int columnCount, Generator2D<T> generator,
-          {bool growable = false}) =>
-      List.generate(
-        rowCount,
-        (i) => List.generate(columnCount, (j) => generator(i, j),
-            growable: growable),
-        growable: growable,
-      );
+    int rowCount,
+    int columnCount,
+    Generator2D<T> generator, {
+    bool growable = false,
+  }) => List.generate(
+    rowCount,
+    (i) =>
+        List.generate(columnCount, (j) => generator(i, j), growable: growable),
+    growable: growable,
+  );
 
   static List<List<T>> generate2DSquare<T>(int d, Generator2D<T> generator) =>
       generate2D(d, d, generator, growable: false);
@@ -60,9 +61,12 @@ extension DamathListExtension<T> on List<T> {
   /// [fill2D]
   /// [fill2DSquare]
   ///
-  static List<List<T>> fill2D<T>(int rowCount, int columnCount, T value,
-          {bool growable = false}) =>
-      generate2D(rowCount, columnCount, (i, j) => value, growable: growable);
+  static List<List<T>> fill2D<T>(
+    int rowCount,
+    int columnCount,
+    T value, {
+    bool growable = false,
+  }) => generate2D(rowCount, columnCount, (i, j) => value, growable: growable);
 
   static List<List<T>> fill2DSquare<T>(int size, T value) =>
       fill2D(size, size, value, growable: false);
@@ -108,21 +112,18 @@ extension DamathListExtension<T> on List<T> {
   void addAllSupplyIfEmpty(
     Supplier<Iterable<T>> supply, [
     Listener? onNotEmpty,
-  ]) =>
-      isEmpty ? addAll(supply()) : onNotEmpty?.call();
+  ]) => isEmpty ? addAll(supply()) : onNotEmpty?.call();
 
   void addAllSupplyIfNotEmpty(
     Supplier<Iterable<T>> supply, [
     Listener? onEmpty,
-  ]) =>
-      isNotEmpty ? addAll(supply()) : onEmpty?.call();
+  ]) => isNotEmpty ? addAll(supply()) : onEmpty?.call();
 
   void addAllSupplyWhen(
     bool shouldAdd,
     Supplier<Iterable<T>> supply, [
     Listener? onNotSupply,
-  ]) =>
-      shouldAdd ? addAll(supply()) : onNotSupply?.call();
+  ]) => shouldAdd ? addAll(supply()) : onNotSupply?.call();
 
   ///
   /// [update]
@@ -198,9 +199,10 @@ extension DamathListExtension<T> on List<T> {
   /// [setAllFromIterable]
   /// [setAllFromList]
   ///
-  void setAllFromIterable(Iterable<T> iterable) => length == iterable.length
-      ? iterable.iterator.consumeAllByIndex((value, i) => this[i] = value)
-      : throw StateError(FErrorMessage.iterableSizeInvalid);
+  void setAllFromIterable(Iterable<T> iterable) =>
+      length == iterable.length
+          ? iterable.iterator.consumeAllByIndex((value, i) => this[i] = value)
+          : throw StateError(FErrorMessage.iterableSizeInvalid);
 
   void setAllFromList(List<T> another) {
     if (length == another.length) {
@@ -291,14 +293,16 @@ extension DamathListExtension<T> on List<T> {
   /// [cloneWithFilling]
   /// [cloneByOrder]
   ///
-  List<T> cloneHeadTailSwitch([int interval = 1]) =>
-      [...sublist(interval), ...sublist(0, interval)];
+  List<T> cloneHeadTailSwitch([int interval = 1]) => [
+    ...sublist(interval),
+    ...sublist(0, interval),
+  ];
 
   List<T> cloneWithFilling(int total, T value, [bool fillOnTail = true]) => [
-        if (!fillOnTail) ...List.filled(total - length, value, growable: false),
-        ...this,
-        if (fillOnTail) ...List.filled(total - length, value, growable: false),
-      ];
+    if (!fillOnTail) ...List.filled(total - length, value, growable: false),
+    ...this,
+    if (fillOnTail) ...List.filled(total - length, value, growable: false),
+  ];
 
   List<T> cloneByOrder(Iterable<int> order) {
     assert(Iterable.generate(length).isVariationTo(order));
@@ -311,40 +315,40 @@ extension DamathListExtension<T> on List<T> {
   ///
   List<T> get reverseToList => [for (var i = length - 1; i > -1; i--) this[i]];
 
-  List<T> reverseToListExcept([int count = 1]) =>
-      [...sublist(count), ...sublist(count).reversed];
+  List<T> reverseToListExcept([int count = 1]) => [
+    ...sublist(count),
+    ...sublist(count).reversed,
+  ];
 
   ///
   /// [mapToList], ...
   /// [mapSublist], ...
   ///
-  List<E> mapToList<E>(Mapper<T, E> toVal) =>
-      [for (var i = 0; i < length; i++) toVal(this[i])];
+  List<E> mapToList<E>(Mapper<T, E> toVal) => [
+    for (var i = 0; i < length; i++) toVal(this[i]),
+  ];
 
   List<E> mapToListWithByNew<E>(
     List<E> other,
     Reducer<E> reducing,
     Mapper<T, E> toVal,
-  ) =>
-      [for (var i = 0; i < length; i++) reducing(toVal(this[i]), other[i])];
+  ) => [for (var i = 0; i < length; i++) reducing(toVal(this[i]), other[i])];
 
   List<E> mapToListWithByOld<E>(
     List<T> other,
     Reducer<T> reducing,
     Mapper<T, E> toVal,
-  ) =>
-      [for (var i = 0; i < length; i++) toVal(reducing(this[i], other[i]))];
+  ) => [for (var i = 0; i < length; i++) toVal(reducing(this[i], other[i]))];
 
   List<S> mapToListTogether<S, E>(
     List<E> other,
     Reducer<S> reducing,
     Mapper<T, S> toVal,
     Mapper<E, S> toValOther,
-  ) =>
-      [
-        for (var i = 0; i < length; i++)
-          reducing(toVal(this[i]), toValOther(other[i])),
-      ];
+  ) => [
+    for (var i = 0; i < length; i++)
+      reducing(toVal(this[i]), toValOther(other[i])),
+  ];
 
   ///
   ///
@@ -372,11 +376,13 @@ extension DamathListExtension<T> on List<T> {
   ///
   ///
   ///
-  List<T> reduceWith(List<T> other, Reducer<T> reducing) =>
-      [for (var i = 0; i < length; i++) reducing(this[i], other[i])];
+  List<T> reduceWith(List<T> other, Reducer<T> reducing) => [
+    for (var i = 0; i < length; i++) reducing(this[i], other[i]),
+  ];
 
-  List<T> companionWith<E>(List<E> other, Companion<T, E> companion) =>
-      [for (var i = 0; i < length; i++) companion(this[i], other[i])];
+  List<T> companionWith<E>(List<E> other, Companion<T, E> companion) => [
+    for (var i = 0; i < length; i++) companion(this[i], other[i]),
+  ];
 
   List<T> sandwich(List<T> meat) {
     if (length != meat.length + 1) throw Exception('invalid sandwich');
@@ -417,12 +423,10 @@ extension DamathListExtension<T> on List<T> {
   }
 
   List<List<T>> splitAt(List<int> positions, [int begin = 0, int? end]) =>
-      positions.boundIn(begin, end)
-          ? positions.iterator.foldByAfter(
-              [],
-              begin,
-              (result, interval, i) => result..add(sublist(i, interval)),
-              (i, interval) => interval,
-            )
-          : throw StateError(FErrorMessage.iterableBoundaryInvalid);
+      positions.iterator.foldByAfter(
+        [],
+        begin,
+        (result, interval, i) => result..add(sublist(i, interval)),
+        (i, interval) => interval,
+      );
 }

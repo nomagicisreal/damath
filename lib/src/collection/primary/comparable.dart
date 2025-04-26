@@ -8,7 +8,6 @@ part of '../collection.dart';
 ///
 ///
 
-
 ///
 /// static methods:
 /// [comparator], [compareReverse]
@@ -44,7 +43,7 @@ extension DamathIteratorComparable<C extends Comparable> on Iterator<C> {
   static bool isIncrease<C extends Comparable>(C a, C b) =>
       a.compareTo(b) == -1;
 
-// require a > b
+  // require a > b
   static bool isDecrease<C extends Comparable>(C a, C b) => a.compareTo(b) == 1;
 
   // require a >= b
@@ -59,21 +58,41 @@ extension DamathIteratorComparable<C extends Comparable> on Iterator<C> {
   /// [increaseOrNot]
   /// [decreaseOrNot]
   ///
-  static bool? increaseOrNot<C extends Comparable>(C a, C b) =>
-      switch (a.compareTo(b)) {
-        0 => null,
-        -1 => true,
-        1 => false,
-        _ => throw StateError(FErrorMessage.comparableValueNotProvided),
-      };
+  static bool? increaseOrNot<C extends Comparable>(C a, C b) => switch (a
+      .compareTo(b)) {
+    0 => null,
+    -1 => true,
+    1 => false,
+    _ => throw StateError(FErrorMessage.comparableValueNotProvided),
+  };
 
-  static bool? decreaseOrNot<C extends Comparable>(C a, C b) =>
-      switch (a.compareTo(b)) {
-        0 => null,
-        1 => true,
-        -1 => false,
-        _ => throw StateError(FErrorMessage.comparableValueNotProvided),
-      };
+  static bool? decreaseOrNot<C extends Comparable>(C a, C b) => switch (a
+      .compareTo(b)) {
+    0 => null,
+    1 => true,
+    -1 => false,
+    _ => throw StateError(FErrorMessage.comparableValueNotProvided),
+  };
+
+  ///
+  /// [predicateLower]
+  /// [predicateUpper]
+  ///
+  static Predicator<C> predicateLower<C extends Comparable>(
+    C min, [
+    bool orSame = false,
+  ]) =>
+      orSame
+          ? (C value) => DamathIteratorComparable.notIncrease(min, value)
+          : (C value) => DamathIteratorComparable.isDecrease(min, value);
+
+  static Predicator<C> predicateUpper<C extends Comparable>(
+    C max, [
+    bool orSame = false,
+  ]) =>
+      orSame
+          ? (C value) => DamathIteratorComparable.notDecrease(max, value)
+          : (C value) => DamathIteratorComparable.isIncrease(max, value);
 
   ///
   /// [_invalidFor]
@@ -89,8 +108,8 @@ extension DamathIteratorComparable<C extends Comparable> on Iterator<C> {
               ? isIncrease
               : isDecrease
           : increase
-              ? notDecrease
-              : notIncrease;
+          ? notDecrease
+          : notIncrease;
 
   static PredicatorFusionor<C> _invalidFor<C extends Comparable>(
     bool increase, [
@@ -101,13 +120,12 @@ extension DamathIteratorComparable<C extends Comparable> on Iterator<C> {
               ? notDecrease
               : notIncrease
           : increase
-              ? isDecrease
-              : isIncrease;
+          ? isDecrease
+          : isIncrease;
 
   static TernaratorFusionor<C> _ternarateFor<C extends Comparable>(
     bool increase,
-  ) =>
-      increase ? increaseOrNot : decreaseOrNot;
+  ) => increase ? increaseOrNot : decreaseOrNot;
 
   ///
   /// [isSorted]
@@ -170,38 +188,30 @@ extension DamathIterableComparable<C extends Comparable> on Iterable<C> {
   /// [isOrdered]
   ///
   bool isOrdered([bool strictly = false]) =>
-      !iterator.existEvery(DamathIteratorComparable._validFor(true, strictly)) ||
+      !iterator.existEvery(
+        DamathIteratorComparable._validFor(true, strictly),
+      ) ||
       !iterator.existEvery(DamathIteratorComparable._validFor(false, strictly));
 
   ///
-  /// [rangeIn]
-  /// [boundIn]
+  /// [everyRangeIn]
   ///
-  bool rangeIn(
-    C lower,
-    C upper, [
-    bool increase = true,
-    bool strictly = false,
-  ]) =>
-      iterator.checkSortedForSupply(() {
-        final validate = DamathIteratorComparable._invalidFor(increase, strictly);
-        return validate(lower, upper)
-            ? validate(lower, first) && validate(last, upper)
-            : throw StateError(FErrorMessage.iterableBoundaryInvalid);
-      });
+  bool everyUpperThan(C min, [bool orSame = false]) =>
+      !any(DamathIteratorComparable.predicateLower(min, orSame));
 
-  bool boundIn(
-    C lower,
-    C? upper, {
-    bool increase = true,
-    bool strictly = false,
-  }) =>
-      upper != null
-          ? rangeIn(lower, upper, increase, strictly)
-          : iterator.checkSortedForSupply(
-              () => DamathIteratorComparable._invalidFor(increase, strictly)(
-                  lower, first),
-            );
+  bool everyLowerThan(C max, [bool orSame = false]) =>
+      !any(DamathIteratorComparable.predicateUpper(max, orSame));
+
+  bool everyRangeIn(
+    C min,
+    C max, {
+    bool inclusiveMin = true,
+    bool inclusiveMax = true,
+  }) {
+    final lower = DamathIteratorComparable.predicateLower(min, !inclusiveMin);
+    final upper = DamathIteratorComparable.predicateUpper(max, !inclusiveMax);
+    return !any((value) => lower(value) || upper(value));
+  }
 
   ///
   /// [permutations]
@@ -234,35 +244,37 @@ extension DamathIterableComparable<C extends Comparable> on Iterable<C> {
   /// [consecutive]
   /// [consecutiveOccurred]
   ///
-  Iterable<(C, int)> consecutive([bool onlyRepeated = true]) => isOrdered(false)
-      ? onlyRepeated
-          ? iterator.consecutiveRepeated
-          : iterator.consecutiveCounted
-      : throw StateError(FErrorMessage.comparableDisordered);
+  Iterable<(C, int)> consecutive([bool onlyRepeated = true]) =>
+      isOrdered(false)
+          ? onlyRepeated
+              ? iterator.consecutiveRepeated
+              : iterator.consecutiveCounted
+          : throw StateError(FErrorMessage.comparableDisordered);
 
-  Iterable<int> get consecutiveOccurred => isOrdered(false)
-      ? iterator.consecutiveOccurred
-      : throw StateError(FErrorMessage.comparableDisordered);
+  Iterable<int> get consecutiveOccurred =>
+      isOrdered(false)
+          ? iterator.consecutiveOccurred
+          : throw StateError(FErrorMessage.comparableDisordered);
 
-// ///
-// /// [groupToIterable]
-// ///
-// // instead of list.add, it's better to insert by binary general comparable
-// Iterable<Iterable<C>> groupToIterable([bool increase = true]) =>
-//     iterator.checkSortedForSupply(
-//       () {
-//         final iterator = this.iterator;
-//         return iterator.moveNextSupply(() sync* {
-//           var previous = iterator.current;
-//           while (iterator.moveNext()) {
-//             yield takeWhile(
-//                 (value) => IteratorComparable.isEqual(previous, value));
-//             throw UnimplementedError();
-//           }
-//         });
-//       },
-//       increase,
-//     );
+  // ///
+  // /// [groupToIterable]
+  // ///
+  // // instead of list.add, it's better to insert by binary general comparable
+  // Iterable<Iterable<C>> groupToIterable([bool increase = true]) =>
+  //     iterator.checkSortedForSupply(
+  //       () {
+  //         final iterator = this.iterator;
+  //         return iterator.moveNextSupply(() sync* {
+  //           var previous = iterator.current;
+  //           while (iterator.moveNext()) {
+  //             yield takeWhile(
+  //                 (value) => IteratorComparable.isEqual(previous, value));
+  //             throw UnimplementedError();
+  //           }
+  //         });
+  //       },
+  //       increase,
+  //     );
 }
 
 ///
@@ -306,7 +318,8 @@ extension DamathListComparable<C extends Comparable> on List<C> {
   C median([bool evenPrevious = true]) =>
       length.isEven ? this[length ~/ 2 - 1] : this[length ~/ 2];
 
-  List<C> cloneSorted([bool increase = false]) => List.of(this)..sort(DamathIteratorComparable.comparator(increase));
+  List<C> cloneSorted([bool increase = false]) =>
+      List.of(this)..sort(DamathIteratorComparable.comparator(increase));
 
   ///
   ///
@@ -377,52 +390,51 @@ extension DamathListComparable<C extends Comparable> on List<C> {
       // tie to average
       tieToMin == null
           ? (v) {
-              if (v == previous) return rank;
+            if (v == previous) return rank;
 
-              var exist = 0;
-              for (var i = 0; i < length; i++) {
-                final current = sorted[i];
+            var exist = 0;
+            for (var i = 0; i < length; i++) {
+              final current = sorted[i];
 
-                if (exist == 0) {
-                  if (current == v) exist++;
+              if (exist == 0) {
+                if (current == v) exist++;
 
-                  // exist != 0
-                } else {
-                  if (current != v) {
-                    rank = i + (1 - exist) / 2;
-                    return rank;
-                  }
-                  exist++;
+                // exist != 0
+              } else {
+                if (current != v) {
+                  rank = i + (1 - exist) / 2;
+                  return rank;
                 }
+                exist++;
               }
-              rank = length + (1 - exist) / 2;
-              return rank;
             }
+            rank = length + (1 - exist) / 2;
+            return rank;
+          }
           : tieToMin
-              ? (v) {
-                  if (v == previous) return rank;
+          ? (v) {
+            if (v == previous) return rank;
 
-                  rank = (sorted.indexWhere((s) => s == v) + 1).toDouble();
-                  return rank;
-                }
+            rank = (sorted.indexWhere((s) => s == v) + 1).toDouble();
+            return rank;
+          }
+          // tie to max
+          : (v) {
+            if (v == previous) return rank;
 
-              // tie to max
-              : (v) {
-                  if (v == previous) return rank;
+            var exist = false;
+            for (var i = 0; i < length; i++) {
+              final current = sorted[i];
 
-                  var exist = false;
-                  for (var i = 0; i < length; i++) {
-                    final current = sorted[i];
-
-                    if (current == v) exist = true;
-                    if (exist && current != v) {
-                      rank = i.toDouble();
-                      return rank;
-                    }
-                  }
-                  rank = length.toDouble();
-                  return rank;
-                },
+              if (current == v) exist = true;
+              if (exist && current != v) {
+                rank = i.toDouble();
+                return rank;
+              }
+            }
+            rank = length.toDouble();
+            return rank;
+          },
     );
   }
 
