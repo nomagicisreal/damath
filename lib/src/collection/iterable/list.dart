@@ -234,7 +234,9 @@ extension DamathListExtension<T> on List<T> {
     try {
       add(removeLast());
     } on UnsupportedError catch (e) {
-      return e.message.mapNotNullOr(catcher, () => false);
+      final message = e.message;
+      if (message == null) return false;
+      return catcher(message);
     }
     return false;
   }

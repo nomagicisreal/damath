@@ -48,13 +48,13 @@ extension DamathIteratorBool on Iterator<bool> {
   /// [takeListFor]
   ///
   Iterable<I> takeFor<I>(Iterator<I> source) => [
-        for (; moveNext() && source.moveNext();)
-          if (current) source.current
-      ];
+    for (; moveNext() && source.moveNext();)
+      if (current) source.current,
+  ];
 
   List<I> takeListFor<I>(Iterator<I> source) => [
     for (; moveNext() && source.moveNext();)
-      if (current) source.current
+      if (current) source.current,
   ];
 }
 
@@ -84,14 +84,12 @@ extension DamathIteratorDouble on Iterator<double> {
   static Iterator<double> reduceMaxDistance(
     Iterator<double> a,
     Iterator<double> b,
-  ) =>
-      a.distance > b.distance ? a : b;
+  ) => a.distance > b.distance ? a : b;
 
   static Iterator<double> reduceMinDistance(
     Iterator<double> a,
     Iterator<double> b,
-  ) =>
-      a.distance < b.distance ? a : b;
+  ) => a.distance < b.distance ? a : b;
 
   ///
   /// [min], [max], [mode]
@@ -101,54 +99,51 @@ extension DamathIteratorDouble on Iterator<double> {
 
   double get max => reduce(DoubleExtension.reduceMax);
 
-  double get mode =>
-      toMapCounted.reduce(DamathMapEntry.reduceMaxValueInt).key;
+  double get mode => toMapCounted.reduce(DamathMapEntry.reduceMaxValueInt).key;
 
   double get range => applyMoveNext((value) {
-        var min = value;
-        var max = value;
-        while (moveNext()) {
-          if (current < min) min = current;
-          if (current > max) max = current;
-        }
-        return max - min;
-      });
+    var min = value;
+    var max = value;
+    while (moveNext()) {
+      if (current < min) min = current;
+      if (current > max) max = current;
+    }
+    return max - min;
+  });
 
   (double, double) get boundary => supplyMoveNext(() {
-        var min = current;
-        var max = current;
-        while (moveNext()) {
-          if (current < min) min = current;
-          if (current > max) max = current;
-        }
-        return (min, max);
-      });
+    var min = current;
+    var max = current;
+    while (moveNext()) {
+      if (current < min) min = current;
+      if (current > max) max = current;
+    }
+    return (min, max);
+  });
 
   ///
-  /// [sum], [sumSquared]
+  /// [sumSquared]
   /// [meanArithmetic], [meanGeometric]
   ///
-  double get sum => reduce(DoubleExtension.reducePlus);
-
   double get sumSquared => reduce(DoubleExtension.reducePlusSquared);
 
   double get meanArithmetic => applyMoveNext((total) {
-        var length = 1;
-        while (moveNext()) {
-          total += current;
-          length++;
-        }
-        return total / length;
-      });
+    var length = 1;
+    while (moveNext()) {
+      total += current;
+      length++;
+    }
+    return total / length;
+  });
 
   double get meanGeometric => applyMoveNext((total) {
-        var length = 1;
-        while (moveNext()) {
-          total *= current;
-          length++;
-        }
-        return math.pow(total, 1 / length).toDouble();
-      });
+    var length = 1;
+    while (moveNext()) {
+      total *= current;
+      length++;
+    }
+    return math.pow(total, 1 / length).toDouble();
+  });
 
   ///
   /// [distance], [volume]
@@ -188,7 +183,10 @@ extension DamathIteratorDouble on Iterator<double> {
       pairTake(source, DoubleExtension.reduceMinusThenHalf);
 
   double interDistanceCumulate(Iterator<double> another) => interReduce(
-      another, DoubleExtension.reduceMinus, DoubleExtension.reducePlus);
+    another,
+    DoubleExtension.reduceMinus,
+    DoubleExtension.reducePlus,
+  );
 }
 
 ///
@@ -254,7 +252,9 @@ extension DamathIterableDouble on Iterable<double> {
   /// [normalizeInto]
   ///
   Iterable<double> get normalized => iterator.takeAllCompanion(
-      iterator.distance, DoubleExtension.reduceDivided);
+    iterator.distance,
+    DoubleExtension.reduceDivided,
+  );
 
   void normalizeInto(List<double> out) {
     assert(out.length == length);
@@ -331,9 +331,9 @@ extension DamathIterableInt on Iterable<int> {
   static Iterable<int> sequence(int length, [int start = 1]) =>
       Iterable.generate(length, (i) => start + i);
 
-  static Iterable<int> seq(int begin, int end) =>
-      [for (var i = begin; i <= end; i++) i];
-
+  static Iterable<int> seq(int begin, int end) => [
+    for (var i = begin; i <= end; i++) i,
+  ];
 }
 
 ///
@@ -349,7 +349,6 @@ extension DamathListDouble on List<double> {
   }
 }
 
-
 ///
 ///
 /// [validFrequencies]
@@ -363,15 +362,18 @@ extension DamathIteratorNullable<I> on Iterator<I?> {
     final map = <I, double>{};
     var length = 0;
 
-    final Consumer<I?> consume = lengthValid
-        ? (current) => current.consumeNotNull((key) {
-      map.plusOn(key);
-      length++;
-    })
-        : (current) {
-      current.consumeNotNull(map.plusOn);
-      length++;
-    };
+    final consume =
+        lengthValid
+            ? (value) {
+              if (value == null) return;
+              map.plusOn(value);
+              length++;
+            }
+            : (value) {
+              length++;
+              if (value == null) return;
+              map.plusOn(value);
+            };
 
     while (moveNext()) {
       consume(current);
@@ -379,8 +381,6 @@ extension DamathIteratorNullable<I> on Iterator<I?> {
     return map..updateAll((key, value) => value / length);
   }
 }
-
-
 
 ///
 ///
