@@ -7,19 +7,17 @@ part of '../custom.dart';
 ///
 /// [_Mxy], [_Mxyz]
 ///   --[_MxyOperatable], [_MxyzO]
-///   |   --[_Point2], [_Point3]
-///   |       --[Point2], [Point3]
+///   |   --[Point2], [Point3]
 ///   |
 ///   --[_MxyTransformable], [_MxyzT]
-///       --[_Vector2], [_Vector3]
-///           --[Vector2], [Vector3]
+///       --[Vector2], [Vector3]
 ///
 ///
 
 ///
 ///
 ///
-mixin _Mxy<C extends _Mxy<C>> {
+mixin _Mxy {
   double get x;
 
   double get y;
@@ -37,7 +35,7 @@ mixin _Mxy<C extends _Mxy<C>> {
 ///
 ///
 ///
-mixin _Mxyz<C extends _Mxyz<C>> implements _Mxy<C> {
+mixin _Mxyz implements _Mxy {
   double get z;
 
   @override
@@ -53,66 +51,66 @@ mixin _Mxyz<C extends _Mxyz<C>> implements _Mxy<C> {
 ///
 ///
 ///
-mixin _MxyOperatable<O extends _MxyOperatable<O>> on _Mxy<O>
+mixin _MxyOperatable on _Mxy
     implements
-        Comparable<O>,
-        IOperatableDirectable<O, O>,
-        IOperatableScalable<O, O>,
-        IOperatableStepable<O, O> {
-  O _instance(double x, double y);
+        Comparable<_MxyOperatable>,
+        IOperatableDirectable<_MxyOperatable, _MxyOperatable>,
+        IOperatableScalable<_MxyOperatable, _MxyOperatable>,
+        IOperatableStepable<_MxyOperatable, _MxyOperatable> {
+  _MxyOperatable _instance(double x, double y);
 
   @override
-  O operator -() => _instance(-x, -y);
+  _MxyOperatable operator -() => _instance(-x, -y);
 
   @override
-  O operator +(covariant O other) => _instance(x + other.x, y + other.y);
+  _MxyOperatable operator +(covariant _MxyOperatable other) => _instance(x + other.x, y + other.y);
 
   @override
-  O operator -(covariant O other) => _instance(x - other.x, y - other.y);
+  _MxyOperatable operator -(covariant _MxyOperatable other) => _instance(x - other.x, y - other.y);
 
   @override
-  O operator *(covariant O other) => _instance(x * other.x, y * other.y);
+  _MxyOperatable operator *(covariant _MxyOperatable other) => _instance(x * other.x, y * other.y);
 
   @override
-  O operator /(covariant O other) => _instance(x / other.x, y / other.y);
+  _MxyOperatable operator /(covariant _MxyOperatable other) => _instance(x / other.x, y / other.y);
 
   @override
-  O operator %(covariant O other) => _instance(x % other.x, y % other.y);
+  _MxyOperatable operator %(covariant _MxyOperatable other) => _instance(x % other.x, y % other.y);
 
   @override
-  O operator ~/(covariant O other) =>
+  _MxyOperatable operator ~/(covariant _MxyOperatable other) =>
       _instance((x ~/ other.x).toDouble(), (y ~/ other.y).toDouble());
 }
 
-mixin _MxyzO<O extends _MxyzO<O>> on _Mxyz<O>, _MxyOperatable<O> {
+mixin _MxyzO on _Mxyz, Point2 {
   @override
-  O _instance(double x, double y, [double z]);
+  _MxyzO _instance(double x, double y, [double z = double.nan]);
 
   @override
-  O operator -() => _instance(-x, -y, -z);
+  _MxyzO operator -() => _instance(-x, -y, -z);
 
   @override
-  O operator +(covariant O other) =>
+  _MxyzO operator +(covariant _MxyzO other) =>
       _instance(x + other.x, y + other.y, z + other.z);
 
   @override
-  O operator -(covariant O other) =>
+  _MxyzO operator -(covariant _MxyzO other) =>
       _instance(x - other.x, y - other.y, z - other.z);
 
   @override
-  O operator *(covariant O other) =>
+  _MxyzO operator *(covariant _MxyzO other) =>
       _instance(x * other.x, y * other.y, z - other.z);
 
   @override
-  O operator /(covariant O other) =>
+  _MxyzO operator /(covariant _MxyzO other) =>
       _instance(x / other.x, y / other.y, z / other.z);
 
   @override
-  O operator %(covariant O other) =>
+  _MxyzO operator %(covariant _MxyzO other) =>
       _instance(x % other.x, y % other.y, z % other.z);
 
   @override
-  O operator ~/(covariant O other) => _instance(
+  _MxyzO operator ~/(covariant _MxyzO other) => _instance(
     (x ~/ other.x).toDouble(),
     (y ~/ other.y).toDouble(),
     (z ~/ other.z).toDouble(),
@@ -120,40 +118,13 @@ mixin _MxyzO<O extends _MxyzO<O>> on _Mxyz<O>, _MxyOperatable<O> {
 }
 
 ///
-/// [_Point2] is essence of [Point2] and [Point3].
-///
-/// Providing that [x] and [y] are defined in [Point2] and all of [Point3] instance have to inherit its [x] and [y],
-/// [Point3] can only extends [Point2] with generic type of itself [Point3], [Point2]<[Point3]>,
-/// which enables functions shared in [MComparable], [_Mxy], [_MxyOperatable] or even [_Mxyz] and [_MxyzO].
-/// While it's bad to open generic type for [Point2], which is assumed to be used as a type without generic.
-///
-abstract class _Point2<P extends _Point2<P>>
-    with MComparable<P>, _Mxy<P>, _MxyOperatable<P>
-    implements Comparable<P> {
-  @override
-  final double x;
-  @override
-  final double y;
-
-  const _Point2(this.x, this.y);
-}
-
-abstract class _Point3<P extends _Point3<P>> extends _Point2<P>
-    with _Mxyz<P>, _MxyzO<P> {
-  @override
-  final double z;
-
-  const _Point3(super.x, super.y, this.z);
-}
-
 ///
 ///
-///
-mixin _MxyTransformable<T extends _MxyTransformable<T>> on _Mxy<T>
+mixin _MxyTransformable on _Mxy
     implements
-        IOperatableDirectable<T, void>,
-        IOperatableScalable<T, void>,
-        IOperatableStepable<T, void> {
+        IOperatableDirectable<_MxyTransformable, void>,
+        IOperatableScalable<_MxyTransformable, void>,
+        IOperatableStepable<_MxyTransformable, void> {
   set x(double value);
 
   set y(double value);
@@ -165,45 +136,45 @@ mixin _MxyTransformable<T extends _MxyTransformable<T>> on _Mxy<T>
   }
 
   @override
-  void operator +(covariant T another) {
+  void operator +(covariant _MxyTransformable another) {
     x += another.x;
     y += another.y;
   }
 
   @override
-  void operator -(covariant another) {
+  void operator -(covariant _MxyTransformable another) {
     x -= another.x;
     y -= another.y;
   }
 
   @override
-  void operator *(covariant T another) {
+  void operator *(covariant _MxyTransformable another) {
     x *= another.x;
     y *= another.y;
   }
 
   @override
-  void operator /(covariant T another) {
+  void operator /(covariant _MxyTransformable another) {
     x /= another.x;
     y /= another.y;
   }
 
   @override
-  void operator %(covariant T another) {
+  void operator %(covariant _MxyTransformable another) {
     x %= another.x;
     y %= another.y;
   }
 
   @override
-  void operator ~/(covariant T another) {
+  void operator ~/(covariant _MxyTransformable another) {
     x = (x ~/ another.x).toDouble();
     y = (y ~/ another.y).toDouble();
   }
 
-  T get clone;
+  _MxyTransformable get clone;
 }
 
-mixin _MxyzT<T extends _MxyzT<T>> on _Mxyz<T>, _MxyTransformable<T> {
+mixin _MxyzT on _Mxyz, _MxyTransformable {
   set z(double value);
 
   @override
@@ -214,42 +185,42 @@ mixin _MxyzT<T extends _MxyzT<T>> on _Mxyz<T>, _MxyTransformable<T> {
   }
 
   @override
-  void operator +(covariant T another) {
+  void operator +(covariant _MxyzT another) {
     x += another.x;
     y += another.y;
     z += another.z;
   }
 
   @override
-  void operator -(covariant another) {
+  void operator -(covariant _MxyzT another) {
     x -= another.x;
     y -= another.y;
     z -= another.z;
   }
 
   @override
-  void operator *(covariant T another) {
+  void operator *(covariant _MxyzT another) {
     x *= another.x;
     y *= another.y;
     z *= another.z;
   }
 
   @override
-  void operator /(covariant another) {
+  void operator /(covariant _MxyzT another) {
     x /= another.x;
     y /= another.y;
     z /= another.z;
   }
 
   @override
-  void operator %(covariant another) {
+  void operator %(covariant _MxyzT another) {
     x %= another.x;
     y %= another.y;
     z %= another.z;
   }
 
   @override
-  void operator ~/(covariant T another) {
+  void operator ~/(covariant _MxyzT another) {
     x = (x ~/ another.x).toDouble();
     y = (y ~/ another.y).toDouble();
     z = (z ~/ another.z).toDouble();
@@ -348,25 +319,4 @@ mixin _MxyzT<T extends _MxyzT<T>> on _Mxyz<T>, _MxyTransformable<T> {
     x = x * cos + y * -sin;
     y = x * sin + y * cos;
   }
-}
-
-///
-///
-///
-abstract class _Vector2<V extends _Vector2<V>>
-    with _Mxy<V>, _MxyTransformable<V> {
-  @override
-  double x;
-  @override
-  double y;
-
-  _Vector2(this.x, this.y);
-}
-
-abstract class _Vector3<V extends _Vector3<V>> extends _Vector2<V>
-    with _Mxyz<V>, _MxyzT<V> {
-  @override
-  double z;
-
-  _Vector3(super.x, super.y, this.z);
 }

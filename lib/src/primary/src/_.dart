@@ -5,6 +5,7 @@ part of '../primary.dart';
 /// [ErrorMessages]
 /// ----------------
 ///
+/// [NullableExtension]
 /// [BoolExtension]
 /// [TypeExtension]
 ///
@@ -23,6 +24,13 @@ abstract interface class ErrorMessages {
   const ErrorMessages();
 
   ///
+  /// general
+  ///
+  static const String modifyImmutable = 'cannot modify immutables';
+  static const String receiveNull = 'receive null';
+  static const String lazyNotYetInit = 'lazy not yet init';
+
+  ///
   /// iterator, iterable
   ///
   static const String iteratorNoElement = 'iterator no element';
@@ -38,26 +46,8 @@ abstract interface class ErrorMessages {
   static String comparableDisordered = 'comparable disordered';
 
   ///
-  /// vertex
-  ///
-  static const String vertexDataCannotAssignDirectly =
-      'cannot assign data directly';
-  static const String vertexDataRequiredNotNull = 'data require not null';
-  static const String vertexDataLazyNotInited = 'lazy data not been inited';
-
-  ///
-  /// general
-  ///
-  static const String nodeCannotAssignDirectly =
-      'cannot assign next general directly';
-  static const String nodeNotHoldComparator = 'general not hold comparator';
-
-  ///
   /// others
   ///
-  static const String indexOutOfBoundary = 'index out of boundary';
-  static const String generateByNegative = 'invalid to generate by negative';
-  static const String modifyImmutable = 'cannot modify immutable value';
   static const String percentileOutOfBoundary = 'percentile out of boundary';
   static const String unsupportedSwitchCase = 'unsupported switch case';
   static const String intFactorialOverflow =
@@ -73,11 +63,11 @@ abstract interface class ErrorMessages {
   ///
   ///
   static String intStoneTakingFinal(
-      int n,
-      int total,
-      int limitLower,
-      int limitUpper,
-      ) =>
+    int n,
+    int total,
+    int limitLower,
+    int limitUpper,
+  ) =>
       'invalid stone taking final argument($n, $total, $limitLower, $limitUpper)';
 
   static String intPascalTriangle(int n, int k) =>
@@ -103,9 +93,13 @@ abstract interface class ErrorMessages {
       'set not identical:\n$a\n$b';
 }
 
+extension NullableExtension<T> on T? {
+  S? nullOrMap<S>(Mapper<T, S> mapper) {
+    if (this == null) return null;
+    return mapper(this as T);
+  }
+}
 
-
-///
 ///
 ///
 ///
@@ -233,13 +227,15 @@ extension NumExtension on num {
   ///
   /// bound
   ///
-  bool isBoundClose(int start, int? end, [int from = 0]) => end == null
-      ? from <= start && start < this
-      : from <= start && start < end && end <= this;
+  bool isBoundClose(int start, int? end, [int from = 0]) =>
+      end == null
+          ? from <= start && start < this
+          : from <= start && start < end && end <= this;
 
-  bool isBoundOpen(int start, int? end, [int from = 0]) => end == null
-      ? from <= start && start < this
-      : from < start && start < end && end < this;
+  bool isBoundOpen(int start, int? end, [int from = 0]) =>
+      end == null
+          ? from <= start && start < this
+          : from < start && start < end && end < this;
 }
 
 ///
@@ -251,13 +247,15 @@ extension BigIntExtension on BigInt {
   /// [toIntValidated]
   /// [validateThenMap]
   ///
-  int get toIntValidated => isValidInt
-      ? toInt()
-      : throw StateError(ErrorMessages.invalidIntegerFromBigInt(this));
+  int get toIntValidated =>
+      isValidInt
+          ? toInt()
+          : throw StateError(ErrorMessages.invalidIntegerFromBigInt(this));
 
-  S validateThenMap<S>(Mapper<int, S> toVal) => isValidInt
-      ? toVal(toInt())
-      : throw StateError(ErrorMessages.invalidIntegerFromBigInt(this));
+  S validateThenMap<S>(Mapper<int, S> toVal) =>
+      isValidInt
+          ? toVal(toInt())
+          : throw StateError(ErrorMessages.invalidIntegerFromBigInt(this));
 
   ///
   ///

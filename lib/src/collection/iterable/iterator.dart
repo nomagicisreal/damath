@@ -453,7 +453,7 @@ extension DamathIterator<I> on Iterator<I> {
   Iterable<I> take(int count) sync* {
     var i = 0;
     for (; i < count && moveNext(); i++) yield current;
-    if (count > i) throw RangeError(ErrorMessages.indexOutOfBoundary);
+    if (count > i) throw RangeError.range(count, 0, i);
   }
 
   Iterable<I> get takeAll => [for (; moveNext();) current];
@@ -579,7 +579,7 @@ extension DamathIterator<I> on Iterator<I> {
     final list = <I>[];
     var i = 0;
     for (; i < count && moveNext(); i++) list.add(current);
-    if (count > i) throw RangeError(ErrorMessages.indexOutOfBoundary);
+    if (count > i) throw RangeError.range(count, 0, i);
     return list;
   }
 
@@ -733,7 +733,7 @@ extension DamathIterator<I> on Iterator<I> {
   Iterable<I> skip(int count) {
     var i = 0;
     for (; moveNext() && i < count; i++) {}
-    if (count > i) throw RangeError(ErrorMessages.indexOutOfBoundary);
+    if (count > i) throw RangeError.range(count, 0, i);
     return takeAll;
   }
 

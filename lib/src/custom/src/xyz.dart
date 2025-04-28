@@ -129,32 +129,40 @@ enum Quadrant2D {
 }
 
 ///
-/// [Point.square], ...
+/// [Point2.square], ...
 /// [Point2.zero], ...
 /// [Point2.lerp], ...
 ///
-class Point2 extends _Point2<Point2> {
-  const Point2(super.x, super.y);
+class Point2
+    with MComparable<_MxyOperatable>, _Mxy, _MxyOperatable
+    implements Comparable<_MxyOperatable> {
+  @override
+  final double x;
+  @override
+  final double y;
+
+  const Point2(this.x, this.y);
 
   @override
   Point2 _instance(double x, double y) => Point2(x, y);
 
   @override
-  int compareTo(Point2 other) =>
+  int compareTo(covariant Point2 other) =>
       Point2.distance(this) < Point2.distance(other)
           ? -1
           : Point2.distance(this) > Point2.distance(other)
           ? 1
           : 0;
 
-  const Point2.square(double dimension) : super(dimension, dimension);
+  const Point2.square(double dimension) : x = dimension, y = dimension;
 
-  const Point2.ofX(double x) : super(x, 0);
+  const Point2.ofX(this.x) : y = 0;
 
-  const Point2.ofY(double y) : super(0, y);
+  const Point2.ofY(this.y) : x = 0;
 
   Point2.fromDirection(double direction, [double distance = 0])
-    : super(distance * math.cos(direction), distance * math.sin(direction));
+    : x = distance * math.cos(direction),
+      y = distance * math.sin(direction);
 
   ///
   ///
@@ -210,22 +218,25 @@ class Point2 extends _Point2<Point2> {
 /// [Point3.zero], ...
 /// [_instance], ...
 ///
-class Point3 extends _Point3<Point3> {
-  const Point3(super.x, super.y, super.z);
+class Point3 extends Point2 with _Mxyz, _MxyzO {
+  @override
+  final double z;
 
-  const Point3.ofX(double x) : super(x, 0, 0);
+  const Point3(super.x, super.y, this.z);
 
-  const Point3.ofY(double y) : super(0, y, 0);
+  const Point3.ofX(super.x) : z = 0, super.ofX();
 
-  const Point3.ofZ(double z) : super(0, 0, z);
+  const Point3.ofY(double y) : z = 0, super.ofY(0);
 
-  const Point3.cube(double dimension) : super(dimension, dimension, dimension);
+  const Point3.ofZ(this.z) : super.square(0);
 
-  const Point3.ofXY(double value) : super(value, value, 0);
+  const Point3.ofXY(super.value) : z = 0, super.square();
 
-  const Point3.ofYZ(double value) : super(0, value, value);
+  const Point3.ofYZ(super.value) : z = value, super.ofY();
 
-  const Point3.ofXZ(double value) : super(value, 0, value);
+  const Point3.ofXZ(super.value) : z = value, super.ofX();
+
+  const Point3.cube(super.dimension) : z = dimension, super.square();
 
   factory Point3.fromDirection(
     double azimuthal,
@@ -386,8 +397,13 @@ class Point3 extends _Point3<Point3> {
 ///
 ///
 ///
-class Vector2 extends _Vector2<Vector2> {
-  Vector2(super.x, super.y);
+class Vector2 with _Mxy, _MxyTransformable {
+  @override
+  double x;
+  @override
+  double y;
+
+  Vector2(this.x, this.y);
 
   @override
   Vector2 get clone => Vector2(x, y);
@@ -404,8 +420,11 @@ class Vector2 extends _Vector2<Vector2> {
   }
 }
 
-class Vector3 extends _Vector3<Vector3> {
-  Vector3(super.x, super.y, super.z);
+class Vector3 extends Vector2 with _Mxyz, _MxyzT {
+  @override
+  double z;
+
+  Vector3(super.x, super.y, this.z);
 
   @override
   Vector3 get clone => Vector3(x, y, z);
