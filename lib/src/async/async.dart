@@ -1,5 +1,8 @@
 import 'dart:async';
-import 'package:damath/damath.dart';
+
+import 'package:damath/src/collection/collection.dart';
+import 'package:damath/src/custom/custom.dart';
+import 'package:damath/src/primary/primary.dart';
 
 ///
 ///
@@ -25,7 +28,7 @@ extension StreamExtension<M> on Stream<M> {
   static Stream<int> ofInts({
     int start = 0,
     int end = 10,
-    Duration delay = KCore.durationSecond1,
+    Duration delay = DurationExtension.second1,
   }) async* {
     assert(end >= start);
     for (var i = start; i <= end; i++) {

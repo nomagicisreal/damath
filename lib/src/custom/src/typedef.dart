@@ -1,8 +1,7 @@
-part of '../core.dart';
+part of '../custom.dart';
 
 ///
 ///
-/// this file contains:
 /// [Listener]...
 /// [Applier], ...
 /// [Supplier], ...

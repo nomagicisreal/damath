@@ -1,14 +1,16 @@
-part of '../core.dart';
+part of '../primary.dart';
 
 ///
+/// constants:
 ///
-/// statics:
+/// statics usages:
 /// [sqrt2], ...
+/// [radian_angle1], ..., [radian_fromAngle], ...
 /// [proximateInfinityOf], ...
 /// [predicateFinite], ...
 /// [lerp], ...
 ///
-/// instances:
+/// instance usages:
 /// [filterInfinity], ...
 /// [isNearlyInt], ...
 ///
@@ -28,6 +30,50 @@ extension DoubleExtension on double {
   static const double sqrt1_7 = 0.3779644730092272;
   static const double sqrt1_8 = 0.3535533905932738;
   static const double sqrt1_10 = 0.31622776601683794;
+
+  ///
+  ///
+  ///
+  static const double radian_angle1 = math.pi / 180;
+  static const double radian_angle5 = math.pi / 36;
+  static const double radian_angle10 = math.pi / 18;
+  static const double radian_angle15 = math.pi / 12;
+  static const double radian_angle20 = math.pi / 9;
+  static const double radian_angle30 = math.pi / 6;
+  static const double radian_angle40 = math.pi * 2 / 9;
+  static const double radian_angle45 = math.pi / 4;
+  static const double radian_angle50 = math.pi * 5 / 18;
+  static const double radian_angle60 = math.pi / 3;
+  static const double radian_angle70 = math.pi * 7 / 18;
+  static const double radian_angle75 = math.pi * 5 / 12;
+  static const double radian_angle80 = math.pi * 4 / 9;
+  static const double radian_angle85 = math.pi * 17 / 36;
+  static const double radian_angle90 = math.pi / 2;
+  static const double radian_angle120 = math.pi * 2 / 3;
+  static const double radian_angle135 = math.pi * 3 / 4;
+  static const double radian_angle150 = math.pi * 5 / 6;
+  static const double radian_angle180 = math.pi;
+  static const double radian_angle225 = math.pi * 5 / 4;
+  static const double radian_angle240 = math.pi * 4 / 3;
+  static const double radian_angle270 = math.pi * 3 / 2;
+  static const double radian_angle315 = math.pi * 7 / 4;
+  static const double radian_angle360 = math.pi * 2;
+  static const double radian_angle390 = math.pi * 13 / 6;
+  static const double radian_angle420 = math.pi * 7 / 3;
+  static const double radian_angle450 = math.pi * 5 / 2;
+
+  static double radian_fromAngle(double angle) =>
+      angle * DoubleExtension.radian_angle1;
+
+  static double radian_complementary(double radian) {
+    assert(radian.isRangeClose(0, radian_angle90));
+    return (90 - radian / radian_angle1) * radian_angle1;
+  }
+
+  static double radian_supplementary(double radian) {
+    assert(radian.isRangeClose(0, radian_angle180));
+    return (180 - radian / radian_angle1) * radian_angle1;
+  }
 
   ///
   ///
@@ -73,7 +119,7 @@ extension DoubleExtension on double {
   /// [applyKeep], [applyZero]
   /// [applyOnPlus], [applyOnMinus], [applyOnMultiply], [applyOnDivided], [applyOnMod]
   /// [applyOnTimesFactor]
-  /// [applyOnPeriod], [applyOnPeriodSinByTimes], [applyOnPeriodCosByTimes], [applyOnPeriodTanByTimes]
+  /// [applyOnPeriod]
   ///
   ///
 
@@ -105,9 +151,6 @@ extension DoubleExtension on double {
   ///
   /// [applyOnTimesFactor]
   /// [applyOnPeriod]
-  ///   [applyOnPeriodSinByTimes]
-  ///   [applyOnPeriodCosByTimes]
-  ///   [applyOnPeriodTanByTimes]
   ///
   static Applier<double> applyOnTimesFactor(
     double times,
@@ -130,15 +173,6 @@ extension DoubleExtension on double {
     final times = math.pi * 2 * period;
     return (value) => transform(times * value);
   }
-
-  static Applier<double> applyOnPeriodSinByTimes(int times) =>
-      applyOnPeriod(times.toDouble(), math.sin);
-
-  static Applier<double> applyOnPeriodCosByTimes(int times) =>
-      applyOnPeriod(times.toDouble(), math.cos);
-
-  static Applier<double> applyOnPeriodTanByTimes(int times) =>
-      applyOnPeriod(times.toDouble(), math.tan);
 
   ///
   /// reduce

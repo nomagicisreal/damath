@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:collection/collection.dart';
-import 'package:damath/src/core/core.dart';
+import 'package:damath/src/custom/custom.dart';
+import 'package:damath/src/primary/primary.dart';
 
 part 'iterable/iterator.dart';
 part 'iterable/iteratorto.dart';

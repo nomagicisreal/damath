@@ -202,11 +202,11 @@ extension DamathListExtension<T> on List<T> {
   void setAllFromIterable(Iterable<T> iterable) =>
       length == iterable.length
           ? iterable.iterator.consumeAllByIndex((value, i) => this[i] = value)
-          : throw StateError(FErrorMessage.iterableSizeInvalid);
+          : throw StateError(ErrorMessages.iterableSizeInvalid);
 
   void setAllFromList(List<T> another) {
     if (length == another.length) {
-      throw StateError(FErrorMessage.iterableSizeInvalid);
+      throw StateError(ErrorMessages.iterableSizeInvalid);
     }
     for (var i = 0; i < length; i++) this[i] = another[i];
   }
@@ -275,9 +275,7 @@ extension DamathListExtension<T> on List<T> {
   /// [removalWhere]
   ///
   T getOrDefault(int position, Supplier<T> onInvalidPosition) =>
-      position.isNatural && position < length
-          ? this[position]
-          : onInvalidPosition();
+      position > -1 && position < length ? this[position] : onInvalidPosition();
 
   Iterable<T> removalWhere(Predicator<T> test) sync* {
     for (var i = 0; i < length; i++) if (test(this[i])) yield removeAt(i);
@@ -357,7 +355,7 @@ extension DamathListExtension<T> on List<T> {
   ///
   List<S> mapSublist<S>(int begin, Mapper<T, S> mapping, [int? end]) {
     if (length.isBoundClose(begin, end)) {
-      throw StateError(FErrorMessage.iterableBoundaryInvalid);
+      throw StateError(ErrorMessages.iterableBoundaryInvalid);
     }
     final bound = end ?? length;
     return [for (var i = begin; i < bound; i++) mapping(this[i])];
@@ -369,7 +367,7 @@ extension DamathListExtension<T> on List<T> {
     int? end,
   ]) {
     if (length.isBoundClose(begin, end)) {
-      throw StateError(FErrorMessage.iterableBoundaryInvalid);
+      throw StateError(ErrorMessages.iterableBoundaryInvalid);
     }
     final bound = end ?? length;
     return [for (var i = begin; i < bound; i++) mapping(this[i], i)];

@@ -78,11 +78,11 @@ extension DamathIterator<I> on Iterator<I> {
 
   void consumeMoveNext(Consumer<I> consume) => moveNext()
       ? consume(current)
-      : throw StateError(FErrorMessage.iteratorNoElement);
+      : throw StateError(ErrorMessages.iteratorNoElement);
 
   void consumeFound(Predicator<I> test, Consumer<I> action) {
     while (moveNext()) if (test(current)) return action(current);
-    throw StateError(FErrorMessage.iteratorElementNotFound);
+    throw StateError(ErrorMessages.iteratorElementNotFound);
   }
 
   void consumeWhere(Predicator<I> test, Consumer<I> action) {
@@ -170,11 +170,11 @@ extension DamathIterator<I> on Iterator<I> {
   ///
   I applyMoveNext(Applier<I> apply) => moveNext()
       ? apply(current)
-      : throw StateError(FErrorMessage.iteratorNoElement);
+      : throw StateError(ErrorMessages.iteratorNoElement);
 
   I applyLead(int ahead, Applier<I> apply) {
     for (var i = -1; i < ahead; i++) {
-      if (!moveNext()) throw StateError(FErrorMessage.iteratorNoElement);
+      if (!moveNext()) throw StateError(ErrorMessages.iteratorNoElement);
     }
     return apply(current);
   }
@@ -383,7 +383,7 @@ extension DamathIterator<I> on Iterator<I> {
   ///
   I find(Predicator<I> test) {
     while (moveNext()) if (test(current)) return current;
-    throw StateError(FErrorMessage.iteratorElementNotFound);
+    throw StateError(ErrorMessages.iteratorElementNotFound);
   }
 
   I findOr(Predicator<I> test, Supplier<I> supply) {
@@ -453,7 +453,7 @@ extension DamathIterator<I> on Iterator<I> {
   Iterable<I> take(int count) sync* {
     var i = 0;
     for (; i < count && moveNext(); i++) yield current;
-    if (count > i) throw RangeError(FErrorMessage.indexOutOfBoundary);
+    if (count > i) throw RangeError(ErrorMessages.indexOutOfBoundary);
   }
 
   Iterable<I> get takeAll => [for (; moveNext();) current];
@@ -579,7 +579,7 @@ extension DamathIterator<I> on Iterator<I> {
     final list = <I>[];
     var i = 0;
     for (; i < count && moveNext(); i++) list.add(current);
-    if (count > i) throw RangeError(FErrorMessage.indexOutOfBoundary);
+    if (count > i) throw RangeError(ErrorMessages.indexOutOfBoundary);
     return list;
   }
 
@@ -733,7 +733,7 @@ extension DamathIterator<I> on Iterator<I> {
   Iterable<I> skip(int count) {
     var i = 0;
     for (; moveNext() && i < count; i++) {}
-    if (count > i) throw RangeError(FErrorMessage.indexOutOfBoundary);
+    if (count > i) throw RangeError(ErrorMessages.indexOutOfBoundary);
     return takeAll;
   }
 
@@ -832,7 +832,7 @@ extension DamathIterator<I> on Iterator<I> {
       if (test(current)) return i;
       i++;
     }
-    throw StateError(FErrorMessage.iteratorElementNotFound);
+    throw StateError(ErrorMessages.iteratorElementNotFound);
   }
 
   int indexFoundChecked(PredicatorGenerator<I> test) {
@@ -841,7 +841,7 @@ extension DamathIterator<I> on Iterator<I> {
       if (test(current, i)) return i;
       i++;
     }
-    throw StateError(FErrorMessage.iteratorElementNotFound);
+    throw StateError(ErrorMessages.iteratorElementNotFound);
   }
 
   ///
@@ -1002,7 +1002,7 @@ extension DamathIterator<I> on Iterator<I> {
           T() => 1,
           Iterable<T>() => element.length,
           Iterable<Iterable>() => element.iterator.cumulateLengthNested(),
-          _ => throw StateError(FErrorMessage.iteratorElementNotNest),
+          _ => throw StateError(ErrorMessages.iteratorElementNotNest),
         },
         IntExtension.reducePlus,
       );

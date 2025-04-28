@@ -1,6 +1,9 @@
-part of '../core.dart';
+part of '../primary.dart';
 
 ///
+///
+/// [ErrorMessages]
+/// ----------------
 ///
 /// [BoolExtension]
 /// [TypeExtension]
@@ -11,6 +14,95 @@ part of '../core.dart';
 /// [RandomExtension]
 ///
 ///
+
+///
+///
+/// [iteratorNoElement], ...
+///
+abstract interface class ErrorMessages {
+  const ErrorMessages();
+
+  ///
+  /// iterator, iterable
+  ///
+  static const String iteratorNoElement = 'iterator no element';
+  static const String iteratorElementNotFound = 'iterator element not found';
+  static const String iteratorElementNotNest = 'iterator element not nested';
+  static const String iterableBoundaryInvalid = 'iterable boundary invalid';
+  static const String iterableSizeInvalid = 'iterable size invalid';
+
+  ///
+  /// comparable
+  ///
+  static String comparableValueNotProvided = 'comparable value not provided';
+  static String comparableDisordered = 'comparable disordered';
+
+  ///
+  /// vertex
+  ///
+  static const String vertexDataCannotAssignDirectly =
+      'cannot assign data directly';
+  static const String vertexDataRequiredNotNull = 'data require not null';
+  static const String vertexDataLazyNotInited = 'lazy data not been inited';
+
+  ///
+  /// general
+  ///
+  static const String nodeCannotAssignDirectly =
+      'cannot assign next general directly';
+  static const String nodeNotHoldComparator = 'general not hold comparator';
+
+  ///
+  /// others
+  ///
+  static const String indexOutOfBoundary = 'index out of boundary';
+  static const String generateByNegative = 'invalid to generate by negative';
+  static const String modifyImmutable = 'cannot modify immutable value';
+  static const String percentileOutOfBoundary = 'percentile out of boundary';
+  static const String unsupportedSwitchCase = 'unsupported switch case';
+  static const String intFactorialOverflow =
+      'integer factorial over 20 require BigInt';
+  static const String numberNatural = 'number is natural';
+  static const String regexNotMatchAny = 'regex not match any';
+
+  ///
+  ///
+  ///
+  /// functions
+  ///
+  ///
+  ///
+  static String intStoneTakingFinal(
+      int n,
+      int total,
+      int limitLower,
+      int limitUpper,
+      ) =>
+      'invalid stone taking final argument($n, $total, $limitLower, $limitUpper)';
+
+  static String intPascalTriangle(int n, int k) =>
+      'invalid pascal triangle argument($n, $k)';
+
+  static String intBinomialCoefficient(int n, int k) =>
+      'invalid binomial coefficient argument($n, $k)';
+
+  static String intPartitionM(int m) => 'cannot partition negative integer: $m';
+
+  static String intPartitionN(int m, int n) =>
+      'it is impossible to partition $m into $n group';
+
+  static String invalidInteger(int n) => 'invalid integer: $n';
+
+  static String invalidIntegerFromBigInt(BigInt i) =>
+      'invalid int from BigInt: $i';
+
+  ///
+  /// set
+  ///
+  static String setNotIdentical<K>(Set<K> a, Set<K> b) =>
+      'set not identical:\n$a\n$b';
+}
+
 
 
 ///
@@ -87,16 +179,8 @@ extension NumExtension on num {
   }
 
   ///
-  /// [isNatural]
-  /// [isPositive]
   /// [squared]
   ///
-  bool get isNatural => this > -1;
-
-  bool get isPositive => this > 0;
-
-  bool get isNotPositive => this < 1;
-
   num get squared => this * this;
 
   ///
@@ -105,36 +189,12 @@ extension NumExtension on num {
   num powBy(num x) => math.pow(x, this);
 
   ///
-  /// [isPositiveClose], [isPositiveOpen], [isNotPositiveClose], [isNotPositiveOpen]
-  /// [isNegativeClose], [isNegativeOpen], [isNotNegativeClose]. [isNotNegativeOpen]
   /// [isRangeClose], [isRangeOpen], [isRangeOpenLower], [isRangeOpenUpper]
   /// [isOutsideClose], [isOutsideOpen], [isOutsideOpenLower], [isOutsideOpenUpper]
   /// [isConstraintsClose], [isConstraintsOpen]
   /// [isBoundClose], [isBoundOpen]
   ///
   ///
-
-  ///
-  /// positive
-  ///
-  bool isPositiveClose(num upper) => this > 0 && this <= upper;
-
-  bool isPositiveOpen(num upper) => this > 0 && this < upper;
-
-  bool isNotPositiveClose(num upper) => this <= 0 || this > upper;
-
-  bool isNotPositiveOpen(num upper) => this <= 0 || this >= upper;
-
-  ///
-  /// negative
-  ///
-  bool isNegativeClose(num lower) => lower <= this && this < 0;
-
-  bool isNegativeOpen(num lower) => lower < this && this < 0;
-
-  bool isNotNegativeClose(num lower) => lower > this || this >= 0;
-
-  bool isNotNegativeOpen(num lower) => lower >= this || this >= 0;
 
   /// [ lower, upper ]
   /// ( lower, upper )
@@ -193,11 +253,11 @@ extension BigIntExtension on BigInt {
   ///
   int get toIntValidated => isValidInt
       ? toInt()
-      : throw StateError(FErrorMessage.invalidIntegerFromBigInt(this));
+      : throw StateError(ErrorMessages.invalidIntegerFromBigInt(this));
 
   S validateThenMap<S>(Mapper<int, S> toVal) => isValidInt
       ? toVal(toInt())
-      : throw StateError(FErrorMessage.invalidIntegerFromBigInt(this));
+      : throw StateError(ErrorMessages.invalidIntegerFromBigInt(this));
 
   ///
   ///
@@ -207,13 +267,13 @@ extension BigIntExtension on BigInt {
   ///
   bool get isPrime {
     if (this < BigInt.two) return false;
-    if (this == BigInt.two || this == 3.toBigInt) return true;
+    if (this == BigInt.two || this == BigInt.from(3)) return true;
     if (isEven) return false;
     return validateThenMap((value) {
       final max = math.sqrt(value);
       if (max.isInteger) return false;
       final m = BigInt.from(max);
-      for (var i = 3.toBigInt; i < m; i += BigInt.two) {
+      for (var i = BigInt.from(3); i < m; i += BigInt.two) {
         if (this % i == BigInt.zero) return false;
       }
       return true;
@@ -227,7 +287,7 @@ extension BigIntExtension on BigInt {
       final max = math.sqrt(value);
       if (max.isInteger) return true;
       final m = BigInt.from(max);
-      for (var i = 3.toBigInt; i < m; i += BigInt.two) {
+      for (var i = BigInt.from(3); i < m; i += BigInt.two) {
         if (this % i == BigInt.zero) return true;
       }
       return false;

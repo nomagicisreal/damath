@@ -1,17 +1,13 @@
+part of '../primary.dart';
+
 ///
-///
-/// this file contains:
 ///
 /// [Record2]
 /// [RecordDouble2]
 /// [RecordDouble3]
 ///
 ///
-///
-///
-///
-///
-part of '../core.dart';
+
 
 ///
 ///

@@ -1,21 +1,34 @@
-///
-///
-/// this file contains:
+part of '../primary.dart';
+
 ///
 ///
 /// [DurationExtension]
 /// [DateTimeExtension]
 ///
 ///
-part of '../core.dart';
 
 ///
-/// duration
+///
+/// [milli100], ...
+/// [reduceMax], ...
+///
 ///
 extension DurationExtension on Duration {
+  static const Duration milli100 = Duration(milliseconds: 100);
+  static const Duration milli200 = Duration(milliseconds: 200);
+  static const Duration milli300 = Duration(milliseconds: 300);
+  static const Duration milli400 = Duration(milliseconds: 400);
+  static const Duration milli500 = Duration(milliseconds: 500);
+  static const Duration milli600 = Duration(milliseconds: 600);
+  static const Duration milli700 = Duration(milliseconds: 700);
+  static const Duration milli800 = Duration(milliseconds: 800);
+  static const Duration milli900 = Duration(milliseconds: 900);
+  static const Duration second1 = Duration(seconds: 1);
+  static const Duration min1 = Duration(minutes: 1);
+  static const Duration hour1 = Duration(hours: 1);
+  static const Duration day1 = Duration(days: 1);
+
   ///
-  ///
-  /// static methods
   ///
   ///
   static Duration reduceMax(Duration a, Duration b) => a > b ? a : b;
@@ -26,22 +39,14 @@ extension DurationExtension on Duration {
 
   static Duration reduceMinus(Duration v1, Duration v2) => v1 - v2;
 
-  ///
-  ///
-  ///
-  /// instance methods
-  ///
-  ///
-  ///
-
-  ///
-  /// [toStringDayMinuteSecond]
-  ///
-  String toStringDayMinuteSecond({String splitter = ':'}) {
-    final dayMinuteSecond = toString().substring(0, 7);
+  static String dayMinuteSecondFrom(
+    Duration duration, [
+    String splitter = ':',
+  ]) {
+    final result = duration.toString().substring(0, 7);
     return splitter == ":"
-        ? dayMinuteSecond
-        : dayMinuteSecond.splitMapJoin(RegExp(':'), onMatch: (_) => splitter);
+        ? result
+        : result.splitMapJoin(RegExp(':'), onMatch: (_) => splitter);
   }
 }
 
@@ -120,8 +125,9 @@ extension DateTimeExtension on DateTime {
       a == null || b == null
           ? false
           : a.year == b.year && a.month == b.month && a.day == b.day;
+
   static Predicator<DateTime> sameDayWith(DateTime? day) =>
-          (value) => predicateSameDay(value, day);
+      (value) => predicateSameDay(value, day);
 
   ///
   ///
@@ -136,13 +142,14 @@ extension DateTimeExtension on DateTime {
 
   int get monthDays => switch (month) {
     1 => 31,
-    2 => year % 4 == 0
-        ? year % 100 == 0
-        ? year % 400 == 0
-        ? 29
-        : 28
-        : 29
-        : 28,
+    2 =>
+      year % 4 == 0
+          ? year % 100 == 0
+              ? year % 400 == 0
+                  ? 29
+                  : 28
+              : 29
+          : 28,
     3 => 31,
     4 => 30,
     5 => 31,
@@ -163,4 +170,3 @@ extension DateTimeExtension on DateTime {
 
   DateTime addHours(int hours) => add(Duration(hours: hours));
 }
-

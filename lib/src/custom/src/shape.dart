@@ -1,4 +1,4 @@
-part of '../core.dart';
+part of '../custom.dart';
 
 ///
 ///
@@ -10,23 +10,20 @@ part of '../core.dart';
 ///
 ///
 
-
 ///
 ///
 ///
-/// [radianCornerOf], ... (static methods)
-/// [n], ... (getters)
+/// [radianCornerOf], ...
+/// [n], ...
 ///
 ///
 abstract class RegularPolygon {
   const RegularPolygon();
 
   ///
-  /// [radianCornerOf]
-  /// [lengthSideOf]
-  /// [radiusInscribedCircleOf]
-  ///
-  static double radianCornerOf(int n) => (n - 2) * Radian.angle_180 / n;
+  /// 
+  /// 
+  static double radianCornerOf(int n) => (n - 2) * DoubleExtension.radian_angle180 / n;
 
   static double lengthSideOf(
     int n,
@@ -34,23 +31,21 @@ abstract class RegularPolygon {
     int roundUp = 0,
   ]) =>
       radiusCircumscribed *
-      math.sin(Radian.angle_180 / n).roundUpTo(roundUp) *
+      math.sin(DoubleExtension.radian_angle180 / n).roundUpTo(roundUp) *
       2;
 
   static double radiusInscribedCircleOf(
     int n,
     double radiusCircumscribedCircle,
     double radianCorner,
-  ) =>
-      switch (n) {
-        3 => radiusCircumscribedCircle / 2,
-        4 => radiusCircumscribedCircle * DoubleExtension.sqrt1_2,
-        6 => radiusCircumscribedCircle * DoubleExtension.sqrt3 / 2,
-        _ => radiusCircumscribedCircle *
-            math.sin(Radian.fromAngle(
-              Radian.angleFromRadian(radianCorner) / 2,
-            )),
-      };
+  ) => switch (n) {
+    3 => radiusCircumscribedCircle / 2,
+    4 => radiusCircumscribedCircle * DoubleExtension.sqrt1_2,
+    6 => radiusCircumscribedCircle * DoubleExtension.sqrt3 / 2,
+    _ =>
+      radiusCircumscribedCircle *
+          math.sin(DoubleExtension.radian_fromAngle(radianCorner * DoubleExtension.radian_angle1 / 2)),
+  };
 
   ///
   /// [n]
@@ -77,11 +72,11 @@ abstract class RegularPolygon {
   ///
   double get radianSideSide => radianCornerOf(n);
 
-  double get radianCornerSideCenter => Radian.angle_90;
+  double get radianCornerSideCenter => DoubleExtension.radian_angle90;
 
-  double get radianCornerCenterSide => Radian.angle_180 / n;
+  double get radianCornerCenterSide => DoubleExtension.radian_angle180 / n;
 
-  double get radianSideCornerCenter => Radian.angle_90 - radianCornerCenterSide;
+  double get radianSideCornerCenter => DoubleExtension.radian_angle90 - radianCornerCenterSide;
 
   double get radiusInscribedCircle =>
       radiusInscribedCircleOf(n, radiusCircumscribedCircle, radianSideSide);
@@ -98,7 +93,7 @@ mixin RegularPolygonRadiusSingle on RegularPolygon {
   /// [tangentFrom]
   ///
   static double tangentFrom(double cornerRadius, int n) =>
-      cornerRadius * math.tan(Radian.angle_180 / n);
+      cornerRadius * math.tan(DoubleExtension.radian_angle180 / n);
 
   ///
   /// [cornerRadius]
@@ -107,13 +102,13 @@ mixin RegularPolygonRadiusSingle on RegularPolygon {
   double get cornerRadius;
 
   List<double> get cornerRadiusSteps => [
-        double.negativeInfinity,
-        0, // no radius, normal regular polygon.
-        stepCornerRadiusInscribedCircle,
-        stepCornerRadiusFragmentFitCorner(),
-        stepCornerRadiusArcCrossCenter(),
-        double.infinity,
-      ];
+    double.negativeInfinity,
+    0, // no radius, normal regular polygon.
+    stepCornerRadiusInscribedCircle,
+    stepCornerRadiusFragmentFitCorner(),
+    stepCornerRadiusArcCrossCenter(),
+    double.infinity,
+  ];
 
   ///
   ///
@@ -174,12 +169,12 @@ mixin RegularPolygonRadiusSingle on RegularPolygon {
   /// and P(0.5 - cornerOffset) is too complex to compute. there is two approximate value for triangle and square.
   ///
   double stepCornerRadiusArcCrossCenter([double inset = 0]) => switch (n) {
-        3 => radiusCircumscribedCircle * 1.2 - inset,
-        4 => radiusCircumscribedCircle * 2.6 - inset,
-        _ => ((radiusCircumscribedCircle - inset) *
-                math.cos(radianCornerCenterSide)) /
-            (1 - math.cos(radianCornerCenterSide)),
-      };
+    3 => radiusCircumscribedCircle * 1.2 - inset,
+    4 => radiusCircumscribedCircle * 2.6 - inset,
+    _ =>
+      ((radiusCircumscribedCircle - inset) * math.cos(radianCornerCenterSide)) /
+          (1 - math.cos(radianCornerCenterSide)),
+  };
 }
 
 ///

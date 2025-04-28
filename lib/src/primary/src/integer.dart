@@ -1,9 +1,14 @@
-part of '../core.dart';
+part of '../primary.dart';
 
 ///
+/// constants:
+/// [primesIn100]
+/// [accumulatedIn100]
+/// [factorialIn20]
+/// [partitionsIn20]
+///
 /// static methods:
-/// [predicateALess], ...
-/// [reduceMax], ...
+/// [reducePlus], ...
 /// [accumulation]
 /// [fibonacci]
 /// [collatzConjecture]
@@ -21,29 +26,234 @@ part of '../core.dart';
 ///
 extension IntExtension on int {
   ///
-  /// [largestInt]
+  /// ```
+  /// final primes = <int>[2, 3];
+  /// find:
+  /// for (var i = 4; i < 1e2; i++) {
+  ///   for (var prime in primes) {
+  ///     // if (prime > i) break;
+  ///     if (i % prime == 0) continue find;
+  ///   }
+  ///   primes.add(i);
+  /// }
+  /// print(primes);
+  /// ```
   ///
-  /// can't be represent in javascript
-  ///
-  // static const int largestInt = 9223372036854775807; // math.pow(2, 63) - 1
+  static const List<int> primesIn100 = [
+    2,
+    3,
+    5,
+    7,
+    11,
+    13,
+    17,
+    19,
+    23,
+    29,
+    31,
+    37,
+    41,
+    43,
+    47,
+    53,
+    59,
+    61,
+    67,
+    71,
+    73,
+    79,
+    83,
+    89,
+    97
+  ];
 
   ///
-  /// predicate
-  /// [predicateALess], [predicateALarger]
   ///
-  static bool predicateALess(int a, int b) => a < b;
+  /// ```
+  /// var value = 0;
+  /// for (var i = 1; i <= this; i++) {
+  ///   value += i;
+  /// }
+  /// print(value);
+  /// ```
+  ///
+  static const List<int> accumulatedIn100 = [
+    1,
+    3,
+    6,
+    10,
+    15,
+    21,
+    28,
+    36,
+    45,
+    55,
+    66,
+    78,
+    91,
+    105,
+    120,
+    136,
+    153,
+    171,
+    190,
+    210,
+    231,
+    253,
+    276,
+    300,
+    325,
+    351,
+    378,
+    406,
+    435,
+    465,
+    496,
+    528,
+    561,
+    595,
+    630,
+    666,
+    703,
+    741,
+    780,
+    820,
+    861,
+    903,
+    946,
+    990,
+    1035,
+    1081,
+    1128,
+    1176,
+    1225,
+    1275,
+    1326,
+    1378,
+    1431,
+    1485,
+    1540,
+    1596,
+    1653,
+    1711,
+    1770,
+    1830,
+    1891,
+    1953,
+    2016,
+    2080,
+    2145,
+    2211,
+    2278,
+    2346,
+    2415,
+    2485,
+    2556,
+    2628,
+    2701,
+    2775,
+    2850,
+    2926,
+    3003,
+    3081,
+    3160,
+    3240,
+    3321,
+    3403,
+    3486,
+    3570,
+    3655,
+    3741,
+    3828,
+    3916,
+    4005,
+    4095,
+    4186,
+    4278,
+    4371,
+    4465,
+    4560,
+    4656,
+    4753,
+    4851,
+    4950,
+    5050,
+  ];
 
-  static bool predicateALarger(int a, int b) => a > b;
+  ///
+  ///
+  /// factorial numbers over 20 require [BigInt]
+  /// ```
+  /// var value = 1;
+  /// for (var i = 2; i <= this; i++) {
+  ///   value *= i;
+  /// }
+  /// print(value);
+  /// ```
+  ///
+  ///
+  static const List<int> factorialIn20 = [
+    1,
+    2,
+    6,
+    24,
+    120,
+    720,
+    5040,
+    40320,
+    362880,
+    3628800,
+    39916800,
+    479001600,
+    6227020800,
+    87178291200,
+    1307674368000,
+    20922789888000,
+    355687428096000,
+    6402373705728000,
+    121645100408832000,
+    2432902008176640000,
+  ];
+
+  ///
+  ///
+  /// partition, see also [IntExtension.partition]
+  ///
+  /// let m be the index of outer list
+  /// when [m] == 2,
+  /// "[1, 1]" indicates that there is only 1 way to partition integer 2 into, 1 group or 2 group;
+  /// when [m] == 3,
+  /// "[1, 1, 1]" indicates that there is only 1 way to partition integer 3 into, 1 group, 2 group, 3 group.
+  ///
+  ///
+  static const List2D<int> partitionsIn20 = [
+    [1],
+    [1, 1],
+    [1, 1, 1],
+    [1, 2, 1, 1],
+    [1, 2, 2, 1, 1], // 5
+    [1, 3, 3, 2, 1, 1],
+    [1, 3, 4, 3, 2, 1, 1],
+    [1, 4, 5, 5, 3, 2, 1, 1],
+    [1, 4, 7, 6, 5, 3, 2, 1, 1],
+    [1, 5, 8, 9, 7, 5, 3, 2, 1, 1], // 10
+    [1, 5, 10, 11, 10, 7, 5, 3, 2, 1, 1],
+    [1, 6, 12, 15, 13, 11, 7, 5, 3, 2, 1, 1],
+    [1, 6, 14, 18, 18, 14, 11, 7, 5, 3, 2, 1, 1],
+    [1, 7, 16, 23, 23, 20, 15, 11, 7, 5, 3, 2, 1, 1],
+    [1, 7, 19, 27, 30, 26, 21, 15, 11, 7, 5, 3, 2, 1, 1], // 15
+    [1, 8, 21, 34, 37, 35, 28, 22, 15, 11, 7, 5, 3, 2, 1, 1],
+    [1, 8, 24, 39, 47, 44, 38, 29, 22, 15, 11, 7, 5, 3, 2, 1, 1],
+    [1, 9, 27, 47, 57, 58, 49, 40, 30, 22, 15, 11, 7, 5, 3, 2, 1, 1],
+    [1, 9, 30, 54, 70, 71, 65, 52, 41, 30, 22, 15, 11, 7, 5, 3, 2, 1, 1],
+    [1, 10, 33, 64, 84, 90, 82, 70, 54, 42, 30, 22, 15, 11, 7, 5, 3, 2, 1, 1],
+  ];
 
   ///
   /// reduce
   /// [reducePlus], [reduceMinus], [reduceMultiply], [reduceDivided], [reduceMod]
   /// [reducePlusSquared], [reducePlusFactorial]
   ///
-  static int reduceMax(int v1, int v2) => math.max(v1, v2);
-
-  static int reduceMin(int v1, int v2) => math.min(v1, v2);
-
   static int reducePlus(int v1, int v2) => v1 + v2;
 
   static int reduceMinus(int v1, int v2) => v1 - v2;
@@ -125,7 +335,7 @@ extension IntExtension on int {
         limitLower.isOutsideClose(0, limitUpper) ||
         limitUpper.isOutsideClose(limitLower, total)) {
       throw ArgumentError(
-        FErrorMessage.intStoneTakingFinal(n, total, limitLower, limitUpper),
+        ErrorMessages.intStoneTakingFinal(n, total, limitLower, limitUpper),
       );
     }
 
@@ -180,7 +390,7 @@ extension IntExtension on int {
     bool isColumnEndAtK = true,
   }) {
     if (n < 1 || k < 1 || k > n + 1 || rowStart > 3) {
-      throw ArgumentError(FErrorMessage.intPascalTriangle(n, k));
+      throw ArgumentError(ErrorMessages.intPascalTriangle(n, k));
     }
 
     final rowEnd = n + 1 - rowStart;
@@ -210,8 +420,8 @@ extension IntExtension on int {
   /// [combination]
   ///
   static int combination(int n, int k) {
-    if (n.isNotPositive || k.isNegative || k > n) {
-      throw ArgumentError(FErrorMessage.intBinomialCoefficient(n, k));
+    if (n < 1 || k.isNegative || k > n) {
+      throw ArgumentError(ErrorMessages.intBinomialCoefficient(n, k));
     }
     var value = 1.0;
     while (k > 0) {
@@ -246,10 +456,10 @@ extension IntExtension on int {
   ///   7. [1, 1, 1, 1, 1]
   ///
   static int partition(int m, [int? n]) {
-    if (m.isNegative) throw ArgumentError(FErrorMessage.intPartitionM(m));
+    if (m.isNegative) throw ArgumentError(ErrorMessages.intPartitionM(m));
     if (n != null) {
-      if (n.isNotPositiveClose(m)) {
-        throw ArgumentError(FErrorMessage.intPartitionN(m, n));
+      if (n.isRangeClose(1, m)) {
+        throw ArgumentError(ErrorMessages.intPartitionN(m, n));
       }
       return _partitionSet(m)
           .map(DamathIterable.toLength)
@@ -281,10 +491,10 @@ extension IntExtension on int {
   ///   - [1, 1, 1]
   ///
   static Iterable<int> partitionSet(int m, [int? n]) sync* {
-    if (m.isNegative) throw ArgumentError(FErrorMessage.intPartitionM(m));
+    if (m.isNegative) throw ArgumentError(ErrorMessages.intPartitionM(m));
     if (n != null) {
-      if (n.isNotPositiveClose(m)) {
-        throw ArgumentError(FErrorMessage.intPartitionN(m, n));
+      if (n.isRangeClose(1, m)) {
+        throw ArgumentError(ErrorMessages.intPartitionN(m, n));
       }
       yield* _partitionSet(m).where((element) => element.length == n).flatted;
     }
@@ -302,9 +512,9 @@ extension IntExtension on int {
   /// this functions returns true only if [integers] is one of [3, 1], [1, 3], [2, 2].
   ///
   static bool partitionPredicate(Iterable<int> integers, int m, int n) {
-    if (m.isNotPositive) throw ArgumentError(FErrorMessage.intPartitionM(m));
-    if (n.isNotPositiveClose(m)) {
-      throw ArgumentError(FErrorMessage.intPartitionN(m, n));
+    if (m < 1) throw ArgumentError(ErrorMessages.intPartitionM(m));
+    if (n.isRangeClose(1, m)) {
+      throw ArgumentError(ErrorMessages.intPartitionN(m, n));
     }
     return integers.length == n && integers.sum == m;
   }
@@ -361,9 +571,9 @@ extension IntExtension on int {
   /// [accumulated], [factorial]
   ///
   int get accumulated {
-    if (this < 0) throw ArgumentError(FErrorMessage.invalidInteger(this));
-    if (this < 101) return KCore.accumulatedIn100[this - 1];
-    var value = KCore.accumulatedIn100.last;
+    if (this < 0) throw ArgumentError(ErrorMessages.invalidInteger(this));
+    if (this < 101) return IntExtension.accumulatedIn100[this - 1];
+    var value = IntExtension.accumulatedIn100.last;
     for (var i = 101; i <= this; i++) {
       value += i;
     }
@@ -371,9 +581,9 @@ extension IntExtension on int {
   }
 
   int get factorial {
-    if (this < 0) throw ArgumentError(FErrorMessage.invalidInteger(this));
-    if (this > 19) throw UnsupportedError(FErrorMessage.intFactorialOverflow);
-    return KCore.factorialIn20[this - 1];
+    if (this < 0) throw ArgumentError(ErrorMessages.invalidInteger(this));
+    if (this > 19) throw UnsupportedError(ErrorMessages.intFactorialOverflow);
+    return IntExtension.factorialIn20[this - 1];
   }
 
   // Iterable<int> get factorized sync* {
@@ -409,11 +619,8 @@ extension IntExtension on int {
       isCoprime(other) ? modInverse(other) : null;
 
   ///
-  /// [toBigInt]
   /// [toIterable]
   ///
-  BigInt get toBigInt => BigInt.from(this);
-
   Iterable<int> toIterable([int from = 0, int inset = 0]) {
     final max = this + 1 - inset;
     return [for (var i = 0; i < max; i++) i];

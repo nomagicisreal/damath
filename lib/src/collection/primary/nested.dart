@@ -35,7 +35,7 @@ extension DamathIteratorSet<K> on Iterator<Set<K>> {
           final set = Set.of(current);
           while (moveNext()) {
             if (current.any(set.add)) {
-              throw StateError(FErrorMessage.setNotIdentical(current, set));
+              throw StateError(ErrorMessages.setNotIdentical(current, set));
             }
           }
           return set;
@@ -155,7 +155,7 @@ extension DamathIterableIterableComparable<C extends Comparable>
   void everyElementSortedThen(Listener listen, [bool increase = true]) =>
       every((element) => element.iterator.isSorted(increase))
           ? listen()
-          : throw StateError(FErrorMessage.comparableDisordered);
+          : throw StateError(ErrorMessages.comparableDisordered);
 }
 
 ///
