@@ -1,6 +1,5 @@
 part of '../collection.dart';
 
-
 ///
 ///
 /// instance methods:
@@ -33,7 +32,7 @@ extension DamathIteratorTogether<I> on Iterator<I> {
   I moveNextTogetherReduce(Iterator<I> another, Reducer<I> reducing) =>
       moveNext() && another.moveNext()
           ? reducing(current, another.current)
-          : throw StateError(ErrorMessages.iteratorNoElement);
+          : throw StateError(Erroring.iteratorNoElement);
 
   I moveNextTogetherCompanion<E>(
     Iterator<E> another,
@@ -41,12 +40,12 @@ extension DamathIteratorTogether<I> on Iterator<I> {
   ) =>
       moveNext() && another.moveNext()
           ? companion(current, another.current)
-          : throw StateError(ErrorMessages.iteratorNoElement);
+          : throw StateError(Erroring.iteratorNoElement);
 
   S moveNextTogetherSupply<T, S>(Iterator<T> another, Supplier<S> supply) =>
       moveNext() && another.moveNext()
           ? supply()
-          : throw StateError(ErrorMessages.iteratorNoElement);
+          : throw StateError(Erroring.iteratorNoElement);
 
   ///
   /// [pair]
@@ -146,14 +145,13 @@ extension DamathIteratorTogether<I> on Iterator<I> {
     Mapper<E, S> toValAnother,
     Reducer<S> init,
     Collapser<S> mutual,
-  ) =>
-      moveNextTogetherSupply(another, () {
-        var val = init(toVal(current), toValAnother(another.current));
-        while (moveNext() && another.moveNext()) {
-          val = mutual(val, toVal(current), toValAnother(another.current));
-        }
-        return val;
-      });
+  ) => moveNextTogetherSupply(another, () {
+    var val = init(toVal(current), toValAnother(another.current));
+    while (moveNext() && another.moveNext()) {
+      val = mutual(val, toVal(current), toValAnother(another.current));
+    }
+    return val;
+  });
 
   S pairCollapseIndexable<E, S>(
     Iterator<E> another,
@@ -162,41 +160,38 @@ extension DamathIteratorTogether<I> on Iterator<I> {
     Reducer<S> init,
     CollapserGenerator<S> mutual,
     int start,
-  ) =>
-      moveNextTogetherSupply(another, () {
-        var val = init(toVal(current), toValAnother(another.current));
-        for (var i = start + 1; moveNext() && another.moveNext(); i++) {
-          val = mutual(val, toVal(current), toValAnother(another.current), i);
-        }
-        return val;
-      });
+  ) => moveNextTogetherSupply(another, () {
+    var val = init(toVal(current), toValAnother(another.current));
+    for (var i = start + 1; moveNext() && another.moveNext(); i++) {
+      val = mutual(val, toVal(current), toValAnother(another.current), i);
+    }
+    return val;
+  });
 
   S pairForcer<E, S>(
     Iterator<E> another,
     Mixer<I, E, S> init,
     Forcer<S, I, E> mutual,
-  ) =>
-      moveNextTogetherSupply(another, () {
-        var val = init(current, another.current);
-        while (moveNext() && another.moveNext()) {
-          val = mutual(val, current, another.current);
-        }
-        return val;
-      });
+  ) => moveNextTogetherSupply(another, () {
+    var val = init(current, another.current);
+    while (moveNext() && another.moveNext()) {
+      val = mutual(val, current, another.current);
+    }
+    return val;
+  });
 
   S pairForcerIndexable<E, S>(
     Iterator<E> another,
     Mixer<I, E, S> init,
     ForcerGenerator<S, I, E> mutual,
     int start,
-  ) =>
-      moveNextTogetherSupply(another, () {
-        var val = init(current, another.current);
-        for (var i = start; moveNext() && another.moveNext();) {
-          val = mutual(val, current, another.current, ++i);
-        }
-        return val;
-      });
+  ) => moveNextTogetherSupply(another, () {
+    var val = init(current, another.current);
+    for (var i = start; moveNext() && another.moveNext();) {
+      val = mutual(val, current, another.current, ++i);
+    }
+    return val;
+  });
 
   ///
   /// follow
@@ -226,52 +221,49 @@ extension DamathIteratorTogether<I> on Iterator<I> {
   ///
   ///
   Iterable<I> pairTake<E>(
-      Iterator<E> another, Companion<I, E> companion) sync* {
+    Iterator<E> another,
+    Companion<I, E> companion,
+  ) sync* {
     while (moveNext() && another.moveNext()) {
       yield companion(current, another.current);
     }
   }
 
   Iterable<S> pairMap<E, S>(Iterator<E> another, Mixer<I, E, S> mixer) => [
-        for (; moveNext() && another.moveNext();)
-          mixer(current, another.current)
-      ];
+    for (; moveNext() && another.moveNext();) mixer(current, another.current),
+  ];
 
   Iterable<S> pairMapWhere<E, S>(
     Iterator<E> another,
     PredicatorMixer<I, E> test,
     Mixer<I, E, S> mixer,
-  ) =>
-      [
-        for (; moveNext() && another.moveNext();)
-          if (test(current, another.current)) mixer(current, another.current)
-      ];
+  ) => [
+    for (; moveNext() && another.moveNext();)
+      if (test(current, another.current)) mixer(current, another.current),
+  ];
 
   Iterable<S> pairMapIndexable<E, S>(
     Iterator<E> another,
     MixerGenerator<I, E, S> mix,
     int start,
-  ) =>
-      [
-        for (var i = start; moveNext() && another.moveNext(); i++)
-          mix(current, another.current, i)
-      ];
+  ) => [
+    for (var i = start; moveNext() && another.moveNext(); i++)
+      mix(current, another.current, i),
+  ];
 
   Iterable<S> pairMapIndexableWhere<E, S>(
     Iterator<E> another,
     PredicatorMixer<I, E> test,
     MixerGenerator<I, E, S> mixer,
     int start,
-  ) =>
-      [
-        for (var i = start; moveNext() && another.moveNext(); i++)
-          if (test(current, another.current)) mixer(current, another.current, i)
-      ];
+  ) => [
+    for (var i = start; moveNext() && another.moveNext(); i++)
+      if (test(current, another.current)) mixer(current, another.current, i),
+  ];
 
   List<S> pairMapList<E, S>(Iterator<E> another, Mixer<I, E, S> mixer) => [
-        for (; moveNext() && another.moveNext();)
-          mixer(current, another.current)
-      ];
+    for (; moveNext() && another.moveNext();) mixer(current, another.current),
+  ];
 
   ///
   /// expand
@@ -279,53 +271,48 @@ extension DamathIteratorTogether<I> on Iterator<I> {
   Iterable<S> pairExpand<E, S>(
     Iterator<E> another,
     Mixer<I, E, Iterable<S>> expanding,
-  ) =>
-      [
-        for (; moveNext() && another.moveNext();)
-          ...expanding(current, another.current)
-      ];
+  ) => [
+    for (; moveNext() && another.moveNext();)
+      ...expanding(current, another.current),
+  ];
 
   Iterable<S> pairExpandWhere<E, S>(
     Iterator<E> another,
     PredicatorMixer<I, E> test,
     Mixer<I, E, Iterable<S>> expanding,
-  ) =>
-      [
-        for (; moveNext() && another.moveNext();)
-          if (test(current, another.current))
-            ...expanding(current, another.current)
-      ];
+  ) => [
+    for (; moveNext() && another.moveNext();)
+      if (test(current, another.current))
+        ...expanding(current, another.current),
+  ];
 
   Iterable<S> pairExpandIndexable<E, S>(
     Iterator<E> another,
     MixerGenerator<I, E, Iterable<S>> mix,
     int start,
-  ) =>
-      [
-        for (var i = start; moveNext() && another.moveNext(); i++)
-          ...mix(current, another.current, i)
-      ];
+  ) => [
+    for (var i = start; moveNext() && another.moveNext(); i++)
+      ...mix(current, another.current, i),
+  ];
 
   Iterable<S> pairExpandIndexableWhere<E, S>(
     Iterator<E> another,
     PredicatorMixer<I, E> test,
     MixerGenerator<I, E, Iterable<S>> expanding,
     int start,
-  ) =>
-      [
-        for (var i = start; moveNext() && another.moveNext(); i++)
-          if (test(current, another.current))
-            ...expanding(current, another.current, i)
-      ];
+  ) => [
+    for (var i = start; moveNext() && another.moveNext(); i++)
+      if (test(current, another.current))
+        ...expanding(current, another.current, i),
+  ];
 
   List<S> pairExpandList<E, S>(
     Iterator<E> another,
     Mixer<I, E, Iterable<S>> expanding,
-  ) =>
-      [
-        for (; moveNext() && another.moveNext();)
-          ...expanding(current, another.current)
-      ];
+  ) => [
+    for (; moveNext() && another.moveNext();)
+      ...expanding(current, another.current),
+  ];
 
   ///
   /// [pairFollowMapWhereIndexable]
@@ -340,9 +327,10 @@ extension DamathIteratorTogether<I> on Iterator<I> {
   ]) sync* {
     var i = start;
     for (; another.moveNext(); i++) {
-      if (moveNext()) if (test(current, another.current)) {
-        yield mutual(current, another.current, i);
-      }
+      if (moveNext())
+        if (test(current, another.current)) {
+          yield mutual(current, another.current, i);
+        }
     }
     if (includeTrailing) while (moveNext()) yield overflow(current, i++);
   }
@@ -353,26 +341,25 @@ extension DamathIteratorTogether<I> on Iterator<I> {
   ///
   ///
   Iterable<I> pairMerge(Iterator<I> another, PredicatorFusionor<I> keep) =>
-      moveNextTogetherSupply(
-        another,
-        () sync* {
-          while (true) {
-            if (keep(current, another.current)) {
-              yield current;
-              if (!moveNext()) {
-                yield* another.takeRemain;
-                return;
-              }
-              continue;
-            }
-            yield another.current;
-            if (!another.moveNext()) {
-              yield* takeRemain;
+      moveNextTogetherSupply(another, () sync* {
+        while (true) {
+          if (keep(current, another.current)) {
+            yield current;
+            if (!moveNext()) {
+              yield another.current;
+              yield* another.takeAll;
               return;
             }
+            continue;
           }
-        },
-      );
+          yield another.current;
+          if (!another.moveNext()) {
+            yield current;
+            yield* takeAll;
+            return;
+          }
+        }
+      });
 
   ///
   /// [pairInterval] for example:
@@ -398,14 +385,13 @@ extension DamathIteratorTogether<I> on Iterator<I> {
     Iterator<T> interval,
     Mapper<I, S> toVal,
     Chainer<I, T, S> link,
-  ) =>
-      supplyMoveNext(() {
-        var previous = toVal(current);
-        while (moveNext() && interval.moveNext()) {
-          previous = link(previous, current, interval.current);
-        }
-        return previous;
-      });
+  ) => supplyMoveNext(() {
+    var previous = toVal(current);
+    while (moveNext() && interval.moveNext()) {
+      previous = link(previous, current, interval.current);
+    }
+    return previous;
+  });
 
   ///
   ///
@@ -420,10 +406,10 @@ extension DamathIteratorTogether<I> on Iterator<I> {
   /// [difference], [differenceIndex], [differenceDetail]
   ///
   Iterable<I> intersection(Iterable<I> another) => pairMapWhere(
-        another.iterator,
-        FPredicatorFusionor.isEqual,
-        FKeep.reduceV1,
-      );
+    another.iterator,
+    FPredicatorFusionor.isEqual,
+    FKeep.reduceV1,
+  );
 
   Iterable<int> intersectionIndex(Iterable<I> another, [int start = 0]) =>
       pairMapIndexableWhere(
@@ -434,20 +420,20 @@ extension DamathIteratorTogether<I> on Iterator<I> {
       );
 
   Map<int, I> intersectionDetail(Iterable<I> another) => pairFoldIndexable(
-        {},
-        another.iterator,
-        (map, v1, v2, index) => map..putIfAbsentWhen(v1 == v2, index, () => v1),
-        0,
-      );
+    {},
+    another.iterator,
+    (map, v1, v2, index) => map..putIfAbsentWhen(v1 == v2, index, () => v1),
+    0,
+  );
 
   Iterable<I> difference(Iterable<I> another) => [
-        ...pairMapWhere(
-          another.iterator,
-          FPredicatorFusionor.isDifferent,
-          FKeep.reduceV1,
-        ),
-        ...takeRemain
-      ];
+    ...pairMapWhere(
+      another.iterator,
+      FPredicatorFusionor.isDifferent,
+      FKeep.reduceV1,
+    ),
+    ...takeAll,
+  ];
 
   Iterable<int> differenceIndex(Iterable<I> another, [int start = 0]) =>
       pairFollowMapWhereIndexable(
@@ -471,21 +457,14 @@ extension DamathIteratorTogether<I> on Iterator<I> {
   ///
   /// [interReduce]
   ///
-  I interReduce(
-    Iterator<I> another,
-    Reducer<I> fusion,
-    Reducer<I> reducing,
-  ) =>
-      moveNextTogetherReduce(
-        another,
-        (v1, v2) {
-          var val = fusion(v1, v2);
-          while (moveNext() && another.moveNext()) {
-            val = reducing(val, fusion(current, another.current));
-          }
-          return val;
-        },
-      );
+  I interReduce(Iterator<I> another, Reducer<I> fusion, Reducer<I> reducing) =>
+      moveNextTogetherReduce(another, (v1, v2) {
+        var val = fusion(v1, v2);
+        while (moveNext() && another.moveNext()) {
+          val = reducing(val, fusion(current, another.current));
+        }
+        return val;
+      });
 
   ///
   ///
@@ -513,7 +492,6 @@ extension DamathIteratorTogether<I> on Iterator<I> {
     }
   }
 
-
   ///
   /// [combination2FromFirst]
   /// [combineToRecord]
@@ -524,9 +502,9 @@ extension DamathIteratorTogether<I> on Iterator<I> {
   /// [combination2FromFirst]
   ///
   Iterable<Iterable<I>> get combination2FromFirst => supplyMoveNext(() sync* {
-        final first = current;
-        while (moveNext()) yield [first, current];
-      });
+    final first = current;
+    while (moveNext()) yield [first, current];
+  });
 
   ///
   /// listA = [1, 2, 3];

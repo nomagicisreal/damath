@@ -6,13 +6,14 @@ part of '../custom.dart';
 /// [IOperatableStepable]
 /// [IOperatableIndexable], [IOperatableIndexableAssignable]
 ///
-/// [IIteratorPrevious]
+/// [_ILayby]
 ///
-/// [IInsertable]
+/// [_IEnqueueable]
 /// [IEnqueueable]
 ///
 ///
 /// [MComparable]
+/// [ComparableState]
 ///
 ///
 
@@ -41,6 +42,7 @@ abstract interface class IOperatableScalable<I, O> {
 ///
 abstract interface class IOperatableStepable<I, O> {
   O operator ~/(covariant I another);
+
   O operator %(covariant I another);
 }
 
@@ -59,25 +61,6 @@ abstract interface class IOperatableIndexableAssignable<T>
 ///
 ///
 ///
-abstract interface class IIteratorPrevious<I> implements Iterator<I> {
-  bool movePrevious();
-}
-
-///
-///
-///
-abstract interface class IInsertable<T> {
-  void insert(T element);
-
-  void insertAll(Iterable<T> iterable);
-}
-
-abstract interface class IEnqueueable<T> {
-  void enqueue(T element);
-
-  void enqueueAll(Iterable<T> iterable);
-}
-
 
 ///
 ///
@@ -93,4 +76,13 @@ mixin MComparable<C extends Comparable<C>> implements Comparable<C> {
   bool operator >=(C another) => compareTo(another) >= 0;
 
   bool operator <=(C another) => compareTo(another) <= 0;
+}
+
+enum ComparableState {
+  requireDecrease(-1),
+  requireIncrease(1);
+
+  final int value;
+
+  const ComparableState(this.value);
 }

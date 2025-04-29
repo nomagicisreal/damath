@@ -2,13 +2,11 @@ part of '../primary.dart';
 
 ///
 ///
-/// [ErrorMessages]
+/// [Erroring]
 /// ----------------
 ///
 /// [NullableExtension]
 /// [BoolExtension]
-/// [TypeExtension]
-///
 /// [NumExtension]
 /// [BigIntExtension]
 ///
@@ -20,8 +18,8 @@ part of '../primary.dart';
 ///
 /// [iteratorNoElement], ...
 ///
-abstract interface class ErrorMessages {
-  const ErrorMessages();
+abstract interface class Erroring {
+  const Erroring();
 
   ///
   /// general
@@ -42,7 +40,6 @@ abstract interface class ErrorMessages {
   ///
   /// comparable
   ///
-  static String comparableValueNotProvided = 'comparable value not provided';
   static String comparableDisordered = 'comparable disordered';
 
   ///
@@ -50,8 +47,6 @@ abstract interface class ErrorMessages {
   ///
   static const String percentileOutOfBoundary = 'percentile out of boundary';
   static const String unsupportedSwitchCase = 'unsupported switch case';
-  static const String intFactorialOverflow =
-      'integer factorial over 20 require BigInt';
   static const String numberNatural = 'number is natural';
   static const String regexNotMatchAny = 'regex not match any';
 
@@ -62,35 +57,16 @@ abstract interface class ErrorMessages {
   ///
   ///
   ///
-  static String intStoneTakingFinal(
-    int n,
-    int total,
-    int limitLower,
-    int limitUpper,
-  ) =>
-      'invalid stone taking final argument($n, $total, $limitLower, $limitUpper)';
+  static Error invalidIndex(int index) => RangeError.range(index, 0, null);
 
-  static String intPascalTriangle(int n, int k) =>
-      'invalid pascal triangle argument($n, $k)';
+  static Error invalidInt(int i) => ArgumentError.value(i, 'invalid integer');
 
-  static String intBinomialCoefficient(int n, int k) =>
-      'invalid binomial coefficient argument($n, $k)';
+  static Error invalidIntOver(int i, [int min = 0]) =>
+      RangeError.range(i, min, i - 1);
 
-  static String intPartitionM(int m) => 'cannot partition negative integer: $m';
+  static Error invalidPartition(int m, int n) =>
+      ArgumentError('it is impossible to partition $m into $n group');
 
-  static String intPartitionN(int m, int n) =>
-      'it is impossible to partition $m into $n group';
-
-  static String invalidInteger(int n) => 'invalid integer: $n';
-
-  static String invalidIntegerFromBigInt(BigInt i) =>
-      'invalid int from BigInt: $i';
-
-  ///
-  /// set
-  ///
-  static String setNotIdentical<K>(Set<K> a, Set<K> b) =>
-      'set not identical:\n$a\n$b';
 }
 
 extension NullableExtension<T> on T? {
@@ -109,24 +85,11 @@ extension BoolExtension on bool {
 
 ///
 ///
-///
-extension TypeExtension on Type {
-  ///
-  ///
-  /// '_TypeError' is happened when something like
-  ///   - invoke typed [Iterator.current], but there is no current value
-  /// ...
-  ///
-  bool get isTypeError => toString() == '_TypeError';
-}
-
-///
-///
-/// statics:
+/// static usages:
 /// [log10_2], ...
 ///
 /// instance methods:
-/// [squared], [isPositive]
+/// [squared], ...
 /// [isRangeClose], ...
 /// [isConstraintsClose], ...
 /// [digit], ...
@@ -162,7 +125,7 @@ extension NumExtension on num {
   static const num log10_97 = 1.98677173426624475994;
 
   ///
-  /// [digit]
+  ///
   ///
   int get digit {
     if (this == 0) return 0;
@@ -172,28 +135,13 @@ extension NumExtension on num {
     return n;
   }
 
-  ///
-  /// [squared]
-  ///
   num get squared => this * this;
 
-  ///
-  /// [powBy]
-  ///
   num powBy(num x) => math.pow(x, this);
 
   ///
-  /// [isRangeClose], [isRangeOpen], [isRangeOpenLower], [isRangeOpenUpper]
-  /// [isOutsideClose], [isOutsideOpen], [isOutsideOpenLower], [isOutsideOpenUpper]
-  /// [isConstraintsClose], [isConstraintsOpen]
-  /// [isBoundClose], [isBoundOpen]
   ///
   ///
-
-  /// [ lower, upper ]
-  /// ( lower, upper )
-  /// ( lower, upper ]
-  /// [ lower, upper )
   bool isRangeClose(num lower, num upper) => this >= lower && this <= upper;
 
   bool isRangeOpen(num lower, num upper) => this > lower && this < upper;
@@ -203,7 +151,7 @@ extension NumExtension on num {
   bool isRangeOpenUpper(num lower, num upper) => this >= lower && this < upper;
 
   ///
-  /// outside
+  ///
   ///
   bool isOutsideClose(num lower, num upper) => this <= lower || this >= upper;
 
@@ -216,84 +164,67 @@ extension NumExtension on num {
       this <= lower || this > upper;
 
   ///
-  /// constrains
   ///
-  bool isConstraintsClose(int start, int end, [int from = 0]) =>
-      from <= start && start < end && end <= this;
-
-  bool isConstraintsOpen(int start, int end, [int from = 0]) =>
-      from < start && start < end && end < this;
-
   ///
-  /// bound
-  ///
-  bool isBoundClose(int start, int? end, [int from = 0]) =>
-      end == null
-          ? from <= start && start < this
-          : from <= start && start < end && end <= this;
+  bool isLowerClose(num a, [num? b, num to = double.infinity]) =>
+      b == null ? this <= a && a <= to : this <= a && a <= b && b <= to;
 
-  bool isBoundOpen(int start, int? end, [int from = 0]) =>
-      end == null
-          ? from <= start && start < this
-          : from < start && start < end && end < this;
+  bool isLowerOpen(num a, [num? b, num to = double.infinity]) =>
+      b == null ? this < a && a < to : this < a && a < b && b < to;
+
+  bool isUpperClose(num a, [num? b, num from = double.negativeInfinity]) =>
+      b == null ? from <= a && a < this : from <= a && a < b && b <= this;
+
+  bool isUpperOpen(num a, [num? b, num from = double.negativeInfinity]) =>
+      b == null ? from <= a && a < this : from < a && a < b && b < this;
 }
 
 ///
 ///
-/// see also [IntExtension.isCoprime], ...
 ///
 extension BigIntExtension on BigInt {
   ///
-  /// [toIntValidated]
-  /// [validateThenMap]
+  ///
+  ///
+  static Error error_invalidToInt(BigInt value) =>
+      StateError('BigInt is not a valid int: $value');
+
+  ///
+  ///
   ///
   int get toIntValidated =>
-      isValidInt
-          ? toInt()
-          : throw StateError(ErrorMessages.invalidIntegerFromBigInt(this));
-
-  S validateThenMap<S>(Mapper<int, S> toVal) =>
-      isValidInt
-          ? toVal(toInt())
-          : throw StateError(ErrorMessages.invalidIntegerFromBigInt(this));
+      isValidInt ? toInt() : throw error_invalidToInt(this);
 
   ///
   ///
-  /// [isPrime], [isComposite]
-  ///
-  /// see also [IntExtension.isPrime], ...
   ///
   bool get isPrime {
     if (this < BigInt.two) return false;
     if (this == BigInt.two || this == BigInt.from(3)) return true;
     if (isEven) return false;
-    return validateThenMap((value) {
-      final max = math.sqrt(value);
-      if (max.isInteger) return false;
-      final m = BigInt.from(max);
-      for (var i = BigInt.from(3); i < m; i += BigInt.two) {
-        if (this % i == BigInt.zero) return false;
-      }
-      return true;
-    });
+    final max = math.sqrt(toIntValidated);
+    if (max.isInteger) return false;
+    final m = BigInt.from(max);
+    for (var i = BigInt.from(3); i < m; i += BigInt.two) {
+      if (this % i == BigInt.zero) return false;
+    }
+    return true;
   }
 
   bool get isComposite {
     if (this < BigInt.two) return false;
     if (isEven) return true;
-    return validateThenMap((value) {
-      final max = math.sqrt(value);
-      if (max.isInteger) return true;
-      final m = BigInt.from(max);
-      for (var i = BigInt.from(3); i < m; i += BigInt.two) {
-        if (this % i == BigInt.zero) return true;
-      }
-      return false;
-    });
+    final max = math.sqrt(toIntValidated);
+    if (max.isInteger) return true;
+    final m = BigInt.from(max);
+    for (var i = BigInt.from(3); i < m; i += BigInt.two) {
+      if (this % i == BigInt.zero) return true;
+    }
+    return false;
   }
 
   ///
-  /// [isCoprime], [modInverseOrNull]
+  ///
   ///
   bool isCoprime(BigInt other) => gcd(other) == BigInt.one;
 
@@ -315,9 +246,6 @@ extension BigIntExtension on BigInt {
 ///
 ///
 extension RandomExtension on math.Random {
-  ///
-  /// primary
-  ///
   static bool get binary => math.Random().nextBool();
 
   static double get doubleIn1 => math.Random().nextDouble();
@@ -327,9 +255,6 @@ extension RandomExtension on math.Random {
   static double doubleOf(int max, [int digit = 1]) =>
       (math.Random().nextInt(max) * 0.1.powBy(digit)).toDouble();
 
-  ///
-  /// list
-  ///
   static T get1FromList<T>(List<T> list) =>
       list[math.Random().nextInt(list.length)];
 }

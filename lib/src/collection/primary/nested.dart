@@ -35,7 +35,7 @@ extension DamathIteratorSet<K> on Iterator<Set<K>> {
           final set = Set.of(current);
           while (moveNext()) {
             if (current.any(set.add)) {
-              throw StateError(ErrorMessages.setNotIdentical(current, set));
+              throw StateError('set not identical:\n$current\n$set');
             }
           }
           return set;
@@ -60,7 +60,7 @@ extension DamathIterableIterable<I> on Iterable<Iterable<I>> {
   /// [size]
   ///
   int get size =>
-      iterator.induct(DamathIterable.toLength, IntExtension.reducePlus);
+      iterator.induct(DamathIterable.toLength, IntExtension.reduce_plus);
 
   ///
   /// [toStringMapJoin]
@@ -155,7 +155,7 @@ extension DamathIterableIterableComparable<C extends Comparable>
   void everyElementSortedThen(Listener listen, [bool increase = true]) =>
       every((element) => element.iterator.isSorted(increase))
           ? listen()
-          : throw StateError(ErrorMessages.comparableDisordered);
+          : throw StateError(Erroring.comparableDisordered);
 }
 
 ///
@@ -187,7 +187,7 @@ extension ListListInt on List2D<int> {
   /// [summationIntoIdentity]
   ///
   List2D<int> summationIntoIdentity(int length) =>
-      copyIntoIdentity(IntExtension.reducePlus, length, 1);
+      copyIntoIdentity(IntExtension.reduce_plus, length, 1);
 }
 
 ///

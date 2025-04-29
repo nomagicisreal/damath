@@ -1,26 +1,19 @@
-// ignore_for_file: unused_import
+// ignore_for_file: unused_import, unused_local_variable
 import 'package:damath/damath.dart';
 
 void main(List<String> arguments) {
   final node =
-      NodeAppendable.mutable('data')
-        ..append('hello')
-        ..append('tedious')
-        ..append('world');
+      Qterator.of('data')
+        ..enqueueAll([
+          'veve',
+          'beack',
+          'backandAndforce',
+        ])
+        ..enqueue('world');
   print(node);
+  while (node.moveNext()) {
+    print(node.toString());
+  }
 }
 
-abstract class Parent1 {}
-
-abstract class Parent2 extends Parent1 {
-  num sayHi() => 2;
-}
-
-mixin Hello on Parent1, Parent2 {}
-
-class Child extends Parent2 with Hello {
-  Child();
-
-  @override
-  int sayHi() => 2;
-}
+abstract final class Parent {}

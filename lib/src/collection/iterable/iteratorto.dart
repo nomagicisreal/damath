@@ -20,11 +20,11 @@ extension DamathIteratorTo<I> on Iterator<I> {
   /// [supplyLead]
   ///
   S supplyMoveNext<S>(Supplier<S> supply) =>
-      moveNext() ? supply() : throw StateError(ErrorMessages.iteratorNoElement);
+      moveNext() ? supply() : throw StateError(Erroring.iteratorNoElement);
 
   S supplyLead<S>(int ahead, Supplier<S> supply) {
     for (var i = -1; i < ahead; i++) {
-      if (!moveNext()) throw StateError(ErrorMessages.iteratorNoElement);
+      if (!moveNext()) throw StateError(Erroring.iteratorNoElement);
     }
     return supply();
   }
@@ -32,8 +32,9 @@ extension DamathIteratorTo<I> on Iterator<I> {
   ///
   /// [generating]
   ///
-  Iterable<E> generating<E>(Generator<E> generator, [int start = 0]) =>
-      [for (var i = start; moveNext(); i++) generator(i)];
+  Iterable<E> generating<E>(Generator<E> generator, [int start = 0]) => [
+    for (var i = start; moveNext(); i++) generator(i),
+  ];
 
   ///
   ///
@@ -63,98 +64,99 @@ extension DamathIteratorTo<I> on Iterator<I> {
   /// [mapCurrentOrDefault]
   /// [mapRemain]
   ///
-  Iterable<S> map<S>(Mapper<I, S> toVal) =>
-      [for (; moveNext();) toVal(current)];
+  Iterable<S> map<S>(Mapper<I, S> toVal) => [
+    for (; moveNext();) toVal(current),
+  ];
 
-  Iterable<S> mapByIndex<S>(MapperGenerator<I, S> toVal, [int start = 0]) =>
-      [for (var i = start; moveNext(); i++) toVal(current, i)];
+  Iterable<S> mapByIndex<S>(MapperGenerator<I, S> toVal, [int start = 0]) => [
+    for (var i = start; moveNext(); i++) toVal(current, i),
+  ];
 
-  S mapCurrentOrDefault<S>(Mapper<I, S> toVal, S ifAbsent) {
-    try {
-      return toVal(current);
-    } catch (e) {
-      if (!e.runtimeType.isTypeError) rethrow;
-    }
-    return ifAbsent;
-  }
 
-  Iterable<S> mapRemain<S>(Mapper<I, S> toVal) => mapCurrentOrDefault(
-        (value) => [toVal(value), for (; moveNext();) toVal(current)],
-        Iterable.empty(),
-      );
 
   ///
   /// [mapToEntriesByKey], [mapToEntriesByValue]
   /// [mapToRecordBy1], [mapToRecordBy2]
   ///
-  Iterable<MapEntry<K, I>> mapToEntriesByKey<K>(K key) =>
-      [for (; moveNext();) MapEntry(key, current)];
+  Iterable<MapEntry<K, I>> mapToEntriesByKey<K>(K key) => [
+    for (; moveNext();) MapEntry(key, current),
+  ];
 
-  Iterable<MapEntry<I, V>> mapToEntriesByValue<V>(V value) =>
-      [for (; moveNext();) MapEntry(current, value)];
+  Iterable<MapEntry<I, V>> mapToEntriesByValue<V>(V value) => [
+    for (; moveNext();) MapEntry(current, value),
+  ];
 
-  Iterable<(A, I)> mapToRecordBy1<A>(A value) =>
-      [for (; moveNext();) (value, current)];
+  Iterable<(A, I)> mapToRecordBy1<A>(A value) => [
+    for (; moveNext();) (value, current),
+  ];
 
-  Iterable<(I, B)> mapToRecordBy2<B>(B value) =>
-      [for (; moveNext();) (current, value)];
+  Iterable<(I, B)> mapToRecordBy2<B>(B value) => [
+    for (; moveNext();) (current, value),
+  ];
 
   ///
   /// [mapToList]
   /// [mapToListByIndex]
   /// [mapToListByList], [mapToListBySet], [mapToListByMap]
   ///
-  List<T> mapToList<T>(Mapper<I, T> toVal) =>
-      [for (; moveNext();) toVal(current)];
+  List<T> mapToList<T>(Mapper<I, T> toVal) => [
+    for (; moveNext();) toVal(current),
+  ];
 
-  List<S> mapToListByIndex<S>(MapperGenerator<I, S> toVal, [int start = 0]) =>
-      [for (var i = start; moveNext(); i++) toVal(current, i)];
+  List<S> mapToListByIndex<S>(MapperGenerator<I, S> toVal, [int start = 0]) => [
+    for (var i = start; moveNext(); i++) toVal(current, i),
+  ];
 
-  List<T> mapToListByList<T, E>(List<E> list, Mixer<I, List<E>, T> mixer) =>
-      [for (; moveNext();) mixer(current, list)];
+  List<T> mapToListByList<T, E>(List<E> list, Mixer<I, List<E>, T> mixer) => [
+    for (; moveNext();) mixer(current, list),
+  ];
 
-  List<T> mapToListBySet<T, E>(Set<E> set, Mixer<I, Set<E>, T> mixer) =>
-      [for (; moveNext();) mixer(current, set)];
+  List<T> mapToListBySet<T, E>(Set<E> set, Mixer<I, Set<E>, T> mixer) => [
+    for (; moveNext();) mixer(current, set),
+  ];
 
   List<T> mapToListByMap<T, K, V>(
     Map<K, V> map,
     Mixer<I, Map<K, V>, T> mixer,
-  ) =>
-      [for (; moveNext();) mixer(current, map)];
+  ) => [for (; moveNext();) mixer(current, map)];
 
   ///
   /// [mapToSet]
   /// [mapToSetBySet]
   ///
-  Set<K> mapToSet<K>(Mapper<I, K> toVal) =>
-      {for (; moveNext();) toVal(current)};
+  Set<K> mapToSet<K>(Mapper<I, K> toVal) => {
+    for (; moveNext();) toVal(current),
+  };
 
-  Set<K> mapToSetBySet<K>(Set<K> set, Mixer<I, Set<K>, K> mixer) =>
-      {for (; moveNext();) mixer(current, set)};
+  Set<K> mapToSetBySet<K>(Set<K> set, Mixer<I, Set<K>, K> mixer) => {
+    for (; moveNext();) mixer(current, set),
+  };
 
   ///
   /// [mapExpand]
   /// [mapWhere], [mapWhereByIndex]
   /// [mapWhereExpand]
   ///
-  Iterable<S> mapExpand<S>(Mapper<I, Iterable<S>> expanding) =>
-      [for (; moveNext();) ...expanding(current)];
+  Iterable<S> mapExpand<S>(Mapper<I, Iterable<S>> expanding) => [
+    for (; moveNext();) ...expanding(current),
+  ];
 
-  Iterable<S> mapWhere<S>(Predicator<I> test, Mapper<I, S> toVal) =>
-      [for (; moveNext() && test(current);) toVal(current)];
+  Iterable<S> mapWhere<S>(Predicator<I> test, Mapper<I, S> toVal) => [
+    for (; moveNext() && test(current);) toVal(current),
+  ];
 
   Iterable<S> mapWhereByIndex<S>(
     Predicator<I> test,
     MapperGenerator<I, S> toVal, [
     int start = 0,
-  ]) =>
-      [for (var i = start; moveNext() && test(current); i++) toVal(current, i)];
+  ]) => [
+    for (var i = start; moveNext() && test(current); i++) toVal(current, i),
+  ];
 
   Iterable<S> mapWhereExpand<S>(
     Predicator<I> test,
     Mapper<I, Iterable<S>> expanding,
-  ) =>
-      [for (; moveNext() && test(current);) ...expanding(current)];
+  ) => [for (; moveNext() && test(current);) ...expanding(current)];
 
   ///
   /// [mapFound]
@@ -163,7 +165,7 @@ extension DamathIteratorTo<I> on Iterator<I> {
   ///
   T mapFound<T>(Predicator<I> test, Mapper<I, T> toVal) {
     while (moveNext()) if (test(current)) return toVal(current);
-    throw StateError(ErrorMessages.iteratorElementNotFound);
+    throw StateError(Erroring.iteratorElementNotFound);
   }
 
   T mapFoundOr<T>(Predicator<I> test, Mapper<I, T> toVal, Supplier<T> orElse) {
@@ -200,18 +202,17 @@ extension DamathIteratorTo<I> on Iterator<I> {
     bool includeFirst = true,
     bool includeInvalid = false,
     int start = 0,
-  }) =>
-      supplyMoveNext(() sync* {
-        final first = current;
-        if (includeFirst) yield toVal(first, 0);
-        for (var i = start + 1; moveNext(); i++) {
-          if (testInvalid(first, current)) {
-            if (includeInvalid) yield toVal(current, i);
-            break;
-          }
-          yield toVal(current, i);
-        }
-      });
+  }) => supplyMoveNext(() sync* {
+    final first = current;
+    if (includeFirst) yield toVal(first, 0);
+    for (var i = start + 1; moveNext(); i++) {
+      if (testInvalid(first, current)) {
+        if (includeInvalid) yield toVal(current, i);
+        break;
+      }
+      yield toVal(current, i);
+    }
+  });
 
   ///
   /// [mapToListUntilByIndex]
@@ -240,19 +241,18 @@ extension DamathIteratorTo<I> on Iterator<I> {
     bool includeFirst = true,
     bool includeFirstInvalid = false,
     int start = 0,
-  }) =>
-      supplyMoveNext(() {
-        final first = current;
-        final list = <T>[if (includeFirst) toVal(first, 0)];
-        for (var i = start + 1; moveNext(); i++) {
-          if (testInvalid(first, current)) {
-            if (includeFirstInvalid) list.add(toVal(current, i));
-            break;
-          }
-          list.add(toVal(current, i));
-        }
-        return list;
-      });
+  }) => supplyMoveNext(() {
+    final first = current;
+    final list = <T>[if (includeFirst) toVal(first, 0)];
+    for (var i = start + 1; moveNext(); i++) {
+      if (testInvalid(first, current)) {
+        if (includeFirstInvalid) list.add(toVal(current, i));
+        break;
+      }
+      list.add(toVal(current, i));
+    }
+    return list;
+  });
 
   ///
   ///
@@ -287,14 +287,14 @@ extension DamathIteratorTo<I> on Iterator<I> {
   }
 
   Iterable<T> foldNested<T>() => fold<List<T>>(
-        [],
-        (list, element) => switch (element) {
-          T() => list..add(element),
-          Iterable<T>() => list..addAll(element),
-          Iterable<Iterable>() => list..addAll(element.iterator.foldNested()),
-          _ => throw StateError(ErrorMessages.iteratorElementNotNest),
-        },
-      );
+    [],
+    (list, element) => switch (element) {
+      T() => list..add(element),
+      Iterable<T>() => list..addAll(element),
+      Iterable<Iterable>() => list..addAll(element.iterator.foldNested()),
+      _ => throw StateError(Erroring.iteratorElementNotNest),
+    },
+  );
 
   ///
   /// [foldByBefore]
@@ -345,23 +345,22 @@ extension DamathIteratorTo<I> on Iterator<I> {
   /// [inductByIndex]
   ///
   T induct<T>(Mapper<I, T> toVal, Reducer<T> reducing) => supplyMoveNext(() {
-        var val = toVal(current);
-        while (moveNext()) val = reducing(val, toVal(current));
-        return val;
-      });
+    var val = toVal(current);
+    while (moveNext()) val = reducing(val, toVal(current));
+    return val;
+  });
 
   T inductByIndex<T>(
     Mapper<I, T> toVal,
     ReducerGenerator<T> reducing, [
     int start = 0,
-  ]) =>
-      supplyMoveNext(() {
-        var val = toVal(current);
-        for (var i = start; moveNext(); i++) {
-          val = reducing(val, toVal(current), i);
-        }
-        return val;
-      });
+  ]) => supplyMoveNext(() {
+    var val = toVal(current);
+    for (var i = start; moveNext(); i++) {
+      val = reducing(val, toVal(current), i);
+    }
+    return val;
+  });
 
   ///
   /// [inductInited]
@@ -378,12 +377,11 @@ extension DamathIteratorTo<I> on Iterator<I> {
     Mapper<I, T> init,
     CompanionGenerator<T, I> reducing, [
     int start = 0,
-  ]) =>
-      supplyMoveNext(() {
-        var val = init(current);
-        for (var i = start; moveNext(); i++) val = reducing(val, current, i);
-        return val;
-      });
+  ]) => supplyMoveNext(() {
+    var val = init(current);
+    for (var i = start; moveNext(); i++) val = reducing(val, current, i);
+    return val;
+  });
 
   ///
   ///
@@ -400,55 +398,55 @@ extension DamathIteratorTo<I> on Iterator<I> {
   /// [consecutiveCounted]
   ///
   Iterable<(I, int)> get consecutiveCounted => supplyMoveNext(() sync* {
-        var val = current;
-        var frequency = 1;
-        while (moveNext()) {
-          if (val == current) {
-            frequency++;
-            continue;
-          }
-          yield (val, frequency);
-          val = current;
-          frequency = 1;
-        }
-        yield (val, frequency);
-      });
+    var val = current;
+    var frequency = 1;
+    while (moveNext()) {
+      if (val == current) {
+        frequency++;
+        continue;
+      }
+      yield (val, frequency);
+      val = current;
+      frequency = 1;
+    }
+    yield (val, frequency);
+  });
 
   ///
   /// [consecutiveRepeated]
   ///
   Iterable<(I, int)> get consecutiveRepeated => supplyMoveNext(() sync* {
-        var val = current;
-        var frequency = 1;
-        while (moveNext()) {
-          if (val == current) {
-            frequency++;
-            continue;
-          }
-          if (frequency > 1) yield (val, frequency);
-          val = current;
-          frequency = 1;
-        }
-        if (frequency > 1) yield (val, frequency);
-      });
+    var val = current;
+    var frequency = 1;
+    while (moveNext()) {
+      if (val == current) {
+        frequency++;
+        continue;
+      }
+      if (frequency > 1) yield (val, frequency);
+      val = current;
+      frequency = 1;
+    }
+    if (frequency > 1) yield (val, frequency);
+  });
 
   ///
   /// [consecutiveOccurred]
   ///
   Iterable<int> get consecutiveOccurred => supplyMoveNext(() sync* {
-        var val = current;
-        var frequency = 1;
-        while (moveNext()) {
-          if (val == current) {
-            frequency++;
-            continue;
-          }
-          if (frequency > 1) yield frequency;
-          val = current;
-          frequency = 1;
-        }
-        if (frequency > 1) yield frequency;
-      });
+    var val = current;
+    var frequency = 1;
+    while (moveNext()) {
+      if (val == current) {
+        frequency++;
+        continue;
+      }
+      if (frequency > 1) yield frequency;
+      val = current;
+      frequency = 1;
+    }
+    if (frequency > 1) yield frequency;
+  });
 
   ///
   ///
@@ -471,19 +469,18 @@ extension DamathIteratorTo<I> on Iterator<I> {
   Map<K, V> toMap<K, V>([
     Mapper<dynamic, K>? toKey,
     Mapper<dynamic, V>? toValue,
-  ]) =>
-      Map<K, V>.fromIterable(takeAll, key: toKey, value: toValue);
+  ]) => Map<K, V>.fromIterable(takeAll, key: toKey, value: toValue);
 
   Map<int, I> toMapIndexable([int start = 0]) => foldByIndex(
-        {},
-        (map, value, i) => map..putIfAbsent(i, () => value),
-        start,
-      );
+    {},
+    (map, value, i) => map..putIfAbsent(i, () => value),
+    start,
+  );
 
   Map<I, int> get toMapCounted => fold(
-        {},
-        (map, current) => map..update(current, (c) => ++c, ifAbsent: () => 1),
-      );
+    {},
+    (map, current) => map..update(current, (c) => ++c, ifAbsent: () => 1),
+  );
 
   Map<I, double> get toMapFrequencies {
     final map = <I, double>{};
@@ -512,22 +509,22 @@ extension DamathIteratorTo<I> on Iterator<I> {
   /// [groupToListBy]
   ///
   Map<K, Iterable<I>> groupBy<K>(Mapper<I, K> toKey) => fold(
-        {},
-        (map, value) => map
-          ..update(
-            toKey(value),
-            DamathIterable.applyAppend(value),
-            ifAbsent: () => [value],
-          ),
-      );
+    {},
+    (map, value) =>
+        map..update(
+          toKey(value),
+          DamathIterable.applyAppend(value),
+          ifAbsent: () => [value],
+        ),
+  );
 
   Map<K, List<I>> groupToListBy<K>(Mapper<I, K> toKey) => fold(
-        {},
-        (map, value) => map
-          ..update(
-            toKey(value),
-            DamathListExtension.applyAdd(value),
-            ifAbsent: () => [value],
-          ),
-      );
+    {},
+    (map, value) =>
+        map..update(
+          toKey(value),
+          DamathListExtension.applyAdd(value),
+          ifAbsent: () => [value],
+        ),
+  );
 }

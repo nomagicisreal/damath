@@ -151,19 +151,19 @@ extension DamathIterable<I> on Iterable<I> {
       length == another.length
           ? iterator.pairAny(another.iterator, test)
           : onSizeDiff?.call() ??
-              (throw StateError(ErrorMessages.iterableSizeInvalid));
+              (throw StateError(Erroring.iterableSizeInvalid));
 
   bool anyWithEqual(Iterable<I> another, [Supplier<bool>? onSizeDiff]) =>
       length == another.length
           ? iterator.pairAny(another.iterator, FPredicatorFusionor.isEqual)
           : onSizeDiff?.call() ??
-              (throw StateError(ErrorMessages.iterableSizeInvalid));
+              (throw StateError(Erroring.iterableSizeInvalid));
 
   bool anyWithDifferent(Iterable<I> another, [Supplier<bool>? onSizeDiff]) =>
       length == another.length
           ? iterator.pairAny(another.iterator, FPredicatorFusionor.isDifferent)
           : onSizeDiff?.call() ??
-              (throw StateError(ErrorMessages.iterableSizeInvalid));
+              (throw StateError(Erroring.iterableSizeInvalid));
 
   ///
   /// [joinToLines]
@@ -188,7 +188,7 @@ extension DamathIterable<I> on Iterable<I> {
       length == another.length
           ? iterator.pairForcer(another.iterator, initialize, collapse)
           : onSizeDiff?.call() ??
-              (throw StateError(ErrorMessages.iterableSizeInvalid));
+              (throw StateError(Erroring.iterableSizeInvalid));
 
   ///
   ///
@@ -222,11 +222,11 @@ extension DamathIterable<I> on Iterable<I> {
 
   Iterable<I> takeOn(Iterable<bool> where) => length == where.length
       ? where.iterator.takeFor(iterator)
-      : throw StateError(ErrorMessages.iterableSizeInvalid);
+      : throw StateError(Erroring.iterableSizeInvalid);
 
   Iterable<I> subIterable(int start, [int? end]) {
-    if (length.isBoundClose(start, end)) {
-      throw StateError(ErrorMessages.iterableBoundaryInvalid);
+    if (length.isUpperClose(start, end)) {
+      throw StateError(Erroring.iterableBoundaryInvalid);
     }
     return iterator.sub(start, end ?? length);
   }
@@ -265,7 +265,7 @@ extension DamathIterable<I> on Iterable<I> {
   ) =>
       length == another.length
           ? iterator.pairExpand(another.iterator, expanding)
-          : throw StateError(ErrorMessages.iterableSizeInvalid);
+          : throw StateError(Erroring.iterableSizeInvalid);
 
   Iterable<I> expandTogether<E>(
     Iterable<E> another,
@@ -278,7 +278,7 @@ extension DamathIterable<I> on Iterable<I> {
               another.iterator,
               (p, q) => reducing(expanding(p), expandingAnother(q)),
             )
-          : throw StateError(ErrorMessages.iterableSizeInvalid);
+          : throw StateError(Erroring.iterableSizeInvalid);
 
   ///
   /// [interval]
@@ -286,14 +286,14 @@ extension DamathIterable<I> on Iterable<I> {
   Iterable<S> interval<T, S>(Iterable<T> another, Linker<I, T, S> link) =>
       another.length + 1 == length
           ? iterator.pairInterval(another.iterator, link)
-          : throw StateError(ErrorMessages.iterableSizeInvalid);
+          : throw StateError(Erroring.iterableSizeInvalid);
 
   ///
   ///
   ///
   Iterable<I> takeFor(Iterable<bool> positions) => positions.length == length
       ? positions.iterator.takeFor(iterator)
-      : throw StateError(ErrorMessages.iterableSizeInvalid);
+      : throw StateError(Erroring.iterableSizeInvalid);
 
   ///
   ///
@@ -315,7 +315,7 @@ extension DamathIterable<I> on Iterable<I> {
   ) =>
       length == another.length
           ? iterator.pairFold(initialValue, another.iterator, companion)
-          : throw StateError(ErrorMessages.iterableSizeInvalid);
+          : throw StateError(Erroring.iterableSizeInvalid);
 
   S foldTogether<E, S>(
     S initialValue,
@@ -334,7 +334,7 @@ extension DamathIterable<I> on Iterable<I> {
                 companionAnother(value, b),
               ),
             )
-          : throw StateError(ErrorMessages.iterableSizeInvalid);
+          : throw StateError(Erroring.iterableSizeInvalid);
 
   ///
   ///

@@ -10,6 +10,6 @@ part 'src/shape.dart';
 
 
 part 'node/node.dart';
-part 'node/impl/node_impl.dart';
 part 'node/node_extension.dart';
-part 'node/impl/next_previous.dart';
+part 'node/impl/node1_impl.dart';
+part 'node/impl/node2_impl.dart';

@@ -58,12 +58,14 @@ extension DamathIteratorComparable<C extends Comparable> on Iterator<C> {
   /// [increaseOrNot]
   /// [decreaseOrNot]
   ///
+  static const String _valueNotProvided = 'comparable value not provided';
+
   static bool? increaseOrNot<C extends Comparable>(C a, C b) => switch (a
       .compareTo(b)) {
     0 => null,
     -1 => true,
     1 => false,
-    _ => throw StateError(ErrorMessages.comparableValueNotProvided),
+    _ => throw StateError(_valueNotProvided),
   };
 
   static bool? decreaseOrNot<C extends Comparable>(C a, C b) => switch (a
@@ -71,7 +73,7 @@ extension DamathIteratorComparable<C extends Comparable> on Iterator<C> {
     0 => null,
     1 => true,
     -1 => false,
-    _ => throw StateError(ErrorMessages.comparableValueNotProvided),
+    _ => throw StateError(_valueNotProvided),
   };
 
   ///
@@ -140,19 +142,19 @@ extension DamathIteratorComparable<C extends Comparable> on Iterator<C> {
   ///
   void checkSorted([bool increase = true]) {
     if (!isSorted(increase)) {
-      throw StateError(ErrorMessages.comparableDisordered);
+      throw StateError(Erroring.comparableDisordered);
     }
   }
 
   void checkSortedForListen(Listener listen, [bool increase = true]) =>
       isSorted(increase)
           ? listen()
-          : throw StateError(ErrorMessages.comparableDisordered);
+          : throw StateError(Erroring.comparableDisordered);
 
   S checkSortedForSupply<S>(Supplier<S> supply, [bool increase = true]) =>
       isSorted(increase)
           ? supply()
-          : throw StateError(ErrorMessages.comparableDisordered);
+          : throw StateError(Erroring.comparableDisordered);
 }
 
 ///
@@ -218,9 +220,9 @@ extension DamathIterableComparable<C extends Comparable> on Iterable<C> {
   ///
   int permutations([bool requireIdentical = false]) {
     if (!isOrdered(requireIdentical)) {
-      throw StateError(ErrorMessages.comparableDisordered);
+      throw StateError(Erroring.comparableDisordered);
     }
-    if (requireIdentical) return length.factorial;
+    if (requireIdentical) return IntExtension.factorial(length);
 
     final iterator = this.iterator..moveNext();
     var previous = iterator.current;
@@ -232,11 +234,11 @@ extension DamathIterableComparable<C extends Comparable> on Iterable<C> {
         frequency++;
         continue;
       }
-      if (frequency > 1) val ~/= frequency.factorial;
+      if (frequency > 1) val ~/= IntExtension.factorial(frequency);
       previous = iterator.current;
       frequency = 1;
     }
-    if (frequency > 1) val ~/= frequency.factorial;
+    if (frequency > 1) val ~/= IntExtension.factorial(frequency);
     return val;
   }
 
@@ -249,12 +251,12 @@ extension DamathIterableComparable<C extends Comparable> on Iterable<C> {
           ? onlyRepeated
               ? iterator.consecutiveRepeated
               : iterator.consecutiveCounted
-          : throw StateError(ErrorMessages.comparableDisordered);
+          : throw StateError(Erroring.comparableDisordered);
 
   Iterable<int> get consecutiveOccurred =>
       isOrdered(false)
           ? iterator.consecutiveOccurred
-          : throw StateError(ErrorMessages.comparableDisordered);
+          : throw StateError(Erroring.comparableDisordered);
 
   // ///
   // /// [groupToIterable]
@@ -454,7 +456,7 @@ extension DamathListComparable<C extends Comparable> on List<C> {
   ///
   C percentile(double value) {
     if (!value.isRangeClose(0, 1)) {
-      throw StateError(ErrorMessages.percentileOutOfBoundary);
+      throw StateError(Erroring.percentileOutOfBoundary);
     }
     late final C element;
     final length = this.length;

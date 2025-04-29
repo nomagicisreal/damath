@@ -1,6 +1,9 @@
 part of '../primary.dart';
 
 ///
+/// instance usages:
+/// [isPrime], ...
+///
 /// constants:
 /// [primesIn100]
 /// [accumulatedIn100]
@@ -8,23 +11,44 @@ part of '../primary.dart';
 /// [partitionsIn20]
 ///
 /// static methods:
-/// [reducePlus], ...
-/// [accumulation]
-/// [fibonacci]
-/// [collatzConjecture]
+/// [reduce_plus], ...
+/// [leading], ...
+/// [factorial], ...
+/// [isSameParity], ...
+/// [accumulation], ...
+/// [fibonacci], ...
 /// [stoneTakingFinal]
 /// [pascalTriangle], [combination]
 /// [partition], ...
 ///
-/// instance getters, methods:
-/// [isPrime], ...
-/// [accumulated], ...
-/// [leadingValue], ...
-/// [paritySame], ...
-/// [toIterable], ...
-///
 ///
 extension IntExtension on int {
+  ///
+  ///
+  ///
+  bool get isPrime {
+    if (this < 2) return false;
+    if (this == 2 || this == 3) return true;
+    if (isEven) return false;
+    final max = math.sqrt(this);
+    if (max.isInteger) return false;
+    for (var i = 3; i < max; i += 2) {
+      if (this % i == 0) return false;
+    }
+    return true;
+  }
+
+  bool get isComposite {
+    if (this < 2) return false;
+    if (isEven) return true;
+    final max = math.sqrt(this);
+    if (max.isInteger) return true;
+    for (var i = 3; i < max; i += 2) {
+      if (this % i == 0) return true;
+    }
+    return false;
+  }
+
   ///
   /// ```
   /// final primes = <int>[2, 3];
@@ -64,7 +88,7 @@ extension IntExtension on int {
     79,
     83,
     89,
-    97
+    97,
   ];
 
   ///
@@ -250,41 +274,103 @@ extension IntExtension on int {
   ];
 
   ///
-  /// reduce
-  /// [reducePlus], [reduceMinus], [reduceMultiply], [reduceDivided], [reduceMod]
-  /// [reducePlusSquared], [reducePlusFactorial]
   ///
-  static int reducePlus(int v1, int v2) => v1 + v2;
+  ///
+  static bool predicate_negative(int value) => value.isNegative;
 
-  static int reduceMinus(int v1, int v2) => v1 - v2;
+  static bool predicate_positive(int value) => !value.isNegative;
 
-  static int reduceMultiply(int v1, int v2) => v1 * v2;
+  static bool predicate_0(int value) => value == 0;
 
-  static int reduceDivided(int v1, int v2) => v1 ~/ v2;
+  ///
+  ///
+  ///
+  static Predicator<int> predicator_equalTo(int value) => (n) => n == value;
 
-  static int reduceMod(int v1, int v2) => v1 % v2;
+  ///
+  ///
+  ///
+  static int reduce_plus(int v1, int v2) => v1 + v2;
+
+  static int reduce_minus(int v1, int v2) => v1 - v2;
+
+  static int reduce_multiply(int v1, int v2) => v1 * v2;
+
+  static int reduce_divided(int v1, int v2) => v1 ~/ v2;
+
+  static int reduce_mod(int v1, int v2) => v1 % v2;
 
   // chained operation
-  static int reducePlusSquared(int v1, int v2) => v1 * v1 + v2 * v2;
+  static int reduce_plusSquared(int v1, int v2) => v1 * v1 + v2 * v2;
 
-  static int reducePlusFactorial(int v1, int v2) => v1.factorial + v2.factorial;
-
-  static int reduceMultiplyFactorial(int v1, int v2) =>
-      v1.factorial * v2.factorial;
+  static int reduce_plusFactorial(int v1, int v2) =>
+      IntExtension.factorial(v1) + IntExtension.factorial(v2);
 
   ///
-  /// [accumulation] ([1, 3, 6, 10, 15, ...])
   ///
-  static Iterable<int> accumulation(int end, {int start = 0}) sync* {
-    for (int i = start; i <= end; i++) {
-      yield i.accumulated;
+  ///
+  static int leading(int n) {
+    num m = n.abs();
+    for (; m >= 10; m /= 10, m++) {}
+    return m.floor();
+  }
+
+  static int accumulate(int n) {
+    if (n < 0) Erroring.invalidInt(n);
+    if (n < 101) return IntExtension.accumulatedIn100[n - 1];
+    var value = IntExtension.accumulatedIn100.last;
+    for (var i = 101; i <= n; i++) {
+      value += i;
     }
+    return value;
   }
 
   ///
-  /// [fibonacci]
-  ///   [lucas] == false: [1, 1, 2, 3, 5, 8, 13, ...]
-  ///   [lucas] == true:  [1, 3, 4, 7, 11, 18, 29, ...]
+  ///
+  ///
+  static int factorial(int n) {
+    if (n < 0) Erroring.invalidInt(n);
+    if (n > 19) throw UnsupportedError('require BigInt');
+    return IntExtension.factorialIn20[n - 1];
+  }
+
+  ///
+  ///
+  ///
+  static bool isSameParity(int a, int b) =>
+      a.isEven && b.isEven || a.isOdd && b.isOdd;
+
+  static bool isOppositeParity(int a, int b) =>
+      a.isEven && b.isOdd || a.isOdd && b.isEven;
+
+  static bool isCoprime(int a, int b) => a.gcd(b) == 1;
+
+  static int? modInverseOrNull(int n, int modulo) =>
+      isCoprime(n, modulo) ? n.modInverse(modulo) : null;
+
+  ///
+  ///
+  ///
+  static Iterable<int> accumulation(int end, {int start = 0}) sync* {
+    for (int i = start; i <= end; i++) {
+      yield IntExtension.accumulate(i);
+    }
+  }
+
+  static Iterable<int> factorized(int n) sync* {
+    if (n < 2) Erroring.invalidInt(n);
+    final primes = List.of(IntExtension.primesIn100);
+    if (primes.any(IntExtension.predicator_equalTo(n))) {
+      yield n;
+      return;
+    }
+    if (n < 100) {}
+    throw UnimplementedError();
+  }
+
+  ///
+  /// [lucas] == false: [1, 1, 2, 3, 5, 8, 13, ...]
+  /// [lucas] == true:  [1, 3, 4, 7, 11, 18, 29, ...]
   ///
   static Iterable<int> fibonacci(int k, [bool lucas = false]) sync* {
     assert(k > 0);
@@ -304,15 +390,12 @@ extension IntExtension on int {
     }
   }
 
-  ///
-  /// [collatzConjecture]
-  ///
-  static Iterable<int> collatzConjecture(int value, [int scale = 3]) sync* {
-    assert(value != 0);
-    yield value;
-    while (value != 1) {
-      value = (value.isOdd ? value * scale + 1 : value / 2).toInt();
-      yield value;
+  static Iterable<int> collatzConjecture(int n, [int scale = 3]) sync* {
+    if (n == 0) Erroring.invalidInt(n);
+    yield n;
+    while (n != 1) {
+      n = (n.isOdd ? n * scale + 1 : n / 2).toInt();
+      yield n;
     }
   }
 
@@ -335,7 +418,11 @@ extension IntExtension on int {
         limitLower.isOutsideClose(0, limitUpper) ||
         limitUpper.isOutsideClose(limitLower, total)) {
       throw ArgumentError(
-        ErrorMessages.intStoneTakingFinal(n, total, limitLower, limitUpper),
+        'invalid stone taking final ('
+        'n: $n, '
+        'total: $total, '
+        'limit lower: $limitLower, '
+        'limit upper: $limitUpper)',
       );
     }
 
@@ -344,12 +431,6 @@ extension IntExtension on int {
       yield step;
     }
   }
-
-  ///
-  /// [pascalTriangle]
-  /// [binomialCoefficient]
-  /// [combination]
-  ///
 
   ///
   /// [pascalTriangle] calculate the 2D array like
@@ -390,7 +471,7 @@ extension IntExtension on int {
     bool isColumnEndAtK = true,
   }) {
     if (n < 1 || k < 1 || k > n + 1 || rowStart > 3) {
-      throw ArgumentError(ErrorMessages.intPascalTriangle(n, k));
+      throw ArgumentError('invalid pascal triangle argument($n, $k)');
     }
 
     final rowEnd = n + 1 - rowStart;
@@ -400,9 +481,10 @@ extension IntExtension on int {
     final array = DamathListExtension.generate2D<int>(
       rowEnd,
       k,
-      (i, j) => j == 0 || j == i + rowStart
-          ? 1
-          : j == 1 || j == i + rowStart - 1
+      (i, j) =>
+          j == 0 || j == i + rowStart
+              ? 1
+              : j == 1 || j == i + rowStart - 1
               ? i + rowStart
               : 0,
     );
@@ -420,13 +502,11 @@ extension IntExtension on int {
   /// [combination]
   ///
   static int combination(int n, int k) {
-    if (n < 1 || k.isNegative || k > n) {
-      throw ArgumentError(ErrorMessages.intBinomialCoefficient(n, k));
-    }
+    if (n < 1) Erroring.invalidInt(n);
+    if (k.isNegative) Erroring.invalidInt(k);
+    if (k > n) throw ArgumentError('invalid binomial coefficient ($n, $k)');
     var value = 1.0;
-    while (k > 0) {
-      value *= n-- / k--;
-    }
+    while (k > 0) value *= n-- / k--;
     return value.toInt();
   }
 
@@ -456,22 +536,21 @@ extension IntExtension on int {
   ///   7. [1, 1, 1, 1, 1]
   ///
   static int partition(int m, [int? n]) {
-    if (m.isNegative) throw ArgumentError(ErrorMessages.intPartitionM(m));
+    if (m.isNegative) Erroring.invalidInt(m);
     if (n != null) {
       if (n.isRangeClose(1, m)) {
-        throw ArgumentError(ErrorMessages.intPartitionN(m, n));
+        throw ArgumentError(Erroring.invalidPartition(m, n));
       }
-      return _partitionSet(m)
-          .map(DamathIterable.toLength)
-          .iterator
-          .toMapCounted[n]!;
+      return _partitionSet(
+        m,
+      ).map(DamathIterable.toLength).iterator.toMapCounted[n]!;
     }
     var sum = 0;
     for (var i = 1; i <= m; i++) {
-      sum += _partitionSet(m)
-          .map(DamathIterable.toLength)
-          .iterator
-          .toMapCounted[i]!;
+      sum +=
+          _partitionSet(
+            m,
+          ).map(DamathIterable.toLength).iterator.toMapCounted[i]!;
     }
     return sum;
   }
@@ -491,17 +570,17 @@ extension IntExtension on int {
   ///   - [1, 1, 1]
   ///
   static Iterable<int> partitionSet(int m, [int? n]) sync* {
-    if (m.isNegative) throw ArgumentError(ErrorMessages.intPartitionM(m));
+    if (m.isNegative) Erroring.invalidInt(m);
     if (n != null) {
       if (n.isRangeClose(1, m)) {
-        throw ArgumentError(ErrorMessages.intPartitionN(m, n));
+        throw ArgumentError(Erroring.invalidPartition(m, n));
       }
       yield* _partitionSet(m).where((element) => element.length == n).flatted;
     }
     for (var i = 1; i <= m; i++) {
-      yield* _partitionSet(m)
-          .where(DamathIterableIterable.predicateChildrenLength(i))
-          .flatted;
+      yield* _partitionSet(
+        m,
+      ).where(DamathIterableIterable.predicateChildrenLength(i)).flatted;
     }
   }
 
@@ -512,16 +591,16 @@ extension IntExtension on int {
   /// this functions returns true only if [integers] is one of [3, 1], [1, 3], [2, 2].
   ///
   static bool partitionPredicate(Iterable<int> integers, int m, int n) {
-    if (m < 1) throw ArgumentError(ErrorMessages.intPartitionM(m));
+    if (m < 1) Erroring.invalidInt(m);
     if (n.isRangeClose(1, m)) {
-      throw ArgumentError(ErrorMessages.intPartitionN(m, n));
+      throw Erroring.invalidPartition(m, n);
     }
     return integers.length == n && integers.sum == m;
   }
 
   //
   static Iterable<Iterable<int>> _partitionSet(int m) sync* {
-    final list = List.filled(m, 0);
+    final list = List.filled(m, 0, growable: false);
     list[0] = m;
     yield list.take(1);
     for (var k = 0; list[0] != 1; k++) {
@@ -538,91 +617,5 @@ extension IntExtension on int {
       list[k + 1] = val;
       yield list.take(k + 2);
     }
-  }
-
-  ///
-  /// [isPrime]
-  /// [isComposite]
-  ///
-  bool get isPrime {
-    if (this < 2) return false;
-    if (this == 2 || this == 3) return true;
-    if (isEven) return false;
-    final max = math.sqrt(this);
-    if (max.isInteger) return false;
-    for (var i = 3; i < max; i += 2) {
-      if (this % i == 0) return false;
-    }
-    return true;
-  }
-
-  bool get isComposite {
-    if (this < 2) return false;
-    if (isEven) return true;
-    final max = math.sqrt(this);
-    if (max.isInteger) return true;
-    for (var i = 3; i < max; i += 2) {
-      if (this % i == 0) return true;
-    }
-    return false;
-  }
-
-  ///
-  /// [accumulated], [factorial]
-  ///
-  int get accumulated {
-    if (this < 0) throw ArgumentError(ErrorMessages.invalidInteger(this));
-    if (this < 101) return IntExtension.accumulatedIn100[this - 1];
-    var value = IntExtension.accumulatedIn100.last;
-    for (var i = 101; i <= this; i++) {
-      value += i;
-    }
-    return value;
-  }
-
-  int get factorial {
-    if (this < 0) throw ArgumentError(ErrorMessages.invalidInteger(this));
-    if (this > 19) throw UnsupportedError(ErrorMessages.intFactorialOverflow);
-    return IntExtension.factorialIn20[this - 1];
-  }
-
-  // Iterable<int> get factorized sync* {
-  //   assert(this > 1, 'invalid factorized integer: $this');
-  //   final primes = List.of(IntExtension.primesIn100);
-  //   if (this < 100) {
-  //
-  //   }
-  // }
-
-  ///
-  /// [leadingValue]
-  ///
-  int get leadingValue {
-    num n = abs();
-    for (; n >= 10; n /= 10, n++) {}
-    return n.floor();
-  }
-
-  ///
-  /// [paritySame], [parityOpposite]
-  /// [isCoprime], [modInverseOrNull]
-  /// see also [BigIntExtension.isCoprime], ...
-  ///
-  bool paritySame(int other) => isEven && other.isEven || isOdd && other.isOdd;
-
-  bool parityOpposite(int other) =>
-      isEven && other.isOdd || isOdd && other.isEven;
-
-  bool isCoprime(int other) => gcd(other) == 1;
-
-  int? modInverseOrNull(int other) =>
-      isCoprime(other) ? modInverse(other) : null;
-
-  ///
-  /// [toIterable]
-  ///
-  Iterable<int> toIterable([int from = 0, int inset = 0]) {
-    final max = this + 1 - inset;
-    return [for (var i = 0; i < max; i++) i];
   }
 }

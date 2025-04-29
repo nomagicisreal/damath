@@ -19,8 +19,8 @@ extension RegExpExtension on RegExp {
   /// "*" means zero or more.
   ///
   static String wordUntilFor(String source) =>
-      RegExp(r'(\w+)').firstMatch(source)?.group0 ??
-      (throw StateError(ErrorMessages.regexNotMatchAny));
+      RegExp(r'\w+').firstMatch(source)?.group0 ??
+      (throw StateError(Erroring.regexNotMatchAny));
 }
 
 ///

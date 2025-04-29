@@ -202,11 +202,11 @@ extension DamathListExtension<T> on List<T> {
   void setAllFromIterable(Iterable<T> iterable) =>
       length == iterable.length
           ? iterable.iterator.consumeAllByIndex((value, i) => this[i] = value)
-          : throw StateError(ErrorMessages.iterableSizeInvalid);
+          : throw StateError(Erroring.iterableSizeInvalid);
 
   void setAllFromList(List<T> another) {
     if (length == another.length) {
-      throw StateError(ErrorMessages.iterableSizeInvalid);
+      throw StateError(Erroring.iterableSizeInvalid);
     }
     for (var i = 0; i < length; i++) this[i] = another[i];
   }
@@ -354,8 +354,8 @@ extension DamathListExtension<T> on List<T> {
   ///
   ///
   List<S> mapSublist<S>(int begin, Mapper<T, S> mapping, [int? end]) {
-    if (length.isBoundClose(begin, end)) {
-      throw StateError(ErrorMessages.iterableBoundaryInvalid);
+    if (length.isUpperClose(begin, end)) {
+      throw StateError(Erroring.iterableBoundaryInvalid);
     }
     final bound = end ?? length;
     return [for (var i = begin; i < bound; i++) mapping(this[i])];
@@ -366,8 +366,8 @@ extension DamathListExtension<T> on List<T> {
     MapperGenerator<T, S> mapping, [
     int? end,
   ]) {
-    if (length.isBoundClose(begin, end)) {
-      throw StateError(ErrorMessages.iterableBoundaryInvalid);
+    if (length.isUpperClose(begin, end)) {
+      throw StateError(Erroring.iterableBoundaryInvalid);
     }
     final bound = end ?? length;
     return [for (var i = begin; i < bound; i++) mapping(this[i], i)];
@@ -413,7 +413,7 @@ extension DamathListExtension<T> on List<T> {
   }) {
     final result = <List<T>>[];
     final bound = end ?? length;
-    assert(length.isBoundClose(start, end) && count < bound - start);
+    assert(length.isUpperClose(start, end) && count < bound - start);
 
     var i = start;
     final max = count * (bound ~/ count);
