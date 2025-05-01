@@ -15,9 +15,3 @@
 //     );
 //   }
 // }
-
-import 'cmd.dart';
-
-class Child {}
-
-extension Wow on Parent {}

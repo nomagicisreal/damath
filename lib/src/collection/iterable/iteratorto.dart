@@ -197,7 +197,7 @@ extension DamathIteratorTo<I> on Iterator<I> {
   }
 
   Iterable<S> mapUntilByIndexExist<S>(
-    PredicatorFusionor<I> testInvalid,
+    PredicatorReducer<I> testInvalid,
     MapperGenerator<I, S> toVal, {
     bool includeFirst = true,
     bool includeInvalid = false,
@@ -236,7 +236,7 @@ extension DamathIteratorTo<I> on Iterator<I> {
   }
 
   List<T> mapToListUntilByIndexExist<T>(
-    PredicatorFusionor<I> testInvalid,
+    PredicatorReducer<I> testInvalid,
     MapperGenerator<I, T> toVal, {
     bool includeFirst = true,
     bool includeFirstInvalid = false,

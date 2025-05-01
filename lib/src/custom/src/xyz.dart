@@ -134,7 +134,7 @@ enum Quadrant2D {
 /// [Point2.lerp], ...
 ///
 class Point2
-    with MComparable<_MxyOperatable>, _Mxy, _MxyOperatable
+    with M_Comparable<_MxyOperatable>, _Mxy, _MxyOperatable
     implements Comparable<_MxyOperatable> {
   @override
   final double x;

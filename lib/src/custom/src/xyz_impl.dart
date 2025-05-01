@@ -54,9 +54,9 @@ mixin _Mxyz implements _Mxy {
 mixin _MxyOperatable on _Mxy
     implements
         Comparable<_MxyOperatable>,
-        IOperatableDirectable<_MxyOperatable, _MxyOperatable>,
-        IOperatableScalable<_MxyOperatable, _MxyOperatable>,
-        IOperatableStepable<_MxyOperatable, _MxyOperatable> {
+        I_OperatableDirectable<_MxyOperatable, _MxyOperatable>,
+        I_OperatableScalable<_MxyOperatable, _MxyOperatable>,
+        I_OperatableStepable<_MxyOperatable, _MxyOperatable> {
   _MxyOperatable _instance(double x, double y);
 
   @override
@@ -122,9 +122,9 @@ mixin _MxyzO on _Mxyz, Point2 {
 ///
 mixin _MxyTransformable on _Mxy
     implements
-        IOperatableDirectable<_MxyTransformable, void>,
-        IOperatableScalable<_MxyTransformable, void>,
-        IOperatableStepable<_MxyTransformable, void> {
+        I_OperatableDirectable<_MxyTransformable, void>,
+        I_OperatableScalable<_MxyTransformable, void>,
+        I_OperatableStepable<_MxyTransformable, void> {
   set x(double value);
 
   set y(double value);

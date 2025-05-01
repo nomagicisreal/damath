@@ -54,12 +54,12 @@ typedef Synthesizer<A, B, C, S> = S Function(A a, B b, C c);
 ///
 ///
 typedef Predicator<T> = bool Function(T value);
-typedef PredicatorFusionor<T> = bool Function(T v1, T v2);
+typedef PredicatorReducer<T> = bool Function(T v1, T v2);
 typedef PredicatorMixer<T, E> = bool Function(T value, E element);
 typedef PredicatorSynthesizer<O, P, Q> = bool Function(O o, P p, Q q);
 typedef PredicatorGenerator<T> = bool Function(T value, int index);
 typedef Ternarator<T> = bool? Function(T value);
-typedef TernaratorFusionor<T> = bool? Function(T v1, T v2);
+typedef TernaratorReducer<T> = bool? Function(T v1, T v2);
 
 ///
 ///
@@ -118,7 +118,7 @@ extension FListener on Listener {
 ///
 ///
 ///
-extension FPredicatorFusionor on PredicatorFusionor {
+extension FPredicatorFusionor on PredicatorReducer {
   static bool isEqual<T>(T valueA, T valueB) => valueA == valueB;
 
   static bool isDifferent<T>(T valueA, T valueB) => valueA != valueB;

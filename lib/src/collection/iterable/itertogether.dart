@@ -340,7 +340,7 @@ extension DamathIteratorTogether<I> on Iterator<I> {
   /// [pairMerge]
   ///
   ///
-  Iterable<I> pairMerge(Iterator<I> another, PredicatorFusionor<I> keep) =>
+  Iterable<I> pairMerge(Iterator<I> another, PredicatorReducer<I> keep) =>
       moveNextTogetherSupply(another, () sync* {
         while (true) {
           if (keep(current, another.current)) {

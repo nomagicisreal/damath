@@ -211,7 +211,7 @@ extension DamathIterator<I> on Iterator<I> {
   /// [existTo]
   /// [existToInited]
   ///
-  bool exist(PredicatorFusionor<I> test) => supplyMoveNext(() {
+  bool exist(PredicatorReducer<I> test) => supplyMoveNext(() {
         var val = current;
         while (moveNext()) {
           if (test(val, current)) return true;
@@ -222,7 +222,7 @@ extension DamathIterator<I> on Iterator<I> {
 
   bool existTo<T>(
     Mapper<I, T> toVal,
-    PredicatorFusionor<T> test,
+    PredicatorReducer<T> test,
   ) =>
       supplyMoveNext(() {
         var val = toVal(current);
@@ -234,7 +234,7 @@ extension DamathIterator<I> on Iterator<I> {
         return false;
       });
 
-  bool existToInited<T>(Mapper<I, T> toVal, PredicatorFusionor<T> test) =>
+  bool existToInited<T>(Mapper<I, T> toVal, PredicatorReducer<T> test) =>
       supplyMoveNext(() {
         var val = toVal(current);
         while (moveNext()) {
@@ -249,7 +249,7 @@ extension DamathIterator<I> on Iterator<I> {
   /// [existAnyToEachGroup]
   /// [existAnyToEachGroupSet]
   ///
-  bool existAny(PredicatorFusionor<I> test) => supplyMoveNext(() {
+  bool existAny(PredicatorReducer<I> test) => supplyMoveNext(() {
         final list = <I>[current];
         while (moveNext()) {
           if (list.any((val) => test(val, current))) return true;
@@ -260,7 +260,7 @@ extension DamathIterator<I> on Iterator<I> {
 
   bool existAnyTo<T>(
     Mapper<I, T> toVal,
-    PredicatorFusionor<T> test,
+    PredicatorReducer<T> test,
   ) =>
       supplyMoveNext(() {
         final list = <T>[toVal(current)];
@@ -303,7 +303,7 @@ extension DamathIterator<I> on Iterator<I> {
   ///
   /// [existEvery]
   ///
-  bool existEvery(PredicatorFusionor<I> expect) => supplyMoveNext(() {
+  bool existEvery(PredicatorReducer<I> expect) => supplyMoveNext(() {
         var val = current;
         while (moveNext()) {
           if (!expect(val, current)) return false;
@@ -482,7 +482,7 @@ extension DamathIterator<I> on Iterator<I> {
   }
 
   Iterable<I> takeWhileExist(
-    PredicatorFusionor<I> test, [
+    PredicatorReducer<I> test, [
     bool includeFirst = true,
   ]) =>
       supplyMoveNext(() sync* {
@@ -512,7 +512,7 @@ extension DamathIterator<I> on Iterator<I> {
   }
 
   Iterable<I> takeUntilExist(
-    PredicatorFusionor<I> testInvalid, [
+    PredicatorReducer<I> testInvalid, [
     bool includeFirstInvalid = false,
   ]) =>
       supplyMoveNext(() sync* {
@@ -587,7 +587,7 @@ extension DamathIterator<I> on Iterator<I> {
   List<I> takeListWhile(Predicator<I> test) =>
       [for (; moveNext() && test(current);) current];
 
-  List<I> takeListWhileExistOnFirst(PredicatorFusionor<I> test) =>
+  List<I> takeListWhileExistOnFirst(PredicatorReducer<I> test) =>
       supplyMoveNext(() {
         final val = current;
         return [for (; moveNext() && test(val, current);) current];
@@ -613,7 +613,7 @@ extension DamathIterator<I> on Iterator<I> {
   }
 
   List<I> takeListUntilExist(
-    PredicatorFusionor<I> testInvalid, [
+    PredicatorReducer<I> testInvalid, [
     bool includeFirstInvalid = false,
   ]) =>
       supplyMoveNext(() {
@@ -777,7 +777,7 @@ extension DamathIterator<I> on Iterator<I> {
   /// [interval]
   ///
   ///
-  Iterable<I> mergeBy(int split, PredicatorFusionor<I> keep) =>
+  Iterable<I> mergeBy(int split, PredicatorReducer<I> keep) =>
       [...take(split)].iterator.pairMerge(this, keep);
 
   Iterable<I> interval(Reducer<I> reducing) => supplyMoveNext(() sync* {

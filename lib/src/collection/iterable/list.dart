@@ -169,7 +169,7 @@ extension DamathListExtension<T> on List<T> {
     this[iB] = temp;
   }
 
-  void swapIf(int iA, int iB, PredicatorFusionor<T> test) {
+  void swapIf(int iA, int iB, PredicatorReducer<T> test) {
     final a = this[iA];
     final b = this[iB];
     if (test(a, b)) {

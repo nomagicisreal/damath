@@ -9,6 +9,8 @@ part of '../primary.dart';
 /// [BoolExtension]
 /// [NumExtension]
 /// [BigIntExtension]
+/// [DamathComparableExtension]
+/// [DamathComparatorExtension]
 ///
 /// [RandomExtension]
 ///
@@ -67,6 +69,8 @@ abstract interface class Erroring {
   static Error invalidPartition(int m, int n) =>
       ArgumentError('it is impossible to partition $m into $n group');
 
+  static Error invalidComparableResult(int value) =>
+      UnsupportedError('comparable value not provided: $value');
 }
 
 extension NullableExtension<T> on T? {

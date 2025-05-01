@@ -8,8 +8,9 @@ part 'src/xyz.dart';
 part 'src/xyz_impl.dart';
 part 'src/shape.dart';
 
-
 part 'node/node.dart';
-part 'node/node_extension.dart';
-part 'node/impl/node1_impl.dart';
-part 'node/impl/node2_impl.dart';
+part 'node/node_binary.dart';
+part 'node/read_write.dart';
+part 'node/impl/node_impl.dart';
+part 'node/impl/node_impl_binary.dart';
+part 'node/impl/nterator_impl.dart';

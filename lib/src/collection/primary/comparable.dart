@@ -1,12 +1,141 @@
 part of '../collection.dart';
+// ignore_for_file: camel_case_types
 
 ///
+/// [DamathComparableExtension], ...
+/// [M_Comparable]
+/// [ComparableState]
+/// [ComparableMethod]
 ///
 /// [DamathIteratorComparable]
 /// [DamathIterableComparable]
 /// [DamathListComparable]
 ///
 ///
+
+///
+/// [orderBefore], ...
+/// [compareToIncreaseTernary], ...
+///
+extension DamathComparableExtension<C> on Comparable<C> {
+  bool orderBefore(C other) => compareTo(other) == -1;
+
+  bool orderAfter(C other) => compareTo(other) == 1;
+
+  ///
+  /// there is no compiletime error but runtime error when "[comparator_orderBefore]<[T]>",
+  /// while [T] is not bound to [Comparable]
+  ///
+  // static bool comparator_orderBefore<C extends Comparable>(C a, C b) =>
+  //     a.orderBefore(b);
+  static bool comparator_orderBefore<C>(C a, C b) =>
+      (a as Comparable).orderBefore(b);
+
+  static bool comparator_orderAfter<C>(C a, C b) =>
+      (a as Comparable).orderAfter(b);
+
+  ///
+  ///
+  ///
+  bool? compareToIncreaseTernary(C other) {
+    final value = compareTo(other);
+    return switch (value) {
+      0 => null,
+      1 => false,
+      -1 => true,
+      _ => throw Erroring.invalidComparableResult(value),
+    };
+  }
+
+  bool? compareToDecreaseTernary(C other) {
+    final value = compareTo(other);
+    return switch (value) {
+      0 => null,
+      1 => true,
+      -1 => false,
+      _ => throw Erroring.invalidComparableResult(value),
+    };
+  }
+
+  static bool? ofTernaryIncrease<C extends Comparable>(C a, C b) =>
+      a.compareToIncreaseTernary(b);
+
+  static bool? ofTernaryDecrease<C extends Comparable>(C a, C b) =>
+      a.compareToDecreaseTernary(b);
+}
+
+///
+///
+///
+mixin M_Comparable<C extends Comparable<C>> implements Comparable<C> {
+  @override
+  int compareTo(C other);
+
+  bool operator >(C another) => compareTo(another) > 0;
+
+  bool operator <(C another) => compareTo(another) < 0;
+
+  bool operator >=(C another) => compareTo(another) >= 0;
+
+  bool operator <=(C another) => compareTo(another) <= 0;
+}
+
+///
+///
+///
+enum ComparableState {
+  requireDecrease(-1),
+  requireIncrease(1),
+  requireEqual(0);
+
+  final int value;
+
+  const ComparableState(this.value);
+}
+
+///
+/// pass [Comparable.compare] to compare primaries be like [num], [String]
+///
+final class ComparableMethod<T> {
+  final Comparator<T> comparator;
+  final ComparableState state;
+
+  const ComparableMethod.requireIncreaseOf(this.comparator)
+    : state = ComparableState.requireIncrease;
+
+  const ComparableMethod.requireDecreaseOf(this.comparator)
+    : state = ComparableState.requireDecrease;
+
+  ///
+  ///
+  ///
+  bool predicate(T element, T current, {bool includeEqual = false}) {
+    final value = comparator(element, current);
+    return value == state.value || (includeEqual && value == 0);
+  }
+
+  // bool? ternary(T element, T current) => switch (state) {
+  //   ComparableState.requireIncrease => () {
+  //     final value = comparator(element, current);
+  //     return switch (value) {
+  //       0 => null,
+  //       1 => false,
+  //       -1 => true,
+  //       _ => throw Erroring.invalidComparableResult(value),
+  //     };
+  //   }(),
+  //   ComparableState.requireDecrease => () {
+  //     final value = comparator(element, current);
+  //     return switch (value) {
+  //       0 => null,
+  //       1 => true,
+  //       -1 => false,
+  //       _ => throw Erroring.invalidComparableResult(value),
+  //     };
+  //   }(),
+  //   ComparableState.requireEqual => throw UnimplementedError(),
+  // };
+}
 
 ///
 /// static methods:
@@ -55,28 +184,6 @@ extension DamathIteratorComparable<C extends Comparable> on Iterator<C> {
       a.compareTo(b) != 1;
 
   ///
-  /// [increaseOrNot]
-  /// [decreaseOrNot]
-  ///
-  static const String _valueNotProvided = 'comparable value not provided';
-
-  static bool? increaseOrNot<C extends Comparable>(C a, C b) => switch (a
-      .compareTo(b)) {
-    0 => null,
-    -1 => true,
-    1 => false,
-    _ => throw StateError(_valueNotProvided),
-  };
-
-  static bool? decreaseOrNot<C extends Comparable>(C a, C b) => switch (a
-      .compareTo(b)) {
-    0 => null,
-    1 => true,
-    -1 => false,
-    _ => throw StateError(_valueNotProvided),
-  };
-
-  ///
   /// [predicateLower]
   /// [predicateUpper]
   ///
@@ -99,9 +206,9 @@ extension DamathIteratorComparable<C extends Comparable> on Iterator<C> {
   ///
   /// [_invalidFor]
   /// [_ternarateFor]
-  /// in convention, the validation for [PredicatorFusionor] should pass in order of (lower, upper)
+  /// in convention, the validation for [PredicatorReducer] should pass in order of (lower, upper)
   ///
-  static PredicatorFusionor<C> _validFor<C extends Comparable>(
+  static PredicatorReducer<C> _validFor<C extends Comparable>(
     bool increase, [
     bool strictly = false,
   ]) =>
@@ -113,7 +220,7 @@ extension DamathIteratorComparable<C extends Comparable> on Iterator<C> {
           ? notDecrease
           : notIncrease;
 
-  static PredicatorFusionor<C> _invalidFor<C extends Comparable>(
+  static PredicatorReducer<C> _invalidFor<C extends Comparable>(
     bool increase, [
     bool strictly = false,
   ]) =>
@@ -124,10 +231,6 @@ extension DamathIteratorComparable<C extends Comparable> on Iterator<C> {
           : increase
           ? isDecrease
           : isIncrease;
-
-  static TernaratorFusionor<C> _ternarateFor<C extends Comparable>(
-    bool increase,
-  ) => increase ? increaseOrNot : decreaseOrNot;
 
   ///
   /// [isSorted]
@@ -293,23 +396,41 @@ extension DamathListComparable<C extends Comparable> on List<C> {
   // static Iterable<List<C>> permutations<C extends Comparable>(List<C> list)
 
   ///
-  /// [indexSearch], (binary search)
+  /// [indexSearch] is a function same as [binarySearch] in collection
   ///
-  int indexSearch(C value, [bool requireIncreased = true]) {
-    assert(iterator.isSorted(requireIncreased));
+  /// find index of an integer item on list with 100 integer (2025/05/01)
+  ///   A: [indexSearch] without assertion
+  ///   B: [binarySearch]
+  /// round 1:
+  ///   A: 0:00:00.006940
+  ///   B: 0:00:00.013164
+  /// round 2:
+  ///   A: 0:00:00.007324
+  ///   B: 0:00:00.013878
+  /// round 3:
+  ///   A: 0:00:00.007552
+  ///   B: 0:00:00.013759
+  ///
+  ///
+  static int indexSearch<C extends Comparable>(
+    List<C> list,
+    C value, [
+    Comparator<C>? comparator,
+  ]) {
+    comparator ??= Comparable.compare;
+    assert(list.isSorted(comparator));
+
     var min = 0;
-    var max = length;
-    final ternarate = DamathIteratorComparable._ternarateFor(requireIncreased);
+    var max = list.length;
     while (min < max) {
       final mid = min + ((max - min) >> 1);
-      switch (ternarate(this[mid], value)) {
-        case null:
-          return mid;
-        case true:
-          min = mid + 1;
-        case false:
-          max = mid;
+      final v = comparator(list[mid], value);
+      if (v == 0) return mid;
+      if (v == -1) {
+        min = mid + 1;
+        continue;
       }
+      max = mid;
     }
     return -1;
   }
