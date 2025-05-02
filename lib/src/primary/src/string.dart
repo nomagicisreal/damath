@@ -9,7 +9,6 @@ part of '../primary.dart';
 ///
 ///
 
-
 ///
 ///
 ///
@@ -28,6 +27,7 @@ extension RegExpExtension on RegExp {
 ///
 extension MatchExtension on Match {
   String? get group0 => group(0);
+
   String? get group1 => group(1);
 }
 
@@ -59,7 +59,9 @@ extension StringExtension on String {
   ///
   ///
   String get lowercaseFirstChar => replaceFirstMapped(
-      RegExp(r'^[A-Z]'), (match) => match.group0!.toLowerCase());
+    RegExp(r'^[A-Z]'),
+    (match) => match.group0!.toLowerCase(),
+  );
 
   (String, String) get splitByFirstSpace {
     late final String a;
@@ -74,14 +76,18 @@ extension StringExtension on String {
   /// camel, underscore usage
   ///
 
-  String get fromUnderscoreToCamelBody => splitMapJoin(RegExp(r'_[a-z]'),
-      onMatch: (match) => match.group0![1].toUpperCase());
+  String get fromUnderscoreToCamelBody => splitMapJoin(
+    RegExp(r'_[a-z]'),
+    onMatch: (match) => match.group0![1].toUpperCase(),
+  );
 
-  String get fromCamelToUnderscore =>
-      lowercaseFirstChar.splitMapJoin(RegExp(r'[a-z][A-Z]'), onMatch: (match) {
-        final s = match.group0!;
-        return '${s[0]}_${s[1].toLowerCase()}';
-      });
+  String get fromCamelToUnderscore => lowercaseFirstChar.splitMapJoin(
+    RegExp(r'[a-z][A-Z]'),
+    onMatch: (match) {
+      final s = match.group0!;
+      return '${s[0]}_${s[1].toLowerCase()}';
+    },
+  );
 }
 
 ///
@@ -90,5 +96,18 @@ extension StringExtension on String {
 extension StringBufferExtension on StringBuffer {
   void writeIfNotNull(Object? object) {
     if (object != null) write(object);
+  }
+
+  void writeUntilNull<T>({
+    required Mapper<T?, String?> string,
+    required T? current,
+    required Mapper<T, T?> apply,
+    String separator = ', ',
+  }) {
+    write(string(current));
+    if (current == null) return;
+    for (current = apply(current); current != null; current = apply(current)) {
+      write('$separator${string(current)}');
+    }
   }
 }

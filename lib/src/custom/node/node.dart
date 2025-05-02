@@ -17,7 +17,7 @@ part of '../custom.dart';
 ///             --[NodeBinaryContainer]
 ///             |
 ///             --[NodeBinaryEnqueueable]
-///             --[NodeBinaryOrdered]
+///             --[NodeBinarySorted]
 ///             |
 ///
 /// * [Nterator]
@@ -40,10 +40,23 @@ abstract final class Vertex<T> {
 
   T get data;
 
-  set data(T value) => throw UnsupportedError(Vertex.tryToModifyFinal);
+  set data(T value) => throw UnsupportedError(Vertex.tryToModifyUnmodifiable);
 
-  static const String tryToModifyFinal = 'vertex data is final';
+  static const String tryToModifyUnmodifiable = 'vertex data is final';
 
+  static bool isModifiable<V extends Vertex>(V vertex) {
+    try {
+      vertex.data = vertex.data;
+      return true;
+    } on StateError catch (e) {
+      if (e.message == Vertex.tryToModifyUnmodifiable) return false;
+      rethrow;
+    }
+  }
+
+  ///
+  ///
+  ///
   const factory Vertex.unmodifiable(T data) = _Vu;
 
   const factory Vertex.unmodifiableNullable([T? data]) = _VnU;
@@ -74,20 +87,21 @@ abstract final class Vertex<T> {
 /// It's possible for a [NodeNext] linking with multiple <[T]> type,
 /// because [N] instance called by [NodeNext.next] is [NodeNext] without <[T]>.
 ///
-/// 'sealed' exhaustive doesn't works for generic. for example, [List]<[T]>  is not a valid covariance for [List].
+
+///
+/// property:
+/// [next], ...
+///
+/// static methods:
+/// [_mapNext], ...
+/// [length], ...
+/// [iterableFrom], [generate]
 ///
 abstract final class NodeNext<T, N extends NodeNext<T, N>> extends Vertex<T> {
-  @override
-  String toString() =>
-      'Node(${NodeReader._lengthing<N>(this as N, NodeReader._mapNext)}): '
-      '${NodeReader._buildString<N>(this as N, NodeReader._mapNext)}';
-
   N? get next;
 
   set next(covariant NodeNext<T, N>? node) =>
-      throw UnsupportedError(NodeNext.tryToModifyFinal);
-
-  static const String tryToModifyFinal = 'try to modify final node';
+      throw UnsupportedError(NodeNext.tryToModifyFixed);
 
   ///
   /// [_construct] helps for hidden-chained operation for every useful node.
@@ -103,9 +117,92 @@ abstract final class NodeNext<T, N extends NodeNext<T, N>> extends Vertex<T> {
   /// instead of typing [N] for [next] and return type, typing [NodeNext] enable subclass to cast into different subclass,
   /// which means we can change or disable the functionality of subclass. take [NodeNextAppendable.toFixed] for example,
   /// it's a getter from [NodeNextAppendable] to [NodeNextContainer],
-  /// which disable the function [NodeNextAppendable.append] by cast into [NodeNextContainer].
+  /// which disable the function [NodeNextAppendable.next_append] by cast into [NodeNextContainer].
   ///
   NodeNext _construct(T data, NodeNext? next);
+
+  @override
+  String toString() =>
+      'Node(${NodeNext.length<N>(this as N)}): '
+      '${NodeNext._string<T, N>(this as N)}';
+
+  const NodeNext();
+
+  ///
+  ///
+  ///
+  static N? _mapNext<T, N extends NodeNext<T, N>>(N node) => node.next;
+
+  static StringBuffer _string<T, N extends NodeNext<T, N>>(
+    N node, {
+    String prefix = '[',
+    String between = ']--[',
+    String suffix = ']',
+  }) =>
+      StringBuffer()
+        ..write(prefix)
+        ..writeUntilNull<N>(
+          string: _M_VertexNullable.dataOrNullString<T, N>,
+          current: node,
+          apply: NodeNext._mapNext<T, N>,
+          separator: between,
+        )
+        ..write(suffix);
+
+  static const String tryToModifyFixed = 'try to modify fixed node';
+
+  static bool isGrowable<N extends NodeNext<dynamic, N>>(N node) {
+    try {
+      node.next = node.next;
+      return true;
+    } on StateError catch (e) {
+      if (e.message == NodeNext.tryToModifyFixed) return false;
+      rethrow;
+    }
+  }
+
+  ///
+  ///
+  ///
+  static int length<N extends NodeNext<dynamic, N>>(N? node) {
+    var i = 0;
+    for (; node != null; i++, node = NodeNext._mapNext(node)) {}
+    return i;
+  }
+
+  static N last<T, N extends NodeNext<T, N>>(N node) {
+    while (true) {
+      final next = NodeNext._mapNext(node);
+      if (next == null) return node;
+      node = next;
+    }
+  }
+
+  static N index<N extends NodeNext<dynamic, N>>(N node, int index) {
+    if (index.isNegative) throw Erroring.invalidIndex(index);
+    for (var i = 0; i < index; i++) {
+      node = NodeNext._mapNext(node) ?? (throw Erroring.invalidIntOver(i));
+    }
+    return node;
+  }
+
+  ///
+  /// prevent redundant functionality in [DamathIterator], ...
+  ///
+  static Iterable<T> iterableFrom<T, N extends NodeNext<T, N>>(
+    N? node,
+    Mapper<N, N?> mapNext,
+  ) sync* {
+    for (; node != null; node = mapNext(node)) yield node.data;
+  }
+
+  static void mapAllData<T, N extends NodeNext<T, N>>(
+    N? node,
+    Mapper<N, N?> mapNext,
+    Mapper<T, T> map,
+  ) {
+    for (; node != null; node = mapNext(node)) node.data = map(node.data);
+  }
 
   ///
   /// [generate] between 0 ~ [length]-1.
@@ -121,7 +218,7 @@ abstract final class NodeNext<T, N extends NodeNext<T, N>> extends Vertex<T> {
     bool inOrder = true,
     required int length,
     required Generator<T> value,
-    required Generator<N Function(T data, N? next)> construct,
+    required Generator<N Function(T data, [N? next])> construct,
   }) {
     if (length < 1) throw Erroring.invalidInt(length);
 
@@ -134,8 +231,6 @@ abstract final class NodeNext<T, N extends NodeNext<T, N>> extends Vertex<T> {
     }
     return node;
   }
-
-  const NodeNext();
 }
 
 ///
@@ -143,7 +238,8 @@ abstract final class NodeNext<T, N extends NodeNext<T, N>> extends Vertex<T> {
 /// some [NodeWriter] functions are allowed together if [NodeNextInstance] is not immutable.
 ///
 abstract final class NodeNextInstance<T>
-    extends NodeNext<T, NodeNextInstance<T>> {
+    extends NodeNext<T, NodeNextInstance<T>>
+    implements _I_NodeNextFinal<NodeNextInstance<T>> {
   const NodeNextInstance();
 
   const factory NodeNextInstance.immutable(
@@ -169,37 +265,33 @@ abstract final class NodeNextContainer<T, N extends NodeNext<T, N>>
 
 ///
 /// Notice that it's possible to have immutable operatable node,
-/// - index assignment may not modify current node [data] and [next] by [NodeReader.index].
-/// - appendage may not assign to current [data] or [next] by [NodeReader.last]
+/// - index assignment may not modify current node [data] and [next] by [NodeNext.index].
+/// - appendage may not assign to current [data] or [next] by [NodeNext.last]
 ///
 abstract final class NodeNextOperatable<T>
     extends NodeNext<T, NodeNextOperatable<T>>
     implements
-        _I_NodeFinal<T, NodeNextOperatable<T>>,
+        _I_NodeNextFinal<NodeNextOperatable<T>>,
         _I_NodeNextContainer<T, NodeNextOperatable<T>>,
-        I_OperatableAppendable<T, NodeNextOperatable<T>>,
+        I_OperatableAppendable<T, void>,
         I_OperatableIndexable<T>,
         I_OperatableIndexableAssignable<T> {
   //
   @override
   T operator [](int index) =>
-      NodeReader.index<NodeNextOperatable<T>>(
-        this,
-        NodeReader._mapNext,
-        index,
-      ).data;
-
-  @override
-  NodeNextOperatable<T> operator +(covariant T tail) =>
-      NodeReader.last<T, NodeNextOperatable<T>>(this, NodeReader._mapNext)
-          .next = _construct(tail, null) as NodeNextOperatable<T>;
+      NodeNext.index<NodeNextOperatable<T>>(this, index).data;
 
   @override
   void operator []=(int index, T element) =>
-      NodeWriter.safePushCurrentToNext<T, NodeNextOperatable<T>>(
-        NodeReader.index(this, NodeReader._mapNext, index),
+      NodeWriter.next_pushCurrentToNext<T, NodeNextOperatable<T>>(
+        NodeNext.index(this, index),
         element,
       );
+
+  @override
+  void operator +(covariant T tail) =>
+      NodeNext.last<T, NodeNextOperatable<T>>(this).next =
+          _construct(tail, null) as NodeNextOperatable<T>;
 
   ///
   ///
@@ -226,24 +318,33 @@ abstract final class NodeNextOperatable<T>
 ///
 /// Notice that it's not possible to have immutable or fixed [NodeNextPushable],
 /// but it's possible to have unmodifiable node.
-/// - [NodeWriter.safePushCurrentToNext] modify [data] and [next]
-/// - [NodeWriter.newNextOrApply] modify [next]
+/// - [NodeWriter.next_pushCurrentToNext] modify [data] and [next]
+/// - [NodeWriter.next_pushNext] modify [next]
+///
+/// ```
+/// final node =
+///       NodeNextPushable.mutable('h')
+///         ..push('element')
+///         ..push('vev')
+///         ..push('hello');
+/// print(node); // Node(4): [hello]--[vev]--[element]--[h]
+/// ```
 ///
 abstract final class NodeNextPushable<T>
     extends NodeNext<T, NodeNextPushable<T>>
     implements
-        _I_NodeFinal<T, NodeNextContainer<T, NodeNextPushable<T>>>,
+        _I_NodeNextFinal<NodeNextContainer<T, NodeNextPushable<T>>>,
         _I_NodeNextContainer<T, NodeNextPushable<T>>,
         I_Pushable<T, void> {
   //
   @override
   void push(T element, [bool onCurrent = true]) =>
       onCurrent
-          ? NodeWriter.safePushCurrentToNext(this, element)
-          : NodeWriter.newNextOrApply(this, element, _apply(element));
+          ? NodeWriter.next_pushCurrentToNext(this, element)
+          : NodeWriter.next_pushNext(this, element, _apply(element));
 
   static Applier<NodeNextPushable<T>> _apply<T>(T element) =>
-      (node) => NodeWriter.safePushCurrentToNext(node, element);
+      (node) => NodeWriter.next_pushCurrentToNext(node, element);
 
   factory NodeNextPushable.unmodifiable(T data, [NodeNextPushable<T>? next]) =
       _NnPu;
@@ -259,21 +360,21 @@ abstract final class NodeNextPushable<T>
 /// Considering performance, it's a class prevent replicating comparison as field or as method.
 ///
 /// Notice that it's possible to have immutable enqueueable node,
-/// it's possible for core function [enqueue] to invoke [NodeWriter.newNextOrApply],
+/// it's possible for core function [enqueue] to invoke [NodeWriter.next_pushNext],
 /// which maybe not modify current node [data] and [next].
 ///
 abstract final class NodeNextEnqueueable<T>
     extends NodeNext<T, NodeNextEnqueueable<T>>
     implements
-        _I_NodeFinal<T, NodeNextEnqueueable<T>>,
+        _I_NodeNextFinal<NodeNextEnqueueable<T>>,
         _I_NodeNextContainer<T, NodeNextEnqueueable<T>>,
         I_Enqueueable<T, void> {
   //
   @override
   void enqueue(T element, ComparableMethod<T> method) =>
       method.predicate(element, data)
-          ? NodeWriter.newNextOrApply(this, element, _apply(element, method))
-          : NodeWriter.safePushCurrentToNext(this, element);
+          ? NodeWriter.next_pushNext(this, element, _apply(element, method))
+          : NodeWriter.next_pushCurrentToNext(this, element);
 
   static Applier<NodeNextEnqueueable<T>> _apply<T>(
     T element,
@@ -305,15 +406,15 @@ abstract final class NodeNextEnqueueable<T>
 abstract final class NodeNextSorted<C extends Comparable>
     extends NodeNext<C, NodeNextSorted<C>>
     implements
-        _I_NodeFinal<C, NodeNextSorted<C>>,
+        _I_NodeNextFinal<NodeNextSorted<C>>,
         _I_NodeNextContainer<C, NodeNextSorted<C>>,
         I_Pushable<C, void> {
   //
   @override
   void push(C element) =>
       element.orderAfter(data)
-          ? NodeWriter.newNextOrApply(this, element, _apply(element))
-          : NodeWriter.safePushCurrentToNext(this, element);
+          ? NodeWriter.next_pushNext(this, element, _apply(element))
+          : NodeWriter.next_pushCurrentToNext(this, element);
 
   static Applier<NodeNextSorted<C>> _apply<C extends Comparable>(C element) =>
       (node) => node..push(element);
@@ -359,4 +460,3 @@ class Nterator<T, N extends NodeNext<T, N>> with _M_Nterator<T, N> {
     ComparableState state = ComparableState.requireIncrease,
   }) => Nterator._(node);
 }
-

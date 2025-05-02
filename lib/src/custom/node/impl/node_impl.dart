@@ -5,21 +5,24 @@ part of '../../custom.dart';
 /// * [Vertex]      * [_M_VertexNullable]
 ///     --[_Vu], [_Vm], --[_VnU], [_VnM]
 ///     |
-///     --[NodeNext]
-///         --[NodeNextInstance]
-///         |   --[_NnIi], [_NnIu], [_NnIf], [_NnIm]
+///     --[NodeNext]                                    * [_I_NodeNextFinal]
+///         --[NodeNextInstance]                            --[_M_un]
+///         |   --[_NnIi], [_NnIu], [_NnIf], [_NnIm]        --[_M_fn]
 ///         |
-///         --[NodeNextContainer]                          * [_I_NodeNextContainer]
-///         |   --[_NnCi], [_NnCu], [_NnCf], [_NnCm]       --[_M_NnCi]
-///         |                                              --[_M_NnCu]
-///         --[NodeNextOperatable]                         --[_M_NnCf]
-///         |   --[_NnOi], [_NnOu], [_NnOf], [_NnOm]       --[_M_NnCm]
+///         --[NodeNextContainer]                       * [_I_NodeNextContainer]
+///         |   --[_NnCi], [_NnCu], [_NnCf], [_NnCm]        --[_M_NnCi]
+///         |                                               --[_M_NnCu]
+///         --[NodeNextOperatable]                          --[_M_NnCf]
+///         |   --[_NnOi], [_NnOu], [_NnOf], [_NnOm]        --[_M_NnCm]
 ///         |
 ///         --[NodeNextPushable]
 ///         |   --   x   , [_NnPu],    x   , [_NnPm]
 ///         |
 ///         --[NodeNextEnqueueable]
 ///         |   --[_NnEi], [_NnEu], [_NnEf], [_NnEm]
+///         |
+///         --[NodeNextSorted]
+///         |   --[_NnSi], [_NnSu], [_NnSf], [_NnSm]
 ///         |
 ///         --[NodeBinary] ...
 ///
@@ -55,9 +58,18 @@ base mixin _M_VertexNullable<T> on Vertex<T> {
   @override
   T get data => _data ?? (throw UnsupportedError(Erroring.receiveNull));
 
-  static T? dataOrNull<T, N extends NodeNext<T, N>>(N node) {
+  // static T? dataOrNull<T, V extends Vertex<T>>(V? vertex) {
+  //   try {
+  //     return vertex?.data;
+  //   } on StateError catch (e) {
+  //     if (e.message == Erroring.receiveNull) return null;
+  //     rethrow;
+  //   }
+  // }
+
+  static String? dataOrNullString<T, V extends Vertex<T>>(V? vertex) {
     try {
-      return node.data;
+      return vertex?.data.toString();
     } on StateError catch (e) {
       if (e.message == Erroring.receiveNull) return null;
       rethrow;
@@ -67,7 +79,7 @@ base mixin _M_VertexNullable<T> on Vertex<T> {
 
 ///
 /// stand for [Vertex] nullable + ['unmodifiable', 'mutable']
-/// 
+///
 final class _VnU<T> extends Vertex<T> with _M_VertexNullable<T> {
   @override
   final T? _data;
@@ -83,9 +95,34 @@ final class _VnM<T> extends Vertex<T> with _M_VertexNullable<T> {
 }
 
 ///
+/// prevent "[N] extends [NodeNext]<[T], [N]>",
+/// because when [N] = [NodeNextContainer]<[T], customNodeType>,
+/// which is not [N] is not the subtype of [NodeNext]<[T], [NodeNextContainer]<[T], customNodeType>>.
+///
+abstract interface class _I_NodeNextFinal<N>
+    implements I_ToUnmodifiable<N>, I_ToFixed<N> {}
+
+///
+/// stand for 'mixin on node final, to unmodifiable null'
+///
+base mixin _M_un<N> implements I_ToUnmodifiable<N> {
+  @override
+  N? get toUnmodifiable => null;
+}
+
+///
+/// stand for 'mixin on node final, to fixed null'
+///
+base mixin _M_fn<N> implements I_ToFixed<N> {
+  @override
+  N? get toFixed => null;
+}
+
+///
 /// stand for [NodeNextInstance] + ['immutable', 'unmodifiable', 'fixed', 'mutable']
 ///
-final class _NnIi<T> extends NodeNextInstance<T> {
+final class _NnIi<T> extends NodeNextInstance<T>
+    with _M_un<NodeNextInstance<T>>, _M_fn<NodeNextInstance<T>> {
   @override
   final T data;
   @override
@@ -98,7 +135,8 @@ final class _NnIi<T> extends NodeNextInstance<T> {
       _NnIi(data, next);
 }
 
-final class _NnIu<T> extends NodeNextInstance<T> {
+final class _NnIu<T> extends NodeNextInstance<T>
+    with _M_un<NodeNextInstance<T>> {
   @override
   final T data;
   @override
@@ -109,9 +147,13 @@ final class _NnIu<T> extends NodeNextInstance<T> {
   @override
   NodeNextInstance<T> _construct(T data, covariant NodeNextInstance<T>? next) =>
       _NnIu(data, next);
+
+  @override
+  NodeNextInstance<T>? get toFixed => _NnIi(data, next);
 }
 
-final class _NnIf<T> extends NodeNextInstance<T> {
+final class _NnIf<T> extends NodeNextInstance<T>
+    with _M_fn<NodeNextInstance<T>> {
   @override
   T data;
   @override
@@ -122,6 +164,9 @@ final class _NnIf<T> extends NodeNextInstance<T> {
   @override
   NodeNextInstance<T> _construct(T data, covariant NodeNextInstance<T>? next) =>
       _NnIf(data, next);
+
+  @override
+  NodeNextInstance<T>? get toUnmodifiable => _NnIi(data, next);
 }
 
 final class _NnIm<T> extends NodeNextInstance<T> {
@@ -135,22 +180,19 @@ final class _NnIm<T> extends NodeNextInstance<T> {
   @override
   NodeNextInstance<T> _construct(T data, covariant NodeNextInstance<T>? next) =>
       _NnIm(data, next);
+
+  @override
+  NodeNextInstance<T>? get toFixed => _NnIu(data, next);
+
+  @override
+  NodeNextInstance<T>? get toUnmodifiable => _NnIf(data, next);
 }
 
 ///
-/// prevent "[N] extends [NodeNext]<[T], [N]>",
-/// because when [N] = [NodeNextContainer]<[T], customNodeType>,
-/// which is not [N] is not the subtype of [NodeNext]<[T], [NodeNextContainer]<[T], customNodeType>>.
-///
-abstract interface class _I_NodeFinal<T, N>
-    implements I_ToUnmodifiable<N>, I_ToFixed<N> {}
-
 ///
 ///
-///
-abstract interface class _I_NodeNextContainer<T, N extends NodeNext<T, N>> {
-  NodeNextContainer<T, N> get finished;
-}
+abstract interface class _I_NodeNextContainer<T, N extends NodeNext<T, N>>
+    implements I_Finished<NodeNextContainer<T, N>> {}
 
 ///
 /// stand for [NodeNextContainer] + ['immutable', 'unmodifiable', 'fixed', 'mutable']
@@ -238,19 +280,16 @@ base mixin _M_NnCm<T, N extends NodeNext<T, N>>
 /// stand for [NodeNextOperatable] + ['immutable', 'unmodifiable', 'fixed', 'mutable']
 ///
 final class _NnOi<T> extends NodeNextOperatable<T>
-    with _M_NnCi<T, NodeNextOperatable<T>> {
+    with
+        _M_un<NodeNextOperatable<T>>,
+        _M_fn<NodeNextOperatable<T>>,
+        _M_NnCi<T, NodeNextOperatable<T>> {
   @override
   final T data;
   @override
   final NodeNextOperatable<T>? next;
 
   const _NnOi(this.data, [this.next]);
-
-  @override
-  NodeNextOperatable<T>? get toUnmodifiable => null;
-
-  @override
-  NodeNextOperatable<T>? get toFixed => null;
 
   @override
   NodeNextOperatable<T> _construct(
@@ -261,7 +300,7 @@ final class _NnOi<T> extends NodeNextOperatable<T>
 
 //
 final class _NnOu<T> extends NodeNextOperatable<T>
-    with _M_NnCu<T, NodeNextOperatable<T>> {
+    with _M_un<NodeNextOperatable<T>>, _M_NnCu<T, NodeNextOperatable<T>> {
   @override
   final T data;
   @override
@@ -276,15 +315,12 @@ final class _NnOu<T> extends NodeNextOperatable<T>
   ) => NodeNextOperatable.unmodifiable(data, next);
 
   @override
-  NodeNextOperatable<T>? get toUnmodifiable => null;
-
-  @override
   NodeNextOperatable<T>? get toFixed => _NnOi(data, next);
 }
 
 //
 final class _NnOf<T> extends NodeNextOperatable<T>
-    with _M_NnCf<T, NodeNextOperatable<T>> {
+    with _M_fn<NodeNextOperatable<T>>, _M_NnCf<T, NodeNextOperatable<T>> {
   @override
   T data;
   @override
@@ -300,9 +336,6 @@ final class _NnOf<T> extends NodeNextOperatable<T>
 
   @override
   NodeNextOperatable<T>? get toUnmodifiable => _NnOi(data, next);
-
-  @override
-  NodeNextOperatable<T>? get toFixed => null;
 }
 
 //
@@ -331,7 +364,8 @@ final class _NnOm<T> extends NodeNextOperatable<T>
 ///
 /// stand for [NodeNextPushable] + ['unmodifiable', 'mutable']
 ///
-final class _NnPu<T> extends NodeNextPushable<T> with _M_NnCu<T, NodeNextPushable<T>>{
+final class _NnPu<T> extends NodeNextPushable<T>
+    with _M_NnCu<T, NodeNextPushable<T>> {
   @override
   final T data;
 
@@ -352,7 +386,8 @@ final class _NnPu<T> extends NodeNextPushable<T> with _M_NnCu<T, NodeNextPushabl
   NodeNextContainer<T, NodeNextPushable<T>>? get toFixed => _NnCf(data, next);
 }
 
-final class _NnPm<T> extends NodeNextPushable<T> with _M_NnCm<T, NodeNextPushable<T>>{
+final class _NnPm<T> extends NodeNextPushable<T>
+    with _M_NnCm<T, NodeNextPushable<T>> {
   @override
   T data;
 
@@ -377,7 +412,10 @@ final class _NnPm<T> extends NodeNextPushable<T> with _M_NnCm<T, NodeNextPushabl
 /// stand for 'node next enqueueable' + ['immutable', 'unmodifiable', 'fixed', 'mutable']
 ///
 final class _NnEi<T> extends NodeNextEnqueueable<T>
-    with _M_NnCi<T, NodeNextEnqueueable<T>> {
+    with
+        _M_un<NodeNextEnqueueable<T>>,
+        _M_fn<NodeNextEnqueueable<T>>,
+        _M_NnCi<T, NodeNextEnqueueable<T>> {
   @override
   final T data;
   @override
@@ -390,17 +428,11 @@ final class _NnEi<T> extends NodeNextEnqueueable<T>
     T data,
     covariant NodeNextEnqueueable<T>? next,
   ) => NodeNextEnqueueable.immutable(data, next);
-
-  @override
-  NodeNextEnqueueable<T>? get toUnmodifiable => null;
-
-  @override
-  NodeNextEnqueueable<T>? get toFixed => null;
 }
 
 //
 final class _NnEu<T> extends NodeNextEnqueueable<T>
-    with _M_NnCu<T, NodeNextEnqueueable<T>> {
+    with _M_un<NodeNextEnqueueable<T>>, _M_NnCu<T, NodeNextEnqueueable<T>> {
   @override
   final T data;
   @override
@@ -415,15 +447,12 @@ final class _NnEu<T> extends NodeNextEnqueueable<T>
   ) => NodeNextEnqueueable.unmodifiable(data, next);
 
   @override
-  NodeNextEnqueueable<T>? get toUnmodifiable => null;
-
-  @override
   NodeNextEnqueueable<T>? get toFixed => _NnEi(data, next);
 }
 
 //
 final class _NnEf<T> extends NodeNextEnqueueable<T>
-    with _M_NnCf<T, NodeNextEnqueueable<T>> {
+    with _M_fn<NodeNextEnqueueable<T>>, _M_NnCf<T, NodeNextEnqueueable<T>> {
   @override
   T data;
   @override
@@ -439,9 +468,6 @@ final class _NnEf<T> extends NodeNextEnqueueable<T>
 
   @override
   NodeNextEnqueueable<T>? get toUnmodifiable => _NnEi(data, next);
-
-  @override
-  NodeNextEnqueueable<T>? get toFixed => null;
 }
 
 //
@@ -471,7 +497,10 @@ final class _NnEm<T> extends NodeNextEnqueueable<T>
 /// stand for 'node next sorted' + ['immutable', 'unmodifiable', 'fixed', 'mutable']
 ///
 final class _NnSi<C extends Comparable> extends NodeNextSorted<C>
-    with _M_NnCi<C, NodeNextSorted<C>> {
+    with
+        _M_un<NodeNextSorted<C>>,
+        _M_fn<NodeNextSorted<C>>,
+        _M_NnCi<C, NodeNextSorted<C>> {
   @override
   final C data;
   @override
@@ -482,17 +511,11 @@ final class _NnSi<C extends Comparable> extends NodeNextSorted<C>
   @override
   NodeNextSorted<C> _construct(C data, covariant NodeNextSorted<C>? next) =>
       NodeNextSorted.immutable(data, next);
-
-  @override
-  NodeNextSorted<C>? get toUnmodifiable => null;
-
-  @override
-  NodeNextSorted<C>? get toFixed => null;
 }
 
 //
 final class _NnSu<C extends Comparable> extends NodeNextSorted<C>
-    with _M_NnCu<C, NodeNextSorted<C>> {
+    with _M_un<NodeNextSorted<C>>, _M_NnCu<C, NodeNextSorted<C>> {
   @override
   final C data;
   @override
@@ -505,15 +528,12 @@ final class _NnSu<C extends Comparable> extends NodeNextSorted<C>
       NodeNextSorted.unmodifiable(data, next);
 
   @override
-  NodeNextSorted<C>? get toUnmodifiable => null;
-
-  @override
   NodeNextSorted<C>? get toFixed => _NnSi(data, next);
 }
 
 //
 final class _NnSf<C extends Comparable> extends NodeNextSorted<C>
-    with _M_NnCf<C, NodeNextSorted<C>> {
+    with _M_fn<NodeNextSorted<C>>, _M_NnCf<C, NodeNextSorted<C>> {
   @override
   C data;
   @override
@@ -527,9 +547,6 @@ final class _NnSf<C extends Comparable> extends NodeNextSorted<C>
 
   @override
   NodeNextSorted<C>? get toUnmodifiable => _NnSi(data, next);
-
-  @override
-  NodeNextSorted<C>? get toFixed => null;
 }
 
 //

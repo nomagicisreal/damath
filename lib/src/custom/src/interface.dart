@@ -43,6 +43,10 @@ abstract interface class I_Enqueueable<T, S> {
   ) => iterable.fold(head, (node, element) => head..enqueue(element, method));
 }
 
+abstract interface class I_Finished<S> {
+  S get finished;
+}
+
 // abstract interface class ILayby<S> {
 //   S layby();
 // }
