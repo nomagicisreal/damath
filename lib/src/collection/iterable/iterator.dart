@@ -78,11 +78,11 @@ extension DamathIterator<I> on Iterator<I> {
 
   void consumeMoveNext(Consumer<I> consume) => moveNext()
       ? consume(current)
-      : throw StateError(Erroring.iteratorNoElement);
+      : throw StateError(Erroring.iterableNoElement);
 
   void consumeFound(Predicator<I> test, Consumer<I> action) {
     while (moveNext()) if (test(current)) return action(current);
-    throw StateError(Erroring.iteratorElementNotFound);
+    throw StateError(Erroring.iterableElementNotFound);
   }
 
   void consumeWhere(Predicator<I> test, Consumer<I> action) {
@@ -170,11 +170,11 @@ extension DamathIterator<I> on Iterator<I> {
   ///
   I applyMoveNext(Applier<I> apply) => moveNext()
       ? apply(current)
-      : throw StateError(Erroring.iteratorNoElement);
+      : throw StateError(Erroring.iterableNoElement);
 
   I applyLead(int ahead, Applier<I> apply) {
     for (var i = -1; i < ahead; i++) {
-      if (!moveNext()) throw StateError(Erroring.iteratorNoElement);
+      if (!moveNext()) throw StateError(Erroring.iterableNoElement);
     }
     return apply(current);
   }
@@ -383,7 +383,7 @@ extension DamathIterator<I> on Iterator<I> {
   ///
   I find(Predicator<I> test) {
     while (moveNext()) if (test(current)) return current;
-    throw StateError(Erroring.iteratorElementNotFound);
+    throw StateError(Erroring.iterableElementNotFound);
   }
 
   I findOr(Predicator<I> test, Supplier<I> supply) {
@@ -817,7 +817,7 @@ extension DamathIterator<I> on Iterator<I> {
       if (test(current)) return i;
       i++;
     }
-    throw StateError(Erroring.iteratorElementNotFound);
+    throw StateError(Erroring.iterableElementNotFound);
   }
 
   int indexFoundChecked(PredicatorGenerator<I> test) {
@@ -826,7 +826,7 @@ extension DamathIterator<I> on Iterator<I> {
       if (test(current, i)) return i;
       i++;
     }
-    throw StateError(Erroring.iteratorElementNotFound);
+    throw StateError(Erroring.iterableElementNotFound);
   }
 
   ///
@@ -987,7 +987,7 @@ extension DamathIterator<I> on Iterator<I> {
           T() => 1,
           Iterable<T>() => element.length,
           Iterable<Iterable>() => element.iterator.cumulateLengthNested(),
-          _ => throw StateError(Erroring.iteratorElementNotNest),
+          _ => throw StateError(Erroring.iterableElementNotNest),
         },
         IntExtension.reduce_plus,
       );

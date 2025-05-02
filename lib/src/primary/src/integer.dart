@@ -11,6 +11,7 @@ part of '../primary.dart';
 /// [partitionsIn20]
 ///
 /// static methods:
+/// [maxExponentOf2In], ...
 /// [reduce_plus], ...
 /// [leading], ...
 /// [factorial], ...
@@ -286,6 +287,15 @@ extension IntExtension on int {
   ///
   ///
   static Predicator<int> predicator_equalTo(int value) => (n) => n == value;
+
+  ///
+  ///
+  ///
+  static int maxExponentOf2In(num value) =>
+      (math.log(value) / math.ln2).truncate();
+
+  static int maxPow2In(num value) =>
+      math.pow(2, (math.log(value) / math.ln2).truncate()).toInt();
 
   ///
   ///

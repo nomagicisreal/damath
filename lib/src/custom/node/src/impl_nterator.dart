@@ -1,5 +1,5 @@
 // ignore_for_file: camel_case_types
-part of '../../custom.dart';
+part of '../node.dart';
 
 ///
 ///
@@ -18,7 +18,7 @@ mixin _M_Nterator<T, N extends NodeNext<T, N>> implements Iterator<T> {
 
   @override
   T get current =>
-      _node?.data ?? (throw StateError(Erroring.iteratorNoElement));
+      _node?.data ?? (throw StateError(Erroring.iterableNoElement));
 
   ///
   ///

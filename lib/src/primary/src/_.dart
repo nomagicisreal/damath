@@ -18,7 +18,7 @@ part of '../primary.dart';
 
 ///
 ///
-/// [iteratorNoElement], ...
+/// [iterableNoElement], ...
 ///
 abstract interface class Erroring {
   const Erroring();
@@ -33,9 +33,9 @@ abstract interface class Erroring {
   ///
   /// iterator, iterable
   ///
-  static const String iteratorNoElement = 'iterator no element';
-  static const String iteratorElementNotFound = 'iterator element not found';
-  static const String iteratorElementNotNest = 'iterator element not nested';
+  static const String iterableNoElement = 'iterable no element';
+  static const String iterableElementNotFound = 'iterable element not found';
+  static const String iterableElementNotNest = 'iterable element not nested';
   static const String iterableBoundaryInvalid = 'iterable boundary invalid';
   static const String iterableSizeInvalid = 'iterable size invalid';
 
@@ -88,49 +88,12 @@ extension BoolExtension on bool {
 }
 
 ///
-///
-/// static usages:
-/// [log10_2], ...
-///
 /// instance methods:
 /// [squared], ...
 /// [isRangeClose], ...
-/// [isConstraintsClose], ...
 /// [digit], ...
 ///
 extension NumExtension on num {
-  ///
-  /// logarithm base 10 for primes within 100 in 20 digit
-  ///
-  static const num log10_2 = 0.30102999566398114251; // math.ln2 / math.ln10;
-  static const num log10_3 = 0.47712125471966243540;
-  static const num log10_5 = 0.69897000433601874647;
-  static const num log10_7 = 0.84509804001425670172;
-  static const num log10_11 = 1.04139268515822491779;
-  static const num log10_13 = 1.11394335230683672044;
-  static const num log10_17 = 1.23044892137827388545;
-  static const num log10_19 = 1.27875360095282886164;
-  static const num log10_23 = 1.36172783601759284089;
-  static const num log10_29 = 1.46239799789895608129;
-  static const num log10_31 = 1.49136169383427263924;
-  static const num log10_37 = 1.56820172406699476220;
-  static const num log10_41 = 1.61278385671973545357;
-  static const num log10_43 = 1.63346845557958642026;
-  static const num log10_47 = 1.67209785793571730217;
-  static const num log10_53 = 1.72427586960078893519;
-  static const num log10_59 = 1.77085201164214423031;
-  static const num log10_61 = 1.78532983501076691901;
-  static const num log10_67 = 1.82607480270082622731;
-  static const num log10_71 = 1.85125834871907501977;
-  static const num log10_73 = 1.86332286012045567070;
-  static const num log10_79 = 1.89762709129044115919;
-  static const num log10_83 = 1.91907809237607396291;
-  static const num log10_89 = 1.94939000664491257631;
-  static const num log10_97 = 1.98677173426624475994;
-
-  ///
-  ///
-  ///
   int get digit {
     if (this == 0) return 0;
     var value = abs();

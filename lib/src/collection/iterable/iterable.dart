@@ -295,13 +295,6 @@ extension DamathIterable<I> on Iterable<I> {
       ? positions.iterator.takeFor(iterator)
       : throw StateError(Erroring.iterableSizeInvalid);
 
-  ///
-  ///
-  ///
-  /// [foldWith], [foldTogether]
-  ///
-  ///
-  ///
 
   ///
   ///

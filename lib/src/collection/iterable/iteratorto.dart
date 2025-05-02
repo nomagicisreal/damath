@@ -20,11 +20,11 @@ extension DamathIteratorTo<I> on Iterator<I> {
   /// [supplyLead]
   ///
   S supplyMoveNext<S>(Supplier<S> supply) =>
-      moveNext() ? supply() : throw StateError(Erroring.iteratorNoElement);
+      moveNext() ? supply() : throw StateError(Erroring.iterableNoElement);
 
   S supplyLead<S>(int ahead, Supplier<S> supply) {
     for (var i = -1; i < ahead; i++) {
-      if (!moveNext()) throw StateError(Erroring.iteratorNoElement);
+      if (!moveNext()) throw StateError(Erroring.iterableNoElement);
     }
     return supply();
   }
@@ -165,7 +165,7 @@ extension DamathIteratorTo<I> on Iterator<I> {
   ///
   T mapFound<T>(Predicator<I> test, Mapper<I, T> toVal) {
     while (moveNext()) if (test(current)) return toVal(current);
-    throw StateError(Erroring.iteratorElementNotFound);
+    throw StateError(Erroring.iterableElementNotFound);
   }
 
   T mapFoundOr<T>(Predicator<I> test, Mapper<I, T> toVal, Supplier<T> orElse) {
@@ -292,7 +292,7 @@ extension DamathIteratorTo<I> on Iterator<I> {
       T() => list..add(element),
       Iterable<T>() => list..addAll(element),
       Iterable<Iterable>() => list..addAll(element.iterator.foldNested()),
-      _ => throw StateError(Erroring.iteratorElementNotNest),
+      _ => throw StateError(Erroring.iterableElementNotNest),
     },
   );
 

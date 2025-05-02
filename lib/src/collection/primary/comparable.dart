@@ -220,44 +220,44 @@ extension DamathIteratorComparable<C extends Comparable> on Iterator<C> {
           ? notDecrease
           : notIncrease;
 
-  static PredicatorReducer<C> _invalidFor<C extends Comparable>(
-    bool increase, [
-    bool strictly = false,
-  ]) =>
-      strictly
-          ? increase
-              ? notDecrease
-              : notIncrease
-          : increase
-          ? isDecrease
-          : isIncrease;
-
-  ///
-  /// [isSorted]
-  ///
-  bool isSorted(bool increase, [bool identical = false]) =>
-      !exist(_invalidFor(increase, identical));
-
-  ///
-  /// [checkSorted]
-  /// [checkSortedForSupply]
-  /// [checkSortedForListen]
-  ///
-  void checkSorted([bool increase = true]) {
-    if (!isSorted(increase)) {
-      throw StateError(Erroring.comparableDisordered);
-    }
-  }
-
-  void checkSortedForListen(Listener listen, [bool increase = true]) =>
-      isSorted(increase)
-          ? listen()
-          : throw StateError(Erroring.comparableDisordered);
-
-  S checkSortedForSupply<S>(Supplier<S> supply, [bool increase = true]) =>
-      isSorted(increase)
-          ? supply()
-          : throw StateError(Erroring.comparableDisordered);
+  // static PredicatorReducer<C> _invalidFor<C extends Comparable>(
+  //   bool increase, [
+  //   bool strictly = false,
+  // ]) =>
+  //     strictly
+  //         ? increase
+  //             ? notDecrease
+  //             : notIncrease
+  //         : increase
+  //         ? isDecrease
+  //         : isIncrease;
+  //
+  // ///
+  // /// [isSorted]
+  // ///
+  // bool isSorted(bool increase, [bool identical = false]) =>
+  //     !exist(_invalidFor(increase, identical));
+  //
+  // ///
+  // /// [checkSorted]
+  // /// [checkSortedForSupply]
+  // /// [checkSortedForListen]
+  // ///
+  // void checkSorted([bool increase = true]) {
+  //   if (!isSorted(increase)) {
+  //     throw StateError(Erroring.comparableDisordered);
+  //   }
+  // }
+  //
+  // void checkSortedForListen(Listener listen, [bool increase = true]) =>
+  //     isSorted(increase)
+  //         ? listen()
+  //         : throw StateError(Erroring.comparableDisordered);
+  //
+  // S checkSortedForSupply<S>(Supplier<S> supply, [bool increase = true]) =>
+  //     isSorted(increase)
+  //         ? supply()
+  //         : throw StateError(Erroring.comparableDisordered);
 }
 
 ///
@@ -272,16 +272,24 @@ extension DamathIteratorComparable<C extends Comparable> on Iterator<C> {
 extension DamathIterableComparable<C extends Comparable> on Iterable<C> {
   ///
   ///
-  /// [mergeSorted]
+  ///
+  void checkSortedForListen<S>(Listener listen, [bool increase = true]) =>
+      isSorted(DamathIteratorComparable.comparator(increase))
+          ? listen()
+          : throw Erroring.comparableDisordered;
+
+  S checkSortedForSupply<S>(Supplier<S> supply, [bool increase = true]) =>
+      isSorted(DamathIteratorComparable.comparator(increase))
+          ? supply()
+          : throw Erroring.comparableDisordered;
+
+  ///
   ///
   ///
   void mergeSorted(Iterable<C> another, [bool increase = true]) =>
-      iterator.checkSortedForListen(
+      checkSortedForListen(
         () => iterator.pairMerge(
-          another.iterator.checkSortedForSupply(
-            () => another.iterator,
-            increase,
-          ),
+          another.checkSortedForSupply(() => another.iterator, increase),
           increase
               ? DamathIteratorComparable.isDecrease
               : DamathIteratorComparable.isIncrease,
@@ -601,22 +609,24 @@ extension DamathListComparable<C extends Comparable> on List<C> {
   ///
   /// [percentileCumulative]
   ///
-  Iterable<MapEntry<C, double>> percentileCumulative([bool increase = true]) =>
-      iterator.checkSortedForSupply(() sync* {
-        final percent = 1 / length;
+  Iterable<MapEntry<C, double>> percentileCumulative([
+    bool increase = true,
+  ]) sync* {
+    assert(isSorted(DamathIteratorComparable.comparator(increase)));
+    final percent = 1 / length;
 
-        var previous = first;
-        var cumulative = 0.0;
-        for (var i = 1; i < length; i++) {
-          final current = this[i];
-          cumulative += percent;
+    var previous = first;
+    var cumulative = 0.0;
+    for (var i = 1; i < length; i++) {
+      final current = this[i];
+      cumulative += percent;
 
-          if (current != previous) {
-            yield MapEntry(previous, cumulative);
-            cumulative = 0;
-            previous = current;
-          }
-        }
+      if (current != previous) {
         yield MapEntry(previous, cumulative);
-      });
+        cumulative = 0;
+        previous = current;
+      }
+    }
+    yield MapEntry(previous, cumulative);
+  }
 }

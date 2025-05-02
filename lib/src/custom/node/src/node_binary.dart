@@ -1,4 +1,10 @@
-part of '../custom.dart';
+part of '../node.dart';
+
+///
+///
+///
+typedef NodeBinaryConstructor<T, N extends NodeBinary<T, N>> =
+    N Function(T data, [N? next, N? previous]);
 
 ///
 /// For [NodeBinary], there is no similar implementation be like [NodeNextOperatable]
@@ -15,6 +21,7 @@ part of '../custom.dart';
 ///
 /// static methods:
 /// [_mapPrevious], ...
+/// [size], ...
 ///
 abstract final class NodeBinary<T, N extends NodeBinary<T, N>>
     extends NodeNext<T, N> {
@@ -33,15 +40,12 @@ abstract final class NodeBinary<T, N extends NodeBinary<T, N>>
 
   @override
   String toString() =>
-      'NodeBinary(${NodeBinary.size<N>(this as N, NodeBinary._mapPrevious, NodeNext._mapNext)}): '
+      'NodeBinary(${NodeBinary.size<N>(this as N)}): '
       '\n${NodeBinary._string<T, N>(this as N, StringBuffer(), '  ')}';
 
   ///
   ///
   ///
-  static N? _mapPrevious<T, N extends NodeBinary<T, N>>(N node) =>
-      node.previous;
-
   static StringBuffer _string<T, N extends NodeBinary<T, N>>(
     N node,
     StringBuffer buffer, [
@@ -50,8 +54,8 @@ abstract final class NodeBinary<T, N extends NodeBinary<T, N>>
     String suffix = ']',
     bool isTail = true,
   ]) {
-    final previous = NodeBinary._mapPrevious<T, N>(node);
-    final next = NodeNext._mapNext<T, N>(node);
+    final previous = node.previous;
+    final next = node.next;
 
     if (previous != null) {
       _string(
@@ -87,16 +91,21 @@ abstract final class NodeBinary<T, N extends NodeBinary<T, N>>
   ///
   ///
   ///
-  static int size<N extends NodeNext<dynamic, N>>(
-    N? node,
-    Mapper<N, N?> mapNext,
-    Mapper<N, N?> mapPrevious,
-  ) {
+  static int size<N extends NodeBinary<dynamic, N>>(N? node) {
     if (node == null) return 0;
     var i = 1;
-    i += size(mapNext(node), mapNext, mapPrevious);
-    i += size(mapPrevious(node), mapNext, mapPrevious);
+    i += size(node.next);
+    i += size(node.previous);
     return i;
+  }
+
+  static Iterable<T> iterableFrom<T, N extends NodeBinary<T, N>>(
+    N? node,
+  ) sync* {
+    if (node == null) return;
+    yield* iterableFrom(node.previous);
+    yield node.data;
+    yield* iterableFrom(node.next);
   }
 }
 
@@ -304,6 +313,41 @@ abstract final class NodeBinarySorted<C extends Comparable>
     NodeBinarySorted<C>? next,
     NodeBinarySorted<C>? previous,
   ]) = _NbSm;
+
+  ///
+  ///
+  ///
+  static NodeBinarySorted<C> fromSorted<C extends Comparable>(
+    List<C> list, {
+    bool increase = true,
+    NodeBinaryConstructor<C, NodeBinarySorted<C>>? constructor,
+  }) => list.checkSortedForSupply(() {
+    final construct = constructor ?? NodeBinarySorted<C>.unmodifiable;
+    if (list.isEmpty) throw StateError(Erroring.iterableNoElement);
+
+    // with full size previous node
+    // NodeBinarySorted<C> child(int from, int count) {
+    //   if (count == 1) return construct(sorted[from]);
+    //   final mid = IntExtension.maxPow2In(count); // 'count ≥ 2' -> 'mid ≥ 2'
+    //   final node = construct(sorted[from + mid - 1]);
+    //   node.previous = child(from, mid - 1); // 'mid - 1' always ≥ 1
+    //   if (count > mid) {
+    //     node.next = child(from + mid, count - mid); // 'count - mid' always ≥ 1
+    //   }
+    //   return node;
+    // }
+    // return child(0, sorted.length);
+
+    NodeBinarySorted<C>? build(int left, int right) {
+      if (left > right) return null;
+      final mid = (left + right) ~/ 2;
+      return construct(list[mid])
+        ..previous = build(left, mid - 1)
+        ..next = build(mid + 1, right);
+    }
+
+    return build(0, list.length - 1)!;
+  }, increase);
 
   const NodeBinarySorted();
 }

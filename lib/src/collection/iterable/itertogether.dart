@@ -32,7 +32,7 @@ extension DamathIteratorTogether<I> on Iterator<I> {
   I moveNextTogetherReduce(Iterator<I> another, Reducer<I> reducing) =>
       moveNext() && another.moveNext()
           ? reducing(current, another.current)
-          : throw StateError(Erroring.iteratorNoElement);
+          : throw StateError(Erroring.iterableNoElement);
 
   I moveNextTogetherCompanion<E>(
     Iterator<E> another,
@@ -40,12 +40,12 @@ extension DamathIteratorTogether<I> on Iterator<I> {
   ) =>
       moveNext() && another.moveNext()
           ? companion(current, another.current)
-          : throw StateError(Erroring.iteratorNoElement);
+          : throw StateError(Erroring.iterableNoElement);
 
   S moveNextTogetherSupply<T, S>(Iterator<T> another, Supplier<S> supply) =>
       moveNext() && another.moveNext()
           ? supply()
-          : throw StateError(Erroring.iteratorNoElement);
+          : throw StateError(Erroring.iterableNoElement);
 
   ///
   /// [pair]
