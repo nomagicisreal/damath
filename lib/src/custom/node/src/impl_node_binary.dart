@@ -20,9 +20,12 @@ part of '../node.dart';
 ///     |            [_NbEuFn], [_NbEfN]
 ///     |
 ///     --[NodeBinarySorted]
-///     |   --[_NbOi], [_NbOu], [_NbOf], [_NbOm]
-///     |            [_NbOuFp], [_NbOfP]
-///     |            [_NbOuFn], [_NbOfN]
+///     |   --[_NbSi], [_NbSu], [_NbSf], [_NbSm]
+///     |            [_NbSuFp], [_NbSfP]
+///     |            [_NbSuFn], [_NbSfN]
+///     |
+///     --[NodeBinaryAVL]
+///         --[_NbAvl]
 ///
 ///
 
@@ -264,7 +267,11 @@ final class _NbIm<T> extends NodeBinaryInstance<T> {
 /// ]
 ///
 final class _NbCi<T, N extends NodeBinary<T, N>>
-    extends NodeBinaryContainer<T, N> {
+    extends NodeBinaryContainer<T, N>
+    with
+        _M_un<NodeBinaryContainer<T, N>>,
+        _M_fnNext<NodeBinaryContainer<T, N>>,
+        _M_fnPrevious<NodeBinaryContainer<T, N>> {
   @override
   final T data;
   @override
@@ -283,7 +290,8 @@ final class _NbCi<T, N extends NodeBinary<T, N>>
 }
 
 final class _NbCu<T, N extends NodeBinary<T, N>>
-    extends NodeBinaryContainer<T, N> {
+    extends NodeBinaryContainer<T, N>
+    with _M_un<NodeBinaryContainer<T, N>> {
   @override
   final T data;
   @override
@@ -299,10 +307,20 @@ final class _NbCu<T, N extends NodeBinary<T, N>>
     covariant N? next, [
     covariant N? previous,
   ]) => _NbCu<T, N>(data, next, previous);
+
+  @override
+  NodeBinaryContainer<T, N>? get toFixedNext => _NbCuFn(data, next, previous);
+
+  @override
+  NodeBinaryContainer<T, N>? get toFixedPrevious =>
+      _NbCuFp(data, next, previous);
 }
 
 final class _NbCuFp<T, N extends NodeBinary<T, N>>
-    extends NodeBinaryContainer<T, N> {
+    extends NodeBinaryContainer<T, N>
+    with
+        _M_un<NodeBinaryContainer<T, N>>,
+        _M_fnPrevious<NodeBinaryContainer<T, N>> {
   @override
   final T data;
   @override
@@ -318,10 +336,16 @@ final class _NbCuFp<T, N extends NodeBinary<T, N>>
     covariant N? next, [
     covariant N? previous,
   ]) => _NbCuFp<T, N>(data, next, previous);
+
+  @override
+  NodeBinaryContainer<T, N>? get toFixedNext => _NbCi(data, next, previous);
 }
 
 final class _NbCuFn<T, N extends NodeBinary<T, N>>
-    extends NodeBinaryContainer<T, N> {
+    extends NodeBinaryContainer<T, N>
+    with
+        _M_un<NodeBinaryContainer<T, N>>,
+        _M_fnNext<NodeBinaryContainer<T, N>> {
   @override
   final T data;
   @override
@@ -337,10 +361,14 @@ final class _NbCuFn<T, N extends NodeBinary<T, N>>
     covariant N? next, [
     covariant N? previous,
   ]) => _NbCuFn<T, N>(data, next, previous);
+
+  @override
+  NodeBinaryContainer<T, N>? get toFixedPrevious => _NbCi(data, next, previous);
 }
 
 final class _NbCfP<T, N extends NodeBinary<T, N>>
-    extends NodeBinaryContainer<T, N> {
+    extends NodeBinaryContainer<T, N>
+    with _M_fnPrevious<NodeBinaryContainer<T, N>> {
   @override
   T data;
   @override
@@ -356,10 +384,18 @@ final class _NbCfP<T, N extends NodeBinary<T, N>>
     covariant N? next, [
     covariant N? previous,
   ]) => _NbCfP<T, N>(data, next, previous);
+
+  @override
+  NodeBinaryContainer<T, N>? get toFixedNext => _NbCf(data, next, previous);
+
+  @override
+  NodeBinaryContainer<T, N>? get toUnmodifiable =>
+      _NbCuFp(data, next, previous);
 }
 
 final class _NbCfN<T, N extends NodeBinary<T, N>>
-    extends NodeBinaryContainer<T, N> {
+    extends NodeBinaryContainer<T, N>
+    with _M_fnNext<NodeBinaryContainer<T, N>> {
   @override
   T data;
   @override
@@ -375,10 +411,20 @@ final class _NbCfN<T, N extends NodeBinary<T, N>>
     covariant N? next, [
     covariant N? previous,
   ]) => _NbCfN<T, N>(data, next, previous);
+
+  @override
+  NodeBinaryContainer<T, N>? get toFixedPrevious => _NbCf(data, next, previous);
+
+  @override
+  NodeBinaryContainer<T, N>? get toUnmodifiable =>
+      _NbCuFn(data, next, previous);
 }
 
 final class _NbCf<T, N extends NodeBinary<T, N>>
-    extends NodeBinaryContainer<T, N> {
+    extends NodeBinaryContainer<T, N>
+    with
+        _M_fnNext<NodeBinaryContainer<T, N>>,
+        _M_fnPrevious<NodeBinaryContainer<T, N>> {
   @override
   T data;
   @override
@@ -394,6 +440,9 @@ final class _NbCf<T, N extends NodeBinary<T, N>>
     covariant N? next, [
     covariant N? previous,
   ]) => _NbCf<T, N>(data, next, previous);
+
+  @override
+  NodeBinaryContainer<T, N>? get toUnmodifiable => _NbCi(data, next, previous);
 }
 
 final class _NbCm<T, N extends NodeBinary<T, N>>
@@ -413,6 +462,16 @@ final class _NbCm<T, N extends NodeBinary<T, N>>
     covariant N? next, [
     covariant N? previous,
   ]) => _NbCm<T, N>(data, next, previous);
+
+  @override
+  NodeBinaryContainer<T, N>? get toFixedNext => _NbCfN(data, next, previous);
+
+  @override
+  NodeBinaryContainer<T, N>? get toFixedPrevious =>
+      _NbCfP(data, next, previous);
+
+  @override
+  NodeBinaryContainer<T, N>? get toUnmodifiable => _NbCu(data, next, previous);
 }
 
 ///
@@ -800,9 +859,7 @@ final class _NbSuFn<C extends Comparable> extends NodeBinarySorted<C>
 }
 
 final class _NbSfP<C extends Comparable> extends NodeBinarySorted<C>
-    with
-        _M_fnPrevious<NodeBinarySorted<C>>,
-        _M_NbCfP<C, NodeBinarySorted<C>> {
+    with _M_fnPrevious<NodeBinarySorted<C>>, _M_NbCfP<C, NodeBinarySorted<C>> {
   @override
   C data;
   @override
@@ -896,6 +953,56 @@ final class _NbSm<C extends Comparable> extends NodeBinarySorted<C>
 
   @override
   NodeBinarySorted<C>? get toFixedNext => _NbSuFn(data, next, previous);
+
+  @override
+  NodeBinarySorted<C>? get toFixedPrevious => _NbSfP(data, next, previous);
+
+  @override
+  NodeBinarySorted<C>? get toUnmodifiable => _NbSu(data, next, previous);
+}
+
+final class _NbAvl<C extends Comparable> extends NodeBinaryAvl<C>
+    with _M_NbCi<C, NodeBinarySorted<C>> {
+  @override
+  NodeBinarySorted<C> root;
+
+  @override
+  C get data => root.data;
+
+  @override
+  set data(C value) => root.data = value;
+
+  @override
+  NodeBinarySorted<C>? get next => root.next;
+
+  @override
+  NodeBinarySorted<C>? get previous => root.previous;
+
+  @override
+  set next(covariant NodeBinarySorted<C>? node) => root.next = node;
+
+  @override
+  set previous(covariant NodeBinarySorted<C>? node) => root.previous = node;
+
+  @override
+  void pushThenBalance(C element) {
+    super.push(element);
+    root = NodeBinaryAvl._balance(root);
+  }
+
+  _NbAvl(C data, [NodeBinarySorted<C>? next, NodeBinarySorted<C>? previous])
+    : root = _NbSm(data, next, previous),
+      super._();
+
+  @override
+  _NbAvl<C> _construct(
+    C data,
+    covariant _NbAvl<C>? next, [
+    covariant _NbAvl<C>? previous,
+  ]) => _NbAvl(data, next, previous);
+
+  @override
+  NodeBinarySorted<C>? get toFixedNext => _NbSfN(data, next, previous);
 
   @override
   NodeBinarySorted<C>? get toFixedPrevious => _NbSfP(data, next, previous);

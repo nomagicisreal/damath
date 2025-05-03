@@ -21,7 +21,7 @@ part of '../collection.dart';
 /// [reduceWith], ...
 /// [splitBy], ...
 ///
-extension DamathListExtension<T> on List<T> {
+extension ListExtension<T> on List<T> {
   ///
   /// [applyAdd]
   ///

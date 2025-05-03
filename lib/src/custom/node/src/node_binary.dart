@@ -2,6 +2,19 @@ part of '../node.dart';
 
 ///
 ///
+/// * [NodeBinary]
+///     --[NodeBinaryInstance]
+///     --[NodeBinaryContainer]
+///     |
+///     --[NodeBinaryEnqueueable]
+///     --[NodeBinarySorted]
+///     --[NodeBinaryAvl]
+///     |
+///
+///
+
+///
+///
 ///
 typedef NodeBinaryConstructor<T, N extends NodeBinary<T, N>> =
     N Function(T data, [N? next, N? previous]);
@@ -20,8 +33,10 @@ typedef NodeBinaryConstructor<T, N extends NodeBinary<T, N>> =
 /// [previous], ...
 ///
 /// static methods:
-/// [_mapPrevious], ...
-/// [size], ...
+/// [toString], ...
+/// [iterableFrom], ...
+/// [any], ...
+/// [_balance], ...
 ///
 abstract final class NodeBinary<T, N extends NodeBinary<T, N>>
     extends NodeNext<T, N> {
@@ -38,6 +53,8 @@ abstract final class NodeBinary<T, N extends NodeBinary<T, N>>
     NodeBinary? previous,
   ]);
 
+  const NodeBinary();
+
   @override
   String toString() =>
       'NodeBinary(${NodeBinary.size<N>(this as N)}): '
@@ -46,6 +63,14 @@ abstract final class NodeBinary<T, N extends NodeBinary<T, N>>
   ///
   ///
   ///
+  static int size<N extends NodeBinary<dynamic, N>>(N? node) {
+    if (node == null) return 0;
+    var i = 1;
+    i += size(node.previous);
+    i += size(node.next);
+    return i;
+  }
+
   static StringBuffer _string<T, N extends NodeBinary<T, N>>(
     N node,
     StringBuffer buffer, [
@@ -86,19 +111,9 @@ abstract final class NodeBinary<T, N extends NodeBinary<T, N>>
     return buffer;
   }
 
-  const NodeBinary();
-
   ///
   ///
   ///
-  static int size<N extends NodeBinary<dynamic, N>>(N? node) {
-    if (node == null) return 0;
-    var i = 1;
-    i += size(node.next);
-    i += size(node.previous);
-    return i;
-  }
-
   static Iterable<T> iterableFrom<T, N extends NodeBinary<T, N>>(
     N? node,
   ) sync* {
@@ -107,6 +122,111 @@ abstract final class NodeBinary<T, N extends NodeBinary<T, N>>
     yield node.data;
     yield* iterableFrom(node.next);
   }
+
+  // previous current next
+  static void traversal_pcn<T, N extends NodeBinary<T, N>>(
+    N? node,
+    Consumer<T> consume,
+  ) {
+    if (node == null) return;
+    traversal_pcn(node.previous, consume);
+    consume(node.data);
+    traversal_pcn(node.next, consume);
+  }
+
+  // previous next current
+  static void traversal_pnc<T, N extends NodeBinary<T, N>>(
+    N? node,
+    Consumer<T> consume,
+  ) {
+    if (node == null) return;
+    traversal_pnc(node.previous, consume);
+    traversal_pnc(node.next, consume);
+    consume(node.data);
+  }
+
+  // current previous next
+  static void traversal_cpn<T, N extends NodeBinary<T, N>>(
+    N? node,
+    Consumer<T> consume,
+  ) {
+    if (node == null) return;
+    consume(node.data);
+    traversal_cpn(node.previous, consume);
+    traversal_cpn(node.next, consume);
+  }
+
+  // current next previous
+  static void traversal_cnp<T, N extends NodeBinary<T, N>>(
+    N? node,
+    Consumer<T> consume,
+  ) {
+    if (node == null) return;
+    consume(node.data);
+    traversal_cnp(node.next, consume);
+    traversal_cnp(node.previous, consume);
+  }
+
+  // next current previous
+  static void traversal_ncp<T, N extends NodeBinary<T, N>>(
+    N? node,
+    Consumer<T> consume,
+  ) {
+    if (node == null) return;
+    traversal_ncp(node.next, consume);
+    consume(node.data);
+    traversal_ncp(node.previous, consume);
+  }
+
+  // next previous current
+  static void traversal_npc<T, N extends NodeBinary<T, N>>(
+    N? node,
+    Consumer<T> consume,
+  ) {
+    if (node == null) return;
+    traversal_npc(node.next, consume);
+    traversal_npc(node.previous, consume);
+    consume(node.data);
+  }
+
+  ///
+  ///
+  ///
+  static bool any<T, N extends NodeBinary<T, N>>(N node, Predicator<T> test) {
+    try {
+      traversal_cnp<T, N>(node, (data) {
+        if (test(data)) throw Erroring.pass;
+      });
+      return false;
+    } on String catch (message) {
+      return message == Erroring.pass;
+    }
+  }
+
+  static bool contains<T, N extends NodeBinary<T, N>>(N node, T element) =>
+      NodeBinary.any<T, N>(node, (data) => data == element);
+
+  ///
+  ///
+  ///
+  static N leadOf<T, N extends NodeBinary<T, N>>(N node) =>
+      node.previous.nullOrMap(leadOf<T, N>) ?? node;
+
+  static int depthNextOf<T, N extends NodeBinary<T, N>>(N node) {
+    final next = node.next;
+    return next == null ? 0 : 1 + NodeBinary.depthOf(next);
+  }
+
+  static int depthPreviousOf<T, N extends NodeBinary<T, N>>(N node) {
+    final previous = node.previous;
+    return previous == null ? 0 : 1 + NodeBinary.depthOf(previous);
+  }
+
+  static int depthOf<T, N extends NodeBinary<T, N>>(N node) =>
+      math.max(NodeBinary.depthNextOf(node), NodeBinary.depthPreviousOf(node));
+
+  static int heightOf<T, N extends NodeBinary<T, N>>(N node) =>
+      NodeBinary.depthOf(node) + 1;
 }
 
 ///
@@ -173,7 +293,8 @@ abstract final class NodeBinaryInstance<T>
 /// it's a node type containing other node type, indicating its usecase is finished.
 ///
 abstract final class NodeBinaryContainer<T, N extends NodeBinary<T, N>>
-    extends NodeBinary<T, N> {
+    extends NodeBinary<T, N>
+    implements _I_NodeBinaryFinal<NodeBinaryContainer<T, N>> {
   const NodeBinaryContainer();
 }
 
@@ -263,95 +384,140 @@ abstract final class NodeBinarySorted<C extends Comparable>
     this,
     element,
     element.orderAfter(data),
-    DamathComparableExtension.comparator_orderAfter<C>,
+    ComparableExtension.comparator_orderAfter<C>,
   );
 
-  const factory NodeBinarySorted.immutable(
-    C data, [
-    NodeBinarySorted<C>? next,
-    NodeBinarySorted<C>? previous,
-  ]) = _NbSi;
+  const factory NodeBinarySorted.immutable(C data) = _NbSi;
 
-  factory NodeBinarySorted.unmodifiable(
-    C data, [
-    NodeBinarySorted<C>? next,
-    NodeBinarySorted<C>? previous,
-  ]) = _NbSu;
+  factory NodeBinarySorted.unmodifiable(C data) = _NbSu;
 
-  factory NodeBinarySorted.unmodifiableFp(
-    C data, [
-    NodeBinarySorted<C>? next,
-    NodeBinarySorted<C>? previous,
-  ]) = _NbSuFp;
+  factory NodeBinarySorted.unmodifiableFp(C data) = _NbSuFp;
 
-  factory NodeBinarySorted.unmodifiableFn(
-    C data, [
-    NodeBinarySorted<C>? next,
-    NodeBinarySorted<C>? previous,
-  ]) = _NbSuFn;
+  factory NodeBinarySorted.unmodifiableFn(C data) = _NbSuFn;
 
-  factory NodeBinarySorted.fixedPrevious(
-    C data, [
-    NodeBinarySorted<C>? next,
-    NodeBinarySorted<C>? previous,
-  ]) = _NbSfP;
+  factory NodeBinarySorted.fixedPrevious(C data) = _NbSfP;
 
-  factory NodeBinarySorted.fixedNext(
-    C data, [
-    NodeBinarySorted<C>? next,
-    NodeBinarySorted<C>? previous,
-  ]) = _NbSfN;
+  factory NodeBinarySorted.fixedNext(C data) = _NbSfN;
 
-  factory NodeBinarySorted.fixed(
-    C data, [
-    NodeBinarySorted<C>? next,
-    NodeBinarySorted<C>? previous,
-  ]) = _NbSf;
+  factory NodeBinarySorted.fixed(C data) = _NbSf;
 
-  factory NodeBinarySorted.mutable(
-    C data, [
-    NodeBinarySorted<C>? next,
-    NodeBinarySorted<C>? previous,
-  ]) = _NbSm;
+  factory NodeBinarySorted.mutable(C data) = _NbSm;
 
   ///
   ///
   ///
-  static NodeBinarySorted<C> fromSorted<C extends Comparable>(
+  factory NodeBinarySorted.fromSorted(
     List<C> list, {
     bool increase = true,
     NodeBinaryConstructor<C, NodeBinarySorted<C>>? constructor,
   }) => list.checkSortedForSupply(() {
-    final construct = constructor ?? NodeBinarySorted<C>.unmodifiable;
+    final construct = constructor ?? NodeBinarySorted<C>.mutable;
     if (list.isEmpty) throw StateError(Erroring.iterableNoElement);
 
-    // with full size previous node
-    // NodeBinarySorted<C> child(int from, int count) {
-    //   if (count == 1) return construct(sorted[from]);
-    //   final mid = IntExtension.maxPow2In(count); // 'count ≥ 2' -> 'mid ≥ 2'
-    //   final node = construct(sorted[from + mid - 1]);
-    //   node.previous = child(from, mid - 1); // 'mid - 1' always ≥ 1
-    //   if (count > mid) {
-    //     node.next = child(from + mid, count - mid); // 'count - mid' always ≥ 1
-    //   }
-    //   return node;
-    // }
-    // return child(0, sorted.length);
-
-    NodeBinarySorted<C>? build(int left, int right) {
-      if (left > right) return null;
-      final mid = (left + right) ~/ 2;
-      return construct(list[mid])
-        ..previous = build(left, mid - 1)
-        ..next = build(mid + 1, right);
+    // with full size 'previous' node
+    NodeBinarySorted<C> child(int from, int count) {
+      if (count == 1) return construct(list[from]);
+      final mid = IntExtension.maxPow2In(count); // 'count ≥ 2' -> 'mid ≥ 2'
+      final node = construct(list[from + mid - 1]);
+      node.previous = child(from, mid - 1); // 'mid - 1' always ≥ 1
+      if (count > mid) {
+        node.next = child(from + mid, count - mid); // 'count - mid' always ≥ 1
+      }
+      return node;
     }
 
-    return build(0, list.length - 1)!;
+    return child(0, list.length);
   }, increase);
 
   const NodeBinarySorted();
 }
 
+///
+/// Notice that [NodeBinaryAvl.fromSorted] is the balanced version of [NodeBinarySorted.fromSorted].
+/// [_balance], ...
+///
+abstract final class NodeBinaryAvl<C extends Comparable>
+    extends NodeBinarySorted<C> {
+  NodeBinarySorted<C> get root;
+
+  void pushThenBalance(C element);
+
+  factory NodeBinaryAvl(C data) = _NbAvl;
+
+  factory NodeBinaryAvl.fromSorted(List<C> list, {bool increase = true}) =>
+      list.checkSortedForSupply(() {
+        if (list.isEmpty) throw StateError(Erroring.iterableNoElement);
+
+        NodeBinaryAvl<C>? build(int previous, int next) {
+          if (previous > next) return null;
+          final mid = (previous + next) ~/ 2;
+          return NodeBinaryAvl(list[mid])
+            ..previous = build(previous, mid - 1)
+            ..next = build(mid + 1, next);
+        }
+
+        return build(0, list.length - 1)!;
+      }, increase);
+
+  ///
+  /// implementation for avl tree https://en.wikipedia.org/wiki/AVL_tree
+  /// in short, with [_balance] function each time insert. we can have lower average time complexity.
+  ///
+  /// [_balanceFactor] = 2 implies [depthPreviousOf] ≥ 2 implies [previous] != null
+  /// [_balanceFactor] = -2 implies [depthNextOf] ≥ 2 implies [next] != null
+  ///
+  static N _balance<T, N extends NodeBinary<T, N>>(N node) =>
+      switch (NodeBinaryAvl._balanceFactor(node)) {
+        2 =>
+          NodeBinaryAvl._balanceFactor<T, N>(node.previous!) < 0
+              // depthNext > depthPrevious
+              ? NodeBinaryAvl._rotateCBeforeCC(node)
+              : NodeBinaryAvl._rotateCounterClockwise(node),
+        -2 =>
+          NodeBinaryAvl._balanceFactor<T, N>(node.next!) > 0
+              // depthPrevious > depthNext
+              ? NodeBinaryAvl._rotateCCBeforeC(node)
+              : NodeBinaryAvl._rotateClockwise(node),
+        _ => node,
+      };
+
+  static int _balanceFactor<T, N extends NodeBinary<T, N>>(N node) =>
+      NodeBinary.depthPreviousOf(node) - NodeBinary.depthNextOf(node);
+
+  ///
+  /// it's easier to understand when imaging rotation with [NodeBinary.toString],
+  /// - the previous node is on the top
+  /// - the next node is on the bottom
+  ///
+  static N _rotateCounterClockwise<T, N extends NodeBinary<T, N>>(N node) {
+    final pivot = node.previous!;
+    node.previous = pivot.next;
+    pivot.next = node;
+    return pivot;
+  }
+
+  static N _rotateClockwise<T, N extends NodeBinary<T, N>>(N node) {
+    final pivot = node.next!;
+    node.next = pivot.previous;
+    pivot.previous = node;
+    return pivot;
+  }
+
+  static N _rotateCBeforeCC<T, N extends NodeBinary<T, N>>(N node) {
+    node.previous = NodeBinaryAvl._rotateClockwise<T, N>(node.previous!);
+    NodeBinaryAvl._rotateCounterClockwise<T, N>(node);
+    return node;
+  }
+
+  static N _rotateCCBeforeC<T, N extends NodeBinary<T, N>>(N node) {
+    node.next = NodeBinaryAvl._rotateCounterClockwise<T, N>(node.next!);
+    NodeBinaryAvl._rotateClockwise<T, N>(node);
+    return node;
+  }
+
+  const NodeBinaryAvl._();
+}
+
 // future:
 // 1. identical enqueueable,
-// 2. n-ary node
+// 2. n-ary node, NodeTrie

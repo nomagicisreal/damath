@@ -23,7 +23,7 @@ part of '../collection.dart';
 ///
 ///
 ///
-extension DamathIteratorTogether<I> on Iterator<I> {
+extension IteratorTogether<I> on Iterator<I> {
   ///
   /// [moveNextTogetherReduce]
   /// [moveNextTogetherSupply]

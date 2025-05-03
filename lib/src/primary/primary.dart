@@ -1,10 +1,10 @@
 library;
 
 import 'dart:math' as math;
-import 'package:collection/collection.dart';
+import 'package:collection/collection.dart' as collection;
+import 'package:damath/src/collection/collection.dart';
 import 'package:damath/src/custom/custom.dart';
 
-import '../collection/collection.dart';
 
 
 part 'src/_.dart';

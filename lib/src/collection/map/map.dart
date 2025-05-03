@@ -2,22 +2,14 @@ part of '../collection.dart';
 
 ///
 ///
-/// [DamathMapEntry]
-/// [DamathListMapEntry]
+/// [MapEntryExtension]
+/// [MapExtension]
 ///
-/// [DamathMap]
-/// [DamathMapKeyComparable]
-///
-/// [DamathMapNullable]
-/// [DamathMapValueInt]
-/// [DamathMapValueDouble]
-/// [DamathMapValueSet]
-///
-///
-/// [Record] is efficient than [MapEntry] in creation
 ///
 ///
 
+///
+/// Notice that [Record] is efficient than [MapEntry] for frequent creation
 ///
 /// static methods:
 /// [mix], ...
@@ -29,7 +21,7 @@ part of '../collection.dart';
 /// [record], [recordReversed]
 ///
 ///
-extension DamathMapEntry<K, V> on MapEntry<K, V> {
+extension MapEntryExtension<K, V> on MapEntry<K, V> {
   ///
   /// [mix], [mixReverse]
   ///
@@ -54,15 +46,15 @@ extension DamathMapEntry<K, V> on MapEntry<K, V> {
   static bool predicateKeyNumDifferent<V>(
     MapEntry<num, V> a,
     MapEntry<num, V> b,
-  ) =>
-      a.key != b.key;
+  ) => a.key != b.key;
 
   static bool predicateKeyNumLess<V>(MapEntry<num, V> a, MapEntry<num, V> b) =>
       a.key < b.key;
 
   static bool predicateKeyNumLarger<V>(
-          MapEntry<num, V> a, MapEntry<num, V> b) =>
-      a.key > b.key;
+    MapEntry<num, V> a,
+    MapEntry<num, V> b,
+  ) => a.key > b.key;
 
   ///
   /// reduce
@@ -71,63 +63,43 @@ extension DamathMapEntry<K, V> on MapEntry<K, V> {
   static MapEntry<int, K> reduceMaxKeyInt<K>(
     MapEntry<int, K> v1,
     MapEntry<int, K> v2,
-  ) =>
-      v1.key > v2.key ? v1 : v2;
+  ) => v1.key > v2.key ? v1 : v2;
 
   static MapEntry<int, K> reduceMinKeyInt<K>(
     MapEntry<int, K> v1,
     MapEntry<int, K> v2,
-  ) =>
-      v1.key < v2.key ? v1 : v2;
+  ) => v1.key < v2.key ? v1 : v2;
 
   static MapEntry<double, K> reduceMaxKeyDouble<K>(
     MapEntry<double, K> v1,
     MapEntry<double, K> v2,
-  ) =>
-      v1.key > v2.key ? v1 : v2;
+  ) => v1.key > v2.key ? v1 : v2;
 
   static MapEntry<double, K> reduceMinKeyDouble<K>(
     MapEntry<double, K> v1,
     MapEntry<double, K> v2,
-  ) =>
-      v1.key < v2.key ? v1 : v2;
+  ) => v1.key < v2.key ? v1 : v2;
 
   // value
   static MapEntry<K, int> reduceMaxValueInt<K>(
     MapEntry<K, int> v1,
     MapEntry<K, int> v2,
-  ) =>
-      v1.value > v2.value ? v1 : v2;
+  ) => v1.value > v2.value ? v1 : v2;
 
   static MapEntry<K, int> reduceMinValueInt<K>(
     MapEntry<K, int> v1,
     MapEntry<K, int> v2,
-  ) =>
-      v1.value < v2.value ? v1 : v2;
+  ) => v1.value < v2.value ? v1 : v2;
 
   static MapEntry<K, double> reduceMaxValueDouble<K>(
     MapEntry<K, double> v1,
     MapEntry<K, double> v2,
-  ) =>
-      v1.value > v2.value ? v1 : v2;
+  ) => v1.value > v2.value ? v1 : v2;
 
   static MapEntry<K, double> reduceMinValueDouble<K>(
     MapEntry<K, double> v1,
     MapEntry<K, double> v2,
-  ) =>
-      v1.value < v2.value ? v1 : v2;
-
-  ///
-  ///
-  ///
-  ///
-  ///
-  /// instance methods
-  ///
-  ///
-  ///
-  ///
-  ///
+  ) => v1.value < v2.value ? v1 : v2;
 
   ///
   ///
@@ -144,17 +116,10 @@ extension DamathMapEntry<K, V> on MapEntry<K, V> {
 
 ///
 ///
+/// static methods:
+/// [predicateInputYet], ...
 ///
-extension DamathListMapEntry<K, V> on List<MapEntry<K, V?>> {
-  void reset({V? fill}) => updateAllApply((entry) => MapEntry(entry.key, fill));
-}
-
-
-
-///
-///
-/// [iteratorKeys], ...
-/// [notContainsKey], ...
+/// instance methods:
 /// [putIfAbsentWhen], ...
 /// [input], ...
 ///
@@ -170,7 +135,7 @@ extension DamathListMapEntry<K, V> on List<MapEntry<K, V?>> {
 /// [updateDifference], [updateIntersection]
 /// [migrateInto]
 ///
-extension DamathMap<K, V> on Map<K, V> {
+extension MapExtension<K, V> on Map<K, V> {
   ///
   /// [predicateInputYet]
   /// [predicateInputNew]
@@ -194,49 +159,19 @@ extension DamathMap<K, V> on Map<K, V> {
       !map.input(key, value, false);
 
   ///
-  /// [clone]
-  /// [iteratorKeys]
-  /// [iteratorValues]
-  /// [keysSet]
-  ///
-  Map<K, V> get clone => Map.of(this);
-
-  Iterator<K> get iteratorKeys => keys.iterator;
-
-  Iterator<V> get iteratorValues => values.iterator;
-
-  Set<K> get keysSet => keys.toSet();
-
-  ///
-  ///
-  /// bool
-  /// [notContainsKey], [notContainsValue]
   /// [containsAllKeys], [containsAllValues]
   /// [containsThen]
   ///
-  /// [valueEqualOr]
-  ///
-  ///
-
-  ///
-  /// [notContainsKey], [notContainsValue]
-  /// [containsAllKeys], [containsAllValues]
-  /// [containsThen]
-  ///
-  bool notContainsKey(K key) => !containsKey(key);
-
-  bool notContainsValue(V value) => !containsValue(value);
-
   bool containsAllKeys(Iterable<K> keys) {
     for (var key in keys) {
-      if (notContainsKey(key)) return false;
+      if (!containsKey(key)) return false;
     }
     return true;
   }
 
   bool containsAllValues(Iterable<V> values) {
     for (var value in values) {
-      if (notContainsValue(value)) return false;
+      if (!containsValue(value)) return false;
     }
     return true;
   }
@@ -244,9 +179,6 @@ extension DamathMap<K, V> on Map<K, V> {
   T containsThen<T>(K key, Supplier<T> ifContains, Supplier<T> ifAbsent) =>
       containsKey(key) ? ifContains() : ifAbsent();
 
-  ///
-  /// [valueEqualOr]
-  ///
   bool valueEqualOr(K key, V value, PredicatorMixer<V?, V> test) {
     var v = this[key];
     if (v == value) return true;
@@ -254,9 +186,7 @@ extension DamathMap<K, V> on Map<K, V> {
   }
 
   ///
-  /// [putIfAbsentWhen]
-  /// [putIfAbsentOr]
-  /// [putIfAbsentThen]
+  ///
   ///
   void putIfAbsentWhen(bool shouldPut, K key, Supplier<V> ifAbsent) =>
       shouldPut ? putIfAbsent(key, ifAbsent) : null;
@@ -282,8 +212,7 @@ extension DamathMap<K, V> on Map<K, V> {
   }
 
   ///
-  /// [updateThen]
-  /// [updateIfNotNull]
+  ///
   ///
   T updateThen<T>(
     K key,
@@ -306,8 +235,7 @@ extension DamathMap<K, V> on Map<K, V> {
       key == null ? null : update(key, ifExist, ifAbsent: ifAbsent);
 
   ///
-  /// [removeFrom]
-  /// [updateFrom]
+  ///
   ///
   Iterable<V> removeFrom(Iterable<K> keys) sync* {
     for (var key in keys) {
@@ -327,7 +255,7 @@ extension DamathMap<K, V> on Map<K, V> {
   ///   1. return [absentReturn] if key is absent
   ///   2. [value] equal to old value returns `false`
   ///   3. update old value to new [value] returns `true`
-  /// see also [DamathMapValueSet.inputSet], [Set.add]
+  /// see also [MapValueSet.inputSet], [Set.add]
   ///
   bool input(K key, V value, [bool absentReturn = true]) {
     var vOld = this[key];
@@ -392,8 +320,7 @@ extension DamathMap<K, V> on Map<K, V> {
     T initialValue,
     CompanionGenerator<T, MapEntry<K, V>> companion, [
     int start = 0,
-  ]) =>
-      entries.iterator.foldByIndex(initialValue, companion, start);
+  ]) => entries.iterator.foldByIndex(initialValue, companion, start);
 
   ///
   /// [reduce], [reduceKeys], [reduceValues]
@@ -410,8 +337,7 @@ extension DamathMap<K, V> on Map<K, V> {
   MapEntry<K, V> reduceByIndex(
     ReducerGenerator<MapEntry<K, V>> reducing, [
     int start = 0,
-  ]) =>
-      entries.iterator.reduceByIndex(reducing, start);
+  ]) => entries.iterator.reduceByIndex(reducing, start);
 
   S induct<S>(Mapper<MapEntry<K, V>, S> toVal, Reducer<S> reducer) =>
       entries.iterator.induct(toVal, reducer);
@@ -420,15 +346,13 @@ extension DamathMap<K, V> on Map<K, V> {
     Mapper<MapEntry<K, V>, S> toVal,
     ReducerGenerator<S> reducing, [
     int start = 0,
-  ]) =>
-      entries.iterator.inductByIndex(toVal, reducing, start);
+  ]) => entries.iterator.inductByIndex(toVal, reducing, start);
 
   S inductByIndexInited<S>(
     Mapper<MapEntry<K, V>, S> toVal,
     CompanionGenerator<S, MapEntry<K, V>> reducing, [
     int start = 0,
-  ]) =>
-      entries.iterator.inductInitedByIndex(toVal, reducing, start);
+  ]) => entries.iterator.inductInitedByIndex(toVal, reducing, start);
 
   ///
   /// [mapKeys]
@@ -444,15 +368,16 @@ extension DamathMap<K, V> on Map<K, V> {
   /// [addAllDifference]
   ///
   void addAllDifference(Set<K> keys, V Function(K key) valuing) =>
-      addAll(keys.difference(keysSet).toMap(valuing));
+      addAll(keys.difference(keys.toSet()).toMap(valuing));
 
   ///
   /// [keysIntersectionWith], [keysDifferenceWith]
   ///
   Iterable<K> keysIntersectionWith(Set<K> another) =>
-      keysSet.intersection(another);
+      keys.toSet().intersection(another);
 
-  Iterable<K> keysDifferenceWith(Set<K> another) => keysSet.difference(another);
+  Iterable<K> keysDifferenceWith(Set<K> another) =>
+      keys.toSet().difference(another);
 
   ///
   /// remove
@@ -483,106 +408,5 @@ extension DamathMap<K, V> on Map<K, V> {
     yield* removeFrom(keysDifferenceWith(keys));
     yield* updateFrom(keysIntersectionWith(keys), update ?? FKeep.companion);
     addAllDifference(keys, valuing);
-  }
-}
-
-///
-///
-///
-extension DamathMapKeyComparable<K extends Comparable, V> on Map<K, V> {
-  ///
-  /// [keysSorted]
-  /// [valuesBySortedKeys]
-  /// [entriesBySortedKeys]
-  ///
-  List<K> keysSorted([bool increase = true]) => keys.toList(growable: false)
-    ..sort(DamathIteratorComparable.comparator(increase));
-
-  List<V> valuesBySortedKeys([bool increase = true]) =>
-      keysSorted(increase).mapToList((key) => this[key]!);
-
-  List<MapEntry<K, V>> entriesBySortedKeys([bool increase = true]) =>
-      keysSorted(increase).mapToList((key) => MapEntry(key, this[key] as V));
-}
-
-///
-///
-///
-extension DamathMapNullable<K, V> on Map<K, V?> {
-  void reset({V? fill}) => updateAll((_, __) => fill);
-}
-
-///
-/// [plusOn]
-///
-extension DamathMapValueInt<K> on Map<K, int> {
-  void plusOn(K key) => update(key, (value) => ++value, ifAbsent: () => 1);
-}
-
-///
-/// [plusOn]
-///
-extension DamathMapValueDouble<K> on Map<K, double> {
-  void plusOn(K key) => update(key, (value) => ++value, ifAbsent: () => 1);
-}
-
-///
-///
-/// static methods:
-/// [predicateInputYet], ...
-///
-/// instance methods:
-/// [inputSet], ...
-///
-///
-extension DamathMapValueSet<K, V> on Map<K, Set<V>> {
-  ///
-  ///
-  /// static methods
-  ///
-  ///
-
-  ///
-  /// [predicateInputYet]
-  /// [predicateInputNew]
-  /// [predicateInputExist]
-  /// [predicateInputKeep]
-  ///
-  // return true if not yet contained
-  static bool predicateInputYet<K, V>(Map<K, Set<V>> map, K k, V v) =>
-      map.inputSet(k, v, false);
-
-  // return true if not yet contained or absent
-  static bool predicateInputNew<K, V>(Map<K, Set<V>> map, K k, V v) =>
-      map.inputSet(k, v, true);
-
-  // return true if exist
-  static bool predicateInputExist<K, V>(Map<K, Set<V>> map, K k, V v) =>
-      !map.inputSet(k, v, true);
-
-  // return true if exist or absent
-  static bool predicateInputKeep<K, V>(Map<K, Set<V>> map, K k, V v) =>
-      !map.inputSet(k, v, false);
-
-  ///
-  ///
-  /// instance methods
-  ///
-  ///
-
-  ///
-  /// when calling [inputSet], there are three conditions:
-  ///   1. value set absent: return [absentReturn]
-  ///   2. [value] has exist in value set: return `false`
-  ///   3. [value] not yet contained in value set: return `true`
-  /// see also [Set.add], [DamathMap.input]
-  ///
-  bool inputSet(K key, V value, [bool absentReturn = true]) {
-    var set = this[key];
-    if (set == null) {
-      this[key] = {value};
-      return absentReturn;
-    }
-    return set.add(value);
   }
 }

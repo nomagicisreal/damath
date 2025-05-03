@@ -14,7 +14,7 @@ part of '../collection.dart';
 ///
 ///
 ///
-extension DamathIteratorTo<I> on Iterator<I> {
+extension IteratorTo<I> on Iterator<I> {
   ///
   /// [supplyMoveNext]
   /// [supplyLead]
@@ -506,24 +506,14 @@ extension DamathIteratorTo<I> on Iterator<I> {
 
   ///
   /// [groupBy]
-  /// [groupToListBy]
+  /// group to list see [collection.groupBy]
   ///
   Map<K, Iterable<I>> groupBy<K>(Mapper<I, K> toKey) => fold(
     {},
     (map, value) =>
         map..update(
           toKey(value),
-          DamathIterable.applyAppend(value),
-          ifAbsent: () => [value],
-        ),
-  );
-
-  Map<K, List<I>> groupToListBy<K>(Mapper<I, K> toKey) => fold(
-    {},
-    (map, value) =>
-        map..update(
-          toKey(value),
-          DamathListExtension.applyAdd(value),
+          IterableExtension.applyAppend(value),
           ifAbsent: () => [value],
         ),
   );

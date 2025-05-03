@@ -36,7 +36,7 @@ abstract final class NodeWriter {
   /// Notice that the [NodeNext.next] must [NodeNext.beGrowable] on the last node of [head]
   ///
   static N next_append<T, N extends NodeNext<T, N>>(N head, N? tail) =>
-      NodeNext.last<T, N>(head)..next = tail;
+      NodeNext.lastOf<T, N>(head)..next = tail;
 
   ///
   /// [NodeWriter.next_pushInsert] for example,
@@ -51,7 +51,7 @@ abstract final class NodeWriter {
     int position,
     N insertion,
   ) {
-    final target = NodeNext.index(source, position - 1);
+    final target = NodeNext.indexOf(source, position - 1);
     final tempt = target.next;
     target.next = insertion;
     return tempt;
@@ -76,77 +76,42 @@ abstract final class NodeWriter {
   }
 
   static N next_pushNext<T, N extends NodeNext<T, N>>(
-      N node,
-      T element,
-      Applier<N> apply,
-      ) =>
+    N node,
+    T element,
+    Applier<N> apply,
+  ) =>
       node
         ..next =
-        node.next == null
-            ? node._construct(element, null) as N
-            : apply(node.next!);
+            node.next == null
+                ? node._construct(element, null) as N
+                : apply(node.next!);
 
   ///
   /// assert [NodeBinary.next] data >= [NodeBinary.data] >= [NodeBinary.previous] data always true
   ///
-  static N binary_push<T, N extends NodeBinary<T, N>>(
+  static void binary_push<T, N extends NodeBinary<T, N>>(
     N node,
-    T element,
+    T data,
     bool elementOrderAfterCurrent,
-    PredicatorReducer<T> comparing,
+    PredicatorReducer<T> compare,
   ) {
-    // 1. construct next
-    // 2. continue order element on next
-    // 3. push element back to previous, construct previous
-    // 4. push element back to previous, continue order data on previous
+    // construct next || continue order element on next
     if (elementOrderAfterCurrent) {
-      final next = node.next;
-      if (next == null) {
-        return node..next = node._construct(element, null) as N;
+      final n = node.next;
+      if (n == null) {
+        node.next = node._construct(data, null) as N;
+        return;
       }
-      if (comparing(element, next.data)) {
-        NodeWriter.binary_push(next, element, true, comparing);
-        return node;
-      }
-      final previous = node.previous;
-      if (previous == null) {
-        return node
-          ..previous = node._construct(node.data, null) as N
-          ..data = element;
-      }
-      NodeWriter.binary_push(
-        previous,
-        node.data,
-        comparing(node.data, previous.data),
-        comparing,
-      );
-      return node..data = element;
+      NodeWriter.binary_push(n, data, compare(data, n.data), compare);
+      return;
     }
 
-    // 1. construct previous
-    // 2. continue order element on previous
-    // 3. push element forward to next, construct next
-    // 4. push element forward to next, continue order data on next
-    final previous = node.previous;
-    if (previous == null) {
-      return node..previous = node._construct(element, null) as N;
+    // construct previous || continue order element on previous
+    final p = node.previous;
+    if (p == null) {
+      node.previous = node._construct(data, null) as N;
+      return;
     }
-    if (comparing(previous.data, element)) {
-      NodeWriter.binary_push(previous, element, false, comparing);
-      return node;
-    }
-    final next = node.next;
-    if (next == null) {
-      return node
-        ..next = node._construct(node.data, null) as N
-        ..data = element;
-    }
-    NodeWriter.binary_push(
-      next,
-      node.data,
-      comparing(node.data, next.data),
-      comparing,
-    );
-    return node..data = element;
+    NodeWriter.binary_push(p, data, compare(data, p.data), compare);
   }
 }

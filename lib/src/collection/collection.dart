@@ -1,15 +1,21 @@
 import 'dart:math' as math;
-import 'package:collection/collection.dart';
+import 'package:collection/collection.dart' as collection;
 import 'package:damath/src/custom/custom.dart';
 import 'package:damath/src/primary/primary.dart';
 
+part 'primary.dart';
+part 'comparable/comparable.dart';
+part 'comparable/iterator.dart';
+part 'comparable/iterable.dart';
+part 'comparable/list.dart';
+part 'comparable/map.dart';
 part 'iterable/iterator.dart';
 part 'iterable/iteratorto.dart';
 part 'iterable/itertogether.dart';
 part 'iterable/iterable.dart';
-part 'iterable/list.dart';
+part 'iterable/nest.dart';
+part 'list/list.dart';
+part 'list/nest.dart';
 part 'map/map.dart';
+part 'map/nest.dart';
 part 'map/set.dart';
-part 'primary/comparable.dart';
-part 'primary/nested.dart';
-part 'primary/primary.dart';

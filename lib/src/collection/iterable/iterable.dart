@@ -32,7 +32,7 @@ part of '../collection.dart';
 /// [toMapByFilterOr], ...
 ///
 ///
-extension DamathIterable<I> on Iterable<I> {
+extension IterableExtension<I> on Iterable<I> {
   ///
   /// [toLength]
   /// [applyAppend]
@@ -46,15 +46,15 @@ extension DamathIterable<I> on Iterable<I> {
   /// [fill]
   /// [generateFrom]
   ///
-  static Iterable<I> fill<I>(int count, I value) =>
-      [for (var i = 0; i < count; i++) value];
+  static Iterable<I> fill<I>(int count, I value) => [
+    for (var i = 0; i < count; i++) value,
+  ];
 
   static Iterable<I> generateFrom<I>(
     int count,
     Generator<I> generator, [
     int start = 1,
-  ]) =>
-      [for (var i = start; i < count; i++) generator(i)];
+  ]) => [for (var i = start; i < count; i++) generator(i)];
 
   ///
   /// [predicateLengthEqual], [predicateLengthDifferent]
@@ -80,8 +80,11 @@ extension DamathIterable<I> on Iterable<I> {
   ///
   ///
 
-  void pair(Iterable<I> another, Intersector<I> paring,
-          [Listener? onSizeDiff]) =>
+  void pair(
+    Iterable<I> another,
+    Intersector<I> paring, [
+    Listener? onSizeDiff,
+  ]) =>
       length == another.length
           ? iterator.pair(another.iterator, paring)
           : onSizeDiff?.call();
@@ -93,8 +96,8 @@ extension DamathIterable<I> on Iterable<I> {
       length == out.length
           ? iterator.consumeAllByIndex((value, i) => out[i] = value)
           : out.length > length
-              ? onOutLarger?.call()
-              : onOutSmaller?.call();
+          ? onOutLarger?.call()
+          : onOutSmaller?.call();
 
   ///
   ///
@@ -111,20 +114,9 @@ extension DamathIterable<I> on Iterable<I> {
 
   ///
   /// [containsAll]
-  /// [notContains], [notContainsAll]
   ///
   bool containsAll(Iterable<I> another) {
-    for (final element in another) if (notContains(element)) return false;
-    return true;
-  }
-
-  bool notContains(I element) {
-    for (final value in this) if (value == element) return false;
-    return true;
-  }
-
-  bool notContainsAll(Iterable<I> another) {
-    for (final element in another) if (contains(element)) return false;
+    for (final element in another) if (!contains(element)) return false;
     return true;
   }
 
@@ -220,9 +212,10 @@ extension DamathIterable<I> on Iterable<I> {
     return result;
   }
 
-  Iterable<I> takeOn(Iterable<bool> where) => length == where.length
-      ? where.iterator.takeFor(iterator)
-      : throw StateError(Erroring.iterableSizeInvalid);
+  Iterable<I> takeOn(Iterable<bool> where) =>
+      length == where.length
+          ? where.iterator.takeFor(iterator)
+          : throw StateError(Erroring.iterableSizeInvalid);
 
   Iterable<I> subIterable(int start, [int? end]) {
     if (length.isUpperClose(start, end)) {
@@ -275,9 +268,9 @@ extension DamathIterable<I> on Iterable<I> {
   ) =>
       length == another.length
           ? iterator.pairExpand(
-              another.iterator,
-              (p, q) => reducing(expanding(p), expandingAnother(q)),
-            )
+            another.iterator,
+            (p, q) => reducing(expanding(p), expandingAnother(q)),
+          )
           : throw StateError(Erroring.iterableSizeInvalid);
 
   ///
@@ -291,10 +284,10 @@ extension DamathIterable<I> on Iterable<I> {
   ///
   ///
   ///
-  Iterable<I> takeFor(Iterable<bool> positions) => positions.length == length
-      ? positions.iterator.takeFor(iterator)
-      : throw StateError(Erroring.iterableSizeInvalid);
-
+  Iterable<I> takeFor(Iterable<bool> positions) =>
+      positions.length == length
+          ? positions.iterator.takeFor(iterator)
+          : throw StateError(Erroring.iterableSizeInvalid);
 
   ///
   ///
@@ -319,14 +312,14 @@ extension DamathIterable<I> on Iterable<I> {
   ) =>
       length == another.length
           ? iterator.pairFold(
-              initialValue,
-              another.iterator,
-              (value, a, b) => collapse(
-                value,
-                companion(value, a),
-                companionAnother(value, b),
-              ),
-            )
+            initialValue,
+            another.iterator,
+            (value, a, b) => collapse(
+              value,
+              companion(value, a),
+              companionAnother(value, b),
+            ),
+          )
           : throw StateError(Erroring.iterableSizeInvalid);
 
   ///

@@ -488,7 +488,7 @@ extension IntExtension on int {
     final columnEndOf =
         isColumnEndAtK ? (i) => i + rowStart < k ? i + 1 : k : (i) => i + 1;
 
-    final array = DamathListExtension.generate2D<int>(
+    final array = ListExtension.generate2D<int>(
       rowEnd,
       k,
       (i, j) =>
@@ -553,14 +553,14 @@ extension IntExtension on int {
       }
       return _partitionSet(
         m,
-      ).map(DamathIterable.toLength).iterator.toMapCounted[n]!;
+      ).map(IterableExtension.toLength).iterator.toMapCounted[n]!;
     }
     var sum = 0;
     for (var i = 1; i <= m; i++) {
       sum +=
           _partitionSet(
             m,
-          ).map(DamathIterable.toLength).iterator.toMapCounted[i]!;
+          ).map(IterableExtension.toLength).iterator.toMapCounted[i]!;
     }
     return sum;
   }
@@ -590,7 +590,7 @@ extension IntExtension on int {
     for (var i = 1; i <= m; i++) {
       yield* _partitionSet(
         m,
-      ).where(DamathIterableIterable.predicateChildrenLength(i)).flatted;
+      ).where(IterableIterable.predicateChildrenLength(i)).flatted;
     }
   }
 
@@ -605,7 +605,8 @@ extension IntExtension on int {
     if (n.isRangeClose(1, m)) {
       throw Erroring.invalidPartition(m, n);
     }
-    return integers.length == n && integers.sum == m;
+    return integers.length == n &&
+        collection.IterableIntegerExtension(integers).sum == m;
   }
 
   //

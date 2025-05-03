@@ -58,7 +58,7 @@ extension DamathSet<K> on Set<K> {
   ///   each of the groups is identical on value
   ///
   bool consistentBy<E, V>(Mapper<K, E> toKey, Mapper<K, V> toVal) => !iterator
-      .existAnyToEachGroup(toKey, toVal, DamathMap.predicateInputYet);
+      .existAnyToEachGroup(toKey, toVal, MapExtension.predicateInputYet);
 
   ///
   /// [complementTo]

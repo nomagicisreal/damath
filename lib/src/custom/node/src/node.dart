@@ -12,13 +12,7 @@ part of '../node.dart';
 ///         --[NodeNextEnqueueable]
 ///         --[NodeNextSorted]
 ///         |
-///         --[NodeBinary]
-///             --[NodeBinaryInstance]
-///             --[NodeBinaryContainer]
-///             |
-///             --[NodeBinaryEnqueueable]
-///             --[NodeBinarySorted]
-///             |
+///         --[NodeBinary]...
 ///
 /// * [Nterator]
 ///
@@ -28,7 +22,8 @@ part of '../node.dart';
 ///
 ///
 ///
-abstract final class Vertex<T> {
+// abstract final class Vertex<T> {
+abstract class Vertex<T> {
   @override
   String toString() => 'Vertex($data)';
 
@@ -93,7 +88,7 @@ abstract final class Vertex<T> {
 /// [next], ...
 ///
 /// static methods:
-/// [length], ...
+/// [lengthOf], ...
 /// [iterableFrom], [generate]
 ///
 abstract final class NodeNext<T, N extends NodeNext<T, N>> extends Vertex<T> {
@@ -122,7 +117,7 @@ abstract final class NodeNext<T, N extends NodeNext<T, N>> extends Vertex<T> {
 
   @override
   String toString() =>
-      'Node(${NodeNext.length<N>(this as N)}): '
+      'Node(${NodeNext.lengthOf<N>(this as N)}): '
       '${NodeNext._string<T, N>(this as N)}';
 
   const NodeNext();
@@ -161,13 +156,13 @@ abstract final class NodeNext<T, N extends NodeNext<T, N>> extends Vertex<T> {
   ///
   ///
   ///
-  static int length<N extends NodeNext<dynamic, N>>(N? node) {
+  static int lengthOf<N extends NodeNext<dynamic, N>>(N? node) {
     var i = 0;
     for (; node != null; i++, node = node.next) {}
     return i;
   }
 
-  static N last<T, N extends NodeNext<T, N>>(N node) {
+  static N lastOf<T, N extends NodeNext<T, N>>(N node) {
     while (true) {
       final next = node.next;
       if (next == null) return node;
@@ -175,7 +170,7 @@ abstract final class NodeNext<T, N extends NodeNext<T, N>> extends Vertex<T> {
     }
   }
 
-  static N index<N extends NodeNext<dynamic, N>>(N node, int index) {
+  static N indexOf<N extends NodeNext<dynamic, N>>(N node, int index) {
     if (index.isNegative) throw Erroring.invalidIndex(index);
     for (var i = 0; i < index; i++) {
       node = node.next ?? (throw Erroring.invalidIntOver(i));
@@ -184,7 +179,7 @@ abstract final class NodeNext<T, N extends NodeNext<T, N>> extends Vertex<T> {
   }
 
   ///
-  /// prevent redundant functionality in [DamathIterator], ...
+  /// prevent redundant functionality in [IteratorExtension], ...
   ///
   static Iterable<T> iterableFrom<T, N extends NodeNext<T, N>>(
     N? node,
@@ -262,8 +257,8 @@ abstract final class NodeNextContainer<T, N extends NodeNext<T, N>>
 
 ///
 /// Notice that it's possible to have immutable operatable node,
-/// - index assignment may not modify current node [data] and [next] by [NodeNext.index].
-/// - appendage may not assign to current [data] or [next] by [NodeNext.last]
+/// - index assignment may not modify current node [data] and [next] by [NodeNext.indexOf].
+/// - appendage may not assign to current [data] or [next] by [NodeNext.lastOf]
 ///
 abstract final class NodeNextOperatable<T>
     extends NodeNext<T, NodeNextOperatable<T>>
@@ -276,18 +271,18 @@ abstract final class NodeNextOperatable<T>
   //
   @override
   T operator [](int index) =>
-      NodeNext.index<NodeNextOperatable<T>>(this, index).data;
+      NodeNext.indexOf<NodeNextOperatable<T>>(this, index).data;
 
   @override
   void operator []=(int index, T element) =>
       NodeWriter.next_pushCurrentToNext<T, NodeNextOperatable<T>>(
-        NodeNext.index(this, index),
+        NodeNext.indexOf(this, index),
         element,
       );
 
   @override
   void operator +(covariant T tail) =>
-      NodeNext.last<T, NodeNextOperatable<T>>(this).next =
+      NodeNext.lastOf<T, NodeNextOperatable<T>>(this).next =
           _construct(tail, null) as NodeNextOperatable<T>;
 
   ///

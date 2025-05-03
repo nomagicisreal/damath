@@ -1,5 +1,6 @@
 library;
 
+import 'dart:math' as math;
 import 'package:damath/src/collection/collection.dart';
 import 'package:damath/src/primary/primary.dart';
 import 'package:damath/src/custom/custom.dart';

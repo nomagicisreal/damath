@@ -9,7 +9,7 @@ part of '../primary.dart';
 /// [BoolExtension]
 /// [NumExtension]
 /// [BigIntExtension]
-/// [DamathComparableExtension]
+/// [ComparableExtension]
 /// [DamathComparatorExtension]
 ///
 /// [RandomExtension]
@@ -26,6 +26,7 @@ abstract interface class Erroring {
   ///
   /// general
   ///
+  static const String pass = 'pass';
   static const String modifyImmutable = 'cannot modify immutables';
   static const String receiveNull = 'receive null';
   static const String lazyNotYetInit = 'lazy not yet init';
