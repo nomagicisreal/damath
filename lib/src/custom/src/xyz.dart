@@ -133,15 +133,8 @@ enum Quadrant2D {
 /// [Point2.zero], ...
 /// [Point2.lerp], ...
 ///
-class Point2
-    with M_Comparable<_MxyOperatable>, _Mxy, _MxyOperatable
-    implements Comparable<_MxyOperatable> {
-  @override
-  final double x;
-  @override
-  final double y;
-
-  const Point2(this.x, this.y);
+final class Point2 extends _Point2<Point2> {
+  const Point2(super.x, super.y);
 
   @override
   Point2 _instance(double x, double y) => Point2(x, y);
@@ -154,15 +147,14 @@ class Point2
           ? 1
           : 0;
 
-  const Point2.square(double dimension) : x = dimension, y = dimension;
+  const Point2.square(super.dimension) : super.square();
 
-  const Point2.ofX(this.x) : y = 0;
+  const Point2.ofX(super.x) : super.ofX();
 
-  const Point2.ofY(this.y) : x = 0;
+  const Point2.ofY(double y) : super.ofY(0);
 
-  Point2.fromDirection(double direction, [double distance = 0])
-    : x = distance * math.cos(direction),
-      y = distance * math.sin(direction);
+  Point2.fromDirection(super.direction, [super.distance])
+    : super.fromDirection();
 
   ///
   ///
@@ -218,7 +210,7 @@ class Point2
 /// [Point3.zero], ...
 /// [_instance], ...
 ///
-class Point3 extends Point2 with _Mxyz, _MxyzO {
+final class Point3 extends _Point2<Point3> with _Mxyz<Point3>, _MxyzO<Point3> {
   @override
   final double z;
 
@@ -397,13 +389,8 @@ class Point3 extends Point2 with _Mxyz, _MxyzO {
 ///
 ///
 ///
-class Vector2 with _Mxy, _MxyTransformable {
-  @override
-  double x;
-  @override
-  double y;
-
-  Vector2(this.x, this.y);
+final class Vector2 extends _Vector2<Vector2> {
+  Vector2(super.x, super.y);
 
   @override
   Vector2 get clone => Vector2(x, y);
@@ -420,7 +407,8 @@ class Vector2 with _Mxy, _MxyTransformable {
   }
 }
 
-class Vector3 extends Vector2 with _Mxyz, _MxyzT {
+final class Vector3 extends _Vector2<Vector3>
+    with _Mxyz<Vector3>, _MxyzT<Vector3> {
   @override
   double z;
 

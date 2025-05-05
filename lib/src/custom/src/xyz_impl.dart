@@ -7,17 +7,19 @@ part of '../custom.dart';
 ///
 /// [_Mxy], [_Mxyz]
 ///   --[_MxyOperatable], [_MxyzO]
-///   |   --[Point2], [Point3]
+///   |   --[_Point2]
+///   |       --[Point2], [Point3]
 ///   |
 ///   --[_MxyTransformable], [_MxyzT]
-///       --[Vector2], [Vector3]
+///       --[_Vector2]
+///           --[Vector2], [Vector3]
 ///
 ///
 
 ///
 ///
 ///
-mixin _Mxy {
+mixin _Mxy<P extends _Mxy<P>> {
   double get x;
 
   double get y;
@@ -35,7 +37,7 @@ mixin _Mxy {
 ///
 ///
 ///
-mixin _Mxyz implements _Mxy {
+mixin _Mxyz<P extends _Mxyz<P>> implements _Mxy<P> {
   double get z;
 
   @override
@@ -51,66 +53,67 @@ mixin _Mxyz implements _Mxy {
 ///
 ///
 ///
-mixin _MxyOperatable on _Mxy
+mixin _MxyOperatable<P extends _MxyOperatable<P>> on _Mxy<P>
     implements
-        Comparable<_MxyOperatable>,
-        I_OperatableDirectable<_MxyOperatable, _MxyOperatable>,
-        I_OperatableScalable<_MxyOperatable, _MxyOperatable>,
-        I_OperatableStepable<_MxyOperatable, _MxyOperatable> {
-  _MxyOperatable _instance(double x, double y);
+        Comparable<P>,
+        I_OperatableDirectable<P, P>,
+        I_OperatableScalable<P, P>,
+        I_OperatableStepable<P, P> {
+  P _instance(double x, double y);
 
   @override
-  _MxyOperatable operator -() => _instance(-x, -y);
+  P operator -() => _instance(-x, -y);
 
   @override
-  _MxyOperatable operator +(covariant _MxyOperatable other) => _instance(x + other.x, y + other.y);
+  P operator +(covariant P other) => _instance(x + other.x, y + other.y);
 
   @override
-  _MxyOperatable operator -(covariant _MxyOperatable other) => _instance(x - other.x, y - other.y);
+  P operator -(covariant P other) => _instance(x - other.x, y - other.y);
 
   @override
-  _MxyOperatable operator *(covariant _MxyOperatable other) => _instance(x * other.x, y * other.y);
+  P operator *(covariant P other) => _instance(x * other.x, y * other.y);
 
   @override
-  _MxyOperatable operator /(covariant _MxyOperatable other) => _instance(x / other.x, y / other.y);
+  P operator /(covariant P other) => _instance(x / other.x, y / other.y);
 
   @override
-  _MxyOperatable operator %(covariant _MxyOperatable other) => _instance(x % other.x, y % other.y);
+  P operator %(covariant P other) => _instance(x % other.x, y % other.y);
 
   @override
-  _MxyOperatable operator ~/(covariant _MxyOperatable other) =>
+  P operator ~/(covariant P other) =>
       _instance((x ~/ other.x).toDouble(), (y ~/ other.y).toDouble());
 }
 
-mixin _MxyzO on _Mxyz, Point2 {
+base mixin _MxyzO<P extends _MxyzO<P>> on _Mxyz<P>
+    implements _MxyOperatable<P> {
   @override
-  _MxyzO _instance(double x, double y, [double z = double.nan]);
+  P _instance(double x, double y, [double z = double.nan]);
 
   @override
-  _MxyzO operator -() => _instance(-x, -y, -z);
+  P operator -() => _instance(-x, -y, -z);
 
   @override
-  _MxyzO operator +(covariant _MxyzO other) =>
+  P operator +(covariant P other) =>
       _instance(x + other.x, y + other.y, z + other.z);
 
   @override
-  _MxyzO operator -(covariant _MxyzO other) =>
+  P operator -(covariant P other) =>
       _instance(x - other.x, y - other.y, z - other.z);
 
   @override
-  _MxyzO operator *(covariant _MxyzO other) =>
+  P operator *(covariant P other) =>
       _instance(x * other.x, y * other.y, z - other.z);
 
   @override
-  _MxyzO operator /(covariant _MxyzO other) =>
+  P operator /(covariant P other) =>
       _instance(x / other.x, y / other.y, z / other.z);
 
   @override
-  _MxyzO operator %(covariant _MxyzO other) =>
+  P operator %(covariant P other) =>
       _instance(x % other.x, y % other.y, z % other.z);
 
   @override
-  _MxyzO operator ~/(covariant _MxyzO other) => _instance(
+  P operator ~/(covariant P other) => _instance(
     (x ~/ other.x).toDouble(),
     (y ~/ other.y).toDouble(),
     (z ~/ other.z).toDouble(),
@@ -120,7 +123,7 @@ mixin _MxyzO on _Mxyz, Point2 {
 ///
 ///
 ///
-mixin _MxyTransformable on _Mxy
+mixin _MxyTransformable<P extends _MxyTransformable<P>> on _Mxy<P>
     implements
         I_OperatableDirectable<_MxyTransformable, void>,
         I_OperatableScalable<_MxyTransformable, void>,
@@ -174,7 +177,7 @@ mixin _MxyTransformable on _Mxy
   _MxyTransformable get clone;
 }
 
-mixin _MxyzT on _Mxyz, _MxyTransformable {
+mixin _MxyzT<P extends _MxyzT<P>> on _Mxyz<P>, _MxyTransformable<P> {
   set z(double value);
 
   @override
@@ -319,4 +322,35 @@ mixin _MxyzT on _Mxyz, _MxyTransformable {
     x = x * cos + y * -sin;
     y = x * sin + y * cos;
   }
+}
+
+abstract final class _Point2<P extends _Point2<P>>
+    with M_Comparable<P>, _Mxy<P>, _MxyOperatable<P>
+    implements Comparable<P> {
+  @override
+  final double x;
+  @override
+  final double y;
+
+  const _Point2(this.x, this.y);
+
+  const _Point2.square(double dimension) : x = dimension, y = dimension;
+
+  const _Point2.ofX(this.x) : y = 0;
+
+  const _Point2.ofY(this.y) : x = 0;
+
+  _Point2.fromDirection(double direction, [double distance = 0])
+    : x = distance * math.cos(direction),
+      y = distance * math.sin(direction);
+}
+
+abstract final class _Vector2<V extends _Vector2<V>>
+    with _Mxy<V>, _MxyTransformable<V> {
+  @override
+  double x;
+  @override
+  double y;
+
+  _Vector2(this.x, this.y);
 }
