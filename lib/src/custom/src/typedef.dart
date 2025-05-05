@@ -100,7 +100,8 @@ typedef List2D<T> = List<List<T>>;
 ///
 ///
 typedef Countable<T> = (int, T);
-typedef Applicator<T, E> = void Function(T element, Applier<E> apply);
+typedef Combiner<T> = int Function(T value);
+// typedef Applicator<T, E> = void Function(T element, Applier<E> apply);
 typedef Lerper<T> = T Function(double t);
 typedef Differentiator<A, B> = int Function(A a, B b);
 typedef Decider<T, S> = Consumer<T> Function(S toggle);

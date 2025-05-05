@@ -60,7 +60,8 @@ abstract interface class Erroring {
   ///
   ///
   ///
-  static Error invalidIndex(int index) => RangeError.range(index, 0, null);
+  static Error invalidIndex(int index, [int? max]) =>
+      RangeError.range(index, 0, max);
 
   static Error invalidInt(int i) => ArgumentError.value(i, 'invalid integer');
 
@@ -124,12 +125,6 @@ extension NumExtension on num {
   bool isOutsideClose(num lower, num upper) => this <= lower || this >= upper;
 
   bool isOutsideOpen(num lower, num upper) => this < lower || this > upper;
-
-  bool isOutsideOpenLower(num lower, num upper) =>
-      this < lower || this >= upper;
-
-  bool isOutsideOpenUpper(num lower, num upper) =>
-      this <= lower || this > upper;
 
   ///
   ///

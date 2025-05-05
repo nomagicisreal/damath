@@ -229,6 +229,11 @@ extension DoubleExtension on double {
     return this;
   }
 
+  double get clampPositive {
+    if (this < 0) return 0;
+    return this;
+  }
+
   ///
   /// [isInteger], [isNearlyInt]
   /// [squared], [squareRoot]
