@@ -16,8 +16,6 @@ part of '../collection.dart';
 /// [cloneSorted], ...
 ///
 /// [order], ...
-/// [percentile], ...
-/// [mergeSorted], ...
 ///
 extension ListComparable<C extends Comparable> on List<C> {
   // static Iterable<List<C>> permutations<C extends Comparable>(List<C> list)
@@ -65,11 +63,18 @@ extension ListComparable<C extends Comparable> on List<C> {
   ///
   /// [median]
   ///
-  C median([bool evenPrevious = true]) =>
-      length.isEven ? this[length ~/ 2 - 1] : this[length ~/ 2];
+  static C median<C extends Comparable>(
+    List<C> items, [
+    bool evenPrevious = true,
+  ]) =>
+      items.length.isEven
+          ? items[items.length ~/ 2 - 1]
+          : items[items.length ~/ 2];
 
-  List<C> cloneSorted([bool increase = false]) =>
-      List.of(this)..sort(IteratorComparable.comparator(increase));
+  static List<C> cloneSorted<C extends Comparable>(
+    Iterable<C> source, [
+    bool increase = false,
+  ]) => List.of(source)..sort(IteratorComparable.comparator(increase));
 
   ///
   ///
@@ -84,16 +89,23 @@ extension ListComparable<C extends Comparable> on List<C> {
   ///   sorted = List.of(list)..sort(); // [1, 2, 2, 3, 5]
   ///   order = list.order();           // [4, 1, 5, 2, 3]
   ///
-  List<int> order({bool increase = true, int from = 1}) {
-    final length = this.length;
+  static List<int> order<C extends Comparable>(
+    List<C> source, {
+    bool increase = true,
+    int from = 1,
+  }) {
+    final length = source.length;
     C? previous;
     var exist = 0;
     var index = -1;
-    return cloneSorted(increase).iterator.mapToList((vSorted) {
+
+    return IteratorTo.mapToList(cloneSorted(source, increase).iterator, (
+      vSorted,
+    ) {
       if (vSorted != previous) {
         exist = 0;
         for (var i = 0; i < length; i++) {
-          final current = this[i];
+          final current = source[i];
           if (vSorted == current) {
             previous = current;
             index = i;
@@ -102,7 +114,7 @@ extension ListComparable<C extends Comparable> on List<C> {
         }
       } else {
         for (var i = index + 1; i < length; i++) {
-          if (vSorted == this[i]) {
+          if (vSorted == source[i]) {
             if (exist == 0) {
               exist++;
               index = i;
@@ -118,137 +130,20 @@ extension ListComparable<C extends Comparable> on List<C> {
       return from + index;
     });
   }
-
-  ///
-  /// [rank]
-  /// it returns the rank of elements. for example,
-  ///   list = [1, 8, 4, 8, 9];         // [1, 8, 4, 8, 9]
-  ///   sorted = List.of(list)..sort(); // [1, 4, 8, 8, 9]
-  ///   rank = list.rank();             // [1.0, 3.5, 2.0, 3.5, 5.0]
-  ///
-  /// [tieToMin] == null (tie to average)
-  /// [tieToMin] == true (tie to min)
-  /// [tieToMax] == false (tie to max)
-  ///
-  List<double> rank({bool increase = true, bool? tieToMin}) {
-    final length = this.length;
-    final sorted = cloneSorted(increase);
-
-    C? previous;
-    var rank = -1.0;
-    return iterator.mapToList(
-      // tie to average
-      tieToMin == null
-          ? (v) {
-            if (v == previous) return rank;
-
-            var exist = 0;
-            for (var i = 0; i < length; i++) {
-              final current = sorted[i];
-
-              if (exist == 0) {
-                if (current == v) exist++;
-
-                // exist != 0
-              } else {
-                if (current != v) {
-                  rank = i + (1 - exist) / 2;
-                  return rank;
-                }
-                exist++;
-              }
-            }
-            rank = length + (1 - exist) / 2;
-            return rank;
-          }
-          : tieToMin
-          ? (v) {
-            if (v == previous) return rank;
-
-            rank = (sorted.indexWhere((s) => s == v) + 1).toDouble();
-            return rank;
-          }
-          // tie to max
-          : (v) {
-            if (v == previous) return rank;
-
-            var exist = false;
-            for (var i = 0; i < length; i++) {
-              final current = sorted[i];
-
-              if (current == v) exist = true;
-              if (exist && current != v) {
-                rank = i.toDouble();
-                return rank;
-              }
-            }
-            rank = length.toDouble();
-            return rank;
-          },
-    );
-  }
-
-  ///
-  ///
-  ///
-  C percentile(double value) {
-    if (!value.isRangeClose(0, 1)) {
-      throw StateError(Erroring.percentileOutOfBoundary);
-    }
-    late final C element;
-    final length = this.length;
-    for (var i = 0; i < length; i++) {
-      if ((i + 1) / length > value) element = this[i];
-    }
-    return element;
-  }
-
-  Iterable<C> get percentileQuartile sync* {
-    var step = 0.25;
-    final length = this.length;
-    for (var i = 0; i < length; i++) {
-      if ((i + 1) / length > step) {
-        step += 0.25;
-        yield this[i];
-      }
-    }
-  }
-
-  Iterable<MapEntry<C, double>> percentileCumulative([
-    bool increase = true,
-  ]) sync* {
-    assert(isSorted(IteratorComparable.comparator(increase)));
-    final percent = 1 / length;
-
-    var previous = first;
-    var cumulative = 0.0;
-    for (var i = 1; i < length; i++) {
-      final current = this[i];
-      cumulative += percent;
-
-      if (current != previous) {
-        yield MapEntry(previous, cumulative);
-        cumulative = 0;
-        previous = current;
-      }
-    }
-    yield MapEntry(previous, cumulative);
-  }
 }
 
 ///
 /// [interquartileRange]
 ///
 extension ListDouble on List<double> {
-  ///
-  /// [interquartileRange]
-  ///
-  double get interquartileRange {
-    final interquartile = percentileQuartile;
-    return interquartile.last - interquartile.first;
-  }
+  // ///
+  // /// [interquartileRange]
+  // ///
+  // double get interquartileRange {
+  //   final interquartile = percentileQuartile;
+  //   return interquartile.last - interquartile.first;
+  // }
 }
-
 
 ///
 /// static methods:
@@ -262,8 +157,8 @@ extension List2DComparable<C extends Comparable> on List2D<C> {
   /// [_comparatorAccordingly]
   ///
   static Comparator<List<C>> _comparatorAccordingly<C extends Comparable>(
-      Comparator<C> keepAFirst,
-      ) => (a, b) {
+    Comparator<C> keepAFirst,
+  ) => (a, b) {
     final maxIndex = math.max(a.length, b.length);
     int compareBy(int i) {
       final value = keepAFirst(a[i], b[i]);
@@ -277,53 +172,59 @@ extension List2DComparable<C extends Comparable> on List2D<C> {
   /// [sortByFirst]
   /// [sortAccordingly]
   ///
-  void sortByFirst([bool increasing = true]) => sort(
+  static void sortByFirst<C extends Comparable>(
+    List2D<C> list2D, [
+    bool increasing = true,
+  ]) => list2D.sort(
     increasing
         ? (a, b) => a.first.compareTo(b.first)
         : (a, b) => b.first.compareTo(a.first),
   );
 
-  void sortAccordingly([bool increase = true]) => sort(
+  static void sortAccordingly<C extends Comparable>(
+    List2D<C> list2D, [
+    bool increase = true,
+  ]) => list2D.sort(
     List2DComparable._comparatorAccordingly(
       increase ? Comparable.compare : IteratorComparable.compareReverse,
     ),
   );
 
-///
-///
-/// when [isIncrease] == true, [compareLastElement] == false, this is an example
-///   // [
-///   //  [2, 5, 1],
-///   //  [2, 5, 6, 1],
-///   //  [2, 5, 6, 9],
-///   //  [2, 5, 6, 1, 90],
-///   // ]
-///
-/// when [isIncrease] == true, [compareLastElement] == true, this is an example
-///   // [
-///   //  [2, 5, 10],
-///   //  [2, 5, 6, 10],
-///   //  [2, 5, 6, 10, 90],
-///   //  [2, 5, 6, 9],
-///   // ]
-///
-/// when [isIncrease] == true, [compareLastElement] == false, this is an example
-///   // [
-///   //  [2, 5, 10],
-///   //  [2, 5, 6, 9],
-///   //  [2, 5, 6, 10],
-///   //  [2, 5, 6, 9, 90],
-///   // ]
-///
+  ///
+  ///
+  /// when [isIncrease] == true, [compareLastElement] == false, this is an example
+  ///   // [
+  ///   //  [2, 5, 1],
+  ///   //  [2, 5, 6, 1],
+  ///   //  [2, 5, 6, 9],
+  ///   //  [2, 5, 6, 1, 90],
+  ///   // ]
+  ///
+  /// when [isIncrease] == true, [compareLastElement] == true, this is an example
+  ///   // [
+  ///   //  [2, 5, 10],
+  ///   //  [2, 5, 6, 10],
+  ///   //  [2, 5, 6, 10, 90],
+  ///   //  [2, 5, 6, 9],
+  ///   // ]
+  ///
+  /// when [isIncrease] == true, [compareLastElement] == false, this is an example
+  ///   // [
+  ///   //  [2, 5, 10],
+  ///   //  [2, 5, 6, 9],
+  ///   //  [2, 5, 6, 10],
+  ///   //  [2, 5, 6, 9, 90],
+  ///   // ]
+  ///
 
-// // notice that it's not efficient.
-// void sortDirty([bool increase = true, bool compareLastElement = false]) {
-//   assert(everyElementSorted(increase));
-//   if (compareLastElement) throw UnimplementedError();
-//   collection
-//       .groupBy(this, (value) => value.length)
-//       .map((length, sub) => MapEntry(length, sub..sortAccordingly(increase))).valuesBySortedKeys();
-// }
+  // // notice that it's not efficient.
+  // void sortDirty([bool increase = true, bool compareLastElement = false]) {
+  //   assert(everyElementSorted(increase));
+  //   if (compareLastElement) throw UnimplementedError();
+  //   collection
+  //       .groupBy(this, (value) => value.length)
+  //       .map((length, sub) => MapEntry(length, sub..sortAccordingly(increase))).valuesBySortedKeys();
+  // }
 }
 
 ///
@@ -333,7 +234,6 @@ extension List2DInt on List2D<int> {
   ///
   /// [summationIntoIdentity]
   ///
-  List2D<int> summationIntoIdentity(int length) =>
-      copyIntoIdentity(IntExtension.reduce_plus, length, 1);
+  static List2D<int> summationIntoIdentity(List2D<int> list2D, int length) =>
+      list2D.copyIntoIdentity(IntExtension.reduce_plus, length, 1);
 }
-

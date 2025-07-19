@@ -10,6 +10,8 @@ part of '../collection.dart';
 ///
 ///
 
+enum OrderLinear { increase, decrease }
+
 ///
 ///
 ///
@@ -59,6 +61,7 @@ final class ComparableMethod<T> {
     final value = comparator(element, current);
     return value == state.value || (includeEqual && value == 0);
   }
+
   // future: compare to multiple result by comparator (return many kinds of integers)
 }
 
@@ -66,28 +69,21 @@ final class ComparableMethod<T> {
 /// [orderBefore], ...
 /// [compareToIncreaseTernary], ...
 ///
-extension ComparableExtension<C> on Comparable<C> {
-  bool orderBefore(C other) => compareTo(other) == -1;
+extension ComparableExtension<C extends Comparable> on C {
+  static bool orderBefore<C extends Comparable>(C current, C other) =>
+      current.compareTo(other) == -1;
 
-  bool orderAfter(C other) => compareTo(other) == 1;
-
-  ///
-  /// there is no compiletime error but runtime error when "[comparator_orderBefore]<[T]>",
-  /// while [T] is not bound to [Comparable]
-  ///
-  // static bool comparator_orderBefore<C extends Comparable>(C a, C b) =>
-  //     a.orderBefore(b);
-  static bool comparator_orderBefore<C>(C a, C b) =>
-      (a as Comparable).orderBefore(b);
-
-  static bool comparator_orderAfter<C>(C a, C b) =>
-      (a as Comparable).orderAfter(b);
+  static bool orderAfter<C extends Comparable>(C current, C other) =>
+      current.compareTo(other) == 1;
 
   ///
   ///
   ///
-  bool? compareToIncreaseTernary(C other) {
-    final value = compareTo(other);
+  static bool? compareToIncreaseTernary<C extends Comparable>(
+    C current,
+    C other,
+  ) {
+    final value = current.compareTo(other);
     return switch (value) {
       0 => null,
       1 => false,
@@ -96,8 +92,11 @@ extension ComparableExtension<C> on Comparable<C> {
     };
   }
 
-  bool? compareToDecreaseTernary(C other) {
-    final value = compareTo(other);
+  static bool? compareToDecreaseTernary<C extends Comparable>(
+    C current,
+    C other,
+  ) {
+    final value = current.compareTo(other);
     return switch (value) {
       0 => null,
       1 => true,
@@ -107,8 +106,8 @@ extension ComparableExtension<C> on Comparable<C> {
   }
 
   static bool? ofTernaryIncrease<C extends Comparable>(C a, C b) =>
-      a.compareToIncreaseTernary(b);
+      compareToIncreaseTernary(a, b);
 
   static bool? ofTernaryDecrease<C extends Comparable>(C a, C b) =>
-      a.compareToDecreaseTernary(b);
+      compareToDecreaseTernary(a, b);
 }

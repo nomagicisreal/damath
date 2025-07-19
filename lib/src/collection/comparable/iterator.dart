@@ -18,7 +18,7 @@ part of '../collection.dart';
 /// [consecutiveCounted], ...
 ///
 ///
-extension IteratorComparable<C extends Comparable> on Iterator<C> {
+extension IteratorComparable<C extends Comparable> on Iterable<C> {
   ///
   /// [comparator], [compareReverse]
   ///
@@ -59,86 +59,46 @@ extension IteratorComparable<C extends Comparable> on Iterator<C> {
   /// [predicateUpper]
   ///
   static Predicator<C> predicateLower<C extends Comparable>(
-      C min, [
-        bool orSame = false,
-      ]) =>
+    C min, [
+    bool orSame = false,
+  ]) =>
       orSame
           ? (C value) => IteratorComparable.notIncrease(min, value)
           : (C value) => IteratorComparable.isDecrease(min, value);
 
   static Predicator<C> predicateUpper<C extends Comparable>(
-      C max, [
-        bool orSame = false,
-      ]) =>
+    C max, [
+    bool orSame = false,
+  ]) =>
       orSame
           ? (C value) => IteratorComparable.notDecrease(max, value)
           : (C value) => IteratorComparable.isIncrease(max, value);
 
   ///
-  /// [_invalidFor]
+  /// [invalidFor]
   /// [_ternarateFor]
   /// in convention, the validation for [PredicatorReducer] should pass in order of (lower, upper)
   ///
-  static PredicatorReducer<C> _validFor<C extends Comparable>(
-      bool increase, [
-        bool strictly = false,
-      ]) =>
-      strictly
-          ? increase
-          ? isIncrease
-          : isDecrease
-          : increase
-          ? notDecrease
-          : notIncrease;
+  static PredicatorReducer<C> validFor<C extends Comparable>(
+    OrderLinear order, [
+    bool strictly = false,
+  ]) => switch (order) {
+    OrderLinear.increase => strictly ? isIncrease : notDecrease,
+    OrderLinear.decrease => strictly ? isDecrease : notIncrease,
+  };
 
-// static PredicatorReducer<C> _invalidFor<C extends Comparable>(
-//   bool increase, [
-//   bool strictly = false,
-// ]) =>
-//     strictly
-//         ? increase
-//             ? notDecrease
-//             : notIncrease
-//         : increase
-//         ? isDecrease
-//         : isIncrease;
-//
-// ///
-// /// [isSorted]
-// ///
-// bool isSorted(bool increase, [bool identical = false]) =>
-//     !exist(_invalidFor(increase, identical));
-//
-// ///
-// /// [checkSorted]
-// /// [checkSortedForSupply]
-// /// [checkSortedForListen]
-// ///
-// void checkSorted([bool increase = true]) {
-//   if (!isSorted(increase)) {
-//     throw StateError(Erroring.comparableDisordered);
-//   }
-// }
-//
-// void checkSortedForListen(Listener listen, [bool increase = true]) =>
-//     isSorted(increase)
-//         ? listen()
-//         : throw StateError(Erroring.comparableDisordered);
-//
-// S checkSortedForSupply<S>(Supplier<S> supply, [bool increase = true]) =>
-//     isSorted(increase)
-//         ? supply()
-//         : throw StateError(Erroring.comparableDisordered);
+  static PredicatorReducer<C> invalidFor<C extends Comparable>(
+    OrderLinear order, [
+    bool strictly = false,
+  ]) => switch (order) {
+    OrderLinear.increase => strictly ? notIncrease : isDecrease,
+    OrderLinear.decrease => strictly ? notDecrease : isIncrease,
+  };
 }
 
 ///
 ///
-/// static methods:
-/// [reduceMaxDistance], ...
-///
-/// instance methods:
 /// [min], ...
-/// [sum], ...
 /// [distance], ...
 ///
 /// [abs], ...
@@ -148,117 +108,119 @@ extension IteratorComparable<C extends Comparable> on Iterator<C> {
 ///
 extension IteratorDouble on Iterator<double> {
   ///
-  ///
-  ///
-  /// static methods
-  ///
-  ///
-  ///
-  static Iterator<double> reduceMaxDistance(
-      Iterator<double> a,
-      Iterator<double> b,
-      ) => a.distance > b.distance ? a : b;
-
-  static Iterator<double> reduceMinDistance(
-      Iterator<double> a,
-      Iterator<double> b,
-      ) => a.distance < b.distance ? a : b;
-
-  ///
   /// [min], [max], [mode]
   /// [range], [boundary]
   ///
-  double get min => reduce(DoubleExtension.reduceMin);
+  static double min(Iterator<double> vector) =>
+      IteratorExtension.reduce(vector, DoubleExtension.reduceMin);
 
-  double get max => reduce(DoubleExtension.reduceMax);
+  static double max(Iterator<double> vector) =>
+      IteratorExtension.reduce(vector, DoubleExtension.reduceMax);
 
-  double get mode => toMapCounted.reduce(MapEntryExtension.reduceMaxValueInt).key;
+  static double mode(Iterator<double> vector) =>
+      IteratorTo.toMapCounted(
+        vector,
+      ).reduce(MapEntryExtension.reduceMaxValueInt).key;
 
-  double get range => applyMoveNext((value) {
-    var min = value;
-    var max = value;
-    while (moveNext()) {
-      if (current < min) min = current;
-      if (current > max) max = current;
-    }
-    return max - min;
-  });
+  static double range(Iterator<double> vector) =>
+      IteratorExtension.applyMoveNext(vector, (value) {
+        var min = value;
+        var max = value;
+        while (vector.moveNext()) {
+          if (vector.current < min) min = vector.current;
+          if (vector.current > max) max = vector.current;
+        }
+        return max - min;
+      });
 
-  (double, double) get boundary => supplyMoveNext(() {
-    var min = current;
-    var max = current;
-    while (moveNext()) {
-      if (current < min) min = current;
-      if (current > max) max = current;
-    }
-    return (min, max);
-  });
+  static (double, double) boundary(Iterator<double> vector) =>
+      IteratorTo.supplyMoveNext(vector, () {
+        var min = vector.current;
+        var max = vector.current;
+        while (vector.moveNext()) {
+          if (vector.current < min) min = vector.current;
+          if (vector.current > max) max = vector.current;
+        }
+        return (min, max);
+      });
 
-  ///
-  /// [sumSquared]
-  /// [meanArithmetic], [meanGeometric]
-  ///
-  double get sumSquared => reduce(DoubleExtension.reducePlusSquared);
+  static double sumSquared(Iterator<double> vector) =>
+      IteratorExtension.reduce(vector, DoubleExtension.reducePlusSquared);
 
-  double get meanArithmetic => applyMoveNext((total) {
-    var length = 1;
-    while (moveNext()) {
-      total += current;
-      length++;
-    }
-    return total / length;
-  });
+  static double meanArithmetic(Iterator<double> vector) =>
+      IteratorExtension.applyMoveNext(vector, (total) {
+        var length = 1;
+        while (vector.moveNext()) {
+          total += vector.current;
+          length++;
+        }
+        return total / length;
+      });
 
-  double get meanGeometric => applyMoveNext((total) {
-    var length = 1;
-    while (moveNext()) {
-      total *= current;
-      length++;
-    }
-    return math.pow(total, 1 / length).toDouble();
-  });
+  static double meanGeometric(Iterator<double> vector) =>
+      IteratorExtension.applyMoveNext(vector, (total) {
+        var length = 1;
+        while (vector.moveNext()) {
+          total *= vector.current;
+          length++;
+        }
+        return math.pow(total, 1 / length).toDouble();
+      });
 
-  ///
-  /// [distance], [volume]
-  ///
-  double get distance => math.sqrt(reduce(DoubleExtension.reducePlusSquared));
-
-  double get volume => reduce(DoubleExtension.reduceMultiply);
-
-  ///
-  /// [abs], [rounded], [roundUpTo]
-  ///
-  Iterable<double> get abs => takeAllApply((v) => v.abs());
-
-  Iterable<double> get rounded => takeAllApply((v) => v.roundToDouble());
-
-  ///
-  ///
-  /// intersection
-  ///
-  ///
-
-  ///
-  /// [interDistanceTo], [interDistanceFrom]
-  /// [interDistanceHalfTo], [interDistanceHalfFrom]
-  /// [interDistanceCumulate]
-  ///
-  Iterable<double> interDistanceTo(Iterator<double> destination) =>
-      destination.pairTake(this, DoubleExtension.reduceMinus);
-
-  Iterable<double> interDistanceFrom(Iterator<double> source) =>
-      pairTake(source, DoubleExtension.reduceMinus);
-
-  Iterable<double> interDistanceHalfTo(Iterator<double> destination) =>
-      destination.pairTake(this, DoubleExtension.reduceMinusThenHalf);
-
-  Iterable<double> interDistanceHalfFrom(Iterator<double> source) =>
-      pairTake(source, DoubleExtension.reduceMinusThenHalf);
-
-  double interDistanceCumulate(Iterator<double> another) => interReduce(
-    another,
-    DoubleExtension.reduceMinus,
-    DoubleExtension.reducePlus,
+  static double distance(Iterator<double> vector) => math.sqrt(
+    IteratorExtension.reduce(vector, DoubleExtension.reducePlusSquared<double>),
   );
-}
 
+  static double volume(Iterator<double> vector) =>
+      IteratorExtension.reduce(vector, DoubleExtension.reduceMultiply);
+
+  static Iterable<double> abs(Iterator<double> vector) =>
+      IteratorExtension.takeAllApply(vector, (v) => v.abs());
+
+  static Iterable<double> rounded(Iterator<double> vector) =>
+      IteratorExtension.takeAllApply(vector, (v) => v.roundToDouble());
+
+  static Iterable<double> interDistanceTo(
+    Iterator<double> destination,
+    Iterator<double> source,
+  ) => IteratorTogether.pairTake(
+    destination,
+    source,
+    DoubleExtension.reduceMinus,
+  );
+
+  static Iterable<double> interDistanceFrom(
+    Iterator<double> source,
+    Iterator<double> destination,
+  ) => IteratorTogether.pairTake(
+    source,
+    destination,
+    DoubleExtension.reduceMinus,
+  );
+
+  static Iterable<double> interDistanceHalfTo(
+    Iterator<double> destination,
+    Iterator<double> source,
+  ) => IteratorTogether.pairTake(
+    destination,
+    source,
+    DoubleExtension.reduceMinusThenHalf,
+  );
+
+  static Iterable<double> interDistanceHalfFrom(
+    Iterator<double> source,
+    Iterator<double> destination,
+  ) => IteratorTogether.pairTake(
+    source,
+    destination,
+    DoubleExtension.reduceMinusThenHalf,
+  );
+
+  static double interDistanceCumulate(Iterator<double> a, Iterator<double> b) =>
+      IteratorTogether.interReduce(
+        a,
+        b,
+        DoubleExtension.reduceMinus,
+        DoubleExtension.reducePlus,
+      );
+}

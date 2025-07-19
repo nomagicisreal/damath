@@ -396,7 +396,7 @@ abstract final class NodeNextEnqueueable<T>
 /// [NodeNextSorted] is the concise version of [NodeNextEnqueueable] for [Comparable]
 ///
 abstract final class NodeNextSorted<C extends Comparable>
-    extends NodeNext<C, NodeNextSorted<C>>
+    extends NodeNext<C, NodeNextSorted<C>> with _M_VertexComparable<C>
     implements
         _I_NodeNextFinal<NodeNextSorted<C>>,
         _I_NodeNextContainer<C, NodeNextSorted<C>>,
@@ -404,7 +404,7 @@ abstract final class NodeNextSorted<C extends Comparable>
   //
   @override
   void push(C element) =>
-      element.orderAfter(data)
+      ComparableExtension.orderAfter(element, data)
           ? NodeWriter.next_pushNext(this, element, _apply(element))
           : NodeWriter.next_pushCurrentToNext(this, element);
 

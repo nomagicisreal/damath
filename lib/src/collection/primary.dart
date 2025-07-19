@@ -16,7 +16,6 @@ extension MapNullable<K, V> on Map<K, V?> {
   void reset({V? fill}) => updateAll((_, __) => fill);
 }
 
-
 ///
 /// static methods:
 /// [_keep], ...
@@ -34,13 +33,13 @@ extension IteratorBool on Iterator<bool> {
   ///
   /// [isSatisfiable], [isTautology], [isContradiction], [isContingency]
   ///
-  bool get isSatisfiable => any(_keep);
+  bool get isSatisfiable => IteratorExtension.any(this, _keep);
 
-  bool get isTautology => !any(_reverse);
+  bool get isTautology => !IteratorExtension.any(this, _reverse);
 
-  bool get isContradiction => !any(_keep);
+  bool get isContradiction => !IteratorExtension.any(this, _keep);
 
-  bool get isContingency => existDifferent;
+  bool get isContingency => IteratorExtension.existDifferent(this);
 
   ///
   /// [takeFor]
@@ -72,15 +71,15 @@ extension IteratorNullable<I> on Iterator<I?> {
 
     final consume =
         lengthValid
-            ? (value) {
-              if (value == null) return;
-              map.plusOn(value);
+            ? (key) {
+              if (key == null) return;
+              MapValueDouble.plusOn(map, key);
               length++;
             }
-            : (value) {
+            : (key) {
               length++;
-              if (value == null) return;
-              map.plusOn(value);
+              if (key == null) return;
+              MapValueDouble.plusOn(map, key);
             };
 
     while (moveNext()) {
@@ -99,6 +98,9 @@ extension IterableNullable<I> on Iterable<I?> {
   ///
   /// [validLength]
   ///
-  int get validLength =>
-      iterator.fold(0, (value, current) => current == null ? value : ++value);
+  int get validLength => IteratorTo.fold(
+    iterator,
+    0,
+    (value, current) => current == null ? value : ++value,
+  );
 }

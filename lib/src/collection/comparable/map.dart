@@ -13,29 +13,41 @@ part of '../collection.dart';
 /// [keysSorted], ...
 ///
 extension MapKeyComparable<K extends Comparable, V> on Map<K, V> {
-  List<K> keysSorted([bool increase = true]) =>
-      keys.toList(growable: false)
+  static List<K> keysSorted<K extends Comparable, V>(
+    Map<K, V> map, [
+    bool increase = true,
+  ]) =>
+      map.keys.toList(growable: false)
         ..sort(IteratorComparable.comparator(increase));
 
   // notice that it's not efficient, just for convenience
-  List<V> valuesBySortedKeys([bool increase = true]) =>
-      keysSorted(increase).mapToList((key) => this[key]!);
+  static List<V> valuesBySortedKeys<K extends Comparable, V>(
+    Map<K, V> map, [
+    bool increase = true,
+  ]) => keysSorted(map, increase).map((key) => map[key]!).toList();
 
-  List<MapEntry<K, V>> entriesBySortedKeys([bool increase = true]) =>
-      keysSorted(increase).mapToList((key) => MapEntry(key, this[key] as V));
+  static List<MapEntry<K, V>> entriesBySortedKeys<K extends Comparable, V>(
+    Map<K, V> map, [
+    bool increase = true,
+  ]) =>
+      keysSorted(
+        map,
+        increase,
+      ).map((key) => MapEntry(key, map[key] as V)).toList();
 }
-
 
 ///
 /// [plusOn]
 ///
 extension MapValueInt<K, V extends num> on Map<K, int> {
-  void plusOn(K key) => update(key, (value) => ++value, ifAbsent: () => 1);
+  static void plusOn<K>(Map<K, int> map, K key) =>
+      map.update(key, (value) => ++value, ifAbsent: () => 1);
 }
 
 ///
 /// [plusOn]
 ///
 extension MapValueDouble<K> on Map<K, double> {
-  void plusOn(K key) => update(key, (value) => ++value, ifAbsent: () => 1);
+  static void plusOn<K>(Map<K, double> map, K key) =>
+      map.update(key, (value) => ++value, ifAbsent: () => 1);
 }

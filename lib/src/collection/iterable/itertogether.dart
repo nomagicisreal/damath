@@ -2,7 +2,6 @@ part of '../collection.dart';
 
 ///
 ///
-/// instance methods:
 /// [moveNextTogetherReduce], ...
 ///
 /// [pair], ...
@@ -29,21 +28,30 @@ extension IteratorTogether<I> on Iterator<I> {
   /// [moveNextTogetherSupply]
   /// [moveNextTogetherCompanion]
   ///
-  I moveNextTogetherReduce(Iterator<I> another, Reducer<I> reducing) =>
-      moveNext() && another.moveNext()
-          ? reducing(current, another.current)
+  static I moveNextTogetherReduce<I>(
+    Iterator<I> iterator,
+    Iterator<I> another,
+    Reducer<I> reducing,
+  ) =>
+      iterator.moveNext() && another.moveNext()
+          ? reducing(iterator.current, another.current)
           : throw StateError(Erroring.iterableNoElement);
 
-  I moveNextTogetherCompanion<E>(
+  static I moveNextTogetherCompanion<I, E>(
+    Iterator<I> iterator,
     Iterator<E> another,
     Companion<I, E> companion,
   ) =>
-      moveNext() && another.moveNext()
-          ? companion(current, another.current)
+      iterator.moveNext() && another.moveNext()
+          ? companion(iterator.current, another.current)
           : throw StateError(Erroring.iterableNoElement);
 
-  S moveNextTogetherSupply<T, S>(Iterator<T> another, Supplier<S> supply) =>
-      moveNext() && another.moveNext()
+  static S moveNextTogetherSupply<I, T, S>(
+    Iterator<I> iterator,
+    Iterator<T> another,
+    Supplier<S> supply,
+  ) =>
+      iterator.moveNext() && another.moveNext()
           ? supply()
           : throw StateError(Erroring.iterableNoElement);
 
@@ -51,19 +59,24 @@ extension IteratorTogether<I> on Iterator<I> {
   /// [pair]
   /// [pairIndexable]
   ///
-  void pair<E>(Iterator<E> another, Pairitor<I, E> mutual) {
-    while (moveNext() && another.moveNext()) {
-      mutual(current, another.current);
+  static void pair<I, E>(
+    Iterator<I> iterator,
+    Iterator<E> another,
+    Pairitor<I, E> mutual,
+  ) {
+    while (iterator.moveNext() && another.moveNext()) {
+      mutual(iterator.current, another.current);
     }
   }
 
-  void pairIndexable<E>(
+  static void pairIndexable<I, E>(
+    Iterator<I> iterator,
     Iterator<E> another,
     PairitorIndexable<I, E> mutual,
     int start,
   ) {
-    for (var i = start; moveNext() && another.moveNext(); i++) {
-      mutual(current, another.current, i);
+    for (var i = start; iterator.moveNext() && another.moveNext(); i++) {
+      mutual(iterator.current, another.current, i);
     }
   }
 
@@ -71,16 +84,22 @@ extension IteratorTogether<I> on Iterator<I> {
   /// [pairFollow]
   /// [pairFollowIndexable]
   ///
-  void pairFollow<E>(
+  static void pairFollow<I, E>(
+    Iterator<I> iterator,
     Iterator<E> another,
     Pairitor<I, E> mutual,
     Consumer<I> overflow,
   ) {
-    while (another.moveNext()) if (moveNext()) mutual(current, another.current);
-    while (moveNext()) overflow(current);
+    while (another.moveNext()) {
+      if (iterator.moveNext()) mutual(iterator.current, another.current);
+    }
+    while (iterator.moveNext()) {
+      overflow(iterator.current);
+    }
   }
 
-  void pairFollowIndexable<E>(
+  static void pairFollowIndexable<I, E>(
+    Iterator<I> iterator,
     Iterator<E> another,
     PairitorIndexable<I, E> mutual,
     ConsumerIndexable<I> overflow,
@@ -88,17 +107,23 @@ extension IteratorTogether<I> on Iterator<I> {
   ) {
     var i = start - 1;
     while (another.moveNext()) {
-      if (moveNext()) mutual(current, another.current, ++i);
+      if (iterator.moveNext()) mutual(iterator.current, another.current, ++i);
     }
-    while (moveNext()) overflow(current, ++i);
+    while (iterator.moveNext()) {
+      overflow(iterator.current, ++i);
+    }
   }
 
   ///
   /// [pairAny]
   ///
-  bool pairAny<E>(Iterator<E> another, PredicatorMixer<I, E> test) {
-    while (moveNext() && another.moveNext()) {
-      if (test(current, another.current)) return true;
+  static bool pairAny<I, E>(
+    Iterator<I> iterator,
+    Iterator<E> another,
+    PredicatorMixer<I, E> test,
+  ) {
+    while (iterator.moveNext() && another.moveNext()) {
+      if (test(iterator.current, another.current)) return true;
     }
     return false;
   }
@@ -114,81 +139,98 @@ extension IteratorTogether<I> on Iterator<I> {
   ///
   /// fold, collapse, force
   ///
-  S pairFold<E, S>(
+  static S pairFold<I, E, S>(
+    Iterator<I> iterator,
     S initialValue,
     Iterator<E> another,
     Forcer<S, I, E> mutual,
   ) {
     var val = initialValue;
-    while (moveNext() && another.moveNext()) {
-      val = mutual(val, current, another.current);
+    while (iterator.moveNext() && another.moveNext()) {
+      val = mutual(val, iterator.current, another.current);
     }
     return val;
   }
 
-  S pairFoldIndexable<E, S>(
+  static S pairFoldIndexable<I, E, S>(
+    Iterator<I> iterator,
     S initialValue,
     Iterator<E> another,
     ForcerGenerator<S, I, E> mutual,
     int start,
   ) {
     var val = initialValue;
-    for (var i = start; moveNext() && another.moveNext(); i++) {
-      val = mutual(val, current, another.current, i);
+    for (var i = start; iterator.moveNext() && another.moveNext(); i++) {
+      val = mutual(val, iterator.current, another.current, i);
     }
     return val;
   }
 
-  S pairCollapse<E, S>(
+  ///
+  ///
+  ///
+  static S pairCollapse<I, E, S>(
+    Iterator<I> iterator,
     Iterator<E> another,
     Mapper<I, S> toVal,
     Mapper<E, S> toValAnother,
     Reducer<S> init,
     Collapser<S> mutual,
-  ) => moveNextTogetherSupply(another, () {
-    var val = init(toVal(current), toValAnother(another.current));
-    while (moveNext() && another.moveNext()) {
-      val = mutual(val, toVal(current), toValAnother(another.current));
+  ) => moveNextTogetherSupply(iterator, another, () {
+    var val = init(toVal(iterator.current), toValAnother(another.current));
+    while (iterator.moveNext() && another.moveNext()) {
+      val = mutual(val, toVal(iterator.current), toValAnother(another.current));
     }
     return val;
   });
 
-  S pairCollapseIndexable<E, S>(
+  static S pairCollapseIndexable<I, E, S>(
+    Iterator<I> iterator,
     Iterator<E> another,
     Mapper<I, S> toVal,
     Mapper<E, S> toValAnother,
     Reducer<S> init,
     CollapserGenerator<S> mutual,
     int start,
-  ) => moveNextTogetherSupply(another, () {
-    var val = init(toVal(current), toValAnother(another.current));
-    for (var i = start + 1; moveNext() && another.moveNext(); i++) {
-      val = mutual(val, toVal(current), toValAnother(another.current), i);
+  ) => moveNextTogetherSupply(iterator, another, () {
+    var val = init(toVal(iterator.current), toValAnother(another.current));
+    for (var i = start + 1; iterator.moveNext() && another.moveNext(); i++) {
+      val = mutual(
+        val,
+        toVal(iterator.current),
+        toValAnother(another.current),
+        i,
+      );
     }
     return val;
   });
 
-  S pairForcer<E, S>(
+  ///
+  ///
+  ///
+  static S pairForcer<I, E, S>(
+    Iterator<I> iterator,
     Iterator<E> another,
     Mixer<I, E, S> init,
     Forcer<S, I, E> mutual,
-  ) => moveNextTogetherSupply(another, () {
-    var val = init(current, another.current);
-    while (moveNext() && another.moveNext()) {
-      val = mutual(val, current, another.current);
+  ) => moveNextTogetherSupply(iterator, another, () {
+    var val = init(iterator.current, another.current);
+    while (iterator.moveNext() && another.moveNext()) {
+      val = mutual(val, iterator.current, another.current);
     }
     return val;
   });
 
-  S pairForcerIndexable<E, S>(
+  static S pairForcerIndexable<I, E, S>(
+    Iterator<I> iterator,
     Iterator<E> another,
     Mixer<I, E, S> init,
     ForcerGenerator<S, I, E> mutual,
     int start,
-  ) => moveNextTogetherSupply(another, () {
-    var val = init(current, another.current);
-    for (var i = start; moveNext() && another.moveNext();) {
-      val = mutual(val, current, another.current, ++i);
+  ) => moveNextTogetherSupply(iterator, another, () {
+    var val = init(iterator.current, another.current);
+    for (var i = start; iterator.moveNext() && another.moveNext();) {
+      val = mutual(val, iterator.current, another.current, ++i);
     }
     return val;
   });
@@ -196,7 +238,8 @@ extension IteratorTogether<I> on Iterator<I> {
   ///
   /// follow
   ///
-  S followFoldIndexable<E, S>(
+  static S followFoldIndexable<I, E, S>(
+    Iterator<I> iterator,
     S initialValue,
     Iterator<E> another,
     ForcerGenerator<S, I, E> mutual,
@@ -206,9 +249,13 @@ extension IteratorTogether<I> on Iterator<I> {
     var val = initialValue;
     var i = start;
     while (another.moveNext()) {
-      if (moveNext()) val = mutual(val, current, another.current, ++i);
+      if (iterator.moveNext()) {
+        val = mutual(val, iterator.current, another.current, ++i);
+      }
     }
-    while (moveNext()) val = overflow(val, current, ++i);
+    while (iterator.moveNext()) {
+      val = overflow(val, iterator.current, ++i);
+    }
     return val;
   }
 
@@ -220,104 +267,129 @@ extension IteratorTogether<I> on Iterator<I> {
   ///
   ///
   ///
-  Iterable<I> pairTake<E>(
+  static Iterable<I> pairTake<I, E>(
+    Iterator<I> iterator,
     Iterator<E> another,
     Companion<I, E> companion,
   ) sync* {
-    while (moveNext() && another.moveNext()) {
-      yield companion(current, another.current);
+    while (iterator.moveNext() && another.moveNext()) {
+      yield companion(iterator.current, another.current);
     }
   }
 
-  Iterable<S> pairMap<E, S>(Iterator<E> another, Mixer<I, E, S> mixer) => [
-    for (; moveNext() && another.moveNext();) mixer(current, another.current),
+  ///
+  ///
+  ///
+  static Iterable<S> pairMap<I, E, S>(
+    Iterator<I> iterator,
+    Iterator<E> another,
+    Mixer<I, E, S> mixer,
+  ) => [
+    for (; iterator.moveNext() && another.moveNext();)
+      mixer(iterator.current, another.current),
   ];
 
-  Iterable<S> pairMapWhere<E, S>(
+  static Iterable<S> pairMapWhere<I, E, S>(
+    Iterator<I> iterator,
     Iterator<E> another,
     PredicatorMixer<I, E> test,
     Mixer<I, E, S> mixer,
   ) => [
-    for (; moveNext() && another.moveNext();)
-      if (test(current, another.current)) mixer(current, another.current),
+    for (; iterator.moveNext() && another.moveNext();)
+      if (test(iterator.current, another.current))
+        mixer(iterator.current, another.current),
   ];
 
-  Iterable<S> pairMapIndexable<E, S>(
+  static Iterable<S> pairMapIndexable<I, E, S>(
+    Iterator<I> iterator,
     Iterator<E> another,
     MixerGenerator<I, E, S> mix,
     int start,
   ) => [
-    for (var i = start; moveNext() && another.moveNext(); i++)
-      mix(current, another.current, i),
+    for (var i = start; iterator.moveNext() && another.moveNext(); i++)
+      mix(iterator.current, another.current, i),
   ];
 
-  Iterable<S> pairMapIndexableWhere<E, S>(
+  static Iterable<S> pairMapIndexableWhere<I, E, S>(
+    Iterator<I> iterator,
     Iterator<E> another,
     PredicatorMixer<I, E> test,
     MixerGenerator<I, E, S> mixer,
     int start,
   ) => [
-    for (var i = start; moveNext() && another.moveNext(); i++)
-      if (test(current, another.current)) mixer(current, another.current, i),
+    for (var i = start; iterator.moveNext() && another.moveNext(); i++)
+      if (test(iterator.current, another.current))
+        mixer(iterator.current, another.current, i),
   ];
 
-  List<S> pairMapList<E, S>(Iterator<E> another, Mixer<I, E, S> mixer) => [
-    for (; moveNext() && another.moveNext();) mixer(current, another.current),
+  static List<S> pairMapList<I, E, S>(
+    Iterator<I> iterator,
+    Iterator<E> another,
+    Mixer<I, E, S> mixer,
+  ) => [
+    for (; iterator.moveNext() && another.moveNext();)
+      mixer(iterator.current, another.current),
   ];
 
   ///
   /// expand
   ///
-  Iterable<S> pairExpand<E, S>(
+  static Iterable<S> pairExpand<I, E, S>(
+    Iterator<I> iterator,
     Iterator<E> another,
     Mixer<I, E, Iterable<S>> expanding,
   ) => [
-    for (; moveNext() && another.moveNext();)
-      ...expanding(current, another.current),
+    for (; iterator.moveNext() && another.moveNext();)
+      ...expanding(iterator.current, another.current),
   ];
 
-  Iterable<S> pairExpandWhere<E, S>(
+  static Iterable<S> pairExpandWhere<I, E, S>(
+    Iterator<I> iterator,
     Iterator<E> another,
     PredicatorMixer<I, E> test,
     Mixer<I, E, Iterable<S>> expanding,
   ) => [
-    for (; moveNext() && another.moveNext();)
-      if (test(current, another.current))
-        ...expanding(current, another.current),
+    for (; iterator.moveNext() && another.moveNext();)
+      if (test(iterator.current, another.current))
+        ...expanding(iterator.current, another.current),
   ];
 
-  Iterable<S> pairExpandIndexable<E, S>(
+  static Iterable<S> pairExpandIndexable<I, E, S>(
+    Iterator<I> iterator,
     Iterator<E> another,
     MixerGenerator<I, E, Iterable<S>> mix,
     int start,
   ) => [
-    for (var i = start; moveNext() && another.moveNext(); i++)
-      ...mix(current, another.current, i),
+    for (var i = start; iterator.moveNext() && another.moveNext(); i++)
+      ...mix(iterator.current, another.current, i),
   ];
 
-  Iterable<S> pairExpandIndexableWhere<E, S>(
+  static Iterable<S> pairExpandIndexableWhere<I, E, S>(
+    Iterator<I> iterator,
     Iterator<E> another,
     PredicatorMixer<I, E> test,
     MixerGenerator<I, E, Iterable<S>> expanding,
     int start,
   ) => [
-    for (var i = start; moveNext() && another.moveNext(); i++)
-      if (test(current, another.current))
-        ...expanding(current, another.current, i),
+    for (var i = start; iterator.moveNext() && another.moveNext(); i++)
+      if (test(iterator.current, another.current))
+        ...expanding(iterator.current, another.current, i),
   ];
 
-  List<S> pairExpandList<E, S>(
+  static List<S> pairExpandList<I, E, S>(
+    Iterator<I> iterator,
     Iterator<E> another,
     Mixer<I, E, Iterable<S>> expanding,
   ) => [
-    for (; moveNext() && another.moveNext();)
-      ...expanding(current, another.current),
+    for (; iterator.moveNext() && another.moveNext();)
+      ...expanding(iterator.current, another.current),
   ];
 
   ///
   /// [pairFollowMapWhereIndexable]
   ///
-  Iterable<S> pairFollowMapWhereIndexable<E, S>(
+  static Iterable<S> pairFollowMapWhereIndexable<I, E, S>(
+    Iterator<I> iterator,
     Iterator<E> another,
     MixerGenerator<I, E, S> mutual,
     MapperGenerator<I, S> overflow,
@@ -327,12 +399,15 @@ extension IteratorTogether<I> on Iterator<I> {
   ]) sync* {
     var i = start;
     for (; another.moveNext(); i++) {
-      if (moveNext())
-        if (test(current, another.current)) {
-          yield mutual(current, another.current, i);
-        }
+      if (iterator.moveNext() && test(iterator.current, another.current)) {
+        yield mutual(iterator.current, another.current, i);
+      }
     }
-    if (includeTrailing) while (moveNext()) yield overflow(current, i++);
+    if (includeTrailing) {
+      while (iterator.moveNext()) {
+        yield overflow(iterator.current, i++);
+      }
+    }
   }
 
   ///
@@ -340,26 +415,29 @@ extension IteratorTogether<I> on Iterator<I> {
   /// [pairMerge]
   ///
   ///
-  Iterable<I> pairMerge(Iterator<I> another, PredicatorReducer<I> keep) =>
-      moveNextTogetherSupply(another, () sync* {
-        while (true) {
-          if (keep(current, another.current)) {
-            yield current;
-            if (!moveNext()) {
-              yield another.current;
-              yield* another.takeAll;
-              return;
-            }
-            continue;
-          }
+  static Iterable<I> pairMerge<I>(
+    Iterator<I> iterator,
+    Iterator<I> another,
+    PredicatorReducer<I> keep,
+  ) => moveNextTogetherSupply(iterator, another, () sync* {
+    while (true) {
+      if (keep(iterator.current, another.current)) {
+        yield iterator.current;
+        if (!iterator.moveNext()) {
           yield another.current;
-          if (!another.moveNext()) {
-            yield current;
-            yield* takeAll;
-            return;
-          }
+          yield* IteratorExtension.takeAll(another);
+          return;
         }
-      });
+        continue;
+      }
+      yield another.current;
+      if (!another.moveNext()) {
+        yield iterator.current;
+        yield* IteratorExtension.takeAll(iterator);
+        return;
+      }
+    }
+  });
 
   ///
   /// [pairInterval] for example:
@@ -372,23 +450,27 @@ extension IteratorTogether<I> on Iterator<I> {
   ///   ));
   ///   // (16.0, 27.0, 38.0, 49.0, 60.0, 71.0, 82.0, 93.0, 104.0)
   ///
-  Iterable<S> pairInterval<T, S>(Iterator<T> interval, Linker<I, T, S> link) =>
-      supplyMoveNext(() sync* {
-        var previous = current;
-        while (moveNext() && interval.moveNext()) {
-          yield link(previous, current, interval.current);
-          previous = current;
-        }
-      });
+  static Iterable<S> pairInterval<I, T, S>(
+    Iterator<I> iterator,
+    Iterator<T> interval,
+    Linker<I, T, S> link,
+  ) => IteratorTo.supplyMoveNext(iterator, () sync* {
+    var previous = iterator.current;
+    while (iterator.moveNext() && interval.moveNext()) {
+      yield link(previous, iterator.current, interval.current);
+      previous = iterator.current;
+    }
+  });
 
-  S pairIntervalInduct<T, S>(
+  static S pairIntervalInduct<I, T, S>(
+    Iterator<I> iterator,
     Iterator<T> interval,
     Mapper<I, S> toVal,
     Chainer<I, T, S> link,
-  ) => supplyMoveNext(() {
-    var previous = toVal(current);
-    while (moveNext() && interval.moveNext()) {
-      previous = link(previous, current, interval.current);
+  ) => IteratorTo.supplyMoveNext(iterator, () {
+    var previous = toVal(iterator.current);
+    while (iterator.moveNext() && interval.moveNext()) {
+      previous = link(previous, iterator.current, interval.current);
     }
     return previous;
   });
@@ -405,86 +487,112 @@ extension IteratorTogether<I> on Iterator<I> {
   /// [intersection], [intersectionIndex], [intersectionDetail],
   /// [difference], [differenceIndex], [differenceDetail]
   ///
-  Iterable<I> intersection(Iterable<I> another) => pairMapWhere(
+  static Iterable<I> intersection<I>(
+    Iterator<I> iterator,
+    Iterable<I> another,
+  ) => pairMapWhere(
+    iterator,
     another.iterator,
     FPredicatorFusionor.isEqual,
     FKeep.reduceV1,
   );
 
-  Iterable<int> intersectionIndex(Iterable<I> another, [int start = 0]) =>
-      pairMapIndexableWhere(
-        another.iterator,
-        FPredicatorFusionor.isEqual,
-        (p, q, index) => index,
-        start,
-      );
+  static Iterable<int> intersectionIndex<I>(
+    Iterator<I> iterator,
+    Iterable<I> another, [
+    int start = 0,
+  ]) => pairMapIndexableWhere(
+    iterator,
+    another.iterator,
+    FPredicatorFusionor.isEqual,
+    (p, q, index) => index,
+    start,
+  );
 
-  Map<int, I> intersectionDetail(Iterable<I> another) => pairFoldIndexable(
+  static Map<int, I> intersectionDetail<I>(
+    Iterator<I> iterator,
+    Iterable<I> another,
+  ) => pairFoldIndexable(
+    iterator,
     {},
     another.iterator,
     (map, v1, v2, index) => map..putIfAbsentWhen(v1 == v2, index, () => v1),
     0,
   );
 
-  Iterable<I> difference(Iterable<I> another) => [
-    ...pairMapWhere(
-      another.iterator,
-      FPredicatorFusionor.isDifferent,
-      FKeep.reduceV1,
-    ),
-    ...takeAll,
-  ];
+  static Iterable<I> difference<I>(Iterator<I> iterator, Iterable<I> another) =>
+      [
+        ...pairMapWhere(
+          iterator,
+          another.iterator,
+          FPredicatorFusionor.isDifferent,
+          FKeep.reduceV1,
+        ),
+        ...IteratorExtension.takeAll(iterator),
+      ];
 
-  Iterable<int> differenceIndex(Iterable<I> another, [int start = 0]) =>
-      pairFollowMapWhereIndexable(
-        another.iterator,
-        (p, q, index) => index,
-        (p, index) => index,
-        FPredicatorFusionor.isDifferent,
-        start,
-      );
+  static Iterable<int> differenceIndex<I>(
+    Iterator<I> iterator,
+    Iterable<I> another, [
+    int start = 0,
+  ]) => pairFollowMapWhereIndexable(
+    iterator,
+    another.iterator,
+    (p, q, index) => index,
+    (p, index) => index,
+    FPredicatorFusionor.isDifferent,
+    start,
+  );
 
-  Map<int, (I, I?)> differenceDetail(Iterable<I> another) =>
-      followFoldIndexable(
-        {},
-        another.iterator,
-        (map, e1, e2, index) =>
-            map..putIfAbsentWhen(e1 != e2, index, () => (e1, e2)),
-        (map, e1, index) => map..putIfAbsent(index, () => (e1, null)),
-        0,
-      );
+  static Map<int, (I, I?)> differenceDetail<I>(
+    Iterator<I> iterator,
+    Iterable<I> another,
+  ) => followFoldIndexable(
+    iterator,
+    {},
+    another.iterator,
+    (map, e1, e2, index) =>
+        map..putIfAbsentWhen(e1 != e2, index, () => (e1, e2)),
+    (map, e1, index) => map..putIfAbsent(index, () => (e1, null)),
+    0,
+  );
 
   ///
   /// [interReduce]
   ///
-  I interReduce(Iterator<I> another, Reducer<I> fusion, Reducer<I> reducing) =>
-      moveNextTogetherReduce(another, (v1, v2) {
-        var val = fusion(v1, v2);
-        while (moveNext() && another.moveNext()) {
-          val = reducing(val, fusion(current, another.current));
-        }
-        return val;
-      });
+  static I interReduce<I>(
+    Iterator<I> iterator,
+    Iterator<I> another,
+    Reducer<I> fusion,
+    Reducer<I> reducing,
+  ) => moveNextTogetherReduce(iterator, another, (v1, v2) {
+    var val = fusion(v1, v2);
+    while (iterator.moveNext() && another.moveNext()) {
+      val = reducing(val, fusion(iterator.current, another.current));
+    }
+    return val;
+  });
 
   ///
   ///
   ///
-  Iterable<I> sandwich(Iterator<I> meat) sync* {
-    while (moveNext() && meat.moveNext()) {
-      yield current;
+  ///
+  static Iterable<I> sandwich<I>(Iterator<I> iterator, Iterator<I> meat) sync* {
+    while (iterator.moveNext() && meat.moveNext()) {
+      yield iterator.current;
       yield meat.current;
     }
     try {
-      yield current;
+      yield iterator.current;
       try {
-        final remains = [meat.current, ...meat.takeAll];
+        final remains = [meat.current, ...IteratorExtension.takeAll(meat)];
         throw StateError('excess meat: $remains');
       } on Error {
         return;
       }
     } on Error {
       try {
-        final remains = [meat.current, ...meat.takeAll];
+        final remains = [meat.current, ...IteratorExtension.takeAll(meat)];
         throw StateError('inadequate bread for meat: $remains');
       } on Error {
         throw StateError('lack of last bread');
@@ -501,10 +609,13 @@ extension IteratorTogether<I> on Iterator<I> {
   ///
   /// [combination2FromFirst]
   ///
-  Iterable<Iterable<I>> get combination2FromFirst => supplyMoveNext(() sync* {
-    final first = current;
-    while (moveNext()) yield [first, current];
-  });
+  static Iterable<Iterable<I>> combination2FromFirst<I>(Iterator<I> iterator) =>
+      IteratorTo.supplyMoveNext(iterator, () sync* {
+        final first = iterator.current;
+        while (iterator.moveNext()) {
+          yield [first, iterator.current];
+        }
+      });
 
   ///
   /// listA = [1, 2, 3];
@@ -516,9 +627,19 @@ extension IteratorTogether<I> on Iterator<I> {
   ///   [MapEntry(3, 101), MapEntry(3, 102)],
   /// }
   ///
-  Iterable<Iterable<(I, V)>> combineToRecord<V>(Iterator<V> another) =>
-      map(another.mapToRecordBy1);
+  static Iterable<Iterable<(I, V)>> combineToRecord<I, V>(
+    Iterator<I> iterator,
+    Iterator<V> another,
+  ) => IteratorTo.map(
+    iterator,
+    (value) => IteratorTo.mapToRecordBy1(another, value),
+  );
 
-  Iterable<(I, V)> combineToRecordExpanded<V>(Iterator<V> another) =>
-      mapExpand(another.mapToRecordBy1);
+  static Iterable<(I, V)> combineToRecordExpanded<I, V>(
+    Iterator<I> iterator,
+    Iterator<V> another,
+  ) => IteratorTo.mapExpand(
+    iterator,
+    (value) => IteratorTo.mapToRecordBy1(another, value),
+  );
 }

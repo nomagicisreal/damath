@@ -19,7 +19,6 @@ linter:
   rules:
     constant_identifier_names: false
     non_constant_identifier_names: false
-    curly_braces_in_flow_control_structures: false
 
 # analyzer:
 #   exclude:

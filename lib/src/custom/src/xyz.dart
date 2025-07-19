@@ -22,14 +22,14 @@ enum DirectionFrontOrBack { front, back }
 
 enum DirectionIn4 {
   left,
-  right,
   top,
+  right,
   bottom;
 
   DirectionIn4 get flipped => switch (this) {
     DirectionIn4.left => DirectionIn4.right,
-    DirectionIn4.right => DirectionIn4.left,
     DirectionIn4.top => DirectionIn4.top,
+    DirectionIn4.right => DirectionIn4.left,
     DirectionIn4.bottom => DirectionIn4.bottom,
   };
 

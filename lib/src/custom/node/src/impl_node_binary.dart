@@ -985,7 +985,7 @@ final class _NbAvl<C extends Comparable> extends NodeBinaryAvl<C>
   set previous(covariant NodeBinarySorted<C>? node) => root.previous = node;
 
   @override
-  void pushThenBalance(C element) {
+  void push(C element) {
     super.push(element);
     root = NodeBinaryAvl._balance(root);
   }

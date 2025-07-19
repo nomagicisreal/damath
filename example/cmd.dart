@@ -5,11 +5,11 @@ void main(List<String> arguments) {
   final list = List.generate(10, FKeep.applier);
   final node =
       NodeBinaryAvl<int>.fromSorted(list)
-        ..pushThenBalance(3113)
-        ..pushThenBalance(313)
-        ..pushThenBalance(99913)
-        ..pushThenBalance(43113)
-        // ..pushThenBalance(53113)
+        ..push(3113)
+        ..push(313)
+        ..push(99913)
+        ..push(43113)
+        // ..push(53113)
   ;
   print(node);
 }

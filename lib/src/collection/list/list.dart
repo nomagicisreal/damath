@@ -142,15 +142,21 @@ extension ListExtension<T> on List<T> {
   /// [updateReduce]
   ///
   void updateAll(T value) {
-    for (var i = 0; i < length; i++) this[i] = value;
+    for (var i = 0; i < length; i++) {
+      this[i] = value;
+    }
   }
 
   void updateAllApply(Applier<T> applier) {
-    for (var i = 0; i < length; i++) this[i] = applier(this[i]);
+    for (var i = 0; i < length; i++) {
+      this[i] = applier(this[i]);
+    }
   }
 
   void updateAllApplyByIndex(ApplierGenerator<T> applier) {
-    for (var i = 0; i < length; i++) this[i] = applier(this[i], i);
+    for (var i = 0; i < length; i++) {
+      this[i] = applier(this[i], i);
+    }
   }
 
   void updateReduce(Reducer<T> reducing, List<T> another) {
@@ -184,15 +190,21 @@ extension ListExtension<T> on List<T> {
   /// [fillUntil]
   ///
   void filled(T value) {
-    for (var i = 0; i < length; i++) this[i] = value;
+    for (var i = 0; i < length; i++) {
+      this[i] = value;
+    }
   }
 
   void fillGenerate(Generator<T> generate) {
-    for (var i = 0; i < length; i++) this[i] = generate(i);
+    for (var i = 0; i < length; i++) {
+      this[i] = generate(i);
+    }
   }
 
   void fillUntil(int limit, T value) {
-    for (var i = length; i < limit; i++) add(value);
+    for (var i = length; i < limit; i++) {
+      add(value);
+    }
   }
 
   ///
@@ -201,14 +213,19 @@ extension ListExtension<T> on List<T> {
   ///
   void setAllFromIterable(Iterable<T> iterable) =>
       length == iterable.length
-          ? iterable.iterator.consumeAllByIndex((value, i) => this[i] = value)
+          ? IteratorExtension.consumeAllByIndex(
+            iterable.iterator,
+            (value, i) => this[i] = value,
+          )
           : throw StateError(Erroring.iterableSizeInvalid);
 
   void setAllFromList(List<T> another) {
     if (length == another.length) {
       throw StateError(Erroring.iterableSizeInvalid);
     }
-    for (var i = 0; i < length; i++) this[i] = another[i];
+    for (var i = 0; i < length; i++) {
+      this[i] = another[i];
+    }
   }
 
   ///
@@ -266,7 +283,9 @@ extension ListExtension<T> on List<T> {
   bool? fillFor(T value, int limit) {
     if (length >= limit) return null;
     if (isFixed || isImmutable) return false;
-    for (var i = length; i < limit; i++) add(value);
+    for (var i = length; i < limit; i++) {
+      add(value);
+    }
     return true;
   }
 
@@ -278,7 +297,9 @@ extension ListExtension<T> on List<T> {
       position > -1 && position < length ? this[position] : onInvalidPosition();
 
   Iterable<T> removalWhere(Predicator<T> test) sync* {
-    for (var i = 0; i < length; i++) if (test(this[i])) yield removeAt(i);
+    for (var i = 0; i < length; i++) {
+      if (test(this[i])) yield removeAt(i);
+    }
   }
 
   ///
@@ -305,7 +326,7 @@ extension ListExtension<T> on List<T> {
   ];
 
   List<T> cloneByOrder(Iterable<int> order) {
-    assert(Iterable.generate(length).isVariationTo(order));
+    assert(IterableExtension.isVariation(Iterable.generate(length), order));
     return [for (var i in order) this[i]];
   }
 
@@ -417,13 +438,16 @@ extension ListExtension<T> on List<T> {
 
     var i = start;
     final max = count * (bound ~/ count);
-    for (; i < max; i += count) result.add(sublist(i, i + count));
+    for (; i < max; i += count) {
+      result.add(sublist(i, i + count));
+    }
     if (includeTrailing) result.add(sublist(i, bound));
     return result;
   }
 
   List<List<T>> splitAt(List<int> positions, [int begin = 0, int? end]) =>
-      positions.iterator.foldByAfter(
+      IteratorTo.foldByAfter(
+        positions.iterator,
         [],
         begin,
         (result, interval, i) => result..add(sublist(i, interval)),

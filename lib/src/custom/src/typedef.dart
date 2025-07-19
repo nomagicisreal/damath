@@ -11,6 +11,9 @@ part of '../custom.dart';
 /// [Generator], ..., [LinkerGenerator], ...
 /// [Countable], ...
 ///
+/// [DateTimeFormatter], ...
+/// [Positioned4Double], ...
+///
 ///
 /// [FListener]
 /// [FPredicatorFusionor]
@@ -106,11 +109,19 @@ typedef Lerper<T> = T Function(double t);
 typedef Differentiator<A, B> = int Function(A a, B b);
 typedef Decider<T, S> = Consumer<T> Function(S toggle);
 typedef Supporter<T, S> = T Function(Supplier<S> taging);
-typedef Sequencer<T, I, S> = Mapper<int, S> Function(
-  T previous,
-  T next,
-  I interval,
-);
+typedef Sequencer<T, I, S> =
+    Mapper<int, S> Function(T previous, T next, I interval);
+
+///
+///
+///
+typedef DateTimeFormatter = String Function(DateTime date, dynamic locale);
+
+///
+///
+///
+// ltrb (left, top, right, bottom) or (start, top, right, bottom)
+typedef Positioned4Double = (double?, double?, double?, double?);
 
 ///
 ///
@@ -159,19 +170,25 @@ extension FGenerator<T> on Generator<T> {
     }
   }
 
-  List<T> yieldingToList(int length, [int start = 0]) =>
-      [for (var i = start; i < length; i++) this(i)];
+  List<T> yieldingToList(int length, [int start = 0]) => [
+    for (var i = start; i < length; i++) this(i),
+  ];
 
-  Iterable<E> yieldingMap<E>(int length, Mapper<T, E> toVal,
-      [int start = 0]) sync* {
+  Iterable<E> yieldingMap<E>(
+    int length,
+    Mapper<T, E> toVal, [
+    int start = 0,
+  ]) sync* {
     for (var i = start; i < length; i++) {
       yield toVal(this(i));
     }
   }
 
-  List<E> yieldingMapToList<E>(int length, Mapper<T, E> toVal,
-          [int start = 0]) =>
-      [for (var i = start; i < length; i++) toVal(this(i))];
+  List<E> yieldingMapToList<E>(
+    int length,
+    Mapper<T, E> toVal, [
+    int start = 0,
+  ]) => [for (var i = start; i < length; i++) toVal(this(i))];
 
   ///
   ///

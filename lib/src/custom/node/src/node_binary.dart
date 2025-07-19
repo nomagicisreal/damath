@@ -375,6 +375,7 @@ abstract final class NodeBinaryEnqueueable<T>
 ///
 abstract final class NodeBinarySorted<C extends Comparable>
     extends NodeBinary<C, NodeBinarySorted<C>>
+    with _M_VertexComparable<C>
     implements
         _I_NodeBinaryFinal<NodeBinarySorted<C>>,
         _I_NodeBinaryContainer<C, NodeBinarySorted<C>>,
@@ -383,8 +384,8 @@ abstract final class NodeBinarySorted<C extends Comparable>
   void push(C element) => NodeWriter.binary_push(
     this,
     element,
-    element.orderAfter(data),
-    ComparableExtension.comparator_orderAfter<C>,
+    ComparableExtension.orderAfter(element, data),
+    ComparableExtension.orderAfter<C>,
   );
 
   const factory NodeBinarySorted.immutable(C data) = _NbSi;
@@ -410,7 +411,7 @@ abstract final class NodeBinarySorted<C extends Comparable>
     List<C> list, {
     bool increase = true,
     NodeBinaryConstructor<C, NodeBinarySorted<C>>? constructor,
-  }) => list.checkSortedForSupply(() {
+  }) => IterableComparable.checkSortedForSupply(list, () {
     final construct = constructor ?? NodeBinarySorted<C>.mutable;
     if (list.isEmpty) throw StateError(Erroring.iterableNoElement);
 
@@ -440,12 +441,10 @@ abstract final class NodeBinaryAvl<C extends Comparable>
     extends NodeBinarySorted<C> {
   NodeBinarySorted<C> get root;
 
-  void pushThenBalance(C element);
-
   factory NodeBinaryAvl(C data) = _NbAvl;
 
   factory NodeBinaryAvl.fromSorted(List<C> list, {bool increase = true}) =>
-      list.checkSortedForSupply(() {
+      IterableComparable.checkSortedForSupply(list, () {
         if (list.isEmpty) throw StateError(Erroring.iterableNoElement);
 
         NodeBinaryAvl<C>? build(int previous, int next) {

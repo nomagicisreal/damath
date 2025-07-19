@@ -517,7 +517,9 @@ extension IntExtension on int {
     if (k.isNegative) Erroring.invalidInt(k);
     if (k > n) throw ArgumentError('invalid binomial coefficient ($n, $k)');
     var value = 1.0;
-    while (k > 0) value *= n-- / k--;
+    while (k > 0) {
+      value *= n-- / k--;
+    }
     return value.toInt();
   }
 
@@ -552,16 +554,16 @@ extension IntExtension on int {
       if (n.isRangeClose(1, m)) {
         throw ArgumentError(Erroring.invalidPartition(m, n));
       }
-      return _partitionSet(
-        m,
-      ).map(IterableExtension.toLength).iterator.toMapCounted[n]!;
+      return IteratorTo.toMapCounted(
+        _partitionSet(m).map(IterableExtension.lengthOf).iterator,
+      )[n]!;
     }
     var sum = 0;
     for (var i = 1; i <= m; i++) {
       sum +=
-          _partitionSet(
-            m,
-          ).map(IterableExtension.toLength).iterator.toMapCounted[i]!;
+          IteratorTo.toMapCounted(
+            _partitionSet(m).map(IterableExtension.lengthOf).iterator,
+          )[i]!;
     }
     return sum;
   }
@@ -586,12 +588,14 @@ extension IntExtension on int {
       if (n.isRangeClose(1, m)) {
         throw ArgumentError(Erroring.invalidPartition(m, n));
       }
-      yield* _partitionSet(m).where((element) => element.length == n).flatted;
+      yield* IterableIterable.flatted(
+        _partitionSet(m).where((element) => element.length == n),
+      );
     }
     for (var i = 1; i <= m; i++) {
-      yield* _partitionSet(
-        m,
-      ).where(IterableIterable.predicateChildrenLength(i)).flatted;
+      yield* IterableIterable.flatted(
+        _partitionSet(m).where(IterableIterable.predicateChildrenLength(i)),
+      );
     }
   }
 

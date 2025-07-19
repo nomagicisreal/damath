@@ -320,7 +320,8 @@ extension MapExtension<K, V> on Map<K, V> {
     T initialValue,
     CompanionGenerator<T, MapEntry<K, V>> companion, [
     int start = 0,
-  ]) => entries.iterator.foldByIndex(initialValue, companion, start);
+  ]) =>
+      IteratorTo.foldByIndex(entries.iterator, initialValue, companion, start);
 
   ///
   /// [reduce], [reduceKeys], [reduceValues]
@@ -337,22 +338,23 @@ extension MapExtension<K, V> on Map<K, V> {
   MapEntry<K, V> reduceByIndex(
     ReducerGenerator<MapEntry<K, V>> reducing, [
     int start = 0,
-  ]) => entries.iterator.reduceByIndex(reducing, start);
+  ]) => IteratorExtension.reduceByIndex(entries.iterator, reducing, start);
 
   S induct<S>(Mapper<MapEntry<K, V>, S> toVal, Reducer<S> reducer) =>
-      entries.iterator.induct(toVal, reducer);
+      IteratorTo.induct(entries.iterator, toVal, reducer);
 
   S inductByIndex<S>(
     Mapper<MapEntry<K, V>, S> toVal,
     ReducerGenerator<S> reducing, [
     int start = 0,
-  ]) => entries.iterator.inductByIndex(toVal, reducing, start);
+  ]) => IteratorTo.inductByIndex(entries.iterator, toVal, reducing, start);
 
   S inductByIndexInited<S>(
     Mapper<MapEntry<K, V>, S> toVal,
     CompanionGenerator<S, MapEntry<K, V>> reducing, [
     int start = 0,
-  ]) => entries.iterator.inductInitedByIndex(toVal, reducing, start);
+  ]) =>
+      IteratorTo.inductInitedByIndex(entries.iterator, toVal, reducing, start);
 
   ///
   /// [mapKeys]

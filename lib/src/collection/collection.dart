@@ -19,3 +19,21 @@ part 'list/nest.dart';
 part 'map/map.dart';
 part 'map/nest.dart';
 part 'map/set.dart';
+
+
+///
+/// iterator is consistent despite of difference reference
+/// ```
+///   final it = [2, 9, 3, 7, 1, 1, 4, 5];
+///   final itA = iterator.take(4);
+///   print(itA); // (2, 9, 3, 7)
+///   print(itA); // (1, 1, 4, 5)
+/// ```
+///
+/// iterable comes from iterator only yield once,
+/// ```
+///   final another = [2, 5, 2, 4, 3].iterator.sub(2, 10);
+///   print(another); // (2, 4, 3)
+///   print(another); // ()
+/// ```
+///

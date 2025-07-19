@@ -65,11 +65,10 @@ extension TimerExtension on Timer {
     Duration duration,
     Listener listener,
     Iterable<(Duration, Listener)> children,
-  ) =>
-      Timer(duration, () {
-        if (children.isNotEmpty) _sequence(children);
-        listener();
-      });
+  ) => Timer(duration, () {
+    if (children.isNotEmpty) _sequence(children);
+    listener();
+  });
 
   static Timer _sequence(Iterable<(Duration, Listener)> elements) {
     final first = elements.first;
@@ -79,8 +78,9 @@ extension TimerExtension on Timer {
   static Timer sequencing(
     Iterable<Duration> steps,
     Iterable<Listener> listeners,
-  ) =>
-      _sequence(steps.iterator.pairMap(listeners.iterator, Record2.mix));
+  ) => _sequence(
+    IteratorTogether.pairMap(steps.iterator, listeners.iterator, Record2.mix),
+  );
 
   ///
   ///
@@ -100,10 +100,7 @@ extension TimerExtension on Timer {
     };
   }
 
-  static Consumer<Timer> consumer_period(
-    int period,
-    Listener listener,
-  ) {
+  static Consumer<Timer> consumer_period(int period, Listener listener) {
     int count = 0;
     void listenIf(bool value) => value ? listener() : null;
     bool shouldListen() => count % period == 0;

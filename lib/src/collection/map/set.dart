@@ -12,10 +12,11 @@ extension DamathSet<K> on Set<K> {
   ///
   /// [isEqualToSet]
   ///
-  bool isEqualToSet(Set<K> another) => another.iterator.anyBy(
-        Set.of(this),
-        (set, element) => set.add(element),
-      );
+  bool isEqualToSet(Set<K> another) => IteratorExtension.anyBy(
+    another.iterator,
+    Set.of(this),
+    (set, element) => set.add(element),
+  );
 
   bool isDisjointTo(Set<K> another) => intersection(another).isEmpty;
 
@@ -57,8 +58,13 @@ extension DamathSet<K> on Set<K> {
   ///   the reason why the method returns false is that
   ///   each of the groups is identical on value
   ///
-  bool consistentBy<E, V>(Mapper<K, E> toKey, Mapper<K, V> toVal) => !iterator
-      .existAnyToEachGroup(toKey, toVal, MapExtension.predicateInputYet);
+  bool consistentBy<E, V>(Mapper<K, E> toKey, Mapper<K, V> toVal) =>
+      !IteratorExtension.existAnyToEachGroup(
+        iterator,
+        toKey,
+        toVal,
+        MapExtension.predicateInputYet,
+      );
 
   ///
   /// [complementTo]

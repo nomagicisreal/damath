@@ -3,7 +3,7 @@ part of '../custom.dart';
 ///
 ///
 /// My IDE has problem formating lines for 'mixin on multiple class',
-/// so i have reduced some class name to prevent from error after formating
+/// so i have reduced some class name to prevent error after formating
 ///
 /// [_Mxy], [_Mxyz]
 ///   --[_MxyOperatable], [_MxyzO]

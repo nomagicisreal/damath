@@ -2,7 +2,7 @@
 part of '../node.dart';
 
 ///
-/// * [Vertex]      * [_M_VertexNullable]
+/// * [Vertex]      * [_M_VertexNullable], [_M_VertexComparable]
 ///     --[_Vu], [_Vm], --[_VnU], [_VnM]
 ///     |
 ///     --[NodeNext]                                    * [_I_NodeNextFinal]
@@ -43,6 +43,14 @@ final class _Vm<T> extends Vertex<T> {
   T data;
 
   _Vm(this.data);
+}
+
+base mixin _M_VertexComparable<C extends Comparable> on Vertex<C> {
+  @override
+  C get data;
+
+  @override
+  set data(C value) => throw UnsupportedError(Vertex.tryToModifyUnmodifiable);
 }
 
 ///

@@ -2,65 +2,19 @@ part of '../collection.dart';
 
 ///
 ///
-/// iterable comes from the same iterator is iterating, which is not consistent.
-/// ```
-///   final itA = iterator.take(4);
-///   print(itA); // (2, 9, 3, 7)
-///   print(itA); // (1, 1, 4, 5)
-/// ```
-///
-/// iterable comes from iterator only yield once,
-/// ```
-///   final another = [2, 5, 2, 4, 3].iterator.sub(2, 10);
-///   print(another); // (2, 4, 3)
-///   print(another); // ()
-/// ```
-///
-/// It's better not to get iterator from the same iterator,
-/// ```
-///   final list = [2, 9, 3, 7, 1, 1, 4, 5];
-///   final iterator = list.iterator;
-///
-///   final itA = iterator.take(4).iterator;
-///   final itB = iterator.take(4).iterator;
-///   while (itA.moveNext() && itB.moveNext()) {
-///     print('${itB.current}, ${itB.takeAll}'); // 9, (3, 7, 1)
-///     print('${itA.current}, ${itA.takeAll}'); // 2, (1, 4, 5)
-///   }
-/// ```
-
-
-///
-///
-/// [consumeHasNext], ...
-/// [applyMoveNext], ...
-///
-/// [any], ...
-/// [exist], ...
-///
-/// [first], ...
-/// [find], ...
-/// [reduce], ...
-///
-/// [take], ...
-/// [where], ...
-/// [skip], ...
-/// [sub], ...
-/// [expand], ...
-/// [mergeBy], ...
-/// [interval]
-///
-/// [indexFound], ...
-/// [cumulate], ...
-///
-/// [combination2FromFirst], ...
+/// void callback             --> [consumeHasNext], ...
+/// return bool               --> [any], ...
+/// return int                --> [indexFound], ...
+/// return current type item  --> [first], ...
+/// return iterable           --> [take], ...
+/// return iterable int       --> [indexesWhere], ...
+/// return list               --> [takeList], ...
 ///
 ///
 extension IteratorExtension<I> on Iterator<I> {
   ///
-  /// consume
-  /// [consumeHasNext]
-  /// [consumeMoveNext]
+  ///
+  /// [consumeHasNext], [consumeMoveNext]
   /// [consumeFound]
   /// [consumeAll], [consumeAllByIndex]
   /// [consumePair], [consumePairByIndex]
@@ -69,25 +23,42 @@ extension IteratorExtension<I> on Iterator<I> {
   ///
 
   ///
-  /// [consumeHasNext], [consumeMoveNext]
-  /// [consumeFound], [consumeWhere]
+  /// [consumeHasNext]
+  /// [consumeMoveNext]
   ///
-  void consumeHasNext(Consumer<Iterator<I>> consume) {
-    if (moveNext()) consume(this);
+  static void consumeHasNext<I>(
+    Iterator<I> iterator,
+    Consumer<Iterator<I>> consume,
+  ) {
+    if (iterator.moveNext()) consume(iterator);
   }
 
-  void consumeMoveNext(Consumer<I> consume) => moveNext()
-      ? consume(current)
-      : throw StateError(Erroring.iterableNoElement);
+  static void consumeMoveNext<I>(Iterator<I> iterator, Consumer<I> consume) =>
+      iterator.moveNext()
+          ? consume(iterator.current)
+          : throw StateError(Erroring.iterableNoElement);
 
-  void consumeFound(Predicator<I> test, Consumer<I> action) {
-    while (moveNext()) if (test(current)) return action(current);
+  ///
+  /// [consumeFound], [consumeWhere]
+  ///
+  static void consumeFound<I>(
+    Iterator<I> iterator,
+    Predicator<I> test,
+    Consumer<I> action,
+  ) {
+    while (iterator.moveNext()) {
+      if (test(iterator.current)) return action(iterator.current);
+    }
     throw StateError(Erroring.iterableElementNotFound);
   }
 
-  void consumeWhere(Predicator<I> test, Consumer<I> action) {
-    while (moveNext()) {
-      if (test(current)) action(current);
+  static void consumeWhere<I>(
+    Iterator<I> iterator,
+    Predicator<I> test,
+    Consumer<I> action,
+  ) {
+    while (iterator.moveNext()) {
+      if (test(iterator.current)) action(iterator.current);
     }
   }
 
@@ -95,46 +66,59 @@ extension IteratorExtension<I> on Iterator<I> {
   /// [consumeAll]
   /// [consumeAllByIndex]
   ///
-  void consumeAll(Consumer<I> consume) {
-    while (moveNext()) consume(current);
+  static void consumeAll<I>(Iterator<I> iterator, Consumer<I> consume) {
+    while (iterator.moveNext()) {
+      consume(iterator.current);
+    }
   }
 
-  void consumeAllByIndex(ConsumerIndexable<I> consume, [int start = 0]) {
-    for (var i = start; moveNext(); i++) consume(current, i);
+  static void consumeAllByIndex<I>(
+    Iterator<I> iterator,
+    ConsumerIndexable<I> consume, [
+    int start = 0,
+  ]) {
+    for (var i = start; iterator.moveNext(); i++) {
+      consume(iterator.current, i);
+    }
   }
 
   ///
   /// [consumePair]
   /// [consumePairByIndex]
   ///
-  void consumePair(Intersector<I> paring, [Consumer<I>? trailing]) {
+  static void consumePair<I>(
+    Iterator<I> iterator,
+    Intersector<I> paring, [
+    Consumer<I>? trailing,
+  ]) {
     late I a;
     late I b;
-    while (moveNext()) {
-      a = current;
-      if (!moveNext()) {
+    while (iterator.moveNext()) {
+      a = iterator.current;
+      if (!iterator.moveNext()) {
         trailing?.call(a);
         return;
       }
-      b = current;
+      b = iterator.current;
       paring(a, b);
     }
   }
 
-  void consumePairByIndex(
+  static void consumePairByIndex<I>(
+    Iterator<I> iterator,
     IntersectorIndexable<I> paring, [
     Consumer<I>? trailing,
     int start = 0,
   ]) {
     late I a;
     late I b;
-    for (var i = start; moveNext(); i++) {
-      a = current;
-      if (!moveNext()) {
+    for (var i = start; iterator.moveNext(); i++) {
+      a = iterator.current;
+      if (!iterator.moveNext()) {
         trailing?.call(a);
         return;
       }
-      b = current;
+      b = iterator.current;
       paring(a, b, i);
     }
   }
@@ -143,51 +127,34 @@ extension IteratorExtension<I> on Iterator<I> {
   /// [consumeAccompany]
   /// [consumeAccompanyByIndex]
   ///
-  void consumeAccompany(I value, Intersector<I> paring) {
-    while (moveNext()) paring(current, value);
+  static void consumeAccompany<I>(
+    Iterator<I> iterator,
+    I value,
+    Intersector<I> paring,
+  ) {
+    while (iterator.moveNext()) {
+      paring(iterator.current, value);
+    }
   }
 
-  void consumeAccompanyByIndex(
+  static void consumeAccompanyByIndex<I>(
+    Iterator<I> iterator,
     I value,
     IntersectorIndexable<I> paring, [
     int start = 0,
   ]) {
-    for (var i = start; moveNext(); i++) paring(current, value, i);
-  }
-
-  ///
-  ///
-  /// apply
-  /// [applyMoveNext]
-  /// [applyLead]
-  ///
-  ///
-  ///
-
-  ///
-  /// [applyMoveNext]
-  /// [applyLead]
-  ///
-  I applyMoveNext(Applier<I> apply) => moveNext()
-      ? apply(current)
-      : throw StateError(Erroring.iterableNoElement);
-
-  I applyLead(int ahead, Applier<I> apply) {
-    for (var i = -1; i < ahead; i++) {
-      if (!moveNext()) throw StateError(Erroring.iterableNoElement);
+    for (var i = start; iterator.moveNext(); i++) {
+      paring(iterator.current, value, i);
     }
-    return apply(current);
   }
 
   ///
   ///
   ///
-  /// predication
   /// [any], [anyBy]
-  ///
   /// [exist], [existTo], [existToInited]
-  /// [existAny], [existAnyTo], [existAnyToEachGroup], [existAnyToEachGroupSet]
-  /// [existDifferent], [existDifferentTo], [existEqual],  [existEqualTo]
+  /// [existAny], [existAnyTo], [existDifferent], [existDifferentTo], [existEqual],  [existEqualTo]
+  /// [existAnyToEachGroup], [existAnyToEachGroupSet]
   ///
   ///
   ///
@@ -196,13 +163,21 @@ extension IteratorExtension<I> on Iterator<I> {
   /// [any]
   /// [anyBy]
   ///
-  bool any(Predicator<I> test) {
-    while (moveNext()) if (test(current)) return true;
+  static bool any<I>(Iterator<I> iterator, Predicator<I> test) {
+    while (iterator.moveNext()) {
+      if (test(iterator.current)) return true;
+    }
     return false;
   }
 
-  bool anyBy<T>(T element, PredicatorMixer<T, I> test) {
-    while (moveNext()) if (test(element, current)) return true;
+  static bool anyBy<I, T>(
+    Iterator<I> iterator,
+    T element,
+    PredicatorMixer<T, I> test,
+  ) {
+    while (iterator.moveNext()) {
+      if (test(element, iterator.current)) return true;
+    }
     return false;
   }
 
@@ -211,188 +186,261 @@ extension IteratorExtension<I> on Iterator<I> {
   /// [existTo]
   /// [existToInited]
   ///
-  bool exist(PredicatorReducer<I> test) => supplyMoveNext(() {
-        var val = current;
-        while (moveNext()) {
-          if (test(val, current)) return true;
-          val = current;
+  static bool exist<I>(Iterator<I> iterator, PredicatorReducer<I> test) =>
+      IteratorTo.supplyMoveNext(iterator, () {
+        var val = iterator.current;
+        while (iterator.moveNext()) {
+          if (test(val, iterator.current)) return true;
+          val = iterator.current;
         }
         return false;
       });
 
-  bool existTo<T>(
+  static bool existTo<I, T>(
+    Iterator<I> iterator,
     Mapper<I, T> toVal,
     PredicatorReducer<T> test,
-  ) =>
-      supplyMoveNext(() {
-        var val = toVal(current);
-        while (moveNext()) {
-          final v = toVal(current);
-          if (test(val, v)) return true;
-          val = v;
-        }
-        return false;
-      });
+  ) => IteratorTo.supplyMoveNext(iterator, () {
+    var val = toVal(iterator.current);
+    while (iterator.moveNext()) {
+      final v = toVal(iterator.current);
+      if (test(val, v)) return true;
+      val = v;
+    }
+    return false;
+  });
 
-  bool existToInited<T>(Mapper<I, T> toVal, PredicatorReducer<T> test) =>
-      supplyMoveNext(() {
-        var val = toVal(current);
-        while (moveNext()) {
-          if (test(val, toVal(current))) return true;
-        }
-        return false;
-      });
+  static bool existToInited<I, T>(
+    Iterator<I> iterator,
+    Mapper<I, T> toVal,
+    PredicatorReducer<T> test,
+  ) => IteratorTo.supplyMoveNext(iterator, () {
+    var val = toVal(iterator.current);
+    while (iterator.moveNext()) {
+      if (test(val, toVal(iterator.current))) return true;
+    }
+    return false;
+  });
 
   ///
   /// [existAny]
   /// [existAnyTo]
-  /// [existAnyToEachGroup]
-  /// [existAnyToEachGroupSet]
   ///
-  bool existAny(PredicatorReducer<I> test) => supplyMoveNext(() {
-        final list = <I>[current];
-        while (moveNext()) {
-          if (list.any((val) => test(val, current))) return true;
-          list.add(current);
+  static bool existAny<I>(Iterator<I> iterator, PredicatorReducer<I> test) =>
+      IteratorTo.supplyMoveNext(iterator, () {
+        final list = <I>[iterator.current];
+        while (iterator.moveNext()) {
+          if (list.any((val) => test(val, iterator.current))) return true;
+          list.add(iterator.current);
         }
         return false;
       });
 
-  bool existAnyTo<T>(
+  static bool existAnyTo<I, T>(
+    Iterator<I> iterator,
     Mapper<I, T> toVal,
     PredicatorReducer<T> test,
-  ) =>
-      supplyMoveNext(() {
-        final list = <T>[toVal(current)];
-        while (moveNext()) {
-          final v = toVal(current);
-          if (list.any((val) => test(val, v))) return true;
-          list.add(v);
-        }
-        return false;
-      });
-
-  bool existAnyToEachGroup<K, V>(
-    Mapper<I, K> toKey,
-    Mapper<I, V> toVal,
-    PredicatorSynthesizer<Map<K, V>, K, V> listen,
-  ) =>
-      supplyMoveNext(() {
-        final map = <K, V>{toKey(current): toVal(current)};
-        while (moveNext()) {
-          if (listen(map, toKey(current), toVal(current))) return true;
-        }
-        return false;
-      });
-
-  bool existAnyToEachGroupSet<K, V>(
-    Mapper<I, K> toKey,
-    Mapper<I, V> toVal,
-    PredicatorSynthesizer<Map<K, Set<V>>, K, V> listen,
-  ) =>
-      supplyMoveNext(() {
-        final map = <K, Set<V>>{
-          toKey(current): {toVal(current)}
-        };
-        while (moveNext()) {
-          if (listen(map, toKey(current), toVal(current))) return true;
-        }
-        return false;
-      });
-
-  ///
-  /// [existEvery]
-  ///
-  bool existEvery(PredicatorReducer<I> expect) => supplyMoveNext(() {
-        var val = current;
-        while (moveNext()) {
-          if (!expect(val, current)) return false;
-          val = current;
-        }
-        return true;
-      });
+  ) => IteratorTo.supplyMoveNext(iterator, () {
+    final list = <T>[toVal(iterator.current)];
+    while (iterator.moveNext()) {
+      final v = toVal(iterator.current);
+      if (list.any((val) => test(val, v))) return true;
+      list.add(v);
+    }
+    return false;
+  });
 
   ///
   /// [existDifferent], [existDifferentTo]
   /// [existEqual], [existEqualTo]
   ///
-  bool get existDifferent => exist(FPredicatorFusionor.isDifferent);
+  static bool existDifferent<I>(Iterator<I> iterator) =>
+      exist(iterator, FPredicatorFusionor.isDifferent);
 
-  bool existDifferentTo<T>(Mapper<I, T> toId) =>
-      existTo(toId, FPredicatorFusionor.isDifferent);
+  static bool existDifferentTo<I, T>(Iterator<I> iterator, Mapper<I, T> toId) =>
+      existTo(iterator, toId, FPredicatorFusionor.isDifferent);
 
-  bool get existEqual => existAny(FPredicatorFusionor.isEqual);
+  static bool existEqual<I>(Iterator<I> iterator) =>
+      existAny(iterator, FPredicatorFusionor.isEqual);
 
-  bool existEqualTo<T>(Mapper<I, T> toId) =>
-      existAnyTo(toId, FPredicatorFusionor.isEqual);
+  static bool existEqualTo<I, T>(Iterator<I> iterator, Mapper<I, T> toId) =>
+      existAnyTo(iterator, toId, FPredicatorFusionor.isEqual);
+
+  ///
+  /// [existAnyToEachGroup]
+  /// [existAnyToEachGroupSet]
+  ///
+  static bool existAnyToEachGroup<I, K, V>(
+    Iterator<I> iterator,
+    Mapper<I, K> toKey,
+    Mapper<I, V> toVal,
+    PredicatorSynthesizer<Map<K, V>, K, V> listen,
+  ) => IteratorTo.supplyMoveNext(iterator, () {
+    final map = <K, V>{toKey(iterator.current): toVal(iterator.current)};
+    while (iterator.moveNext()) {
+      if (listen(map, toKey(iterator.current), toVal(iterator.current))) {
+        return true;
+      }
+    }
+    return false;
+  });
+
+  static bool existAnyToEachGroupSet<I, K, V>(
+    Iterator<I> iterator,
+    Mapper<I, K> toKey,
+    Mapper<I, V> toVal,
+    PredicatorSynthesizer<Map<K, Set<V>>, K, V> listen,
+  ) => IteratorTo.supplyMoveNext(iterator, () {
+    final map = <K, Set<V>>{
+      toKey(iterator.current): {toVal(iterator.current)},
+    };
+    while (iterator.moveNext()) {
+      if (listen(map, toKey(iterator.current), toVal(iterator.current))) {
+        return true;
+      }
+    }
+    return false;
+  });
 
   ///
   ///
-  /// [first], [last]
   ///
-  /// find
-  /// [find], [consumeFound]
-  /// [findOrNull], [findOr]
-  /// [mapFound], [mapFoundOrNull], [mapFoundOr]
   /// [indexFound], [indexFoundChecked]
+  /// [cumulate], [cumulateBy], [cumulateLengthNested]
   ///
-  /// take
-  /// [take], [takeUntil]
-  /// [takeAllApply], [takeAllCompanion],
-  /// [takeUntil], [takeFrom], [takeBetween]
   ///
-  /// where
-  /// [where], [consumeWhere]
-  /// [whereUntil], [whereFrom], [whereBetween]
-  /// [indexesWhere]
-  /// [indexesWhereUntil], [indexesWhereFrom], [indexesWhereBetween]
-  /// [indexesWhereChecked]
-  /// [indexesWhereCheckedUntil], [indexesWhereCheckedFrom], [indexesWhereCheckedBetween]
+  ///
+  ///
+
+  ///
+  /// [indexFound]
+  /// [indexFoundChecked]
+  ///
+  static int indexFound<I>(Iterator<I> iterator, Predicator<I> test) {
+    var i = 0;
+    while (iterator.moveNext()) {
+      if (test(iterator.current)) return i;
+      i++;
+    }
+    throw StateError(Erroring.iterableElementNotFound);
+  }
+
+  static int indexFoundChecked<I>(
+      Iterator<I> iterator,
+      PredicatorGenerator<I> test,
+      ) {
+    var i = 0;
+    while (iterator.moveNext()) {
+      if (test(iterator.current, i)) return i;
+      i++;
+    }
+    throw StateError(Erroring.iterableElementNotFound);
+  }
+
+  ///
+  /// [cumulate]
+  /// [cumulateBy]
+  /// [cumulateLengthNested]
+  ///
+  static int cumulate<I>(Iterator<I> iterator, Predicator<I> test) {
+    var val = 0;
+    while (iterator.moveNext()) {
+      if (test(iterator.current)) val++;
+    }
+    return val;
+  }
+
+  static int cumulateBy<I, T>(
+      Iterator<I> iterator,
+      T value,
+      PredicatorMixer<I, T> test,
+      ) {
+    var val = 0;
+    while (iterator.moveNext()) {
+      if (test(iterator.current, value)) val++;
+    }
+    return val;
+  }
+
+  static int cumulateLengthNested<I, T>(Iterator<I> iterator) =>
+      IteratorTo.induct<I, int>(
+        iterator,
+            (element) => switch (element) {
+          T() => 1,
+          Iterable<T>() => element.length,
+          Iterable<Iterable>() => IteratorExtension.cumulateLengthNested(
+            element.iterator,
+          ),
+          _ => throw StateError(Erroring.iterableElementNotNest),
+        },
+        IntExtension.reduce_plus,
+      );
+
+  ///
+  ///
+  /// [first], [last]
+  /// [applyMoveNext], [applyLead]
+  /// [find], [findOr], [findOrNull]
+  /// [reduce], [reduceByIndex], [reduceBy]
   ///
   ///
 
   ///
   /// [first], [last]
   ///
-  I get first => supplyMoveNext(() => current);
+  static I first<I>(Iterator<I> iterator) =>
+      IteratorTo.supplyMoveNext(iterator, () => iterator.current);
 
-  I get last => applyMoveNext((val) {
-        while (moveNext()) val = current;
+  static I last<I>(Iterator<I> iterator) =>
+      IteratorExtension.applyMoveNext(iterator, (val) {
+        while (iterator.moveNext()) {
+          val = iterator.current;
+        }
         return val;
       });
 
   ///
+  /// [applyMoveNext], [applyLead]
   ///
-  ///
-  /// find / [Iterable.firstWhere]
-  /// [find]
-  /// [findOr], [findOrNull]
-  ///
-  ///
-  /// reduce / [Iterable.reduce]
-  /// [reduce]
-  /// [reduceByIndex], [reduceBy]
-  ///
-  ///
-  ///
+  static I applyMoveNext<I>(Iterator<I> iterator, Applier<I> apply) =>
+      iterator.moveNext()
+          ? apply(iterator.current)
+          : throw StateError(Erroring.iterableNoElement);
+
+  static I applyLead<I>(Iterator<I> iterator, int ahead, Applier<I> apply) {
+    for (var i = -1; i < ahead; i++) {
+      if (!iterator.moveNext()) {
+        throw StateError(Erroring.iterableNoElement);
+      }
+    }
+    return apply(iterator.current);
+  }
 
   ///
-  /// [find]
-  /// [findOr]
-  /// [findOrNull]
+  /// [find], [findOr], [findOrNull]
   ///
-  I find(Predicator<I> test) {
-    while (moveNext()) if (test(current)) return current;
+  static I find<I>(Iterator<I> iterator, Predicator<I> test) {
+    while (iterator.moveNext()) {
+      if (test(iterator.current)) return iterator.current;
+    }
     throw StateError(Erroring.iterableElementNotFound);
   }
 
-  I findOr(Predicator<I> test, Supplier<I> supply) {
-    while (moveNext()) if (test(current)) return current;
+  static I findOr<I>(
+    Iterator<I> iterator,
+    Predicator<I> test,
+    Supplier<I> supply,
+  ) {
+    while (iterator.moveNext()) {
+      if (test(iterator.current)) return iterator.current;
+    }
     return supply();
   }
 
-  I? findOrNull(Predicator<I> test) {
-    while (moveNext()) if (test(current)) return current;
+  static I? findOrNull<I>(Iterator<I> iterator, Predicator<I> test) {
+    while (iterator.moveNext()) {
+      if (test(iterator.current)) return iterator.current;
+    }
     return null;
   }
 
@@ -400,467 +448,424 @@ extension IteratorExtension<I> on Iterator<I> {
   /// [reduce]
   /// [reduceByIndex], [reduceBy]
   ///
-  I reduce(Reducer<I> reducing) => applyMoveNext((val) {
-        while (moveNext()) val = reducing(val, current);
-        return val;
-      });
-
-  I reduceByIndex(ReducerGenerator<I> reducing, [int start = 0]) =>
-      applyMoveNext((val) {
-        var val = current;
-        for (var i = start; moveNext(); i++) val = reducing(val, current, i);
-        return val;
-      });
-
-  I reduceBy<T>(
-    T initialElement,
-    Collector<I, T> reducing,
-    Absorber<T, I> after,
-  ) =>
-      applyMoveNext((val) {
-        var val = current;
-        var ele = initialElement;
-        while (moveNext()) {
-          val = reducing(val, current, ele);
-          ele = after(ele, current, val);
+  static I reduce<I>(Iterator<I> iterator, Reducer<I> reducing) =>
+      applyMoveNext(iterator, (val) {
+        while (iterator.moveNext()) {
+          val = reducing(val, iterator.current);
         }
         return val;
       });
 
+  static I reduceByIndex<I>(
+    Iterator<I> iterator,
+    ReducerGenerator<I> reducing, [
+    int start = 0,
+  ]) => applyMoveNext(iterator, (val) {
+    var val = iterator.current;
+    for (var i = start; iterator.moveNext(); i++) {
+      val = reducing(val, iterator.current, i);
+    }
+    return val;
+  });
+
+  static I reduceBy<I, T>(
+    Iterator<I> iterator,
+    T initialElement,
+    Collector<I, T> reducing,
+    Absorber<T, I> after,
+  ) => applyMoveNext(iterator, (val) {
+    var val = iterator.current;
+    var ele = initialElement;
+    while (iterator.moveNext()) {
+      val = reducing(val, iterator.current, ele);
+      ele = after(ele, iterator.current, val);
+    }
+    return val;
+  });
+
   ///
   ///
   ///
-  ///
-  /// take / [Iterable.take]
   /// [take], [takeAll]
   /// [takeAllApply], [takeAllCompanion],
   /// [takeWhile], [takeWhileExist],
   /// [takeUntil], [takeUntilExist],
   /// [takeFrom], [takeBetween],
   ///
-  /// [takeList], [takeListAll]
-  /// [takeListWhile], [takeListWhileExistOnFirst],
-  /// [takeListUntil], [takeListUntilExist],
+  /// [where], [whereUntil]
+  /// [whereFrom], [whereBetween],
   ///
+  /// [expand]
+  /// [expandByIndex], [expandBy], [expandWhere]
+  ///
+  /// [skip]
+  /// [sub]
+  ///
+  /// [mergeBy]
+  /// [interval]
   ///
   ///
   ///
 
   ///
-  /// [take]
-  /// [takeAll]
+  /// [take], [takeAll]
   ///
-  Iterable<I> take(int count) sync* {
+  static Iterable<I> take<I>(Iterator<I> iterator, int count) sync* {
     var i = 0;
-    for (; i < count && moveNext(); i++) yield current;
+    for (; i < count && iterator.moveNext(); i++) {
+      yield iterator.current;
+    }
     if (count > i) throw RangeError.range(count, 0, i);
   }
 
-  Iterable<I> get takeAll => [for (; moveNext();) current];
+  static Iterable<I> takeAll<I>(Iterator<I> iterator) => [
+    for (; iterator.moveNext();) iterator.current,
+  ];
 
   ///
-  /// [takeAllApply]
-  /// [takeAllCompanion]
+  /// [takeAllApply], [takeAllCompanion]
   ///
-  Iterable<I> takeAllApply(Applier<I> apply) sync* {
-    while (moveNext()) yield apply(current);
+  static Iterable<I> takeAllApply<I>(
+    Iterator<I> iterator,
+    Applier<I> apply,
+  ) sync* {
+    while (iterator.moveNext()) {
+      yield apply(iterator.current);
+    }
   }
 
-  Iterable<I> takeAllCompanion<T>(T value, Companion<I, T> companion) sync* {
-    while (moveNext()) yield companion(current, value);
+  static Iterable<I> takeAllCompanion<I, T>(
+    Iterator<I> iterator,
+    T value,
+    Companion<I, T> companion,
+  ) sync* {
+    while (iterator.moveNext()) {
+      yield companion(iterator.current, value);
+    }
   }
 
   ///
   /// [takeWhile]
   /// [takeWhileExist]
   ///
-  Iterable<I> takeWhile(Predicator<I> test) sync* {
-    while (moveNext()) {
-      if (!test(current)) break;
-      yield current;
+  static Iterable<I> takeWhile<I>(
+    Iterator<I> iterator,
+    Predicator<I> test,
+  ) sync* {
+    while (iterator.moveNext()) {
+      if (!test(iterator.current)) break;
+      yield iterator.current;
     }
   }
 
-  Iterable<I> takeWhileExist(
+  static Iterable<I> takeWhileExist<I>(
+    Iterator<I> iterator,
     PredicatorReducer<I> test, [
     bool includeFirst = true,
-  ]) =>
-      supplyMoveNext(() sync* {
-        final val = current;
-        if (includeFirst) yield val;
-        while (moveNext()) {
-          if (!test(val, current)) break;
-          yield current;
-        }
-      });
+  ]) => IteratorTo.supplyMoveNext(iterator, () sync* {
+    final val = iterator.current;
+    if (includeFirst) yield val;
+    while (iterator.moveNext()) {
+      if (!test(val, iterator.current)) break;
+      yield iterator.current;
+    }
+  });
 
   ///
   /// [takeUntil]
   /// [takeUntilExist]
   ///
-  Iterable<I> takeUntil(
+  static Iterable<I> takeUntil<I>(
+    Iterator<I> iterator,
     Predicator<I> testInvalid, [
     bool includeFirstInvalid = false,
   ]) sync* {
-    while (moveNext()) {
-      if (testInvalid(current)) {
-        if (includeFirstInvalid) yield current;
+    while (iterator.moveNext()) {
+      if (testInvalid(iterator.current)) {
+        if (includeFirstInvalid) yield iterator.current;
         break;
       }
-      yield current;
+      yield iterator.current;
     }
   }
 
-  Iterable<I> takeUntilExist(
+  static Iterable<I> takeUntilExist<I>(
+    Iterator<I> iterator,
     PredicatorReducer<I> testInvalid, [
     bool includeFirstInvalid = false,
-  ]) =>
-      supplyMoveNext(() sync* {
-        final val = current;
-        yield val;
-        while (moveNext()) {
-          if (testInvalid(val, current)) {
-            if (includeFirstInvalid) yield current;
-            break;
-          }
-          yield current;
-        }
-      });
+  ]) => IteratorTo.supplyMoveNext(iterator, () sync* {
+    final val = iterator.current;
+    yield val;
+    while (iterator.moveNext()) {
+      if (testInvalid(val, iterator.current)) {
+        if (includeFirstInvalid) yield iterator.current;
+        break;
+      }
+      yield iterator.current;
+    }
+  });
 
   ///
   /// [takeFrom]
   /// [takeBetween]
   ///
-  Iterable<I> takeFrom(
+  static Iterable<I> takeFrom<I>(
+    Iterator<I> iterator,
     Predicator<I> testStart, [
     bool includeStart = true,
   ]) sync* {
-    while (moveNext()) {
-      if (testStart(current)) {
-        if (includeStart) yield current;
+    while (iterator.moveNext()) {
+      if (testStart(iterator.current)) {
+        if (includeStart) yield iterator.current;
         break;
       }
     }
-    while (moveNext()) yield current;
+    while (iterator.moveNext()) {
+      yield iterator.current;
+    }
   }
 
-  Iterable<I> takeBetween(
+  static Iterable<I> takeBetween<I>(
+    Iterator<I> iterator,
     Predicator<I> testStart,
     Predicator<I> testEnd, {
     bool includeStart = true,
     bool includeEnd = false,
   }) sync* {
-    while (moveNext()) {
-      if (testStart(current)) {
-        if (includeStart) yield current;
+    while (iterator.moveNext()) {
+      if (testStart(iterator.current)) {
+        if (includeStart) yield iterator.current;
         break;
       }
     }
-    while (moveNext()) {
-      if (testEnd(current)) {
-        if (includeEnd) yield current;
+    while (iterator.moveNext()) {
+      if (testEnd(iterator.current)) {
+        if (includeEnd) yield iterator.current;
         break;
       }
-      yield current;
+      yield iterator.current;
     }
   }
 
   ///
-  /// [takeList]
-  /// [takeListAll]
-  /// [takeListRemain]
+  /// [where], [whereUntil]
   ///
-  List<I> takeList(int count) {
-    final list = <I>[];
-    var i = 0;
-    for (; i < count && moveNext(); i++) list.add(current);
-    if (count > i) throw RangeError.range(count, 0, i);
-    return list;
+  static Iterable<I> where<I>(Iterator<I> iterator, Predicator<I> test) sync* {
+    while (iterator.moveNext()) {
+      if (test(iterator.current)) yield iterator.current;
+    }
   }
 
-  List<I> get takeListAll => [for (; moveNext();) current];
-
-  ///
-  /// [takeListWhile]
-  /// [takeListWhileExistOnFirst]
-  ///
-  List<I> takeListWhile(Predicator<I> test) =>
-      [for (; moveNext() && test(current);) current];
-
-  List<I> takeListWhileExistOnFirst(PredicatorReducer<I> test) =>
-      supplyMoveNext(() {
-        final val = current;
-        return [for (; moveNext() && test(val, current);) current];
-      });
-
-  ///
-  /// [takeListUntil]
-  /// [takeListUntilExist]
-  ///
-  List<I> takeListUntil(
-    Predicator<I> testInvalid, [
-    bool includeFirstInvalid = false,
-  ]) {
-    final list = <I>[];
-    while (moveNext()) {
-      if (testInvalid(current)) {
-        if (includeFirstInvalid) list.add(current);
+  static Iterable<I> whereUntil<I>(
+      Iterator<I> iterator,
+      Predicator<I> test,
+      Predicator<I> testEnd, [
+        bool includeEnd = false,
+      ]) sync* {
+    while (iterator.moveNext()) {
+      if (testEnd(iterator.current)) {
+        if (includeEnd) yield iterator.current;
         break;
       }
-      list.add(current);
-    }
-    return list;
-  }
-
-  List<I> takeListUntilExist(
-    PredicatorReducer<I> testInvalid, [
-    bool includeFirstInvalid = false,
-  ]) =>
-      supplyMoveNext(() {
-        final val = current;
-        final list = [val];
-        while (moveNext()) {
-          if (testInvalid(val, current)) {
-            if (includeFirstInvalid) list.add(current);
-            break;
-          }
-          list.add(current);
-        }
-        return list;
-      });
-
-  ///
-  /// where / [Iterable.where]
-  /// [where]
-  /// [whereUntil], [whereFrom], [whereBetween]
-  /// [indexesWhere]
-  /// [indexesWhereUntil], [indexesWhereFrom], [indexesWhereBetween]
-  /// [indexesWhereChecked]
-  /// [indexesWhereCheckedUntil], [indexesWhereCheckedFrom], [indexesWhereCheckedBetween]
-  ///
-
-  ///
-  /// [where]
-  ///
-  Iterable<I> where(Predicator<I> test) sync* {
-    while (moveNext()) {
-      if (test(current)) yield current;
+      if (test(iterator.current)) yield iterator.current;
     }
   }
 
   ///
-  /// [whereFrom]
-  /// [whereBetween]
-  /// [whereUntil]
+  /// [whereFrom], [whereBetween]
   ///
-  Iterable<I> whereFrom(
+  static Iterable<I> whereFrom<I>(
+    Iterator<I> iterator,
     Predicator<I> testStart,
     Predicator<I> test, [
     bool includeStart = true,
   ]) sync* {
-    while (moveNext()) {
-      if (testStart(current)) {
-        if (includeStart) yield current;
+    while (iterator.moveNext()) {
+      if (testStart(iterator.current)) {
+        if (includeStart) yield iterator.current;
         break;
       }
     }
-    while (moveNext()) if (test(current)) yield current;
+    while (iterator.moveNext()) {
+      if (test(iterator.current)) yield iterator.current;
+    }
   }
 
-  Iterable<I> whereBetween(
+  static Iterable<I> whereBetween<I>(
+    Iterator<I> iterator,
     Predicator<I> testStart,
     Predicator<I> test,
     Predicator<I> testEnd, {
     bool includeStart = true,
     bool includeEnd = false,
   }) sync* {
-    while (moveNext()) {
-      if (testStart(current)) {
-        if (includeStart) yield current;
+    while (iterator.moveNext()) {
+      if (testStart(iterator.current)) {
+        if (includeStart) yield iterator.current;
         break;
       }
     }
-    while (moveNext()) {
-      if (testEnd(current)) {
-        if (includeEnd) yield current;
+    while (iterator.moveNext()) {
+      if (testEnd(iterator.current)) {
+        if (includeEnd) yield iterator.current;
         break;
       }
-      if (test(current)) yield current;
+      if (test(iterator.current)) yield iterator.current;
     }
   }
-
-  Iterable<I> whereUntil(
-    Predicator<I> test,
-    Predicator<I> testEnd, [
-    bool includeEnd = false,
-  ]) sync* {
-    while (moveNext()) {
-      if (testEnd(current)) {
-        if (includeEnd) yield current;
-        break;
-      }
-      if (test(current)) yield current;
-    }
-  }
-
-  ///
-  /// skip / [Iterable.skip]
-  /// [skip]
-  ///
-  /// sub / [List.sublist]
-  /// [sub]
-  ///
-
-  ///
-  /// [skip]
-  /// [sub]
-  ///
-  Iterable<I> skip(int count) {
-    var i = 0;
-    for (; moveNext() && i < count; i++) {}
-    if (count > i) throw RangeError.range(count, 0, i);
-    return takeAll;
-  }
-
-  Iterable<I> sub(int start, [int? end]) sync* {
-    var i = 0;
-    for (; i < start && moveNext(); i++) {}
-
-    if (end == null) {
-      while (moveNext()) yield current;
-      return;
-    }
-    for (; i < end && moveNext(); i++) yield current;
-  }
-
-  ///
-  ///
-  /// expand / [Iterable.expand]
-  /// [expand]
-  /// [expandByIndex], [expandBy], [expandWhere]
-  ///
-  ///
 
   ///
   /// [expand]
+  ///
+  static Iterable<I> expand<I>(
+      Iterator<I> iterator,
+      Mapper<I, Iterable<I>> expanding,
+      ) sync* {
+    while (iterator.moveNext()) {
+      yield* expanding(iterator.current);
+    }
+  }
+
+  ///
   /// [expandBy], [expandByIndex], [expandWhere]
   ///
-  Iterable<I> expand(Mapper<I, Iterable<I>> expanding) sync* {
-    while (moveNext()) yield* expanding(current);
+  static Iterable<I> expandBy<I, T>(
+      Iterator<I> iterator,
+      T value,
+      Mixer<I, T, Iterable<I>> expanding,
+      ) sync* {
+    while (iterator.moveNext()) {
+      yield* expanding(iterator.current, value);
+    }
   }
 
-  Iterable<I> expandBy<T>(
-    T value,
-    Mixer<I, T, Iterable<I>> expanding,
-  ) sync* {
-    while (moveNext()) yield* expanding(current, value);
+  static Iterable<I> expandByIndex<I>(
+      Iterator<I> iterator,
+      MapperGenerator<I, Iterable<I>> expanding, [
+        int start = 0,
+      ]) sync* {
+    for (var i = start; iterator.moveNext(); i++) {
+      yield* expanding(iterator.current, i);
+    }
   }
 
-  Iterable<I> expandByIndex(
-    MapperGenerator<I, Iterable<I>> expanding, [
-    int start = 0,
-  ]) sync* {
-    for (var i = start; moveNext(); i++) yield* expanding(current, i);
+  static Iterable<I> expandWhere<I>(
+      Iterator<I> iterator,
+      Predicator<I> test,
+      Mapper<I, Iterable<I>> expanding,
+      ) => [
+    for (; iterator.moveNext() && test(iterator.current);)
+      ...expanding(iterator.current),
+  ];
+
+  ///
+  /// [skip], [sub]
+  ///
+  static Iterable<I> skip<I>(Iterator<I> iterator, int count) {
+    var i = 0;
+    for (; iterator.moveNext() && i < count; i++) {}
+    if (count > i) throw RangeError.range(count, 0, i);
+    return takeAll(iterator);
   }
 
-  Iterable<I> expandWhere(
-    Predicator<I> test,
-    Mapper<I, Iterable<I>> expanding,
-  ) =>
-      [for (; moveNext() && test(current);) ...expanding(current)];
+  static Iterable<I> sub<I>(Iterator<I> iterator, int start, [int? end]) sync* {
+    var i = 0;
+    for (; i < start && iterator.moveNext(); i++) {}
+
+    if (end == null) {
+      while (iterator.moveNext()) {
+        yield iterator.current;
+      }
+      return;
+    }
+    for (; i < end && iterator.moveNext(); i++) {
+      yield iterator.current;
+    }
+  }
 
   ///
-  ///
-  ///
-  /// [pairMerge]
   /// [mergeBy]
+  ///
+  static Iterable<I> mergeBy<I>(
+    Iterator<I> iterator,
+    int split,
+    PredicatorReducer<I> keep,
+  ) => IteratorTogether.pairMerge(
+    [...take(iterator, split)].iterator,
+    iterator,
+    keep,
+  );
+
+  ///
   /// [interval]
   ///
-  ///
-  Iterable<I> mergeBy(int split, PredicatorReducer<I> keep) =>
-      [...take(split)].iterator.pairMerge(this, keep);
-
-  Iterable<I> interval(Reducer<I> reducing) => supplyMoveNext(() sync* {
-        var previous = current;
-        while (moveNext()) {
-          yield reducing(previous, current);
-          previous = current;
+  static Iterable<I> interval<I>(Iterator<I> iterator, Reducer<I> reducing) =>
+      IteratorTo.supplyMoveNext(iterator, () sync* {
+        var previous = iterator.current;
+        while (iterator.moveNext()) {
+          yield reducing(previous, iterator.current);
+          previous = iterator.current;
         }
       });
 
   ///
   ///
-  /// functions that returns integers
-  ///
-  /// index / [List.indexWhere]
-  /// [indexFound]
-  /// [indexFoundChecked]
-  /// [indexesWhere]
-  /// [indexesWhereFrom], [indexesWhereBetween], [indexesWhereUntil]
-  /// [indexesWhereChecked], [indexesWhereCheckedFrom], [indexesWhereCheckedBetween], [indexesWhereCheckedUntil]
-  ///
-  /// cumulate:
-  /// [cumulate]
-  /// [cumulateBy]
-  /// [cumulateLengthNested]
-  ///
+  /// [indexesWhere], [indexesWhereUntil], [indexesWhereFrom], [indexesWhereBetween],
+  /// [indexesWhereChecked], [indexesWhereCheckedUntil], [indexesWhereCheckedFrom], [indexesWhereCheckedBetween],
   ///
   ///
 
+
   ///
-  /// [indexFound]
-  /// [indexFoundChecked]
+  /// [indexesWhere], [indexesWhereUntil]
   ///
-  int indexFound(Predicator<I> test) {
-    var i = 0;
-    while (moveNext()) {
-      if (test(current)) return i;
-      i++;
+  static Iterable<int> indexesWhere<I>(
+    Iterator<I> iterator,
+    Predicator<I> test,
+  ) sync* {
+    for (var i = 0; iterator.moveNext(); i++) {
+      if (test(iterator.current)) yield i;
     }
-    throw StateError(Erroring.iterableElementNotFound);
   }
 
-  int indexFoundChecked(PredicatorGenerator<I> test) {
-    var i = 0;
-    while (moveNext()) {
-      if (test(current, i)) return i;
-      i++;
-    }
-    throw StateError(Erroring.iterableElementNotFound);
-  }
-
-  ///
-  /// [indexesWhere]
-  ///
-  Iterable<int> indexesWhere(Predicator<I> test) sync* {
-    for (var i = 0; moveNext(); i++) {
-      if (test(current)) yield i;
+  static Iterable<int> indexesWhereUntil<I>(
+      Iterator<I> iterator,
+      Predicator<I> test,
+      Predicator<I> testEnd, [
+        bool includeEnd = false,
+      ]) sync* {
+    for (var i = 0; iterator.moveNext(); i++) {
+      if (testEnd(iterator.current)) {
+        if (includeEnd) yield i;
+        break;
+      }
+      if (test(iterator.current)) yield i;
     }
   }
 
   ///
-  /// [indexesWhereUntil]
-  /// [indexesWhereFrom]
-  /// [indexesWhereBetween]
+  /// [indexesWhereFrom], [indexesWhereBetween]
   ///
-  Iterable<int> indexesWhereFrom(
+  static Iterable<int> indexesWhereFrom<I>(
+    Iterator<I> iterator,
     Predicator<I> testStart,
     Predicator<I> test, [
     bool includeStart = true,
   ]) sync* {
     var i = 0;
-    for (; moveNext(); i++) {
-      if (testStart(current)) {
+    for (; iterator.moveNext(); i++) {
+      if (testStart(iterator.current)) {
         if (includeStart) yield i;
         break;
       }
     }
-    for (; moveNext(); i++) {
-      if (test(current)) yield i;
+    for (; iterator.moveNext(); i++) {
+      if (test(iterator.current)) yield i;
     }
   }
 
-  Iterable<int> indexesWhereBetween(
+  static Iterable<int> indexesWhereBetween<I>(
+    Iterator<I> iterator,
     Predicator<I> testStart,
     Predicator<I> test,
     Predicator<I> testEnd, {
@@ -868,67 +873,73 @@ extension IteratorExtension<I> on Iterator<I> {
     bool includeEnd = false,
   }) sync* {
     var i = 0;
-    for (; moveNext(); i++) {
-      if (testStart(current)) {
+    for (; iterator.moveNext(); i++) {
+      if (testStart(iterator.current)) {
         if (includeStart) yield i;
         break;
       }
     }
-    for (; moveNext(); i++) {
-      if (testEnd(current)) {
+    for (; iterator.moveNext(); i++) {
+      if (testEnd(iterator.current)) {
         if (includeEnd) yield i;
         break;
       }
-      if (test(current)) yield i;
-    }
-  }
-
-  Iterable<int> indexesWhereUntil(
-    Predicator<I> test,
-    Predicator<I> testEnd, [
-    bool includeEnd = false,
-  ]) sync* {
-    for (var i = 0; moveNext(); i++) {
-      if (testEnd(current)) {
-        if (includeEnd) yield i;
-        break;
-      }
-      if (test(current)) yield i;
+      if (test(iterator.current)) yield i;
     }
   }
 
   ///
   /// [indexesWhereChecked]
+  /// [indexesWhereCheckedUntil]
   ///
-  Iterable<int> indexesWhereChecked(PredicatorGenerator<I> test) sync* {
-    for (var i = 0; moveNext(); i++) {
-      if (test(current, i)) yield i;
+  static Iterable<int> indexesWhereChecked<I>(
+    Iterator<I> iterator,
+    PredicatorGenerator<I> test,
+  ) sync* {
+    for (var i = 0; iterator.moveNext(); i++) {
+      if (test(iterator.current, i)) yield i;
+    }
+  }
+
+  static Iterable<int> indexesWhereCheckedUntil<I>(
+      Iterator<I> iterator,
+      PredicatorGenerator<I> test,
+      PredicatorGenerator<I> testEnd, [
+        bool includeEnd = false,
+      ]) sync* {
+    for (var i = 0; iterator.moveNext(); i++) {
+      if (testEnd(iterator.current, i)) {
+        if (includeEnd) yield i;
+        break;
+      }
+      if (test(iterator.current, i)) yield i;
     }
   }
 
   ///
   /// [indexesWhereCheckedFrom]
   /// [indexesWhereCheckedBetween]
-  /// [indexesWhereCheckedUntil]
   ///
-  Iterable<int> indexesWhereCheckedFrom(
+  static Iterable<int> indexesWhereCheckedFrom<I>(
+    Iterator<I> iterator,
     PredicatorGenerator<I> testStart,
     PredicatorGenerator<I> test, [
     bool includeStart = true,
   ]) sync* {
     var i = 0;
-    for (; moveNext(); i++) {
-      if (testStart(current, i)) {
+    for (; iterator.moveNext(); i++) {
+      if (testStart(iterator.current, i)) {
         if (includeStart) yield i;
         break;
       }
     }
-    for (; moveNext(); i++) {
-      if (test(current, i)) yield i;
+    for (; iterator.moveNext(); i++) {
+      if (test(iterator.current, i)) yield i;
     }
   }
 
-  Iterable<int> indexesWhereCheckedBetween(
+  static Iterable<int> indexesWhereCheckedBetween<I>(
+    Iterator<I> iterator,
     PredicatorGenerator<I> testStart,
     PredicatorGenerator<I> test,
     PredicatorGenerator<I> testEnd, {
@@ -936,59 +947,96 @@ extension IteratorExtension<I> on Iterator<I> {
     bool includeEnd = false,
   }) sync* {
     var i = 0;
-    for (; moveNext(); i++) {
-      if (testStart(current, i)) {
+    for (; iterator.moveNext(); i++) {
+      if (testStart(iterator.current, i)) {
         if (includeStart) yield i;
         break;
       }
     }
-    for (; moveNext(); i++) {
-      if (testEnd(current, i)) {
+    for (; iterator.moveNext(); i++) {
+      if (testEnd(iterator.current, i)) {
         if (includeEnd) yield i;
         break;
       }
-      if (test(current, i)) yield i;
-    }
-  }
-
-  Iterable<int> indexesWhereCheckedUntil(
-    PredicatorGenerator<I> test,
-    PredicatorGenerator<I> testEnd, [
-    bool includeEnd = false,
-  ]) sync* {
-    for (var i = 0; moveNext(); i++) {
-      if (testEnd(current, i)) {
-        if (includeEnd) yield i;
-        break;
-      }
-      if (test(current, i)) yield i;
+      if (test(iterator.current, i)) yield i;
     }
   }
 
   ///
-  /// [cumulate]
-  /// [cumulateBy]
-  /// [cumulateLengthNested]
   ///
-  int cumulate(Predicator<I> test) {
-    var val = 0;
-    while (moveNext()) if (test(current)) val++;
-    return val;
+  /// [takeList], [takeListAll]
+  /// [takeListWhile], [takeListWhileExistOnFirst],
+  /// [takeListUntil], [takeListUntilExist],
+  ///
+  ///
+
+  ///
+  /// [takeList], [takeListAll]
+  /// [takeListWhile], [takeListWhileExistOnFirst]
+  ///
+  static List<I> takeList<I>(Iterator<I> iterator, int count) {
+    final list = <I>[];
+    var i = 0;
+    for (; i < count && iterator.moveNext(); i++) {
+      list.add(iterator.current);
+    }
+    if (count > i) throw RangeError.range(count, 0, i);
+    return list;
   }
 
-  int cumulateBy<T>(T value, PredicatorMixer<I, T> test) {
-    var val = 0;
-    while (moveNext()) if (test(current, value)) val++;
-    return val;
+  static List<I> takeListAll<I>(Iterator<I> iterator) => [
+    for (; iterator.moveNext();) iterator.current,
+  ];
+
+  static List<I> takeListWhile<I>(Iterator<I> iterator, Predicator<I> test) => [
+    for (; iterator.moveNext() && test(iterator.current);) iterator.current,
+  ];
+
+  static List<I> takeListWhileExistOnFirst<I>(
+      Iterator<I> iterator,
+      PredicatorReducer<I> test,
+      ) => IteratorTo.supplyMoveNext(iterator, () {
+    final val = iterator.current;
+    return [
+      for (; iterator.moveNext() && test(val, iterator.current);)
+        iterator.current,
+    ];
+  });
+
+  ///
+  /// [takeListUntil]
+  /// [takeListUntilExist]
+  ///
+  static List<I> takeListUntil<I>(
+      Iterator<I> iterator,
+      Predicator<I> testInvalid, [
+        bool includeFirstInvalid = false,
+      ]) {
+    final list = <I>[];
+    while (iterator.moveNext()) {
+      if (testInvalid(iterator.current)) {
+        if (includeFirstInvalid) list.add(iterator.current);
+        break;
+      }
+      list.add(iterator.current);
+    }
+    return list;
   }
 
-  int cumulateLengthNested<T>() => induct<int>(
-        (element) => switch (element) {
-          T() => 1,
-          Iterable<T>() => element.length,
-          Iterable<Iterable>() => element.iterator.cumulateLengthNested(),
-          _ => throw StateError(Erroring.iterableElementNotNest),
-        },
-        IntExtension.reduce_plus,
-      );
+  static List<I> takeListUntilExist<I>(
+      Iterator<I> iterator,
+      PredicatorReducer<I> testInvalid, [
+        bool includeFirstInvalid = false,
+      ]) => IteratorTo.supplyMoveNext(iterator, () {
+    final val = iterator.current;
+    final list = [val];
+    while (iterator.moveNext()) {
+      if (testInvalid(val, iterator.current)) {
+        if (includeFirstInvalid) list.add(iterator.current);
+        break;
+      }
+      list.add(iterator.current);
+    }
+    return list;
+  });
 }

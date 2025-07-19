@@ -12,7 +12,6 @@ extension ListMapEntry<K, V> on List<MapEntry<K, V?>> {
   void reset({V? fill}) => updateAllApply((entry) => MapEntry(entry.key, fill));
 }
 
-
 ///
 ///
 ///
@@ -25,8 +24,6 @@ extension List2DExtension<T> on List2D<T> {
     return mapToList((t) => identity..updateReduce(reducing, t));
   }
 }
-
-
 
 ///
 /// [mergeToThis], ...
@@ -48,5 +45,5 @@ extension ListSet<I> on List<Set<I>> {
   }
 
   void mergeWhereToTrailing(Predicator<Set<I>> test) =>
-      add(removalWhere(test).iterator.reduceMerged());
+      add(IteratorSet.reduceMerged(removalWhere(test).iterator));
 }

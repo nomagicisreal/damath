@@ -29,16 +29,8 @@ extension DurationExtension on Duration {
   static const Duration day1 = Duration(days: 1);
 
   ///
+  /// [dayMinuteSecondFrom]
   ///
-  ///
-  static Duration reduceMax(Duration a, Duration b) => a > b ? a : b;
-
-  static Duration reduceMin(Duration a, Duration b) => a < b ? a : b;
-
-  static Duration reducePlus(Duration v1, Duration v2) => v1 + v2;
-
-  static Duration reduceMinus(Duration v1, Duration v2) => v1 - v2;
-
   static String dayMinuteSecondFrom(
     Duration duration, [
     String splitter = ':',
@@ -48,17 +40,33 @@ extension DurationExtension on Duration {
         ? result
         : result.splitMapJoin(RegExp(':'), onMatch: (_) => splitter);
   }
+
+  ///
+  /// [reduceMax], [reduceMin]
+  /// [reducePlus], [reduceMinus]
+  ///
+  static Duration reduceMax(Duration a, Duration b) => a > b ? a : b;
+
+  static Duration reduceMin(Duration a, Duration b) => a < b ? a : b;
+
+  static Duration reducePlus(Duration v1, Duration v2) => v1 + v2;
+
+  static Duration reduceMinus(Duration v1, Duration v2) => v1 - v2;
 }
 
 ///
 ///
 ///
+/// [sunday_chinese], ...
+/// return bool       --> [isSameYearN], ...
+/// return int        --> [dayOfYear], ...
+/// return string     --> [parseTimestamp], ...
+/// return date time  --> [normalizeDate], ...
+///
 ///
 ///
 extension DateTimeExtension on DateTime {
   ///
-  ///
-  /// constants
   ///
   ///
   static const String sunday_chinese = '（日）';
@@ -71,81 +79,108 @@ extension DateTimeExtension on DateTime {
 
   ///
   ///
-  /// static methods
+  /// [isSameYearN], ..., [isSameDateN]
+  /// [isSameDate]
   ///
-  ///
-  //
-  // sample output: 2025-04-06（日） ~ 2025-04-12（六）
-  //
-  static String nowWeek({
-    int from = DateTime.sunday,
-    String sep = " ~ ",
-    bool dayName = true,
-    Duration after = Duration.zero,
-  }) {
-    final now = DateTime.now().add(after);
-    late final String dateStart;
-    late final String dateEnd;
-    if (from == DateTime.sunday) {
-      if (now.weekday == DateTime.sunday) {
-        dateStart = now.date;
-        dateEnd = now.addDays(6).date;
-      } else {
-        final start = now.addDays(-now.weekday);
-        dateStart = start.date;
-        dateEnd = start.addDays(6).date;
-      }
-      return '$dateStart${dayName ? sunday_chinese : ''}'
-          '$sep'
-          '$dateEnd${dayName ? saturday_chinese : ''}';
-    }
-    throw UnimplementedError();
-  }
-
-  ///
-  ///
-  /// [parseTimestamp]
-  /// [predicateSameYear], [predicateSameMonth], [predicateSameDay]
-  /// [predicateSameDate]
-  ///
-  ///
-  static String parseTimestamp(String string) =>
-      DateTime.fromMillisecondsSinceEpoch(int.parse(string)).toIso8601String();
-
-  static bool predicateSameYear(DateTime? a, DateTime? b) =>
+  static bool isSameYearN(DateTime? a, DateTime? b) =>
       a == null || b == null ? false : a.year == b.year;
 
-  static bool predicateSameMonth(DateTime? a, DateTime? b) =>
+  static bool isSameMonthN(DateTime? a, DateTime? b) =>
       a == null || b == null ? false : a.month == b.month;
 
-  static bool predicateSameDay(DateTime? a, DateTime? b) =>
+  static bool isSameDayN(DateTime? a, DateTime? b) =>
       a == null || b == null ? false : a.day == b.day;
 
-  static bool predicateSameDate(DateTime? a, DateTime? b) =>
+  static bool isSameDateN(DateTime? a, DateTime? b) =>
       a == null || b == null
           ? false
           : a.year == b.year && a.month == b.month && a.day == b.day;
 
-  static Predicator<DateTime> sameDayWith(DateTime? day) =>
-      (value) => predicateSameDay(value, day);
+  static bool isSameDate(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
+
+  ///
+  ///
+  /// [isBefore], [isAfter]
+  /// [isIn], [isWithin]
+  ///
+  /// [anyInvalidWeekday]
+  ///
+  ///
+
+  ///
+  /// [isBefore], [isAfter]
+  /// [isIn], [isWithin]
+  ///
+  static bool isBefore(DateTime date1, DateTime date2) => date1.isBefore(date2);
+
+  static bool isAfter(DateTime date1, DateTime date2) => date1.isAfter(date2);
+
+  static bool isIn(DateTime day, DateTime start, DateTime end) {
+    if (day.isAfter(start) && day.isBefore(end)) return true;
+    return false;
+  }
+
+  static bool isWithin(DateTime day, DateTime start, DateTime end) {
+    if (DateTimeExtension.isSameDateN(day, start) ||
+        DateTimeExtension.isSameDateN(day, end)) {
+      return true;
+    }
+    if (day.isAfter(start) && day.isBefore(end)) return true;
+    return false;
+  }
+
+  ///
+  /// [anyInvalidWeekday]
+  ///
+  static bool anyInvalidWeekday(Set<int> dates) =>
+      dates.any((day) => day < DateTime.monday || day > DateTime.sunday);
 
   ///
   ///
   ///
-  /// instance methods
+  /// [dayOfYear]
+  /// [weekNumberInYearOf]
+  /// [monthDaysOf], [monthWeeksOf]
   ///
   ///
   ///
-  String get date => toString().split(' ').first; // $y-$m-$d
 
-  String get time => toString().split(' ').last; // $h:$min:$sec.$ms$us
+  ///
+  /// [dayOfYear]
+  /// [weekNumberInYearOf]
+  ///
+  static int dayOfYear(DateTime date) =>
+      DateTime.utc(
+        date.year,
+      ).difference(DateTime.utc(date.year, date.month, date.day)).inDays +
+      1;
 
-  int get monthDays => switch (month) {
+  static int weekNumberInYearOf(
+    DateTime date, [
+    int startingDay = DateTime.sunday,
+  ]) {
+    final startingDate = DateTime.utc(date.year);
+    final days = normalizeDate(date).difference(startingDate).inDays;
+    final remains = days % DateTime.daysPerWeek;
+    final weeks = days ~/ 7;
+    if (remains == 0) return weeks;
+
+    final previousDays = (startingDate.weekday - startingDay) % 7;
+    if (remains + previousDays > DateTime.daysPerWeek) return weeks + 1;
+    return weeks;
+  }
+
+  ///
+  /// [monthDaysOf]
+  /// [monthWeeksOf]
+  ///
+  static int monthDaysOf(DateTime date) => switch (date.month) {
     1 => 31,
     2 =>
-      year % 4 == 0
-          ? year % 100 == 0
-              ? year % 400 == 0
+      date.year % 4 == 0
+          ? date.year % 100 == 0
+              ? date.year % 400 == 0
                   ? 29
                   : 28
               : 29
@@ -160,13 +195,126 @@ extension DateTimeExtension on DateTime {
     10 => 31,
     11 => 30,
     12 => 31,
-    _ => throw UnimplementedError(),
+    _ => throw StateError('invalid month ${date.month}'),
   };
 
-  ///
-  ///
-  ///
-  DateTime addDays(int days) => add(Duration(days: days));
+  static int monthWeeksOf(DateTime date, [int startingDay = DateTime.sunday]) =>
+      (1 +
+          firstDateOfWeekInMonth(
+            date,
+          ).difference(lastDateOfWeekInMonth(date, startingDay)).inDays) ~/
+      7;
 
-  DateTime addHours(int hours) => add(Duration(hours: hours));
+  ///
+  ///
+  ///
+  /// [parseTimestamp], [stringDateOf], [nowWeek]
+  ///
+  ///
+  ///
+
+  ///
+  /// [parseTimestamp], $y-$m-$d
+  ///
+  static String stringDateOf(DateTime date) => date.toString().split(' ').first;
+
+  ///
+  /// [stringDateOf], $h:$min:$sec.$ms$us
+  ///
+  static String stringTimeOf(DateTime date) => date.toString().split(' ').last;
+
+  static String parseTimestamp(String string) =>
+      DateTime.fromMillisecondsSinceEpoch(int.parse(string)).toIso8601String();
+
+  ///
+  /// [nowWeek], sample output: 2025-04-06（日） ~ 2025-04-12（六）
+  ///
+  static String nowWeek({
+    int from = DateTime.sunday,
+    String sep = " ~ ",
+    bool dayName = true,
+    Duration after = Duration.zero,
+  }) {
+    final now = DateTime.now().add(after);
+    late final String dateStart;
+    late final String dateEnd;
+    if (from == DateTime.sunday) {
+      if (now.weekday == DateTime.sunday) {
+        dateStart = stringDateOf(now);
+        dateEnd = stringDateOf(now.add(Duration(days: 6)));
+      } else {
+        final start = now.add(Duration(days: -now.weekday));
+        dateStart = stringDateOf(start);
+        dateEnd = stringDateOf(start.add(Duration(days: 6)));
+      }
+      return '$dateStart${dayName ? sunday_chinese : ''}'
+          '$sep'
+          '$dateEnd${dayName ? saturday_chinese : ''}';
+    }
+    throw UnimplementedError();
+  }
+
+  ///
+  ///
+  /// [normalizeDate], [clamp]
+  /// [firstDateOfMonth], [firstDateOfWeek], [firstDateOfWeekInMonth]
+  /// [lastDateOfMonth], [lastDateOfWeek], [lastDateOfWeekInMonth]
+  ///
+  ///
+
+  ///
+  /// [normalizeDate], [clamp]
+  ///
+  static DateTime normalizeDate(DateTime datetime) =>
+      DateTime.utc(datetime.year, datetime.month, datetime.day);
+
+  static DateTime clamp(
+    DateTime value,
+    DateTime lowerLimit,
+    DateTime upperLimit,
+  ) {
+    if (value.isBefore(lowerLimit)) return lowerLimit;
+    if (value.isAfter(upperLimit)) return upperLimit;
+    return value;
+  }
+
+  ///
+  /// [firstDateOfMonth], [firstDateOfWeek], [firstDateOfWeekInMonth]
+  ///
+  static DateTime firstDateOfMonth(DateTime date) =>
+      DateTime.utc(date.year, date.month);
+
+  // in dart, -1 % 7 = 6
+  static DateTime firstDateOfWeek(
+    DateTime date, [
+    int startingDay = DateTime.sunday,
+  ]) => date.subtract(
+    DurationExtension.day1 * ((date.weekday - startingDay) % 7),
+  );
+
+  static DateTime firstDateOfWeekInMonth(
+    DateTime date, [
+    int startingDay = DateTime.sunday,
+  ]) => firstDateOfMonth(
+    date,
+  ).subtract(DurationExtension.day1 * ((date.weekday - startingDay) % 7));
+
+  ///
+  /// [lastDateOfMonth], [lastDateOfWeek], [lastDateOfWeekInMonth]
+  ///
+  static DateTime lastDateOfMonth(DateTime date) =>
+      DateTime.utc(date.year, date.month + 1).subtract(DurationExtension.day1);
+
+  static DateTime lastDateOfWeek(
+    DateTime date, [
+    int startingDay = DateTime.sunday,
+  ]) =>
+      date.add(DurationExtension.day1 * ((startingDay - 1 - date.weekday) % 7));
+
+  static DateTime lastDateOfWeekInMonth(
+    DateTime date, [
+    int startingDay = DateTime.sunday,
+  ]) => lastDateOfMonth(
+    date,
+  ).add(DurationExtension.day1 * ((startingDay - 1 - date.weekday) % 7));
 }

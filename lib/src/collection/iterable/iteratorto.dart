@@ -2,338 +2,24 @@ part of '../collection.dart';
 
 ///
 ///
-/// [supplyMoveNext], ...
-///
-/// [generating], ...
-/// [map], ...
-/// [fold], ...
-/// [induct], ...
-///
-/// [toMap], ...
-/// [groupBy], ...
-///
+/// return typed item             --> [supplyMoveNext], ...
+/// return typed item iterable    --> [generating], ...
+/// return typed item list        --> [mapToList], ...
+/// return typed item set         --> [mapToSet], ...
+/// return typed iterable entries --> [fillIterableEntryValues], ...
+/// return typed map              --> [toMap], ...
+/// return counted result         --> [consecutiveCounted]
 ///
 ///
 extension IteratorTo<I> on Iterator<I> {
   ///
-  /// [supplyMoveNext]
-  /// [supplyLead]
   ///
-  S supplyMoveNext<S>(Supplier<S> supply) =>
-      moveNext() ? supply() : throw StateError(Erroring.iterableNoElement);
-
-  S supplyLead<S>(int ahead, Supplier<S> supply) {
-    for (var i = -1; i < ahead; i++) {
-      if (!moveNext()) throw StateError(Erroring.iterableNoElement);
-    }
-    return supply();
-  }
-
-  ///
-  /// [generating]
-  ///
-  Iterable<E> generating<E>(Generator<E> generator, [int start = 0]) => [
-    for (var i = start; moveNext(); i++) generator(i),
-  ];
-
-  ///
-  ///
-  ///
-  /// map / [Iterable.map]
-  /// [map], [mapByIndex], [mapCurrentOrDefault], [mapRemain]
-  /// [mapToEntriesByKey], [mapToEntriesByValue]
-  /// [mapToRecordBy1], [mapToRecordBy2]
-  /// [mapToList], [mapToListByIndex], [mapToListByList], [mapToListBySet], [mapToListByMap]
-  /// [mapToSet], [mapToSetBySet]
-  /// [mapExpand]
-  /// [mapWhere], [mapWhereExpand]
-  ///
+  /// [supplyMoveNext], [supplyLead]
   /// [mapFound], [mapFoundOr], [mapFoundOrNull]
-  /// [mapUntil]
-  /// [mapUntilByIndexExist]
   ///
-  /// [mapToListUntilByIndex]
-  /// [mapToListUntilByIndexExist]
-  ///
-  ///
-  ///
-
-  ///
-  /// [map]
-  /// [mapByIndex]
-  /// [mapCurrentOrDefault]
-  /// [mapRemain]
-  ///
-  Iterable<S> map<S>(Mapper<I, S> toVal) => [
-    for (; moveNext();) toVal(current),
-  ];
-
-  Iterable<S> mapByIndex<S>(MapperGenerator<I, S> toVal, [int start = 0]) => [
-    for (var i = start; moveNext(); i++) toVal(current, i),
-  ];
-
-
-
-  ///
-  /// [mapToEntriesByKey], [mapToEntriesByValue]
-  /// [mapToRecordBy1], [mapToRecordBy2]
-  ///
-  Iterable<MapEntry<K, I>> mapToEntriesByKey<K>(K key) => [
-    for (; moveNext();) MapEntry(key, current),
-  ];
-
-  Iterable<MapEntry<I, V>> mapToEntriesByValue<V>(V value) => [
-    for (; moveNext();) MapEntry(current, value),
-  ];
-
-  Iterable<(A, I)> mapToRecordBy1<A>(A value) => [
-    for (; moveNext();) (value, current),
-  ];
-
-  Iterable<(I, B)> mapToRecordBy2<B>(B value) => [
-    for (; moveNext();) (current, value),
-  ];
-
-  ///
-  /// [mapToList]
-  /// [mapToListByIndex]
-  /// [mapToListByList], [mapToListBySet], [mapToListByMap]
-  ///
-  List<T> mapToList<T>(Mapper<I, T> toVal) => [
-    for (; moveNext();) toVal(current),
-  ];
-
-  List<S> mapToListByIndex<S>(MapperGenerator<I, S> toVal, [int start = 0]) => [
-    for (var i = start; moveNext(); i++) toVal(current, i),
-  ];
-
-  List<T> mapToListByList<T, E>(List<E> list, Mixer<I, List<E>, T> mixer) => [
-    for (; moveNext();) mixer(current, list),
-  ];
-
-  List<T> mapToListBySet<T, E>(Set<E> set, Mixer<I, Set<E>, T> mixer) => [
-    for (; moveNext();) mixer(current, set),
-  ];
-
-  List<T> mapToListByMap<T, K, V>(
-    Map<K, V> map,
-    Mixer<I, Map<K, V>, T> mixer,
-  ) => [for (; moveNext();) mixer(current, map)];
-
-  ///
-  /// [mapToSet]
-  /// [mapToSetBySet]
-  ///
-  Set<K> mapToSet<K>(Mapper<I, K> toVal) => {
-    for (; moveNext();) toVal(current),
-  };
-
-  Set<K> mapToSetBySet<K>(Set<K> set, Mixer<I, Set<K>, K> mixer) => {
-    for (; moveNext();) mixer(current, set),
-  };
-
-  ///
-  /// [mapExpand]
-  /// [mapWhere], [mapWhereByIndex]
-  /// [mapWhereExpand]
-  ///
-  Iterable<S> mapExpand<S>(Mapper<I, Iterable<S>> expanding) => [
-    for (; moveNext();) ...expanding(current),
-  ];
-
-  Iterable<S> mapWhere<S>(Predicator<I> test, Mapper<I, S> toVal) => [
-    for (; moveNext() && test(current);) toVal(current),
-  ];
-
-  Iterable<S> mapWhereByIndex<S>(
-    Predicator<I> test,
-    MapperGenerator<I, S> toVal, [
-    int start = 0,
-  ]) => [
-    for (var i = start; moveNext() && test(current); i++) toVal(current, i),
-  ];
-
-  Iterable<S> mapWhereExpand<S>(
-    Predicator<I> test,
-    Mapper<I, Iterable<S>> expanding,
-  ) => [for (; moveNext() && test(current);) ...expanding(current)];
-
-  ///
-  /// [mapFound]
-  /// [mapFoundOr]
-  /// [mapFoundOrNull]
-  ///
-  T mapFound<T>(Predicator<I> test, Mapper<I, T> toVal) {
-    while (moveNext()) if (test(current)) return toVal(current);
-    throw StateError(Erroring.iterableElementNotFound);
-  }
-
-  T mapFoundOr<T>(Predicator<I> test, Mapper<I, T> toVal, Supplier<T> orElse) {
-    while (moveNext()) if (test(current)) return toVal(current);
-    return orElse();
-  }
-
-  T? mapFoundOrNull<T>(Predicator<I> test, Mapper<I, T> toVal) {
-    while (moveNext()) if (test(current)) return toVal(current);
-    return null;
-  }
-
-  ///
-  /// [mapUntil]
-  /// [mapUntilByIndexExist]
-  ///
-  Iterable<S> mapUntil<S>(
-    Predicator<I> testInvalid,
-    Mapper<I, S> toVal, [
-    bool includeFirstInvalid = false,
-  ]) sync* {
-    while (moveNext()) {
-      if (testInvalid(current)) {
-        if (includeFirstInvalid) toVal(current);
-        break;
-      }
-      yield toVal(current);
-    }
-  }
-
-  Iterable<S> mapUntilByIndexExist<S>(
-    PredicatorReducer<I> testInvalid,
-    MapperGenerator<I, S> toVal, {
-    bool includeFirst = true,
-    bool includeInvalid = false,
-    int start = 0,
-  }) => supplyMoveNext(() sync* {
-    final first = current;
-    if (includeFirst) yield toVal(first, 0);
-    for (var i = start + 1; moveNext(); i++) {
-      if (testInvalid(first, current)) {
-        if (includeInvalid) yield toVal(current, i);
-        break;
-      }
-      yield toVal(current, i);
-    }
-  });
-
-  ///
-  /// [mapToListUntilByIndex]
-  /// [mapToListUntilByIndexExist]
-  ///
-  List<T> mapToListUntilByIndex<T>(
-    Predicator<I> testInvalid,
-    MapperGenerator<I, T> toVal, {
-    bool includeInvalid = false,
-    int start = 0,
-  }) {
-    final list = <T>[];
-    for (var i = start; moveNext(); i++) {
-      if (testInvalid(current)) {
-        if (includeInvalid) list.add(toVal(current, i));
-        break;
-      }
-      list.add(toVal(current, i));
-    }
-    return list;
-  }
-
-  List<T> mapToListUntilByIndexExist<T>(
-    PredicatorReducer<I> testInvalid,
-    MapperGenerator<I, T> toVal, {
-    bool includeFirst = true,
-    bool includeFirstInvalid = false,
-    int start = 0,
-  }) => supplyMoveNext(() {
-    final first = current;
-    final list = <T>[if (includeFirst) toVal(first, 0)];
-    for (var i = start + 1; moveNext(); i++) {
-      if (testInvalid(first, current)) {
-        if (includeFirstInvalid) list.add(toVal(current, i));
-        break;
-      }
-      list.add(toVal(current, i));
-    }
-    return list;
-  });
-
-  ///
-  ///
-  ///
-  /// fold / [Iterable.fold]
-  /// [fold]
-  /// [foldByIndex], [foldNested],
+  /// [fold], [foldByIndex],
   /// [foldByBefore], [foldByAfter],
   ///
-  ///
-  ///
-
-  ///
-  /// [fold]
-  /// [foldByIndex]
-  /// [foldNested]
-  ///
-  T fold<T>(T initialValue, Companion<T, I> companion) {
-    var value = initialValue;
-    while (moveNext()) value = companion(value, current);
-    return value;
-  }
-
-  T foldByIndex<T>(
-    T initialValue,
-    CompanionGenerator<T, I> companion, [
-    int start = 0,
-  ]) {
-    var val = initialValue;
-    for (var i = start; moveNext(); i++) val = companion(val, current, i);
-    return val;
-  }
-
-  Iterable<T> foldNested<T>() => fold<List<T>>(
-    [],
-    (list, element) => switch (element) {
-      T() => list..add(element),
-      Iterable<T>() => list..addAll(element),
-      Iterable<Iterable>() => list..addAll(element.iterator.foldNested()),
-      _ => throw StateError(Erroring.iterableElementNotNest),
-    },
-  );
-
-  ///
-  /// [foldByBefore]
-  /// [foldByAfter]
-  ///
-  S foldByBefore<E, S>(
-    S initialValue,
-    E initialElement,
-    Companion<E, I> before,
-    Forcer<S, I, E> companion,
-  ) {
-    var val = initialValue;
-    var ele = initialElement;
-    while (moveNext()) {
-      ele = before(ele, current);
-      val = companion(val, current, ele);
-    }
-    return val;
-  }
-
-  S foldByAfter<R, S>(
-    S initialValue,
-    R initialElement,
-    Forcer<S, I, R> companion,
-    Companion<R, I> after,
-  ) {
-    var val = initialValue;
-    var ele = initialElement;
-    while (moveNext()) {
-      val = companion(val, current, ele);
-      ele = after(ele, current);
-    }
-    return val;
-  }
-
-  ///
-  ///
-  ///
-  /// induct
   /// [induct], [inductByIndex]
   /// [inductInited], [inductInitedByIndex]
   ///
@@ -341,121 +27,492 @@ extension IteratorTo<I> on Iterator<I> {
   ///
 
   ///
-  /// [induct]
-  /// [inductByIndex]
+  /// [supplyMoveNext], [supplyLead]
   ///
-  T induct<T>(Mapper<I, T> toVal, Reducer<T> reducing) => supplyMoveNext(() {
-    var val = toVal(current);
-    while (moveNext()) val = reducing(val, toVal(current));
+  static S supplyMoveNext<I, S>(Iterator<I> iterator, Supplier<S> supply) =>
+      iterator.moveNext()
+          ? supply()
+          : throw StateError(Erroring.iterableNoElement);
+
+  static S supplyLead<I, S>(
+    Iterator<I> iterator,
+    int ahead,
+    Supplier<S> supply,
+  ) {
+    for (var i = -1; i < ahead; i++) {
+      if (!iterator.moveNext()) throw StateError(Erroring.iterableNoElement);
+    }
+    return supply();
+  }
+
+  ///
+  /// [mapFound], [mapFoundOr], [mapFoundOrNull]
+  ///
+  static T mapFound<I, T>(
+    Iterator<I> iterator,
+    Predicator<I> test,
+    Mapper<I, T> toVal,
+  ) {
+    while (iterator.moveNext()) {
+      if (test(iterator.current)) return toVal(iterator.current);
+    }
+    throw StateError(Erroring.iterableElementNotFound);
+  }
+
+  static T mapFoundOr<I, T>(
+    Iterator<I> iterator,
+    Predicator<I> test,
+    Mapper<I, T> toVal,
+    Supplier<T> orElse,
+  ) {
+    while (iterator.moveNext()) {
+      if (test(iterator.current)) return toVal(iterator.current);
+    }
+    return orElse();
+  }
+
+  static T? mapFoundOrNull<I, T>(
+    Iterator<I> iterator,
+    Predicator<I> test,
+    Mapper<I, T> toVal,
+  ) {
+    while (iterator.moveNext()) {
+      if (test(iterator.current)) return toVal(iterator.current);
+    }
+    return null;
+  }
+
+  ///
+  /// [fold], [foldByIndex]
+  ///
+  static T fold<I, T>(
+    Iterator<I> iterator,
+    T initialValue,
+    Companion<T, I> companion,
+  ) {
+    var value = initialValue;
+    while (iterator.moveNext()) {
+      value = companion(value, iterator.current);
+    }
+    return value;
+  }
+
+  static T foldByIndex<I, T>(
+    Iterator<I> iterator,
+    T initialValue,
+    CompanionGenerator<T, I> companion, [
+    int start = 0,
+  ]) {
+    var val = initialValue;
+    for (var i = start; iterator.moveNext(); i++) {
+      val = companion(val, iterator.current, i);
+    }
+    return val;
+  }
+
+  ///
+  /// [foldByBefore], [foldByAfter]
+  ///
+  static S foldByBefore<I, E, S>(
+    Iterator<I> iterator,
+    S initialValue,
+    E initialElement,
+    Companion<E, I> before,
+    Forcer<S, I, E> companion,
+  ) {
+    var val = initialValue;
+    var ele = initialElement;
+    while (iterator.moveNext()) {
+      ele = before(ele, iterator.current);
+      val = companion(val, iterator.current, ele);
+    }
+    return val;
+  }
+
+  static S foldByAfter<I, R, S>(
+    Iterator<I> iterator,
+    S initialValue,
+    R initialElement,
+    Forcer<S, I, R> companion,
+    Companion<R, I> after,
+  ) {
+    var val = initialValue;
+    var ele = initialElement;
+    while (iterator.moveNext()) {
+      val = companion(val, iterator.current, ele);
+      ele = after(ele, iterator.current);
+    }
+    return val;
+  }
+
+  ///
+  /// [induct], [inductByIndex]
+  ///
+  static T induct<I, T>(
+    Iterator<I> iterator,
+    Mapper<I, T> toVal,
+    Reducer<T> reducing,
+  ) => IteratorTo.supplyMoveNext(iterator, () {
+    var val = toVal(iterator.current);
+    while (iterator.moveNext()) {
+      val = reducing(val, toVal(iterator.current));
+    }
     return val;
   });
 
-  T inductByIndex<T>(
+  static T inductByIndex<I, T>(
+    Iterator<I> iterator,
     Mapper<I, T> toVal,
     ReducerGenerator<T> reducing, [
     int start = 0,
-  ]) => supplyMoveNext(() {
-    var val = toVal(current);
-    for (var i = start; moveNext(); i++) {
-      val = reducing(val, toVal(current), i);
+  ]) => IteratorTo.supplyMoveNext(iterator, () {
+    var val = toVal(iterator.current);
+    for (var i = start; iterator.moveNext(); i++) {
+      val = reducing(val, toVal(iterator.current), i);
     }
     return val;
   });
 
   ///
-  /// [inductInited]
-  /// [inductInitedByIndex]
+  /// [inductInited], [inductInitedByIndex]
   ///
-  T inductInited<T>(Mapper<I, T> init, Companion<T, I> reducing) =>
-      supplyMoveNext(() {
-        var val = init(current);
-        while (moveNext()) val = reducing(val, current);
-        return val;
-      });
+  static T inductInited<I, T>(
+    Iterator<I> iterator,
+    Mapper<I, T> init,
+    Companion<T, I> reducing,
+  ) => IteratorTo.supplyMoveNext(iterator, () {
+    var val = init(iterator.current);
+    while (iterator.moveNext()) {
+      val = reducing(val, iterator.current);
+    }
+    return val;
+  });
 
-  T inductInitedByIndex<T>(
+  static T inductInitedByIndex<I, T>(
+    Iterator<I> iterator,
     Mapper<I, T> init,
     CompanionGenerator<T, I> reducing, [
     int start = 0,
-  ]) => supplyMoveNext(() {
-    var val = init(current);
-    for (var i = start; moveNext(); i++) val = reducing(val, current, i);
+  ]) => IteratorTo.supplyMoveNext(iterator, () {
+    var val = init(iterator.current);
+    for (var i = start; iterator.moveNext(); i++) {
+      val = reducing(val, iterator.current, i);
+    }
     return val;
   });
 
   ///
   ///
   ///
-  /// record
-  /// [consecutiveCounted], [consecutiveRepeated]
-  /// [consecutiveOccurred]
+  /// [generating]
+  ///
+  /// [map], [mapByIndex]
+  /// [mapToEntriesByKey], [mapToEntriesByValue], [mapToRecordBy1], [mapToRecordBy2]
+  /// [mapExpand]
+  /// [mapWhere], [mapWhereExpand]
+  /// [mapUntil], [mapUntilByIndexExist]
+  ///
+  /// [foldNested]
   ///
   ///
   ///
   ///
 
   ///
-  /// [consecutiveCounted]
+  /// [generating]
   ///
-  Iterable<(I, int)> get consecutiveCounted => supplyMoveNext(() sync* {
-    var val = current;
-    var frequency = 1;
-    while (moveNext()) {
-      if (val == current) {
-        frequency++;
-        continue;
-      }
-      yield (val, frequency);
-      val = current;
-      frequency = 1;
+  static Iterable<E> generating<I, E>(
+    Iterator<I> iterator,
+    Generator<E> generator, [
+    int start = 0,
+  ]) => [for (var i = start; iterator.moveNext(); i++) generator(i)];
+
+  ///
+  /// [map], [mapNotNull]
+  ///
+  static Iterable<S> map<I, S>(Iterator<I> iterator, Mapper<I, S> toVal) => [
+    for (; iterator.moveNext();) toVal(iterator.current),
+  ];
+
+  static Iterable<S> mapNotNull<I, S>(
+    Iterable<I> iterable,
+    Mapper<I, S?> mapper,
+  ) sync* {
+    for (final item in iterable) {
+      final value = mapper(item);
+      if (value == null) continue;
+      yield value;
     }
-    yield (val, frequency);
+  }
+
+  ///
+  /// [mapByIndex]
+  ///
+  static Iterable<S> mapByIndex<I, S>(
+    Iterator<I> iterator,
+    MapperGenerator<I, S> toVal, [
+    int start = 0,
+  ]) => [
+    for (var i = start; iterator.moveNext(); i++) toVal(iterator.current, i),
+  ];
+
+  ///
+  /// [mapToEntriesByKey], [mapToEntriesByValue]
+  /// [mapToRecordBy1], [mapToRecordBy2]
+  ///
+  static Iterable<MapEntry<K, I>> mapToEntriesByKey<I, K>(
+    Iterator<I> iterator,
+    K key,
+  ) => [for (; iterator.moveNext();) MapEntry(key, iterator.current)];
+
+  static Iterable<MapEntry<I, V>> mapToEntriesByValue<I, V>(
+    Iterator<I> iterator,
+    V value,
+  ) => [for (; iterator.moveNext();) MapEntry(iterator.current, value)];
+
+  static Iterable<(A, I)> mapToRecordBy1<I, A>(Iterator<I> iterator, A value) =>
+      [for (; iterator.moveNext();) (value, iterator.current)];
+
+  static Iterable<(I, B)> mapToRecordBy2<I, B>(Iterator<I> iterator, B value) =>
+      [for (; iterator.moveNext();) (iterator.current, value)];
+
+  ///
+  /// [mapExpand], [mapWhere],
+  ///
+  static Iterable<S> mapExpand<I, S>(
+    Iterator<I> iterator,
+    Mapper<I, Iterable<S>> expanding,
+  ) => [for (; iterator.moveNext();) ...expanding(iterator.current)];
+
+  static Iterable<S> mapWhere<I, S>(
+    Iterator<I> iterator,
+    Predicator<I> test,
+    Mapper<I, S> toVal,
+  ) => [
+    for (; iterator.moveNext() && test(iterator.current);)
+      toVal(iterator.current),
+  ];
+
+  ///
+  /// [mapWhereByIndex], [mapWhereExpand]
+  ///
+  static Iterable<S> mapWhereByIndex<I, S>(
+    Iterator<I> iterator,
+    Predicator<I> test,
+    MapperGenerator<I, S> toVal, [
+    int start = 0,
+  ]) => [
+    for (var i = start; iterator.moveNext() && test(iterator.current); i++)
+      toVal(iterator.current, i),
+  ];
+
+  static Iterable<S> mapWhereExpand<I, S>(
+    Iterator<I> iterator,
+    Predicator<I> test,
+    Mapper<I, Iterable<S>> expanding,
+  ) => [
+    for (; iterator.moveNext() && test(iterator.current);)
+      ...expanding(iterator.current),
+  ];
+
+  ///
+  /// [mapUntil], [mapUntilByIndexExist]
+  ///
+  static Iterable<S> mapUntil<I, S>(
+    Iterator<I> iterator,
+    Predicator<I> testInvalid,
+    Mapper<I, S> toVal, [
+    bool includeFirstInvalid = false,
+  ]) sync* {
+    while (iterator.moveNext()) {
+      if (testInvalid(iterator.current)) {
+        if (includeFirstInvalid) toVal(iterator.current);
+        break;
+      }
+      yield toVal(iterator.current);
+    }
+  }
+
+  static Iterable<S> mapUntilByIndexExist<I, S>(
+    Iterator<I> iterator,
+    PredicatorReducer<I> testInvalid,
+    MapperGenerator<I, S> toVal, {
+    bool includeFirst = true,
+    bool includeInvalid = false,
+    int start = 0,
+  }) => IteratorTo.supplyMoveNext(iterator, () sync* {
+    final first = iterator.current;
+    if (includeFirst) yield toVal(first, 0);
+    for (var i = start + 1; iterator.moveNext(); i++) {
+      if (testInvalid(first, iterator.current)) {
+        if (includeInvalid) yield toVal(iterator.current, i);
+        break;
+      }
+      yield toVal(iterator.current, i);
+    }
   });
 
   ///
-  /// [consecutiveRepeated]
+  /// [foldNested]
   ///
-  Iterable<(I, int)> get consecutiveRepeated => supplyMoveNext(() sync* {
-    var val = current;
-    var frequency = 1;
-    while (moveNext()) {
-      if (val == current) {
-        frequency++;
-        continue;
-      }
-      if (frequency > 1) yield (val, frequency);
-      val = current;
-      frequency = 1;
-    }
-    if (frequency > 1) yield (val, frequency);
-  });
-
-  ///
-  /// [consecutiveOccurred]
-  ///
-  Iterable<int> get consecutiveOccurred => supplyMoveNext(() sync* {
-    var val = current;
-    var frequency = 1;
-    while (moveNext()) {
-      if (val == current) {
-        frequency++;
-        continue;
-      }
-      if (frequency > 1) yield frequency;
-      val = current;
-      frequency = 1;
-    }
-    if (frequency > 1) yield frequency;
-  });
+  static Iterable<T> foldNested<I, T>(Iterator<I> iterator) => fold<I, List<T>>(
+    iterator,
+    [],
+    (list, element) => switch (element) {
+      T() => list..add(element),
+      Iterable<T>() => list..addAll(element),
+      Iterable<Iterable>() => list..addAll(foldNested(element.iterator)),
+      _ => throw StateError(Erroring.iterableElementNotNest),
+    },
+  );
 
   ///
   ///
+  /// [mapToList], [mapToListNotNull]
+  /// [mapToListByIndex]
+  /// [mapToListByList], [mapToListBySet], [mapToListByMap]
+  /// [mapToListUntilByIndex], [mapToListUntilByIndexExist]
   ///
-  /// map / [Map.fromIterable]
-  /// [toMap]
-  /// [toMapIndexable]
-  /// [toMapCounted]
-  /// [toMapFrequencies]
+  ///
+
+  ///
+  /// [mapToList], [mapToListByIndex]
+  ///
+  static List<T> mapToList<I, T>(Iterator<I> iterator, Mapper<I, T> toVal) => [
+    for (; iterator.moveNext();) toVal(iterator.current),
+  ];
+
+  static List<S> mapToListNotNull<I, S>(
+    Iterable<I> iterable,
+    Mapper<I, S?> mapper,
+  ) {
+    final list = <S>[];
+    for (final item in iterable) {
+      list.addIfNotNull(mapper(item));
+    }
+    return list;
+  }
+
+  ///
+  /// [mapToListByIndex]
+  ///
+  static List<S> mapToListByIndex<I, S>(
+    Iterator<I> iterator,
+    MapperGenerator<I, S> toVal, [
+    int start = 0,
+  ]) => [
+    for (var i = start; iterator.moveNext(); i++) toVal(iterator.current, i),
+  ];
+
+  ///
+  /// [mapToListByList], [mapToListBySet], [mapToListByMap]
+  ///
+  static List<T> mapToListByList<I, T, E>(
+    Iterator<I> iterator,
+    List<E> list,
+    Mixer<I, List<E>, T> mixer,
+  ) => [for (; iterator.moveNext();) mixer(iterator.current, list)];
+
+  static List<T> mapToListBySet<I, T, E>(
+    Iterator<I> iterator,
+    Set<E> set,
+    Mixer<I, Set<E>, T> mixer,
+  ) => [for (; iterator.moveNext();) mixer(iterator.current, set)];
+
+  static List<T> mapToListByMap<I, T, K, V>(
+    Iterator<I> iterator,
+    Map<K, V> map,
+    Mixer<I, Map<K, V>, T> mixer,
+  ) => [for (; iterator.moveNext();) mixer(iterator.current, map)];
+
+  ///
+  /// [mapToListUntilByIndex]
+  /// [mapToListUntilByIndexExist]
+  ///
+  static List<T> mapToListUntilByIndex<I, T>(
+    Iterator<I> iterator,
+    Predicator<I> testInvalid,
+    MapperGenerator<I, T> toVal, {
+    bool includeInvalid = false,
+    int start = 0,
+  }) {
+    final list = <T>[];
+    for (var i = start; iterator.moveNext(); i++) {
+      if (testInvalid(iterator.current)) {
+        if (includeInvalid) list.add(toVal(iterator.current, i));
+        break;
+      }
+      list.add(toVal(iterator.current, i));
+    }
+    return list;
+  }
+
+  static List<T> mapToListUntilByIndexExist<I, T>(
+    Iterator<I> iterator,
+    PredicatorReducer<I> testInvalid,
+    MapperGenerator<I, T> toVal, {
+    bool includeFirst = true,
+    bool includeFirstInvalid = false,
+    int start = 0,
+  }) => IteratorTo.supplyMoveNext(iterator, () {
+    final first = iterator.current;
+    final list = <T>[if (includeFirst) toVal(first, 0)];
+    for (var i = start + 1; iterator.moveNext(); i++) {
+      if (testInvalid(first, iterator.current)) {
+        if (includeFirstInvalid) list.add(toVal(iterator.current, i));
+        break;
+      }
+      list.add(toVal(iterator.current, i));
+    }
+    return list;
+  });
+
+  ///
+  ///
+  ///
+  /// [mapToSet], [mapToSetBySet]
+  ///
+  ///
+  ///
+
+  ///
+  /// [mapToSet], [mapToSetBySet]
+  ///
+  static Set<K> mapToSet<I, K>(Iterator<I> iterator, Mapper<I, K> toVal) => {
+    for (; iterator.moveNext();) toVal(iterator.current),
+  };
+
+  static Set<K> mapToSetBySet<I, K>(
+    Iterator<I> iterator,
+    Set<K> set,
+    Mixer<I, Set<K>, K> mixer,
+  ) => {for (; iterator.moveNext();) mixer(iterator.current, set)};
+
+  ///
+  ///
+  /// [fillIterableEntryValues], [fillIterableEntryKeys]
+  ///
+  ///
+
+  ///
+  /// [fillIterableEntryValues]
+  /// [fillIterableEntryKeys]
+  ///
+  static Iterable<MapEntry<I, V?>> fillIterableEntryValues<I, V>(
+    Iterator<I> iterator, {
+    V? fill,
+  }) => map(iterator, (key) => MapEntry(key, fill));
+
+  static Iterable<MapEntry<K?, I>> fillIterableEntryKeys<I, K>(
+    Iterator<I> iterator, {
+    K? fill,
+  }) => map(iterator, (value) => MapEntry(fill, value));
+
+  ///
+  ///
+  ///
+  /// [toMap], [toMapKeys]
+  /// [toMapIndexable], [toMapCounted], [toMapFrequencies]
   ///
   /// [groupBy]
   ///
@@ -463,52 +520,30 @@ extension IteratorTo<I> on Iterator<I> {
   ///
 
   ///
-  /// [toMap], [toMapIndexable]
-  /// [toMapCounted], [toMapFrequencies]
+  /// [toMap], [toMapKeys]
   ///
-  Map<K, V> toMap<K, V>([
+  static Map<K, V> toMap<I, K, V>(
+    Iterator<I> iterator, [
     Mapper<dynamic, K>? toKey,
     Mapper<dynamic, V>? toValue,
-  ]) => Map<K, V>.fromIterable(takeAll, key: toKey, value: toValue);
-
-  Map<int, I> toMapIndexable([int start = 0]) => foldByIndex(
-    {},
-    (map, value, i) => map..putIfAbsent(i, () => value),
-    start,
+  ]) => Map<K, V>.fromIterable(
+    IteratorExtension.takeAll(iterator),
+    key: toKey,
+    value: toValue,
   );
 
-  Map<I, int> get toMapCounted => fold(
-    {},
-    (map, current) => map..update(current, (c) => ++c, ifAbsent: () => 1),
-  );
-
-  Map<I, double> get toMapFrequencies {
-    final map = <I, double>{};
-    var length = 0;
-    while (moveNext()) {
-      map.update(current, (c) => ++c, ifAbsent: () => 1);
-      length++;
-    }
-    return map..updateAll((key, value) => value / length);
-  }
-
-  ///
-  ///
-  ///
-  Iterable<MapEntry<I, V?>> toIterableEntryKeys<V>({V? fill}) =>
-      map((key) => MapEntry(key, fill));
-
-  Iterable<MapEntry<K?, I>> toIterableEntryValues<K>({K? fill}) =>
-      map((value) => MapEntry(fill, value));
-
-  Map<I, V?> toMapKeys<V>({V? fill}) =>
-      Map.fromEntries(toIterableEntryKeys(fill: fill));
+  static Map<I, V?> toMapKeys<I, V>(Iterator<I> iterator, {V? fill}) =>
+      Map.fromEntries(fillIterableEntryValues(iterator, fill: fill));
 
   ///
   /// [groupBy]
   /// group to list see [collection.groupBy]
   ///
-  Map<K, Iterable<I>> groupBy<K>(Mapper<I, K> toKey) => fold(
+  static Map<K, Iterable<I>> groupBy<I, K>(
+    Iterator<I> iterator,
+    Mapper<I, K> toKey,
+  ) => fold(
+    iterator,
     {},
     (map, value) =>
         map..update(
@@ -517,4 +552,99 @@ extension IteratorTo<I> on Iterator<I> {
           ifAbsent: () => [value],
         ),
   );
+
+  ///
+  ///
+  ///
+  /// [consecutiveCounted], [consecutiveRepeated]
+  /// [consecutiveOccurred]
+  ///
+  /// [toMapIndexable], [toMapCounted], [toMapFrequencies]
+  ///
+  ///
+  ///
+
+  ///
+  /// [consecutiveCounted]
+  ///
+  static Iterable<(I, int)> consecutiveCounted<I>(Iterator<I> iterator) =>
+      IteratorTo.supplyMoveNext(iterator, () sync* {
+        var val = iterator.current;
+        var frequency = 1;
+        while (iterator.moveNext()) {
+          if (val == iterator.current) {
+            frequency++;
+            continue;
+          }
+          yield (val, frequency);
+          val = iterator.current;
+          frequency = 1;
+        }
+        yield (val, frequency);
+      });
+
+  ///
+  /// [consecutiveRepeated]
+  ///
+  static Iterable<(I, int)> consecutiveRepeated<I>(Iterator<I> iterator) =>
+      IteratorTo.supplyMoveNext(iterator, () sync* {
+        var val = iterator.current;
+        var frequency = 1;
+        while (iterator.moveNext()) {
+          if (val == iterator.current) {
+            frequency++;
+            continue;
+          }
+          if (frequency > 1) yield (val, frequency);
+          val = iterator.current;
+          frequency = 1;
+        }
+        if (frequency > 1) yield (val, frequency);
+      });
+
+  ///
+  /// [consecutiveOccurred]
+  ///
+  static Iterable<int> consecutiveOccurred<I>(Iterator<I> iterator) =>
+      IteratorTo.supplyMoveNext(iterator, () sync* {
+        var val = iterator.current;
+        var frequency = 1;
+        while (iterator.moveNext()) {
+          if (val == iterator.current) {
+            frequency++;
+            continue;
+          }
+          if (frequency > 1) yield frequency;
+          val = iterator.current;
+          frequency = 1;
+        }
+        if (frequency > 1) yield frequency;
+      });
+
+  ///
+  /// [toMapIndexable], [toMapCounted], [toMapFrequencies]
+  ///
+  static Map<int, I> toMapIndexable<I>(Iterator<I> iterator, [int start = 0]) =>
+      foldByIndex(
+        iterator,
+        {},
+        (map, value, i) => map..putIfAbsent(i, () => value),
+        start,
+      );
+
+  static Map<I, int> toMapCounted<I>(Iterator<I> iterator) => fold(
+    iterator,
+    {},
+    (map, current) => map..update(current, (c) => ++c, ifAbsent: () => 1),
+  );
+
+  static Map<I, double> toMapFrequencies<I>(Iterator<I> iterator) {
+    final map = <I, double>{};
+    var length = 0;
+    while (iterator.moveNext()) {
+      map.update(iterator.current, (c) => ++c, ifAbsent: () => 1);
+      length++;
+    }
+    return map..updateAll((key, value) => value / length);
+  }
 }
