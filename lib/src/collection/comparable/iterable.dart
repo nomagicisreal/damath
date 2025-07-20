@@ -23,85 +23,62 @@ extension IterableComparable<C extends Comparable> on Iterable<C> {
   ///
   ///
   ///
-  static void checkSortedForListen<C extends Comparable, S>(
-    Iterable<C> iterable,
-    Listener listen, [
-    bool increase = true,
-  ]) =>
-      iterable.isSorted(IteratorComparable.comparator(increase))
+  void checkSortedForListen(Listener listen, [bool increase = true]) =>
+      isSorted(IteratorComparable.comparator(increase))
           ? listen()
           : throw Erroring.comparableDisordered;
 
-  static S checkSortedForSupply<C extends Comparable, S>(
-    Iterable<C> iterable,
-    Supplier<S> supply, [
-    bool increase = true,
-  ]) =>
-      iterable.isSorted(IteratorComparable.comparator(increase))
+  S checkSortedForSupply<S>(Supplier<S> supply, [bool increase = true]) =>
+      isSorted(IteratorComparable.comparator(increase))
           ? supply()
           : throw Erroring.comparableDisordered;
 
   ///
   ///
   ///
-  static void mergeSorted<C extends Comparable>(
-    Iterable<C> first,
-    Iterable<C> another, [
-    bool increase = true,
-  ]) => checkSortedForListen(
-    first,
-    () => IteratorTogether.pairMerge(
-      first.iterator,
-      checkSortedForSupply(another, () => another.iterator, increase),
-      increase ? IteratorComparable.isDecrease : IteratorComparable.isIncrease,
-    ),
-    increase,
-  );
+  void mergeSorted(Iterable<C> another, [bool increase = true]) =>
+      checkSortedForListen(
+        () => iterator.pairMerge(
+          another.checkSortedForSupply(() => another.iterator, increase),
+          increase
+              ? IteratorComparable.isDecrease
+              : IteratorComparable.isIncrease,
+        ),
+        increase,
+      );
 
   ///
   /// [isOrdered]
   ///
-  static bool isOrdered<C extends Comparable>(
-    Iterable<C> iterable, {
+  bool isOrdered({
     OrderLinear? order,
     bool strictly = false,
   }) => switch (order) {
-    OrderLinear.increase => IteratorExtension.exist(
-      iterable.iterator,
-      IteratorComparable.invalidFor(OrderLinear.increase, strictly),
+    OrderLinear.increase => iterator.exist(
+      IteratorComparable.predicateInvalid(OrderLinear.increase, strictly),
     ),
-    OrderLinear.decrease => IteratorExtension.exist(
-      iterable.iterator,
-      IteratorComparable.invalidFor(OrderLinear.decrease, strictly),
+    OrderLinear.decrease => iterator.exist(
+      IteratorComparable.predicateInvalid(OrderLinear.decrease, strictly),
     ),
     null =>
-      IteratorExtension.exist(
-            iterable.iterator,
-            IteratorComparable.invalidFor(OrderLinear.increase, strictly),
+      iterator.exist(
+            IteratorComparable.predicateInvalid(OrderLinear.increase, strictly),
           ) ||
-          IteratorExtension.exist(
-            iterable.iterator,
-            IteratorComparable.invalidFor(OrderLinear.decrease, strictly),
+          iterator.exist(
+            IteratorComparable.predicateInvalid(OrderLinear.decrease, strictly),
           ),
   };
 
   ///
   /// [everyRangeIn]
   ///
-  static bool everyUpperThan<C extends Comparable>(
-    Iterable<C> iterable,
-    C min, [
-    bool orSame = false,
-  ]) => !iterable.any(IteratorComparable.predicateLower(min, orSame));
+  bool everyUpperThan(C min, [bool orSame = false]) =>
+      !any(IteratorComparable.predicateLower(min, orSame));
 
-  static bool everyLowerThan<C extends Comparable>(
-    Iterable<C> iterable,
-    C max, [
-    bool orSame = false,
-  ]) => !iterable.any(IteratorComparable.predicateUpper(max, orSame));
+  bool everyLowerThan(C max, [bool orSame = false]) =>
+      !any(IteratorComparable.predicateUpper(max, orSame));
 
-  static bool everyRangeIn<C extends Comparable>(
-    Iterable<C> iterable,
+  bool everyRangeIn(
     C min,
     C max, {
     bool inclusiveMin = true,
@@ -109,22 +86,19 @@ extension IterableComparable<C extends Comparable> on Iterable<C> {
   }) {
     final lower = IteratorComparable.predicateLower(min, !inclusiveMin);
     final upper = IteratorComparable.predicateUpper(max, !inclusiveMax);
-    return !iterable.any((value) => lower(value) || upper(value));
+    return !any((value) => lower(value) || upper(value));
   }
 
   ///
   /// [permutations]
   ///
-  static int permutations<C extends Comparable>(
-    Iterable<C> iterable, [
-    bool requireIdentical = false,
-  ]) {
-    if (!isOrdered(iterable, strictly: requireIdentical)) {
+  int permutations([bool requireIdentical = false]) {
+    if (!isOrdered(strictly: requireIdentical)) {
       throw StateError(Erroring.comparableDisordered);
     }
-    if (requireIdentical) return IntExtension.factorial(iterable.length);
+    if (requireIdentical) return IntExtension.factorial(length);
 
-    final iterator = iterable.iterator..moveNext();
+    final iterator = this.iterator..moveNext();
     var previous = iterator.current;
     var val = 1;
     var frequency = 1;
@@ -146,21 +120,16 @@ extension IterableComparable<C extends Comparable> on Iterable<C> {
   /// [consecutive]
   /// [consecutiveOccurred]
   ///
-  static Iterable<(C, int)> consecutive<C extends Comparable>(
-    Iterable<C> iterable, [
-    bool onlyRepeated = true,
-  ]) =>
-      isOrdered(iterable, strictly: false)
+  Iterable<(C, int)> consecutive([bool onlyRepeated = true]) =>
+      isOrdered(strictly: false)
           ? onlyRepeated
-              ? IteratorTo.consecutiveRepeated(iterable.iterator)
-              : IteratorTo.consecutiveCounted(iterable.iterator)
+              ? iterator.consecutiveRepeated
+              : iterator.consecutiveCounted
           : throw StateError(Erroring.comparableDisordered);
 
-  static Iterable<int> consecutiveOccurred<C extends Comparable>(
-    Iterable<C> iterable,
-  ) =>
-      isOrdered(iterable, strictly: false)
-          ? IteratorTo.consecutiveOccurred(iterable.iterator)
+  Iterable<int> get consecutiveOccurred =>
+      isOrdered(strictly: false)
+          ? iterator.consecutiveOccurred
           : throw StateError(Erroring.comparableDisordered);
 
   // ///
@@ -207,10 +176,9 @@ extension IterableDouble on Iterable<double> {
   ///
   /// [dot]
   ///
-  static double dot(Iterable<double> vector, Iterable<double> another) {
-    assert(vector.length == another.length);
-    return IteratorTogether.interReduce(
-      vector.iterator,
+  double dot(Iterable<double> another) {
+    assert(length == another.length);
+    return iterator.interReduce(
       another.iterator,
       DoubleExtension.reduceMultiply,
       DoubleExtension.reducePlus,
@@ -221,80 +189,50 @@ extension IterableDouble on Iterable<double> {
   /// [distanceTo], [distanceFrom]
   /// [distanceEachTo], [distanceEachFrom]
   ///
-  static double distanceTo(
-    Iterable<double> vector,
-    Iterable<double> destination,
-  ) {
-    assert(destination.length == vector.length);
-    return IteratorDouble.interDistanceCumulate(
-      destination.iterator,
-      vector.iterator,
-    );
+  double distanceTo(Iterable<double> destination) {
+    assert(destination.length == length);
+    return destination.iterator.interDistanceCumulate(iterator);
   }
 
-  static double distanceFrom(Iterable<double> vector, Iterable<double> source) {
-    assert(source.length == vector.length);
-    return IteratorDouble.interDistanceCumulate(
-      vector.iterator,
-      source.iterator,
-    );
+  double distanceFrom(Iterable<double> source) {
+    assert(source.length == length);
+    return iterator.interDistanceCumulate(source.iterator);
   }
 
-  static Iterable<double> distanceEachTo(
-    Iterable<double> vector,
-    Iterable<double> destination,
-  ) {
-    assert(destination.length == vector.length);
-    return IteratorDouble.interDistanceTo(
-      destination.iterator,
-      vector.iterator,
-    );
+  Iterable<double> distanceEachTo(Iterable<double> destination) {
+    assert(destination.length == length);
+    return destination.iterator.interDistanceTo(iterator);
   }
 
-  static Iterable<double> distanceEachFrom(
-    Iterable<double> vector,
-    Iterable<double> source,
-  ) {
-    assert(source.length == vector.length);
-    return IteratorDouble.interDistanceFrom(vector.iterator, source.iterator);
+  Iterable<double> distanceEachFrom(Iterable<double> source) {
+    assert(source.length == length);
+    return iterator.interDistanceFrom(source.iterator);
   }
 
-  ///
-  /// [normalized]
-  /// [normalizeInto]
-  ///
-  static Iterable<double> normalized(Iterable<double> vector) =>
-      IteratorExtension.takeAllCompanion(
-        vector.iterator,
-        IteratorDouble.distance(vector.iterator),
-        DoubleExtension.reduceDivided,
-      );
+  Iterable<double> get normalized => iterator.takeAllCompanion(
+    iterator.distance,
+    DoubleExtension.reduceDivided,
+  );
 
-  static void normalizeInto(Iterable<double> vector, List<double> out) {
-    assert(out.length == vector.length);
-    IteratorExtension.consumeAccompanyByIndex(
-      vector.iterator,
-      IteratorDouble.distance(vector.iterator),
+  void normalizeInto(List<double> out) {
+    assert(out.length == length);
+    iterator.consumeAccompanyByIndex(
+      iterator.distance,
       (value, d, i) => out[i] = value / d,
     );
   }
 
-  ///
-  /// [statisticAnalyze]
-  ///
-  static Iterable<double> statisticAnalyze(
-    Iterable<double> iterable, {
+  Iterable<double> statisticAnalyze({
     bool requireLength = true,
     bool requireMean = true,
     bool requireStandardDeviation = true,
     bool requireStandardError = true,
-    bool? requireTScores, // t scores or z scores
+    bool? requireTScores,
     double? requireConfidenceInterval = 0.95,
   }) sync* {
-    /// n, µ
     var n = 0.0;
     var total = 0.0;
-    for (var value in iterable) {
+    for (var value in this) {
       total += value;
       n++;
     }
@@ -302,11 +240,8 @@ extension IterableDouble on Iterable<double> {
     if (requireLength) yield n;
     if (requireMean) yield mean;
 
-    ///
-    /// standard deviation, standard error
-    ///
     var sum = 0.0;
-    for (var value in iterable) {
+    for (var value in this) {
       sum += (value - mean).squared;
     }
     final sd = sum / n;
@@ -314,24 +249,14 @@ extension IterableDouble on Iterable<double> {
     if (requireStandardDeviation) yield sd;
     if (requireStandardError) yield se;
 
-    ///
-    /// scores
-    ///
     if (requireTScores != null) {
       yield* requireTScores
-          ? IteratorExtension.takeAllApply(
-            iterable.iterator,
+          ? iterator.takeAllApply(
             (x) => (x - mean) / sd * 10 + 50,
           )
-          : IteratorExtension.takeAllApply(
-            iterable.iterator,
-            (x) => (x - mean) / sd,
-          );
+          : iterator.takeAllApply((x) => (x - mean) / sd);
     }
 
-    ///
-    /// confidence interval (µ - z * se ~ µ + z(se))
-    ///
     if (requireConfidenceInterval != null) {
       final z = switch (requireConfidenceInterval) {
         0.95 => 1.96,
@@ -352,21 +277,11 @@ extension Iterable2DComparable<C extends Comparable> on Iterable2D<C> {
   /// [everyElementSorted]
   /// [everyElementSortedThen]
   ///
-  static bool everyElementSorted<C extends Comparable>(
-    Iterable2D<C> iterable2D, [
-    bool increase = true,
-  ]) => iterable2D.every(
-    (sub) => sub.isSorted(IteratorComparable.comparator(increase)),
-  );
+  bool everyElementSorted([bool increase = true]) =>
+      every((sub) => sub.isSorted(IteratorComparable.comparator(increase)));
 
-  static void everyElementSortedThen<C extends Comparable>(
-    Iterable2D<C> iterable2D,
-    Listener listen, [
-    bool increase = true,
-  ]) =>
-      iterable2D.every(
-            (sub) => sub.isSorted(IteratorComparable.comparator(increase)),
-          )
+  void everyElementSortedThen(Listener listen, [bool increase = true]) =>
+      every((sub) => sub.isSorted(IteratorComparable.comparator(increase)))
           ? listen()
           : throw StateError(Erroring.comparableDisordered);
 }

@@ -2,6 +2,13 @@ part of '../collection.dart';
 
 ///
 ///
+/// static methods:
+/// return bool               --> [predicateLengthEqual], ...
+/// return int                --> [lengthOf], ...
+/// return String             --> [joinToLines], ...
+/// return custom function    --> [applyAppend], ...
+///
+/// instance methods:
 /// void callback             --> [pair], ...
 /// return bool               --> [containsAll], ...
 /// return int                --> [lengthOf], ...
@@ -12,123 +19,33 @@ part of '../collection.dart';
 /// return list               --> [mapToListWhere], ...
 /// return nested iterable    --> [chunk], ...
 /// return map                --> [toMapByFilterOr], ...
-/// return custom function    --> [applyAppend], ...
 ///
 ///
 extension IterableExtension<I> on Iterable<I> {
   ///
-  /// [pair], [copyInto]
+  /// [predicateLengthEqual], [predicateLengthDifferent]
+  /// [predicateVariation], [predicateAnyWithDifferent]
   ///
-  static void pair<I>(
-    Iterable<I> iterable,
-    Iterable<I> another,
-    Intersector<I> paring, [
-    Listener? onSizeDiff,
-  ]) =>
-      iterable.length == another.length
-          ? IteratorTogether.pair(iterable.iterator, another.iterator, paring)
-          : onSizeDiff?.call();
-
-  static void copyInto<I>(
-    Iterable<I> iterable,
-    List<I> out, {
-    Listener? onOutLarger,
-    Listener? onOutSmaller,
-  }) =>
-      iterable.length == out.length
-          ? IteratorExtension.consumeAllByIndex(
-            iterable.iterator,
-            (value, i) => out[i] = value,
-          )
-          : out.length > iterable.length
-          ? onOutLarger?.call()
-          : onOutSmaller?.call();
-
-  ///
-  ///
-  /// [containsAll]
-  /// [isLengthEqual], [isLengthDifferent]
-  /// [isEqual], [isVariation]
-  /// [anyWith], [anyWithEqual], [anyWithDifferent]
-  ///
-  ///
-
-  ///
-  /// [containsAll]
-  ///
-  static bool containsAll<I>(Iterable<I> iterable, Iterable<I> another) {
-    for (final element in another) {
-      if (!iterable.contains(element)) return false;
-    }
-    return true;
-  }
-
-  ///
-  /// [isLengthEqual], [isLengthDifferent]
-  /// [isEqual], [isVariation]
-  ///
-  static bool isLengthEqual<A, B>(Iterable<A> a, Iterable<B> b) =>
+  static bool predicateLengthEqual<I>(Iterable<I> a, Iterable<I> b) =>
       a.length == b.length;
 
-  static bool isLengthDifferent<A, B>(Iterable<A> a, Iterable<B> b) =>
+  static bool predicateLengthDifferent<I>(Iterable<I> a, Iterable<I> b) =>
       a.length != b.length;
 
-  static bool isVariation<I>(Iterable<I> iterable, Iterable<I> another) {
-    final iterableSet = iterable.toSet();
-    final anotherSet = another.toSet();
-    return iterableSet.length == anotherSet.length &&
-        iterableSet.containsAll(anotherSet);
+  static bool predicateVariation<I>(Iterable<I> a, Iterable<I> b) {
+    final thisSet = a.toSet();
+    final anotherSet = b.toSet();
+    return thisSet.length == anotherSet.length &&
+        thisSet.containsAll(anotherSet);
   }
 
-  static bool isEqual<I>(Iterable<I> iterable, Iterable<I> another) =>
-      iterable.length == another.length &&
-      !IteratorTogether.pairAny(
-        iterable.iterator,
-        another.iterator,
-        FPredicatorFusionor.isDifferent,
-      );
-
-  ///
-  /// [anyWith]
-  /// [anyWithEqual]
-  /// [anyWithDifferent]
-  ///
-  static bool anyWith<I, P>(
-    Iterable<I> iterable,
-    Iterable<P> another,
-    PredicatorMixer<I, P> test, [
+  static bool predicateAnyWithDifferent<I>(
+    Iterable<I> a,
+    Iterable<I> b, [
     Supplier<bool>? onSizeDiff,
   ]) =>
-      iterable.length == another.length
-          ? IteratorTogether.pairAny(iterable.iterator, another.iterator, test)
-          : onSizeDiff?.call() ??
-              (throw StateError(Erroring.iterableSizeInvalid));
-
-  static bool anyWithEqual<I>(
-    Iterable<I> iterable,
-    Iterable<I> another, [
-    Supplier<bool>? onSizeDiff,
-  ]) =>
-      iterable.length == another.length
-          ? IteratorTogether.pairAny(
-            iterable.iterator,
-            another.iterator,
-            FPredicatorFusionor.isEqual,
-          )
-          : onSizeDiff?.call() ??
-              (throw StateError(Erroring.iterableSizeInvalid));
-
-  static bool anyWithDifferent<I>(
-    Iterable<I> iterable,
-    Iterable<I> another, [
-    Supplier<bool>? onSizeDiff,
-  ]) =>
-      iterable.length == another.length
-          ? IteratorTogether.pairAny(
-            iterable.iterator,
-            another.iterator,
-            FPredicatorFusionor.isDifferent,
-          )
+      a.length == b.length
+          ? a.iterator.pairAny(b.iterator, FPredicatorFusionor.isDifferent)
           : onSizeDiff?.call() ??
               (throw StateError(Erroring.iterableSizeInvalid));
 
@@ -145,22 +62,122 @@ extension IterableExtension<I> on Iterable<I> {
   static String joinToLines<I>(Iterable<I> iterable) => iterable.join('\n');
 
   ///
+  /// [applyAppend]
+  ///
+  static Applier<Iterable<I>> applyAppend<I>(I value) =>
+      (iterable) => [...iterable, value];
+
+  ///
+  ///
+  /// [pair]
+  /// [copyInto]
+  ///
+  ///
+
+  ///
+  /// [pair], [copyInto]
+  ///
+  void pair(
+    Iterable<I> another,
+    Intersector<I> paring, [
+    Listener? onSizeDiff,
+  ]) =>
+      length == another.length
+          ? iterator.pair(another.iterator, paring)
+          : onSizeDiff?.call();
+
+  void copyInto(List<I> out, {Listener? onOutLarger, Listener? onOutSmaller}) =>
+      length == out.length
+          ? iterator.consumeAllByIndex((value, i) => out[i] = value)
+          : out.length > length
+          ? onOutLarger?.call()
+          : onOutSmaller?.call();
+
+  ///
+  ///
+  /// [containsAll]
+  /// [predicateLengthEqual], [predicateLengthDifferent]
+  /// [isEqual], [isVariantTo]
+  /// [anyWith], [anyWithEqual], [anyWithDifferent]
+  ///
+  ///
+
+  ///
+  /// [containsAll]
+  ///
+  ///
+  /// [containsAll], [predicateLengthEqual], [predicateLengthDifferent]
+  /// [isEqual], [isVariantTo]
+  ///
+  bool containsAll(Iterable<I> another) {
+    for (final element in another) {
+      if (!contains(element)) return false;
+    }
+    return true;
+  }
+
+  bool isVariantTo(Iterable<I> another) {
+    final thisSet = toSet();
+    final anotherSet = another.toSet();
+    return thisSet.length == anotherSet.length &&
+        thisSet.containsAll(anotherSet);
+  }
+
+  bool isEqual(Iterable<I> another) =>
+      length == another.length &&
+      !iterator.pairAny(another.iterator, FPredicatorFusionor.isDifferent);
+
+  ///
+  /// [anyWith]
+  /// [anyWithEqual]
+  /// [anyWithDifferent]
+  ///
+
+  ///
+  /// [anyWith], [anyWithEqual], [anyWithDifferent]
+  ///
+  bool anyWith<P>(
+    Iterable<P> another,
+    PredicatorMixer<I, P> test, [
+    Supplier<bool>? onSizeDiff,
+  ]) =>
+      length == another.length
+          ? iterator.pairAny(another.iterator, test)
+          : onSizeDiff?.call() ??
+              (throw StateError(Erroring.iterableSizeInvalid));
+
+  bool anyWithEqual(Iterable<I> another, [Supplier<bool>? onSizeDiff]) =>
+      length == another.length
+          ? iterator.pairAny(another.iterator, FPredicatorFusionor.isEqual)
+          : onSizeDiff?.call() ??
+              (throw StateError(Erroring.iterableSizeInvalid));
+
+  bool anyWithDifferent(Iterable<I> another, [Supplier<bool>? onSizeDiff]) =>
+      length == another.length
+          ? iterator.pairAny(another.iterator, FPredicatorFusionor.isDifferent)
+          : onSizeDiff?.call() ??
+              (throw StateError(Erroring.iterableSizeInvalid));
+
+  ///
+  /// [cardinality]
+  ///
+  int get cardinality => toSet().length;
+
+  ///
   /// [reduceTogether]
   ///
-  static I reduceTogether<I>(
-    Iterable<I> iterable,
+
+  ///
+  /// [reduceTogether]
+  ///
+  I reduceTogether(
     Iterable<I> another,
     Reducer<I> initialize,
     Collapser<I> collapse, [
     Supplier<I>? onSizeDiff,
   ]) =>
-      iterable.length == another.length
-          ? IteratorTogether.pairForcer(
-            iterable.iterator,
-            another.iterator,
-            initialize,
-            collapse,
-          )
+      length == another.length
+          ? iterator.pairForcer(another.iterator, initialize, collapse)
           : onSizeDiff?.call() ??
               (throw StateError(Erroring.iterableSizeInvalid));
 
@@ -168,32 +185,24 @@ extension IterableExtension<I> on Iterable<I> {
   /// [foldWith]
   /// [foldTogether]
   ///
-  static S foldWith<I, T, S>(
-    Iterable<I> iterable,
+  S foldWith<T, S>(
     Iterable<T> another,
     S initialValue,
     Forcer<S, I, T> companion,
   ) =>
-      iterable.length == another.length
-          ? IteratorTogether.pairFold(
-            iterable.iterator,
-            initialValue,
-            another.iterator,
-            companion,
-          )
+      length == another.length
+          ? iterator.pairFold(initialValue, another.iterator, companion)
           : throw StateError(Erroring.iterableSizeInvalid);
 
-  static S foldTogether<I, E, S>(
-    Iterable<I> iterable,
+  S foldTogether<E, S>(
     S initialValue,
     Iterable<E> another,
     Companion<S, I> companion,
     Companion<S, E> companionAnother,
     Collapser<S> collapse,
   ) =>
-      iterable.length == another.length
-          ? IteratorTogether.pairFold(
-            iterable.iterator,
+      length == another.length
+          ? iterator.pairFold(
             initialValue,
             another.iterator,
             (value, a, b) => collapse(
@@ -215,47 +224,35 @@ extension IterableExtension<I> on Iterable<I> {
   ///
   /// [takeOn], [sub]
   ///
-  static Iterable<I> takeOn<I>(Iterable<I> iterable, Iterable<bool> where) =>
-      iterable.length == where.length
-          ? where.iterator.takeFor(iterable.iterator)
+  Iterable<I> takeOn(Iterable<bool> where) =>
+      length == where.length
+          ? where.iterator.takeFor(iterator)
           : throw StateError(Erroring.iterableSizeInvalid);
 
-  static Iterable<I> sub<I>(Iterable<I> iterable, int start, [int? end]) =>
-      iterable.length.isUpperClose(start, end)
+  Iterable<I> sub(int start, [int? end]) =>
+      length.isUpperClose(start, end)
           ? throw StateError(Erroring.iterableBoundaryInvalid)
-          : IteratorExtension.sub(
-            iterable.iterator,
-            start,
-            end ?? iterable.length,
-          );
+          : iterator.sub(start, end ?? length);
 
   ///
-  /// [expandWith]
-  /// [expandTogether]
+  /// [expandWith], [expandTogether]
   ///
-  static Iterable<I> expandWith<I, E>(
-    Iterable<I> iterable,
+  Iterable<I> expandWith<E>(
     Iterable<E> another,
     Mixer<I, E, Iterable<I>> expanding,
   ) =>
-      iterable.length == another.length
-          ? IteratorTogether.pairExpand(
-            iterable.iterator,
-            another.iterator,
-            expanding,
-          )
+      length == another.length
+          ? iterator.pairExpand(another.iterator, expanding)
           : throw StateError(Erroring.iterableSizeInvalid);
 
-  static Iterable<I> expandTogether<I, E>(
-    Iterable<I> iterable,
+  Iterable<I> expandTogether<E>(
     Iterable<E> another,
     Mapper<I, Iterable<I>> expanding,
     Mapper<E, Iterable<I>> expandingAnother,
     Reducer<Iterable<I>> reducing,
   ) =>
-      iterable.length == another.length
-          ? IteratorTogether.pairExpand(
-            iterable.iterator,
+      length == another.length
+          ? iterator.pairExpand(
             another.iterator,
             (p, q) => reducing(expanding(p), expandingAnother(q)),
           )
@@ -264,33 +261,22 @@ extension IterableExtension<I> on Iterable<I> {
   ///
   /// [interval], [takeFor]
   ///
-  static Iterable<S> interval<I, T, S>(
-    Iterable<I> iterable,
-    Iterable<T> another,
-    Linker<I, T, S> link,
-  ) =>
-      another.length + 1 == iterable.length
-          ? IteratorTogether.pairInterval(
-            iterable.iterator,
-            another.iterator,
-            link,
-          )
+  Iterable<S> interval<T, S>(Iterable<T> another, Linker<I, T, S> link) =>
+      another.length + 1 == length
+          ? iterator.pairInterval(another.iterator, link)
           : throw StateError(Erroring.iterableSizeInvalid);
 
-  static Iterable<I> takeFor<I>(
-    Iterable<I> iterable,
-    Iterable<bool> positions,
-  ) =>
-      positions.length == iterable.length
-          ? positions.iterator.takeFor(iterable.iterator)
+  Iterable<I> takeFor(Iterable<bool> positions) =>
+      positions.length == length
+          ? positions.iterator.takeFor(iterator)
           : throw StateError(Erroring.iterableSizeInvalid);
 
   ///
   /// [mapToListWhere]
   ///
-  static List<I> mapToListWhere<I>(Iterable<I> iterable, Predicator<I> test) {
+  List<I> mapToListWhere(Predicator<I> test) {
     final result = <I>[];
-    for (var element in iterable) {
+    for (var element in this) {
       if (test(element)) result.add(element);
     }
     return result;
@@ -308,12 +294,9 @@ extension IterableExtension<I> on Iterable<I> {
   /// list = [2, 3, 4, 6, 10, 3, 9];
   /// list.chunk([2, 1, 3, 1]); // [[2, 3], [4], [6, 10, 3], [9]]
   ///
-  static Iterable<List<I>> chunk<I>(
-    Iterable<I> iterable,
-    Iterable<int> chunks,
-  ) sync* {
-    assert(chunks.sum == iterable.length);
-    final iterator = iterable.iterator;
+  Iterable<List<I>> chunk(Iterable<int> chunks) sync* {
+    assert(chunks.sum == length);
+    final iterator = this.iterator;
     for (var l in chunks) {
       final list = <I>[];
       for (var i = 0; i < l; i++) {
@@ -327,10 +310,11 @@ extension IterableExtension<I> on Iterable<I> {
   ///
   /// [combination2]
   ///
-  static Iterable<Iterable<I>> combination2<I>(Iterable<I> iterable) sync* {
+  Iterable<Iterable<I>> combination2() sync* {
+    var iterable = this;
     final length = iterable.length - 1;
     for (var i = 0; i < length; i++) {
-      yield* IteratorTogether.combination2FromFirst(iterable.iterator);
+      yield* iterable.iterator.combination2FromFirst;
       iterable = iterable.skip(1);
     }
   }
@@ -338,18 +322,6 @@ extension IterableExtension<I> on Iterable<I> {
   ///
   /// [toMapByFilterOr]
   ///
-  static Map<I, V> toMapByFilterOr<I, V>(
-    Iterable<I> iterable,
-    Map<I, V> keyValue,
-    V nullFill,
-  ) => Map.fromIterables(
-    iterable,
-    iterable.map((key) => keyValue[key] ?? nullFill),
-  );
-
-  ///
-  /// [applyAppend]
-  ///
-  static Applier<Iterable<I>> applyAppend<I>(I value) =>
-      (iterable) => [...iterable, value];
+  Map<I, V> toMapByFilterOr<V>(Map<I, V> keyValue, V nullFill) =>
+      Map.fromIterables(this, map((key) => keyValue[key] ?? nullFill));
 }

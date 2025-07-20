@@ -213,10 +213,7 @@ extension ListExtension<T> on List<T> {
   ///
   void setAllFromIterable(Iterable<T> iterable) =>
       length == iterable.length
-          ? IteratorExtension.consumeAllByIndex(
-            iterable.iterator,
-            (value, i) => this[i] = value,
-          )
+          ? iterable.iterator.consumeAllByIndex((value, i) => this[i] = value)
           : throw StateError(Erroring.iterableSizeInvalid);
 
   void setAllFromList(List<T> another) {
@@ -326,7 +323,7 @@ extension ListExtension<T> on List<T> {
   ];
 
   List<T> cloneByOrder(Iterable<int> order) {
-    assert(IterableExtension.isVariation(Iterable.generate(length), order));
+    assert(Iterable.generate(length).isVariantTo(order));
     return [for (var i in order) this[i]];
   }
 
@@ -446,8 +443,7 @@ extension ListExtension<T> on List<T> {
   }
 
   List<List<T>> splitAt(List<int> positions, [int begin = 0, int? end]) =>
-      IteratorTo.foldByAfter(
-        positions.iterator,
+      positions.iterator.foldByAfter(
         [],
         begin,
         (result, interval, i) => result..add(sublist(i, interval)),

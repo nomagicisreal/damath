@@ -79,7 +79,7 @@ extension TimerExtension on Timer {
     Iterable<Duration> steps,
     Iterable<Listener> listeners,
   ) => _sequence(
-    IteratorTogether.pairMap(steps.iterator, listeners.iterator, Record2.mix),
+    steps.iterator.pairMap(listeners.iterator, Record2.mix),
   );
 
   ///

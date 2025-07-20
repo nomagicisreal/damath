@@ -13,11 +13,9 @@ extension IterableMapEntry<K, V> on Iterable<MapEntry<K, V>> {
   ///
   /// [keys], [values]
   ///
-  static Iterable<K> keys<K, V>(Iterable<MapEntry<K, V>> entries) =>
-      entries.map((e) => e.key);
+  Iterable<K> get keys => map((e) => e.key);
 
-  static Iterable<V> values<K, V>(Iterable<MapEntry<K, V>> entries) =>
-      entries.map((e) => e.value);
+  Iterable<V> get values => map((e) => e.value);
 }
 
 ///
@@ -28,39 +26,29 @@ extension IteratorSet<K> on Iterator<Set<K>> {
   ///
   /// [everyIdentical]
   ///
-  static bool everyIdentical<I>(Iterator<Iterable<I>> iterator) =>
-      IteratorTo.supplyMoveNext(iterator, () {
-        final set = Set.of(iterator.current);
-        while (iterator.moveNext()) {
-          if (iterator.current.any(set.add)) return false;
-        }
-        return true;
-      });
+  bool get everyIdentical => supplyMoveNext(() {
+    final set = Set.of(current);
+    while (moveNext()) {
+      if (current.any(set.add)) return false;
+    }
+    return true;
+  });
 
   ///
   /// [reduceMerged]
   ///
-  static Set<K> reduceMerged<K>(
-    Iterator<Set<K>> iterator, [
-    bool requireIdentical = false,
-  ]) =>
+  Set<K> reduceMerged([bool requireIdentical = false]) =>
       requireIdentical
-          ? IteratorTo.supplyMoveNext(iterator, () {
-            final set = Set.of(iterator.current);
-            while (iterator.moveNext()) {
-              if (iterator.current.any(set.add)) {
-                throw StateError(
-                  'set not identical:\n${iterator.current}\n$set',
-                );
+          ? supplyMoveNext(() {
+            final set = Set.of(current);
+            while (moveNext()) {
+              if (current.any(set.add)) {
+                throw StateError('set not identical:\n$current\n$set');
               }
             }
             return set;
           })
-          : IteratorTo.fold(
-            iterator,
-            <K>{},
-            (set, other) => set..addAll(other),
-          );
+          : fold(<K>{}, (set, other) => set..addAll(other));
 }
 
 ///
@@ -79,8 +67,7 @@ extension IterableIterable<I> on Iterable<Iterable<I>> {
   ///
   /// [size]
   ///
-  static int size<I>(Iterable<Iterable<I>> nested) => IteratorTo.induct(
-    nested.iterator,
+  int size(Iterable<Iterable<I>> nested) => nested.iterator.induct(
     IterableExtension.lengthOf,
     IntExtension.reduce_plus,
   );
@@ -89,80 +76,55 @@ extension IterableIterable<I> on Iterable<Iterable<I>> {
   /// [toStringMapJoin]
   /// [toStringPadLeft]
   ///
-  static String toStringMapJoin<I>(
-    Iterable<Iterable<I>> iterable, [
+  String toStringMapJoin([
     Mapper<Iterable<I>, String>? mapping,
     String separator = "\n",
-  ]) => iterable.map(mapping ?? (e) => e.toString()).join(separator);
+  ]) => map(mapping ?? (e) => e.toString()).join(separator);
 
-  static String toStringPadLeft<I>(Iterable<Iterable<I>> iterable, int space) =>
+  String toStringPadLeft(Iterable<Iterable<I>> iterable, int space) =>
       toStringMapJoin(
-        iterable,
         (row) => row.map((e) => e.toString().padLeft(space)).toString(),
       );
 
   ///
   /// [isEqualElementsLengthTo]
   ///
-  static bool isEqualElementsLengthTo<I, P>(
-    Iterable<Iterable<I>> iterable,
-    Iterable<Iterable<P>> another,
-  ) =>
-      !IterableExtension.anyWith(
-        iterable,
-        another,
-        IterableExtension.isLengthDifferent,
-      );
+  bool isEqualElementsLengthTo(Iterable<Iterable<I>> another) =>
+      !anyWith(another, IterableExtension.predicateLengthDifferent);
 
-  static bool isEqualToNested<I>(
-    Iterable<Iterable<I>> iterable,
-    Iterable<Iterable<I>> another,
-  ) =>
-      !IterableExtension.anyWith(
-        iterable,
-        another,
-        IterableExtension.anyWithDifferent,
-      );
+  bool isEqualToNested(Iterable<Iterable<I>> another) =>
+      !anyWith(another, IterableExtension.predicateAnyWithDifferent);
 
   ///
   /// [foldWith2D]
   ///
-  static S foldWith2D<I, P, S>(
-    Iterable<Iterable<I>> iterable,
+  S foldWith2D<P, S>(
     Iterable<Iterable<P>> another,
     S initialValue,
     Forcer<S, I, P> fusionor,
-  ) => IterableExtension.foldWith(
-    iterable,
+  ) => foldWith(
     another,
     initialValue,
-    (value, e, eAnother) =>
-        value = IterableExtension.foldWith(e, eAnother, value, fusionor),
+    (value, e, eAnother) => value = e.foldWith(eAnother, value, fusionor),
   );
 
   ///
   /// [whereLengthIs]
   ///
-  static Iterable<Iterable<I>> whereLengthIs<I>(
-    Iterable<Iterable<I>> iterable,
-    int n,
-  ) => iterable.where(predicateChildrenLength(n));
+  Iterable<Iterable<I>> whereLengthIs(int n) =>
+      where(predicateChildrenLength(n));
 
   ///
   /// [mapToListWhereLengthIs]
   /// [mapToListListWhereLengthIs]
   ///
-  static List<Iterable<I>> mapToListWhereLengthIs<I>(
-    Iterable<Iterable<I>> iterable,
-    int n,
-  ) => [...iterable.where(predicateChildrenLength(n))];
+  List<Iterable<I>> mapToListWhereLengthIs(int n) => [
+    ...where(predicateChildrenLength(n)),
+  ];
 
-  static List<List<I>> mapToListListWhereLengthIs<I>(
-    Iterable<Iterable<I>> iterable,
-    int n,
-  ) {
+  List<List<I>> mapToListListWhereLengthIs(int n) {
     final result = <List<I>>[];
-    for (final element in iterable) {
+    for (final element in this) {
       result.addWhen(element.length == n, () => element.toList());
     }
     return result;
@@ -172,15 +134,15 @@ extension IterableIterable<I> on Iterable<Iterable<I>> {
   /// [flatted]
   /// [flattedList]
   ///
-  static Iterable<I> flatted<I>(Iterable<Iterable<I>> iterable) sync* {
-    for (final element in iterable) {
+  Iterable<I> get flatted sync* {
+    for (final element in this) {
       yield* element;
     }
   }
 
-  static List<I> flattedList<I>(Iterable<Iterable<I>> iterable) {
+  List<I> get flattedList {
     final result = <I>[];
-    for (final element in iterable) {
+    for (final element in this) {
       result.addAll(element);
     }
     return result;

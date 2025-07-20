@@ -39,6 +39,12 @@ enum DirectionIn4 {
     DirectionIn4.right => DirectionIn8.right,
     DirectionIn4.bottom => DirectionIn8.bottom,
   };
+
+  static DirectionIn4 verticalForward(double d) =>
+      d > 0 ? DirectionIn4.bottom : DirectionIn4.top;
+
+  static DirectionIn4 horizontalForward(double d) =>
+      d > 0 ? DirectionIn4.right : DirectionIn4.left;
 }
 
 enum DirectionIn8 {

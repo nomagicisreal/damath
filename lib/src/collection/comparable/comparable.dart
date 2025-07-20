@@ -2,6 +2,8 @@
 part of '../collection.dart';
 
 ///
+/// [OrderLinear]
+///
 /// [M_Comparable]
 /// [ComparableState]
 /// [ComparableMethod]
@@ -10,6 +12,9 @@ part of '../collection.dart';
 ///
 ///
 
+///
+///
+///
 enum OrderLinear { increase, decrease }
 
 ///
@@ -67,22 +72,46 @@ final class ComparableMethod<T> {
 
 ///
 /// [orderBefore], ...
-/// [compareToIncreaseTernary], ...
+/// [ternaryIncrease], ...
 ///
 extension ComparableExtension<C extends Comparable> on C {
-  static bool orderBefore<C extends Comparable>(C current, C other) =>
+  ///
+  ///
+  ///
+  bool orderBefore(C other) => compareTo(other) == -1;
+
+  bool orderAfter(C other) => compareTo(other) == 1;
+
+  static bool orderingBefore<C extends Comparable>(C current, C other) =>
       current.compareTo(other) == -1;
 
-  static bool orderAfter<C extends Comparable>(C current, C other) =>
+  static bool orderingAfter<C extends Comparable>(C current, C other) =>
       current.compareTo(other) == 1;
 
   ///
   ///
   ///
-  static bool? compareToIncreaseTernary<C extends Comparable>(
-    C current,
-    C other,
-  ) {
+  bool? ternaryIncrease(C other) {
+    final value = compareTo(other);
+    return switch (value) {
+      0 => null,
+      1 => false,
+      -1 => true,
+      _ => throw Erroring.invalidComparableResult(value),
+    };
+  }
+
+  bool? ternaryDecrease(C other) {
+    final value = compareTo(other);
+    return switch (value) {
+      0 => null,
+      1 => true,
+      -1 => false,
+      _ => throw Erroring.invalidComparableResult(value),
+    };
+  }
+
+  static bool? ternaryIncreasing<C extends Comparable>(C current, C other) {
     final value = current.compareTo(other);
     return switch (value) {
       0 => null,
@@ -92,10 +121,7 @@ extension ComparableExtension<C extends Comparable> on C {
     };
   }
 
-  static bool? compareToDecreaseTernary<C extends Comparable>(
-    C current,
-    C other,
-  ) {
+  static bool? ternaryDecreasing<C extends Comparable>(C current, C other) {
     final value = current.compareTo(other);
     return switch (value) {
       0 => null,
@@ -104,10 +130,4 @@ extension ComparableExtension<C extends Comparable> on C {
       _ => throw Erroring.invalidComparableResult(value),
     };
   }
-
-  static bool? ofTernaryIncrease<C extends Comparable>(C a, C b) =>
-      compareToIncreaseTernary(a, b);
-
-  static bool? ofTernaryDecrease<C extends Comparable>(C a, C b) =>
-      compareToDecreaseTernary(a, b);
 }

@@ -12,8 +12,7 @@ extension DamathSet<K> on Set<K> {
   ///
   /// [isEqualToSet]
   ///
-  bool isEqualToSet(Set<K> another) => IteratorExtension.anyBy(
-    another.iterator,
+  bool isEqualToSet(Set<K> another) => another.iterator.anyBy(
     Set.of(this),
     (set, element) => set.add(element),
   );
@@ -24,7 +23,7 @@ extension DamathSet<K> on Set<K> {
   /// [consistentBy]
   ///
   /// sample 1:
-  ///   final list = <MapEntry<int, int>>[
+  ///   final list = [
   ///       MapEntry(1, 20),
   ///       MapEntry(1, 20),
   ///       MapEntry(1, 30),
@@ -42,7 +41,7 @@ extension DamathSet<K> on Set<K> {
   ///   has a same on entry.value: list[0].value == list[1].value.
   ///
   /// sample 2:
-  ///   final list = <MapEntry<int, int>>[
+  ///   final list = [
   ///       MapEntry(1, 20),
   ///       MapEntry(1, 30),
   ///       MapEntry(2, 30),
@@ -59,8 +58,7 @@ extension DamathSet<K> on Set<K> {
   ///   each of the groups is identical on value
   ///
   bool consistentBy<E, V>(Mapper<K, E> toKey, Mapper<K, V> toVal) =>
-      !IteratorExtension.existAnyToEachGroup(
-        iterator,
+      !iterator.existAnyToEachGroup(
         toKey,
         toVal,
         MapExtension.predicateInputYet,

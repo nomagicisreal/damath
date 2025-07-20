@@ -404,7 +404,7 @@ abstract final class NodeNextSorted<C extends Comparable>
   //
   @override
   void push(C element) =>
-      ComparableExtension.orderAfter(element, data)
+      element.orderAfter(data)
           ? NodeWriter.next_pushNext(this, element, _apply(element))
           : NodeWriter.next_pushCurrentToNext(this, element);
 

@@ -20,8 +20,19 @@ part of '../primary.dart';
 ///
 /// [iterableNoElement], ...
 ///
-abstract interface class Erroring {
-  const Erroring();
+extension Erroring on Object {
+  void printThing([Object? object]) => print(object ?? this);
+
+  void logThing({
+    String? message,
+    DateTime? time,
+    int? sequenceNumber,
+    int level = 0,
+    String name = '',
+    Zone? zone,
+    Object? error,
+    StackTrace? stackTrace,
+  }) => log(message ?? toString());
 
   ///
   /// general

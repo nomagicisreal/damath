@@ -554,16 +554,16 @@ extension IntExtension on int {
       if (n.isRangeClose(1, m)) {
         throw ArgumentError(Erroring.invalidPartition(m, n));
       }
-      return IteratorTo.toMapCounted(
-        _partitionSet(m).map(IterableExtension.lengthOf).iterator,
-      )[n]!;
+      return _partitionSet(
+        m,
+      ).map(IterableExtension.lengthOf).iterator.toMapCounted[n]!;
     }
     var sum = 0;
     for (var i = 1; i <= m; i++) {
       sum +=
-          IteratorTo.toMapCounted(
-            _partitionSet(m).map(IterableExtension.lengthOf).iterator,
-          )[i]!;
+          _partitionSet(
+            m,
+          ).map(IterableExtension.lengthOf).iterator.toMapCounted[i]!;
     }
     return sum;
   }
@@ -588,14 +588,12 @@ extension IntExtension on int {
       if (n.isRangeClose(1, m)) {
         throw ArgumentError(Erroring.invalidPartition(m, n));
       }
-      yield* IterableIterable.flatted(
-        _partitionSet(m).where((element) => element.length == n),
-      );
+      yield* _partitionSet(m).where((element) => element.length == n).flatted;
     }
     for (var i = 1; i <= m; i++) {
-      yield* IterableIterable.flatted(
-        _partitionSet(m).where(IterableIterable.predicateChildrenLength(i)),
-      );
+      yield* _partitionSet(
+        m,
+      ).where(IterableIterable.predicateChildrenLength(i)).flatted;
     }
   }
 

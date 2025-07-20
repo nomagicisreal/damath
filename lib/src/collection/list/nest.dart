@@ -45,5 +45,5 @@ extension ListSet<I> on List<Set<I>> {
   }
 
   void mergeWhereToTrailing(Predicator<Set<I>> test) =>
-      add(IteratorSet.reduceMerged(removalWhere(test).iterator));
+      add(removalWhere(test).iterator.reduceMerged());
 }

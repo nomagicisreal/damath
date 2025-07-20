@@ -384,8 +384,8 @@ abstract final class NodeBinarySorted<C extends Comparable>
   void push(C element) => NodeWriter.binary_push(
     this,
     element,
-    ComparableExtension.orderAfter(element, data),
-    ComparableExtension.orderAfter<C>,
+    element.orderAfter(data),
+    ComparableExtension.orderingAfter<C>,
   );
 
   const factory NodeBinarySorted.immutable(C data) = _NbSi;
@@ -411,7 +411,7 @@ abstract final class NodeBinarySorted<C extends Comparable>
     List<C> list, {
     bool increase = true,
     NodeBinaryConstructor<C, NodeBinarySorted<C>>? constructor,
-  }) => IterableComparable.checkSortedForSupply(list, () {
+  }) => list.checkSortedForSupply(() {
     final construct = constructor ?? NodeBinarySorted<C>.mutable;
     if (list.isEmpty) throw StateError(Erroring.iterableNoElement);
 
@@ -444,7 +444,7 @@ abstract final class NodeBinaryAvl<C extends Comparable>
   factory NodeBinaryAvl(C data) = _NbAvl;
 
   factory NodeBinaryAvl.fromSorted(List<C> list, {bool increase = true}) =>
-      IterableComparable.checkSortedForSupply(list, () {
+      list.checkSortedForSupply(() {
         if (list.isEmpty) throw StateError(Erroring.iterableNoElement);
 
         NodeBinaryAvl<C>? build(int previous, int next) {

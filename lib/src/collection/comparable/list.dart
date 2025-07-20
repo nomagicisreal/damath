@@ -10,8 +10,6 @@ part of '../collection.dart';
 ///
 
 ///
-/// instance methods:
-/// [indexSearch], ...
 /// [median], ...
 /// [cloneSorted], ...
 ///
@@ -19,62 +17,17 @@ part of '../collection.dart';
 ///
 extension ListComparable<C extends Comparable> on List<C> {
   // static Iterable<List<C>> permutations<C extends Comparable>(List<C> list)
-
-  ///
-  /// [indexSearch] is a function same as [binarySearch] in collection
-  ///
-  /// find index of an integer item on list with 100 integer (2025/05/01)
-  ///   A: [indexSearch] without assertion
-  ///   B: [binarySearch]
-  /// round 1:
-  ///   A: 0:00:00.006940
-  ///   B: 0:00:00.013164
-  /// round 2:
-  ///   A: 0:00:00.007324
-  ///   B: 0:00:00.013878
-  /// round 3:
-  ///   A: 0:00:00.007552
-  ///   B: 0:00:00.013759
-  ///
-  ///
-  static int indexSearch<C extends Comparable>(
-    List<C> list,
-    C value, [
-    Comparator<C>? comparator,
-  ]) {
-    comparator ??= Comparable.compare;
-    assert(list.isSorted(comparator));
-
-    var min = 0;
-    var max = list.length;
-    while (min < max) {
-      final mid = min + ((max - min) >> 1);
-      final v = comparator(list[mid], value);
-      if (v == 0) return mid;
-      if (v == -1) {
-        min = mid + 1;
-        continue;
-      }
-      max = mid;
-    }
-    return -1;
-  }
-
   ///
   /// [median]
   ///
-  static C median<C extends Comparable>(
-    List<C> items, [
-    bool evenPrevious = true,
-  ]) =>
-      items.length.isEven
-          ? items[items.length ~/ 2 - 1]
-          : items[items.length ~/ 2];
+  C median([bool evenPrevious = true]) =>
+      length.isEven ? this[length ~/ 2 - 1] : this[length ~/ 2];
 
-  static List<C> cloneSorted<C extends Comparable>(
-    Iterable<C> source, [
-    bool increase = false,
-  ]) => List.of(source)..sort(IteratorComparable.comparator(increase));
+  ///
+  /// [cloneSorted]
+  ///
+  List<C> cloneSorted([bool increase = false]) =>
+      List.of(this)..sort(IteratorComparable.comparator(increase));
 
   ///
   ///
@@ -89,23 +42,17 @@ extension ListComparable<C extends Comparable> on List<C> {
   ///   sorted = List.of(list)..sort(); // [1, 2, 2, 3, 5]
   ///   order = list.order();           // [4, 1, 5, 2, 3]
   ///
-  static List<int> order<C extends Comparable>(
-    List<C> source, {
-    bool increase = true,
-    int from = 1,
-  }) {
-    final length = source.length;
+  List<int> order({bool increase = true, int from = 1}) {
+    final length = this.length;
     C? previous;
     var exist = 0;
     var index = -1;
 
-    return IteratorTo.mapToList(cloneSorted(source, increase).iterator, (
-      vSorted,
-    ) {
+    return cloneSorted(increase).iterator.mapToList((vSorted) {
       if (vSorted != previous) {
         exist = 0;
         for (var i = 0; i < length; i++) {
-          final current = source[i];
+          final current = this[i];
           if (vSorted == current) {
             previous = current;
             index = i;
@@ -114,7 +61,7 @@ extension ListComparable<C extends Comparable> on List<C> {
         }
       } else {
         for (var i = index + 1; i < length; i++) {
-          if (vSorted == source[i]) {
+          if (vSorted == this[i]) {
             if (exist == 0) {
               exist++;
               index = i;
@@ -126,37 +73,24 @@ extension ListComparable<C extends Comparable> on List<C> {
           }
         }
       }
-
+ 
       return from + index;
     });
   }
 }
 
 ///
-/// [interquartileRange]
-///
-extension ListDouble on List<double> {
-  // ///
-  // /// [interquartileRange]
-  // ///
-  // double get interquartileRange {
-  //   final interquartile = percentileQuartile;
-  //   return interquartile.last - interquartile.first;
-  // }
-}
-
-///
 /// static methods:
-/// [_comparatorAccordingly], ...
+/// [comparatorAccordingly], ...
 ///
 /// instance methods:
 /// [sortByFirst], ...
 ///
 extension List2DComparable<C extends Comparable> on List2D<C> {
   ///
-  /// [_comparatorAccordingly]
+  /// [comparatorAccordingly]
   ///
-  static Comparator<List<C>> _comparatorAccordingly<C extends Comparable>(
+  static Comparator<List<C>> comparatorAccordingly<C extends Comparable>(
     Comparator<C> keepAFirst,
   ) => (a, b) {
     final maxIndex = math.max(a.length, b.length);
@@ -169,23 +103,16 @@ extension List2DComparable<C extends Comparable> on List2D<C> {
   };
 
   ///
-  /// [sortByFirst]
-  /// [sortAccordingly]
+  /// [sortByFirst], [sortAccordingly]
   ///
-  static void sortByFirst<C extends Comparable>(
-    List2D<C> list2D, [
-    bool increasing = true,
-  ]) => list2D.sort(
+  void sortByFirst([bool increasing = true]) => sort(
     increasing
         ? (a, b) => a.first.compareTo(b.first)
         : (a, b) => b.first.compareTo(a.first),
   );
 
-  static void sortAccordingly<C extends Comparable>(
-    List2D<C> list2D, [
-    bool increase = true,
-  ]) => list2D.sort(
-    List2DComparable._comparatorAccordingly(
+  void sortAccordingly([bool increase = true]) => sort(
+    List2DComparable.comparatorAccordingly(
       increase ? Comparable.compare : IteratorComparable.compareReverse,
     ),
   );
@@ -234,6 +161,6 @@ extension List2DInt on List2D<int> {
   ///
   /// [summationIntoIdentity]
   ///
-  static List2D<int> summationIntoIdentity(List2D<int> list2D, int length) =>
-      list2D.copyIntoIdentity(IntExtension.reduce_plus, length, 1);
+  List2D<int> summationIntoIdentity(int length) =>
+      copyIntoIdentity(IntExtension.reduce_plus, length, 1);
 }

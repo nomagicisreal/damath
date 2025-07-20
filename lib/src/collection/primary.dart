@@ -33,13 +33,13 @@ extension IteratorBool on Iterator<bool> {
   ///
   /// [isSatisfiable], [isTautology], [isContradiction], [isContingency]
   ///
-  bool get isSatisfiable => IteratorExtension.any(this, _keep);
+  bool get isSatisfiable => any(_keep);
 
-  bool get isTautology => !IteratorExtension.any(this, _reverse);
+  bool get isTautology => !any(_reverse);
 
-  bool get isContradiction => !IteratorExtension.any(this, _keep);
+  bool get isContradiction => !any(_keep);
 
-  bool get isContingency => IteratorExtension.existDifferent(this);
+  bool get isContingency => existDifferent;
 
   ///
   /// [takeFor]
@@ -73,13 +73,13 @@ extension IteratorNullable<I> on Iterator<I?> {
         lengthValid
             ? (key) {
               if (key == null) return;
-              MapValueDouble.plusOn(map, key);
+              map.plusOn(key);
               length++;
             }
             : (key) {
               length++;
               if (key == null) return;
-              MapValueDouble.plusOn(map, key);
+              map.plusOn(key);
             };
 
     while (moveNext()) {
@@ -98,9 +98,6 @@ extension IterableNullable<I> on Iterable<I?> {
   ///
   /// [validLength]
   ///
-  int get validLength => IteratorTo.fold(
-    iterator,
-    0,
-    (value, current) => current == null ? value : ++value,
-  );
+  int get validLength =>
+      iterator.fold(0, (value, current) => current == null ? value : ++value);
 }
