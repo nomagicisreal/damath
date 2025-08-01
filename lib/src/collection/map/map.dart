@@ -124,9 +124,6 @@ extension MapEntryExtension<K, V> on MapEntry<K, V> {
 /// [input], ...
 ///
 /// [join], ...
-/// [any], ...
-/// [fold], ...
-/// [reduce], ...
 /// [mapKeys], ...
 ///
 /// [keysIntersectionWith], [keysDifferenceWith]
@@ -270,8 +267,8 @@ extension MapExtension<K, V> on Map<K, V> {
 
   ///
   /// [join]
-  /// [joinKeys]
-  /// [joinValues]
+  /// [joinKeys], [joinValues]
+  /// [joinEntries]
   ///
   String join([String entrySeparator = ', ', String separator = '\n']) =>
       entries.map((entry) => entry.join(entrySeparator)).join(separator);
@@ -280,88 +277,19 @@ extension MapExtension<K, V> on Map<K, V> {
 
   String joinValues([String separator = ', ']) => values.join(separator);
 
-  ///
-  /// [any]
-  /// [anyKeys], [anyValues]
-  ///
-  bool any(Predicator<MapEntry<K, V>> test) => entries.any(test);
-
-  bool anyKeys(Predicator<K> test) => keys.any(test);
-
-  bool anyValues(Predicator<V> test) => values.any(test);
-
-  ///
-  /// fold, reduce
-  /// [fold], [foldKeys], [foldValues]
-  /// [foldByIndex]
-  ///
-  /// [reduce], [reduceKeys], [reduceValues]
-  /// [reduceByIndex]
-  /// [induct], [inductByIndex], [inductByIndexInited]
-  ///
-
-  ///
-  /// [fold], [foldKeys], [foldValues]
-  /// [foldByIndex]
-  ///
-  T fold<T>(T initialValue, Companion<T, MapEntry<K, V>> companion) =>
-      entries.fold<T>(
-        initialValue,
-        (previousValue, element) => companion(previousValue, element),
-      );
-
-  S foldKeys<S>(S initialValue, Companion<S, K> companion) =>
-      keys.fold(initialValue, companion);
-
-  S foldValues<S>(S initialValue, Companion<S, V> companion) =>
-      values.fold(initialValue, companion);
-
-  T foldByIndex<T>(
-    T initialValue,
-    CompanionGenerator<T, MapEntry<K, V>> companion, [
-    int start = 0,
-  ]) => entries.iterator.foldByIndex(initialValue, companion, start);
-
-  ///
-  /// [reduce], [reduceKeys], [reduceValues]
-  /// [reduceByIndex]
-  /// [induct], [inductByIndex], [inductByIndexInited]
-  ///
-  MapEntry<K, V> reduce(Reducer<MapEntry<K, V>> reducing) =>
-      entries.reduce(reducing);
-
-  K reduceKeys(Reducer<K> reducing) => keys.reduce(reducing);
-
-  V reduceValues(Reducer<V> reducing) => values.reduce(reducing);
-
-  MapEntry<K, V> reduceByIndex(
-    ReducerGenerator<MapEntry<K, V>> reducing, [
-    int start = 0,
-  ]) => entries.iterator.reduceByIndex(reducing, start);
-
-  S induct<S>(Mapper<MapEntry<K, V>, S> toVal, Reducer<S> reducer) =>
-      entries.iterator.induct(toVal, reducer);
-
-  S inductByIndex<S>(
-    Mapper<MapEntry<K, V>, S> toVal,
-    ReducerGenerator<S> reducing, [
-    int start = 0,
-  ]) => entries.iterator.inductByIndex(toVal, reducing, start);
-
-  S inductByIndexInited<S>(
-    Mapper<MapEntry<K, V>, S> toVal,
-    CompanionGenerator<S, MapEntry<K, V>> reducing, [
-    int start = 0,
-  ]) => entries.iterator.inductInitedByIndex(toVal, reducing, start);
+  String joinEntries(
+    Mapper<MapEntry<K, V>, String> mapper, [
+    String separator = '\n',
+  ]) => entries.map(mapper).join(separator);
 
   ///
   /// [mapKeys]
   /// [mapValues]
   ///
-  Map<K, V> mapKeys(Applier<K> toVal) =>
+  Map<T, V> mapKeys<T>(Mapper<K, T> toVal) =>
       map((key, value) => MapEntry(toVal(key), value));
 
-  Map<K, V> mapValues(Applier<V> toVal) =>
+  Map<K, T> mapValues<T>(Mapper<V, T> toVal) =>
       map((key, value) => MapEntry(key, toVal(value)));
 
   ///

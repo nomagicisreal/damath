@@ -2,6 +2,7 @@
 import 'dart:developer';
 
 import 'package:damath/damath.dart';
+import 'package:damath/src/typed_data/typed_data.dart';
 
 void main(List<String> arguments) {
   // final list = List.generate(10, FKeep.applier);
@@ -14,4 +15,13 @@ void main(List<String> arguments) {
   //       // ..push(53113)
   // ;
   // print(node);
+  final container = DatesContainer.fromIterable(
+    Iterable.generate(
+      10,
+      (i) => DateTime.now().add(Duration(days: RandomExtension.intTo(50) - 1)),
+    ),
+  );
+  print(container);
+  print(container.contains(DateTime.now()));
+  print(container.dates.join('\n'));
 }

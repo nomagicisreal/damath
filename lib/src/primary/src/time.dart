@@ -63,6 +63,7 @@ extension DurationExtension on Duration {
 /// methods return int        --> [daysOfYear], ...
 /// methods return string     --> [toStringDate], ...
 /// methods return date time  --> [normalized], ...
+/// methods return list dates --> [datesGenerateFrom], ...
 ///
 ///
 extension DateTimeExtension on DateTime {
@@ -78,19 +79,42 @@ extension DateTimeExtension on DateTime {
   static const String saturday_inChinese = '（六）';
 
   ///
+  /// [isYearLeapYear]
   ///
+  /// [predicateLeapYear]
   /// [predicateSameYearN], [predicateSameMonthN], [predicateSameDayN], [predicateSameDateN], [predicateSameDate]
   /// [predicateBefore], [predicateAfter]
   /// [predicateIn], [predicateWithin]
+  ///
   /// [anyInvalidWeekday]
   ///
   ///
 
   ///
+  /// [isYearLeapYear]
+  /// [isInvalidMonth]
   ///
+  static bool isYearLeapYear(int year) =>
+      year % 4 == 0
+          ? year % 100 == 0
+              ? year % 400 == 0
+                  ? true
+                  : false
+              : true
+          : false;
+
+  static bool isInvalidMonth(int month) =>
+      month < DateTime.january || month > DateTime.december;
+
+  static bool isValidMonth(int month) => month > 0 && month < 13;
+
+  ///
+  /// [predicateLeapYear]
   /// [predicateSameYearN], ..., [predicateSameDateN]
   /// [predicateSameDate]
   ///
+  static bool predicateLeapYear(DateTime date) => date.isLeapYear;
+
   static bool predicateSameYearN(DateTime? a, DateTime? b) =>
       a == null || b == null ? false : a.year == b.year;
 
@@ -133,6 +157,28 @@ extension DateTimeExtension on DateTime {
   }
 
   ///
+  /// [predicateFalse]
+  /// [predicateToday], [predicateWeekend], [predicateWeekday]
+  ///
+  static bool predicateFalse(DateTime date) => false;
+
+  static bool predicateToday(DateTime date) => date.isSameDate(DateTime.now());
+
+  static bool predicateWeekday(DateTime date) {
+    final day = date.weekday;
+    return day == DateTime.monday ||
+        day == DateTime.tuesday ||
+        day == DateTime.wednesday ||
+        day == DateTime.thursday ||
+        day == DateTime.friday;
+  }
+
+  static bool predicateWeekend(DateTime date) {
+    final day = date.weekday;
+    return day == DateTime.sunday || day == DateTime.saturday;
+  }
+
+  ///
   /// [anyInvalidWeekday]
   ///
   static bool anyInvalidWeekday(Set<int> dates) =>
@@ -140,8 +186,27 @@ extension DateTimeExtension on DateTime {
 
   ///
   ///
-  /// [parseTimestamp], [clamping]
   ///
+  static int monthDaysOf(int year, int month) => switch (month) {
+    1 => 31,
+    2 => isYearLeapYear(year) ? 29 : 28,
+    3 => 31,
+    4 => 30,
+    5 => 31,
+    6 => 30,
+    7 => 31,
+    8 => 31,
+    9 => 30,
+    10 => 31,
+    11 => 30,
+    12 => 31,
+    _ => throw StateError('invalid month $month'),
+  };
+
+  ///
+  ///
+  /// [parseTimestamp], [clamping]
+  /// [max], [min]
   ///
 
   ///
@@ -161,16 +226,58 @@ extension DateTimeExtension on DateTime {
   }
 
   ///
-  /// [isLeapYear]
+  /// [max], [min]
   ///
-  bool get isLeapYear =>
-      year % 4 == 0
-          ? year % 100 == 0
-              ? year % 400 == 0
-                  ? true
-                  : false
-              : true
-          : false;
+  static DateTime max(DateTime date1, DateTime date2) =>
+      date1.isBefore(date2) ? date2 : date1;
+
+  static DateTime min(DateTime date1, DateTime date2) =>
+      date1.isBefore(date2) ? date1 : date2;
+
+  ///
+  /// [daysToDateClampFrom]
+  ///
+  static Generator<DateTime> daysToDateClampFrom(
+    DateTime start,
+    DateTime end, {
+    bool fullWeek = true,
+    int startingWeekday = DateTime.sunday,
+    int times = 1,
+  }) {
+    if (fullWeek) {
+      start = start.firstDateOfWeek(startingWeekday);
+      end = end.firstDateOfWeek(startingWeekday);
+    } else {
+      throw UnimplementedError();
+    }
+    return (days) {
+      final date = DateTime(start.year, start.month, start.day + days * times);
+      return date.isAfter(end) ? end : date;
+    };
+  }
+
+  ///
+  /// [isLeapYear]
+  /// [isSameDate], [isDifferentDate]
+  /// [isSameTime], [isDifferentTime]
+  ///
+  bool get isLeapYear => isYearLeapYear(year);
+
+  bool isSameDate(DateTime another) =>
+      year == another.year && month == another.month && day == another.day;
+
+  bool isDifferentDate(DateTime another) =>
+      year != another.year || month != another.month || day != another.day;
+
+  bool isSameTime(DateTime another) =>
+      hour == another.hour &&
+      minute == another.minute &&
+      second == another.second;
+
+  bool isDifferentTime(DateTime another) =>
+      hour != another.hour ||
+      minute != another.minute ||
+      second != another.second;
 
   ///
   ///
@@ -186,7 +293,7 @@ extension DateTimeExtension on DateTime {
   /// [daysOfYear]
   ///
   int get daysOfYear =>
-      DateTime.utc(year).difference(DateTime.utc(year, month, day)).inDays + 1;
+      DateTime(year).difference(DateTime(year, month, day)).inDays + 1;
 
   ///
   /// [monthDays]
@@ -223,7 +330,7 @@ extension DateTimeExtension on DateTime {
   int get yearDays => isLeapYear ? 365 : 366;
 
   int yearWeekNumber([int startingWeekday = DateTime.sunday]) {
-    final startingDate = DateTime.utc(year);
+    final startingDate = DateTime(year);
     final days = normalized.difference(startingDate).inDays;
     final remains = days % DateTime.daysPerWeek;
     final weeks = days ~/ 7;
@@ -254,13 +361,17 @@ extension DateTimeExtension on DateTime {
   /// [normalized], [clamp]
   /// [firstDateOfMonth], [firstDateOfWeek]
   /// [lastDateOfMonth], [lastDateOfWeek]
-  ///
+  /// [dateOnly], [timeOnly]
+  /// [plus]
+  /// [addYears], [dateAddYears]
+  /// [addMonths], [dateAddMonths]
+  /// [addDays], [dateAddDays]
   ///
 
   ///
   /// [normalized], [clamp]
   ///
-  DateTime get normalized => DateTime.utc(year, month, day);
+  DateTime get normalized => DateTime(year, month, day);
 
   DateTime clamp(DateTime lowerLimit, DateTime upperLimit) {
     if (isBefore(lowerLimit)) return lowerLimit;
@@ -272,15 +383,131 @@ extension DateTimeExtension on DateTime {
   /// [firstDateOfMonth], [firstDateOfWeek]
   /// [lastDateOfMonth], [lastDateOfWeek]
   ///
-  DateTime get firstDateOfMonth => DateTime.utc(year, month);
+  DateTime get firstDateOfMonth => DateTime(year, month);
 
   // in dart, -1 % 7 = 6
   DateTime firstDateOfWeek([int startingDay = DateTime.sunday]) =>
       subtract(DurationExtension.day1 * ((weekday - startingDay) % 7));
 
   DateTime get lastDateOfMonth =>
-      DateTime.utc(year, month + 1).subtract(DurationExtension.day1);
+      DateTime(year, month + 1).subtract(DurationExtension.day1);
 
   DateTime lastDateOfWeek([int startingDay = DateTime.sunday]) =>
       add(DurationExtension.day1 * ((startingDay - 1 - weekday) % 7));
+
+  DateTime get dateOnly => DateTime(year, month, day);
+
+  Duration get timeOnly =>
+      Duration(hours: hour, minutes: minute, seconds: second);
+
+  ///
+  /// [plus]
+  ///
+  DateTime plus({
+    int year = 0,
+    int month = 0,
+    int day = 0,
+    int hour = 0,
+    int minute = 0,
+    int second = 0,
+    int millisecond = 0,
+    int microsecond = 0,
+  }) => DateTime(
+    this.year + year,
+    this.month + month,
+    this.day + day,
+    this.hour + hour,
+    this.minute + minute,
+    this.second + second,
+    this.millisecond + millisecond,
+    this.microsecond + microsecond,
+  );
+
+  ///
+  /// [addYears], [dateAddYears]
+  ///
+  DateTime addYears(
+    int n, {
+    bool keepMonth = true,
+    bool keepDay = true,
+    bool keepHour = false,
+    bool keepMinute = false,
+    bool keepSecond = false,
+    bool keepMillisecond = false,
+    bool keepMicrosecond = false,
+  }) => DateTime(
+    year + n,
+    keepMonth ? month : 0,
+    keepDay ? day : 0,
+    keepHour ? hour : 0,
+    keepMinute ? minute : 0,
+    keepSecond ? second : 0,
+    keepMillisecond ? millisecond : 0,
+    keepMicrosecond ? microsecond : 0,
+  );
+
+  DateTime dateAddYears(int n) => DateTime(year + n, month, day);
+
+  ///
+  /// [addMonths], [dateAddMonths]
+  ///
+  DateTime addMonths(
+    int n, {
+    bool keepDay = true,
+    bool keepHour = false,
+    bool keepMinute = false,
+    bool keepSecond = false,
+    bool keepMillisecond = false,
+    bool keepMicrosecond = false,
+  }) => DateTime(
+    year,
+    month + n,
+    keepDay ? day : 0,
+    keepHour ? hour : 0,
+    keepMinute ? minute : 0,
+    keepSecond ? second : 0,
+    keepMillisecond ? millisecond : 0,
+    keepMicrosecond ? microsecond : 0,
+  );
+
+  DateTime dateAddMonths(int n) => DateTime(year, month + n, day);
+
+  ///
+  /// [addDays], [dateAddDays]
+  ///
+  DateTime dateAddDays(int n) => DateTime(year, month, day + n);
+
+  DateTime addDays(
+    int n, {
+    bool keepHour = false,
+    bool keepMinute = false,
+    bool keepSecond = false,
+    bool keepMillisecond = false,
+    bool keepMicrosecond = false,
+  }) => DateTime(
+    year,
+    month,
+    day + n,
+    keepHour ? hour : 0,
+    keepMinute ? minute : 0,
+    keepSecond ? second : 0,
+    keepMillisecond ? millisecond : 0,
+    keepMicrosecond ? microsecond : 0,
+  );
+
+  ///
+  /// [datesGenerateFrom], [datesGenerate]
+  /// [datesGenerateBegin], [datesGenerateBack]
+  ///
+  List<DateTime> datesGenerateFrom(int length, [int from = 0]) =>
+      List.generate(length, (i) => DateTime(year, month, day + from + i));
+
+  List<DateTime> datesGenerate(int length) =>
+      List.generate(length, (i) => DateTime(year, month, day + i));
+
+  List<DateTime> datesGenerateBegin(int length, [int begin = 0]) =>
+      List.generate(length, (i) => DateTime(year, month, day + begin - i));
+
+  List<DateTime> datesGenerateBack(int length) =>
+      List.generate(length, (i) => DateTime(year, month, day - i));
 }

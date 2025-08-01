@@ -98,7 +98,7 @@ extension ListExtension<T> on List<T> {
   void addIf(Predicator<T> test, T element, [Consumer<T>? onNotAdd]) =>
       test(element) ? add(element) : onNotAdd?.call(element);
 
-  void addIfNotNull(T? element, [Listener? onNull]) =>
+  void addIfNotNull(T? element, [Callback? onNull]) =>
       element != null ? add(element) : onNull?.call();
 
   void addWhen(bool shouldAdd, Supplier<T> supply, [Consumer<T>? onNotAdd]) =>
@@ -111,18 +111,18 @@ extension ListExtension<T> on List<T> {
   ///
   void addAllSupplyIfEmpty(
     Supplier<Iterable<T>> supply, [
-    Listener? onNotEmpty,
+    Callback? onNotEmpty,
   ]) => isEmpty ? addAll(supply()) : onNotEmpty?.call();
 
   void addAllSupplyIfNotEmpty(
     Supplier<Iterable<T>> supply, [
-    Listener? onEmpty,
+    Callback? onEmpty,
   ]) => isNotEmpty ? addAll(supply()) : onEmpty?.call();
 
   void addAllSupplyWhen(
     bool shouldAdd,
     Supplier<Iterable<T>> supply, [
-    Listener? onNotSupply,
+    Callback? onNotSupply,
   ]) => shouldAdd ? addAll(supply()) : onNotSupply?.call();
 
   ///

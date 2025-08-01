@@ -23,7 +23,7 @@ extension IterableComparable<C extends Comparable> on Iterable<C> {
   ///
   ///
   ///
-  void checkSortedForListen(Listener listen, [bool increase = true]) =>
+  void checkSortedForListen(Callback listen, [bool increase = true]) =>
       isSorted(IteratorComparable.comparator(increase))
           ? listen()
           : throw Erroring.comparableDisordered;
@@ -280,7 +280,7 @@ extension Iterable2DComparable<C extends Comparable> on Iterable2D<C> {
   bool everyElementSorted([bool increase = true]) =>
       every((sub) => sub.isSorted(IteratorComparable.comparator(increase)));
 
-  void everyElementSortedThen(Listener listen, [bool increase = true]) =>
+  void everyElementSortedThen(Callback listen, [bool increase = true]) =>
       every((sub) => sub.isSorted(IteratorComparable.comparator(increase)))
           ? listen()
           : throw StateError(Erroring.comparableDisordered);

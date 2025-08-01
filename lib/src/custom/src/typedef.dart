@@ -2,7 +2,7 @@ part of '../custom.dart';
 
 ///
 ///
-/// [Listener]...
+/// [Callback]...
 /// [Applier], ...
 /// [Supplier], ...
 ///
@@ -26,7 +26,7 @@ part of '../custom.dart';
 ///
 ///
 ///
-typedef Listener = void Function();
+typedef Callback = void Function();
 typedef Consumer<T> = void Function(T value);
 typedef Intersector<T> = void Function(T v1, T v2);
 typedef Pairitor<A, B> = void Function(A a, B b);
@@ -126,7 +126,7 @@ typedef Positioned4Double = (double?, double?, double?, double?);
 ///
 ///
 ///
-extension FListener on Listener {
+extension FListener on Callback {
   static void none() {}
 
   Future<void> delayed(Duration duration) => Future.delayed(duration, this);

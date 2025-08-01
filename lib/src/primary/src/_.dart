@@ -2,6 +2,7 @@ part of '../primary.dart';
 
 ///
 ///
+/// [Developing]
 /// [Erroring]
 /// ----------------
 ///
@@ -16,14 +17,14 @@ part of '../primary.dart';
 ///
 ///
 
-///
-///
-/// [iterableNoElement], ...
-///
-extension Erroring on Object {
-  void printThing([Object? object]) => print(object ?? this);
+extension Developing on Object {
+  ///
+  /// [printThis], [logThis]
+  ///
+  void printThis([Mapper<Object, Object>? mapper]) =>
+      print(mapper?.call(this) ?? this);
 
-  void logThing({
+  void logThis({
     String? message,
     DateTime? time,
     int? sequenceNumber,
@@ -33,7 +34,14 @@ extension Erroring on Object {
     Object? error,
     StackTrace? stackTrace,
   }) => log(message ?? toString());
+}
 
+///
+/// [iterableNoElement], ...
+/// [invalidIndex], ...
+/// [validateMonth], ...
+///
+extension Erroring on Error {
   ///
   /// general
   ///
@@ -83,7 +91,38 @@ extension Erroring on Object {
       ArgumentError('it is impossible to partition $m into $n group');
 
   static Error invalidComparableResult(int value) =>
-      UnsupportedError('comparable value not provided: $value');
+      StateError('comparable value not provided: $value');
+
+  static Error invalidYearMonthsScope(
+    (int, int) monthBegin,
+    (int, int) monthEnd,
+  ) => StateError(
+    'invalid year month scope: '
+    '(${monthBegin.$1}.${monthBegin.$2} ~ ${monthEnd.$1} ~ ${monthEnd.$2})',
+  );
+
+  static Error invalidMonth(int month) => StateError('invalid month: $month');
+
+  static Error invalidRangeBoundary(int begin, int end) =>
+      StateError('invalid range boundary (begin: $begin, end: $end)');
+
+  ///
+  /// [validateMonth], [validateMonthRange]
+  ///
+  static void validateMonth(int month) {
+    if (DateTimeExtension.isInvalidMonth(month)) {
+      throw Erroring.invalidMonth(month);
+    }
+  }
+  static void validateMonthRange(int begin, int end) {
+    if (DateTimeExtension.isInvalidMonth(begin)) {
+      throw Erroring.invalidMonth(begin);
+    }
+    if (DateTimeExtension.isInvalidMonth(end)) {
+      throw Erroring.invalidMonth(end);
+    }
+    if (begin > end) throw Erroring.invalidRangeBoundary(begin, end);
+  }
 }
 
 extension NullableExtension<T> on T? {

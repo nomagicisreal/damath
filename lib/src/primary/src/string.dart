@@ -88,6 +88,25 @@ extension StringExtension on String {
       return '${s[0]}_${s[1].toLowerCase()}';
     },
   );
+
+  String insertEvery(int count, [String insertion = ' ']) {
+    final buffer = StringBuffer();
+    final trail = length - 1;
+    for (var i = 0; i < trail; i++) {
+      buffer.write(this[i]);
+      if ((i + 1) % 8 == 0) buffer.write(insertion);
+    }
+    buffer.write(this[trail]);
+    return buffer.toString();
+  }
+
+  String get reversed {
+    final buffer = StringBuffer();
+    for (var i = length - 1; i > -1; i--) {
+      buffer.write(this[i]);
+    }
+    return buffer.toString();
+  }
 }
 
 ///

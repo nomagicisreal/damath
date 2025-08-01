@@ -109,7 +109,7 @@ extension IteratorDouble on Iterator<double> {
   double get max => reduce(DoubleExtension.reduceMax);
 
   double get mode =>
-      toMapCounted.reduce(MapEntryExtension.reduceMaxValueInt).key;
+      toMapCounted.entries.reduce(MapEntryExtension.reduceMaxValueInt).key;
 
   ///
   /// [range], [boundary]

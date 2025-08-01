@@ -63,21 +63,21 @@ extension StreamExtension<M> on Stream<M> {
 extension TimerExtension on Timer {
   static Timer _nest(
     Duration duration,
-    Listener listener,
-    Iterable<(Duration, Listener)> children,
+    Callback listener,
+    Iterable<(Duration, Callback)> children,
   ) => Timer(duration, () {
     if (children.isNotEmpty) _sequence(children);
     listener();
   });
 
-  static Timer _sequence(Iterable<(Duration, Listener)> elements) {
+  static Timer _sequence(Iterable<(Duration, Callback)> elements) {
     final first = elements.first;
     return _nest(first.$1, first.$2, elements.skip(1));
   }
 
   static Timer sequencing(
     Iterable<Duration> steps,
-    Iterable<Listener> listeners,
+    Iterable<Callback> listeners,
   ) => _sequence(
     steps.iterator.pairMap(listeners.iterator, Record2.mix),
   );
@@ -85,12 +85,12 @@ extension TimerExtension on Timer {
   ///
   ///
   ///
-  static Consumer<Timer> consumer_after(int n, Listener listener) {
+  static Consumer<Timer> consumer_after(int n, Callback listener) {
     int count = 0;
     return (timer) => count < n ? count++ : listener();
   }
 
-  static Consumer<Timer> consumer_until(int n, Listener listener) {
+  static Consumer<Timer> consumer_until(int n, Callback listener) {
     int count = 0;
     return (timer) {
       listener();
@@ -100,7 +100,7 @@ extension TimerExtension on Timer {
     };
   }
 
-  static Consumer<Timer> consumer_period(int period, Listener listener) {
+  static Consumer<Timer> consumer_period(int period, Callback listener) {
     int count = 0;
     void listenIf(bool value) => value ? listener() : null;
     bool shouldListen() => count % period == 0;

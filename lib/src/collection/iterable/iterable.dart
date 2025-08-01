@@ -80,13 +80,13 @@ extension IterableExtension<I> on Iterable<I> {
   void pair(
     Iterable<I> another,
     Intersector<I> paring, [
-    Listener? onSizeDiff,
+    Callback? onSizeDiff,
   ]) =>
       length == another.length
           ? iterator.pair(another.iterator, paring)
           : onSizeDiff?.call();
 
-  void copyInto(List<I> out, {Listener? onOutLarger, Listener? onOutSmaller}) =>
+  void copyInto(List<I> out, {Callback? onOutLarger, Callback? onOutSmaller}) =>
       length == out.length
           ? iterator.consumeAllByIndex((value, i) => out[i] = value)
           : out.length > length

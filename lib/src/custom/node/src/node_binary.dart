@@ -31,12 +31,12 @@ typedef NodeBinaryConstructor<T, N extends NodeBinary<T, N>> =
 ///
 /// property:
 /// [previous], ...
+/// [binarySize], ...
 ///
 /// static methods:
 /// [toString], ...
 /// [iterableFrom], ...
 /// [any], ...
-/// [_balance], ...
 ///
 abstract final class NodeBinary<T, N extends NodeBinary<T, N>>
     extends NodeNext<T, N> {
@@ -44,6 +44,13 @@ abstract final class NodeBinary<T, N extends NodeBinary<T, N>>
 
   set previous(covariant NodeBinary<T, N>? node) =>
       throw UnsupportedError(NodeNext.tryToModifyFixed);
+
+  int get binarySize {
+    var i = 1;
+    i += previous?.binarySize ?? 0;
+    i += next?.binarySize ?? 0;
+    return i;
+  }
 
   @override
   NodeBinary _construct(
@@ -57,20 +64,12 @@ abstract final class NodeBinary<T, N extends NodeBinary<T, N>>
 
   @override
   String toString() =>
-      'NodeBinary(${NodeBinary.size<N>(this as N)}): '
+      'NodeBinary($binarySize): '
       '\n${NodeBinary._string<T, N>(this as N, StringBuffer(), '  ')}';
 
   ///
   ///
   ///
-  static int size<N extends NodeBinary<dynamic, N>>(N? node) {
-    if (node == null) return 0;
-    var i = 1;
-    i += size(node.previous);
-    i += size(node.next);
-    return i;
-  }
-
   static StringBuffer _string<T, N extends NodeBinary<T, N>>(
     N node,
     StringBuffer buffer, [

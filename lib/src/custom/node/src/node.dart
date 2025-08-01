@@ -11,6 +11,7 @@ part of '../node.dart';
 ///         --[NodeNextPushable]
 ///         --[NodeNextEnqueueable]
 ///         --[NodeNextSorted]
+///         --todo: node next sorted set
 ///         |
 ///         --[NodeBinary]...
 ///
@@ -65,7 +66,9 @@ abstract class Vertex<T> {
     Generator<T> generator,
     Mapper<T, Vertex<T>> construct,
   ) sync* {
-    for (var i = 0; i < length; i++) yield construct(generator(i));
+    for (var i = 0; i < length; i++) {
+      yield construct(generator(i));
+    }
   }
 
   const Vertex();
@@ -94,7 +97,7 @@ abstract class Vertex<T> {
 abstract final class NodeNext<T, N extends NodeNext<T, N>> extends Vertex<T> {
   N? get next;
 
-  set next(covariant NodeNext<T, N>? node) =>
+  set next(covariant N? node) =>
       throw UnsupportedError(NodeNext.tryToModifyFixed);
 
   ///
@@ -115,16 +118,14 @@ abstract final class NodeNext<T, N extends NodeNext<T, N>> extends Vertex<T> {
   ///
   NodeNext _construct(T data, NodeNext? next);
 
+  ///
+  /// [toString], [_string]
+  ///
   @override
   String toString() =>
-      'Node(${NodeNext.lengthOf<N>(this as N)}): '
+      'Node($length): '
       '${NodeNext._string<T, N>(this as N)}';
 
-  const NodeNext();
-
-  ///
-  ///
-  ///
   static StringBuffer _string<T, N extends NodeNext<T, N>>(
     N node, {
     String prefix = '[',
@@ -141,70 +142,10 @@ abstract final class NodeNext<T, N extends NodeNext<T, N>> extends Vertex<T> {
         )
         ..write(suffix);
 
-  static const String tryToModifyFixed = 'try to modify fixed node';
-
-  static bool isGrowable<N extends NodeNext<dynamic, N>>(N node) {
-    try {
-      node.next = node.next;
-      return true;
-    } on StateError catch (e) {
-      if (e.message == NodeNext.tryToModifyFixed) return false;
-      rethrow;
-    }
-  }
+  const NodeNext();
 
   ///
-  ///
-  ///
-  static int lengthOf<N extends NodeNext<dynamic, N>>(N? node) {
-    var i = 0;
-    for (; node != null; i++, node = node.next) {}
-    return i;
-  }
-
-  static N lastOf<T, N extends NodeNext<T, N>>(N node) {
-    while (true) {
-      final next = node.next;
-      if (next == null) return node;
-      node = next;
-    }
-  }
-
-  static N indexOf<N extends NodeNext<dynamic, N>>(N node, int index) {
-    if (index.isNegative) throw Erroring.invalidIndex(index);
-    for (var i = 0; i < index; i++) {
-      node = node.next ?? (throw Erroring.invalidIntOver(i));
-    }
-    return node;
-  }
-
-  ///
-  /// prevent redundant functionality in [IteratorExtension], ...
-  ///
-  static Iterable<T> iterableFrom<T, N extends NodeNext<T, N>>(
-    N? node,
-    Mapper<N, N?> mapNext,
-  ) sync* {
-    for (; node != null; node = mapNext(node)) yield node.data;
-  }
-
-  static void mapAllData<T, N extends NodeNext<T, N>>(
-    N? node,
-    Mapper<N, N?> mapNext,
-    Mapper<T, T> map,
-  ) {
-    for (; node != null; node = mapNext(node)) node.data = map(node.data);
-  }
-
-  ///
-  /// [generate] between 0 ~ [length]-1.
-  ///
-  /// for example,
-  ///   [inOrder] = true
-  ///   [length] = 5
-  ///   [value] = (i) => i
-  ///   [construct] = (i) => [NodeNextInsertable.immutable]
-  /// returns Node(10): [0]--[1]--[2]--[3]--[4]
+  /// [generate]
   ///
   static N generate<T, N extends NodeNext<T, N>>({
     bool inOrder = true,
@@ -222,6 +163,140 @@ abstract final class NodeNext<T, N extends NodeNext<T, N>> extends Vertex<T> {
       node = construct(i)(value(i), node);
     }
     return node;
+  }
+
+  ///
+  /// [tryToModifyFixed], [isGrowable]
+  ///
+  static const String tryToModifyFixed = 'try to modify fixed node';
+
+  bool get isGrowable {
+    try {
+      this.next = this.next;
+      return true;
+    } on StateError catch (e) {
+      if (e.message == NodeNext.tryToModifyFixed) return false;
+      rethrow;
+    }
+  }
+
+  ///
+  /// [length], [last]
+  ///
+  int get length {
+    int i = 0;
+    for (N? node = this as N; node != null; i++, node = node.next) {}
+    return i;
+  }
+
+  ///
+  /// [indexOf], [last] (operator [] and []= see [NodeNextOperatable])
+  ///
+  static N indexOf<T, N extends NodeNext<T, N>>(N node, int index) {
+    if (index.isNegative) throw Erroring.invalidIndex(index);
+    for (var i = 0; i < index; i++) {
+      node = node.next ?? (throw Erroring.invalidIntOver(i));
+    }
+    return node;
+  }
+
+  N get last {
+    N node = this as N;
+    while (true) {
+      final next = node.next;
+      if (next == null) return node;
+      node = next;
+    }
+  }
+
+  ///
+  /// [toIterableData]
+  ///
+  Iterable<T> get toIterableData sync* {
+    for (N? node = this as N; node != null; node = node.next) {
+      yield node.data;
+    }
+  }
+
+  ///
+  /// [updateAllData]
+  ///
+  void updateAllData(Mapper<T, T> map) {
+    for (N? node = this as N; node != null; node = node.next) {
+      node.data = map(node.data);
+    }
+  }
+
+  ///
+  /// [generate] between 0 ~ [length]-1.
+  ///
+  /// for example,
+  ///   [inOrder] = true
+  ///   [length] = 5
+  ///   [value] = (i) => i
+  ///   [construct] = (i) => [NodeNextInsertable.immutable]
+  /// returns Node(10): [0]--[1]--[2]--[3]--[4]
+  ///
+
+  ///
+  ///
+  /// [nextContains]
+  /// [nextNodeFrom]
+  /// [nextCutFirst]
+  ///
+  ///
+
+  ///
+  /// [nextContains]
+  ///
+  bool nextContains(T value) {
+    for (N? node = this as N; node != null; node = node.next) {
+      if (value == node.data) return true;
+    }
+    return false;
+  }
+
+  ///
+  /// [nextNodeFrom]
+  ///
+  N? nextNodeFrom(T value) {
+    for (
+      N? current = this as N, next = current.next;
+      next != null;
+      current = next, next = next.next
+    ) {
+      if (value == current?.data) return current;
+    }
+    return null;
+  }
+
+  ///
+  /// [nextCutFirst] for example:
+  /// ```dart
+  /// print(node); // A - A - B - B - C - C
+  /// print(node.cutFirst(B)); // false
+  /// print(node); // A - A - B - C - C
+  ///
+  /// print(node2); // B - B - C - C
+  /// if (node2.cutFirst(B)) { // true
+  ///   node2 = node2.next;
+  /// }
+  /// print(node2); // B - C - C
+  /// ```
+  ///
+  bool nextCutFirst(T value) {
+    if (value == data) return false;
+    for (
+      N? current = this as N, next = current.next, nextNext = next?.next;
+      next != null;
+      current = next, next = next.next, nextNext = next?.next
+    ) {
+      if (value == next.data) {
+        current?.next = nextNext;
+        return true;
+      }
+    }
+    return true;
   }
 }
 
@@ -271,7 +346,7 @@ abstract final class NodeNextOperatable<T>
   //
   @override
   T operator [](int index) =>
-      NodeNext.indexOf<NodeNextOperatable<T>>(this, index).data;
+      NodeNext.indexOf<T, NodeNextOperatable<T>>(this, index).data;
 
   @override
   void operator []=(int index, T element) =>
@@ -282,8 +357,7 @@ abstract final class NodeNextOperatable<T>
 
   @override
   void operator +(covariant T tail) =>
-      NodeNext.lastOf<T, NodeNextOperatable<T>>(this).next =
-          _construct(tail, null) as NodeNextOperatable<T>;
+      last.next = _construct(tail, null) as NodeNextOperatable<T>;
 
   ///
   ///
@@ -396,7 +470,8 @@ abstract final class NodeNextEnqueueable<T>
 /// [NodeNextSorted] is the concise version of [NodeNextEnqueueable] for [Comparable]
 ///
 abstract final class NodeNextSorted<C extends Comparable>
-    extends NodeNext<C, NodeNextSorted<C>> with _M_VertexComparable<C>
+    extends NodeNext<C, NodeNextSorted<C>>
+    with _M_VertexComparable<C>
     implements
         _I_NodeNextFinal<NodeNextSorted<C>>,
         _I_NodeNextContainer<C, NodeNextSorted<C>>,

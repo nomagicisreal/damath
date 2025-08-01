@@ -36,7 +36,7 @@ abstract final class NodeWriter {
   /// Notice that the [NodeNext.next] must [NodeNext.beGrowable] on the last node of [head]
   ///
   static N next_append<T, N extends NodeNext<T, N>>(N head, N? tail) =>
-      NodeNext.lastOf<T, N>(head)..next = tail;
+      head.last..next = tail;
 
   ///
   /// [NodeWriter.next_pushInsert] for example,

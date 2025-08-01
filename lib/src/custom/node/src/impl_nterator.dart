@@ -38,7 +38,7 @@ mixin _M_Nterator<T, N extends NodeNext<T, N>> implements Iterator<T> {
 
   int get length {
     final node = _node;
-    return node == null ? 0 : NodeNext.lengthOf(node);
+    return node == null ? 0 : node.length;
   }
 
   bool get isEmpty => _node == null;
