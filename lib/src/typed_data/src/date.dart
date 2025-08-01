@@ -17,16 +17,16 @@ part of '../typed_data.dart';
 class DatesContainer {
   final Map<(int, int), Uint32List> _bits;
 
-  const DatesContainer.empty() : _bits = const {};
+  const DatesContainer(this._bits);
 
-  DatesContainer._(this._bits);
+  DatesContainer.empty() : _bits = {};
 
-  factory DatesContainer.from(DateTime date) => DatesContainer._({
+  factory DatesContainer.from(DateTime date) => DatesContainer({
     (date.year, date.month): Uint32List(1)..[0] = 1 << date.day - 1,
   });
 
   factory DatesContainer.fromIterable(Iterable<DateTime> dates) =>
-      DatesContainer._(
+      DatesContainer(
         dates.fold(
           <(int, int), Uint32List>{},
           (bits, date) => bits..setBit((date.year, date.month), date.day - 1),
