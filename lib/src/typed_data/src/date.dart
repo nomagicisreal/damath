@@ -10,11 +10,14 @@ part of '../typed_data.dart';
 ///
 ///
 /// [comparator], [toString], [dates]
-/// [include], [exclude], [contains], [reset]
+/// [include], [exclude]
+/// [contains], [reset]
 ///
 ///
 class DatesContainer {
   final Map<(int, int), Uint32List> _bits;
+
+  const DatesContainer.empty() : _bits = const {};
 
   DatesContainer._(this._bits);
 
@@ -157,14 +160,13 @@ class DatesContainer {
   }
 
   ///
+  /// [reset]
   ///
+  void reset() => _bits.clear();
+
   ///
-  Uint32List include(DateTime date) =>
-      _bits.setBit((date.year, date.month), date.day - 1);
-
-  Uint32List? exclude(DateTime date) =>
-      _bits.clearBit((date.year, date.month), date.day - 1);
-
+  /// [contains], [isEmpty], [isNotEmpty]
+  ///
   bool contains(DateTime date) {
     final list = _bits[(date.year, date.month)];
     if (list == null) return false;
@@ -177,7 +179,18 @@ class DatesContainer {
     return bits & 1 == 1;
   }
 
-  void reset() => _bits.clear();
+  bool get isEmpty => _bits.isEmpty;
+
+  bool get isNotEmpty => _bits.isNotEmpty;
+
+  ///
+  /// [include], [exclude]
+  ///
+  Uint32List include(DateTime date) =>
+      _bits.setBit((date.year, date.month), date.day - 1);
+
+  Uint32List? exclude(DateTime date) =>
+      _bits.clearBit((date.year, date.month), date.day - 1);
 }
 
 ///
