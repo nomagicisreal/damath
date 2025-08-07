@@ -19,7 +19,8 @@ extension RegExpExtension on RegExp {
   ///
   static String wordUntilFor(String source) =>
       RegExp(r'\w+').firstMatch(source)?.group0 ??
-      (throw StateError(Erroring.regexNotMatchAny));
+      (throw StateError(ErrorMessage.regexNotMatchAny));
+
 }
 
 ///

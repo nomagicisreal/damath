@@ -194,11 +194,11 @@ abstract final class NodeBinary<T, N extends NodeBinary<T, N>>
   static bool any<T, N extends NodeBinary<T, N>>(N node, Predicator<T> test) {
     try {
       traversal_cnp<T, N>(node, (data) {
-        if (test(data)) throw Erroring.pass;
+        if (test(data)) throw ErrorMessage.pass;
       });
       return false;
     } on String catch (message) {
-      return message == Erroring.pass;
+      return message == ErrorMessage.pass;
     }
   }
 
@@ -412,7 +412,7 @@ abstract final class NodeBinarySorted<C extends Comparable>
     NodeBinaryConstructor<C, NodeBinarySorted<C>>? constructor,
   }) => list.checkSortedForSupply(() {
     final construct = constructor ?? NodeBinarySorted<C>.mutable;
-    if (list.isEmpty) throw StateError(Erroring.iterableNoElement);
+    if (list.isEmpty) throw StateError(ErrorMessage.iterableNoElement);
 
     // with full size 'previous' node
     NodeBinarySorted<C> child(int from, int count) {
@@ -444,7 +444,7 @@ abstract final class NodeBinaryAvl<C extends Comparable>
 
   factory NodeBinaryAvl.fromSorted(List<C> list, {bool increase = true}) =>
       list.checkSortedForSupply(() {
-        if (list.isEmpty) throw StateError(Erroring.iterableNoElement);
+        if (list.isEmpty) throw StateError(ErrorMessage.iterableNoElement);
 
         NodeBinaryAvl<C>? build(int previous, int next) {
           if (previous > next) return null;

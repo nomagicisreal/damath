@@ -1,5 +1,7 @@
 // the function library size matter. prevent import function by different library.
 
+import 'dart:collection';
+
 void main() async {
   final watch = Stopwatch();
   final process = [
@@ -10,33 +12,37 @@ void main() async {
   print('start');
   for (var i = 0; i < process.length; i++) {
     watch.start();
-    print('way ${i + 1}: ${process[i]()} in ${watch.elapsed}');
+    print('way ${i + 1} returns ${process[i]()} in ${watch.elapsed}');
     watch.reset();
   }
   print('end');
 }
 
+// final int value = 100;
 // final List<double> list = List<double>.generate(
 //   1000,
 //   (i) => RandomExtension.intTo(i + 5).toDouble(),
 // )..sort();
-final int value = 100;
+final Map<String, int> map1 = Map.fromEntries(
+  List.generate(1e6.toInt(), (i) => MapEntry(i.toString(), i))..shuffle(),
+);
+final SplayTreeMap<String, int> mapLogN = SplayTreeMap()..addAll(map1);
 
 ///
 ///
 ///
 String way1() {
   dynamic result = 'finished';
-  for (var i = 1; i < 1e10; i++) {
-    // result = value.testing(value);
+  for (var i = 1; i < 1e1; i++) {
+    result = map1[i.toString()];
   }
   return result.toString();
 }
 
 String way2() {
   dynamic result = 'finished';
-  for (var i = 1; i < 1e10; i++) {
-    // result = IntExt.test(value, value);
+  for (var i = 1; i < 1e1; i++) {
+    result = mapLogN[i.toString()];
   }
   return result.toString();
 }
@@ -48,5 +54,3 @@ String way3() {
   }
   return result.toString();
 }
-
-

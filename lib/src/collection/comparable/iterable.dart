@@ -26,12 +26,12 @@ extension IterableComparable<C extends Comparable> on Iterable<C> {
   void checkSortedForListen(Callback listen, [bool increase = true]) =>
       isSorted(IteratorComparable.comparator(increase))
           ? listen()
-          : throw Erroring.comparableDisordered;
+          : throw ErrorMessage.comparableDisordered;
 
   S checkSortedForSupply<S>(Supplier<S> supply, [bool increase = true]) =>
       isSorted(IteratorComparable.comparator(increase))
           ? supply()
-          : throw Erroring.comparableDisordered;
+          : throw ErrorMessage.comparableDisordered;
 
   ///
   ///
@@ -94,7 +94,7 @@ extension IterableComparable<C extends Comparable> on Iterable<C> {
   ///
   int permutations([bool requireIdentical = false]) {
     if (!isOrdered(strictly: requireIdentical)) {
-      throw StateError(Erroring.comparableDisordered);
+      throw StateError(ErrorMessage.comparableDisordered);
     }
     if (requireIdentical) return IntExtension.factorial(length);
 
@@ -125,12 +125,12 @@ extension IterableComparable<C extends Comparable> on Iterable<C> {
           ? onlyRepeated
               ? iterator.consecutiveRepeated
               : iterator.consecutiveCounted
-          : throw StateError(Erroring.comparableDisordered);
+          : throw StateError(ErrorMessage.comparableDisordered);
 
   Iterable<int> get consecutiveOccurred =>
       isOrdered(strictly: false)
           ? iterator.consecutiveOccurred
-          : throw StateError(Erroring.comparableDisordered);
+          : throw StateError(ErrorMessage.comparableDisordered);
 
   // ///
   // /// [groupToIterable]
@@ -283,5 +283,5 @@ extension Iterable2DComparable<C extends Comparable> on Iterable2D<C> {
   void everyElementSortedThen(Callback listen, [bool increase = true]) =>
       every((sub) => sub.isSorted(IteratorComparable.comparator(increase)))
           ? listen()
-          : throw StateError(Erroring.comparableDisordered);
+          : throw StateError(ErrorMessage.comparableDisordered);
 }

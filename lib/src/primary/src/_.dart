@@ -3,7 +3,9 @@ part of '../primary.dart';
 ///
 ///
 /// [Developing]
-/// [Erroring]
+/// [ErrorMessage]
+/// [ErrorMessage]
+///
 /// ----------------
 ///
 /// [NullableExtension]
@@ -17,12 +19,12 @@ part of '../primary.dart';
 ///
 ///
 
-extension Developing on Object {
+extension Developing on dynamic {
   ///
   /// [printThis], [logThis]
   ///
-  void printThis([Mapper<Object, Object>? mapper]) =>
-      print(mapper?.call(this) ?? this);
+  void printThis([Object? object, Mapper<Object, Object>? mapper]) =>
+      print(object ?? mapper?.call(this) ?? this);
 
   void logThis({
     String? message,
@@ -38,10 +40,8 @@ extension Developing on Object {
 
 ///
 /// [iterableNoElement], ...
-/// [invalidIndex], ...
-/// [validateMonth], ...
 ///
-extension Erroring on Error {
+extension ErrorMessage on Error {
   ///
   /// general
   ///
@@ -71,7 +71,13 @@ extension Erroring on Error {
   static const String unsupportedSwitchCase = 'unsupported switch case';
   static const String numberNatural = 'number is natural';
   static const String regexNotMatchAny = 'regex not match any';
+}
 
+///
+/// [invalidIndex], ...
+/// [validateMonth], ...
+///
+extension Erroring on Error {
   ///
   ///
   ///
@@ -114,6 +120,7 @@ extension Erroring on Error {
       throw Erroring.invalidMonth(month);
     }
   }
+
   static void validateMonthRange(int begin, int end) {
     if (DateTimeExtension.isInvalidMonth(begin)) {
       throw Erroring.invalidMonth(begin);
@@ -140,23 +147,23 @@ extension BoolExtension on bool {
 }
 
 ///
+/// static methods:
+/// [predicateLarger], ...
+///
 /// instance methods:
 /// [squared], ...
 /// [isRangeClose], ...
 /// [digit], ...
 ///
 extension NumExtension on num {
-  int get digit {
-    if (this == 0) return 0;
-    var value = abs();
-    var n = 0;
-    for (; value >= 1; value /= 10, n++) {}
-    return n;
-  }
+  ///
+  ///
+  ///
+  static bool predicate_larger(num a, num b) => a > b;
 
-  num get squared => this * this;
+  static bool predicate_less(num a, num b) => a < b;
 
-  num powBy(num x) => math.pow(x, this);
+  static bool predicate_equal(num a, num b) => a == b;
 
   ///
   ///
@@ -190,6 +197,24 @@ extension NumExtension on num {
 
   bool isUpperOpen(num a, [num? b, num from = double.negativeInfinity]) =>
       b == null ? from <= a && a < this : from < a && a < b && b < this;
+
+  ///
+  ///
+  ///
+  num get squared => this * this;
+
+  num powBy(num x) => math.pow(x, this);
+
+  ///
+  ///
+  ///
+  int get digit {
+    if (this == 0) return 0;
+    var value = abs();
+    var n = 0;
+    for (; value >= 1; value /= 10, n++) {}
+    return n;
+  }
 }
 
 ///

@@ -278,11 +278,20 @@ extension IntExtension on int {
   ///
   ///
   ///
+  static bool predicate_0(int value) => value == 0;
+
   static bool predicate_negative(int value) => value.isNegative;
 
   static bool predicate_positive(int value) => !value.isNegative;
 
-  static bool predicate_0(int value) => value == 0;
+  ///
+  ///
+  ///
+  static bool predicateReduce_larger(int a, int b) => a > b;
+
+  static bool predicateReduce_less(int a, int b) => a < b;
+
+  static bool predicateReduce_equal(int a, int b) => a == b;
 
   ///
   ///

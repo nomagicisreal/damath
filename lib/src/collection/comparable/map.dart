@@ -5,6 +5,7 @@ part of '../collection.dart';
 /// [MapKeyComparable]
 /// [MapValueInt]
 /// [MapValueDouble]
+/// [SplayTreeMapKeyInt]
 ///
 ///
 
@@ -45,4 +46,19 @@ extension MapValueDouble<K> on Map<K, double> {
   /// [plusOn]
   ///
   void plusOn(K key) => update(key, (value) => ++value, ifAbsent: () => 1);
+}
+
+///
+///
+///
+extension SplayTreeMapKeyInt<V> on SplayTreeMap<int, V> {
+  static int? toFirstKey(SplayTreeMap<int, dynamic> field) => field.firstKey();
+
+  static int? toFirstKeyAfter(SplayTreeMap<int, dynamic> field, int key) =>
+      field.firstKeyAfter(key);
+
+  static int? toLastKey(SplayTreeMap<int, dynamic> field) => field.lastKey();
+
+  static int? toLastKeyBefore(SplayTreeMap<int, dynamic> field, int key) =>
+      field.lastKeyBefore(key);
 }

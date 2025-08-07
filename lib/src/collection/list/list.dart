@@ -214,11 +214,11 @@ extension ListExtension<T> on List<T> {
   void setAllFromIterable(Iterable<T> iterable) =>
       length == iterable.length
           ? iterable.iterator.consumeAllByIndex((value, i) => this[i] = value)
-          : throw StateError(Erroring.iterableSizeInvalid);
+          : throw StateError(ErrorMessage.iterableSizeInvalid);
 
   void setAllFromList(List<T> another) {
     if (length == another.length) {
-      throw StateError(Erroring.iterableSizeInvalid);
+      throw StateError(ErrorMessage.iterableSizeInvalid);
     }
     for (var i = 0; i < length; i++) {
       this[i] = another[i];
@@ -373,7 +373,7 @@ extension ListExtension<T> on List<T> {
   ///
   List<S> mapSublist<S>(int begin, Mapper<T, S> mapping, [int? end]) {
     if (length.isUpperClose(begin, end)) {
-      throw StateError(Erroring.iterableBoundaryInvalid);
+      throw StateError(ErrorMessage.iterableBoundaryInvalid);
     }
     final bound = end ?? length;
     return [for (var i = begin; i < bound; i++) mapping(this[i])];
@@ -385,7 +385,7 @@ extension ListExtension<T> on List<T> {
     int? end,
   ]) {
     if (length.isUpperClose(begin, end)) {
-      throw StateError(Erroring.iterableBoundaryInvalid);
+      throw StateError(ErrorMessage.iterableBoundaryInvalid);
     }
     final bound = end ?? length;
     return [for (var i = begin; i < bound; i++) mapping(this[i], i)];

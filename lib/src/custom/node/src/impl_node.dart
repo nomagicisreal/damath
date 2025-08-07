@@ -58,19 +58,19 @@ base mixin _M_VertexComparable<C extends Comparable> on Vertex<C> {
 base mixin _M_VertexNullable<T> on Vertex<T> {
   T? get _data;
 
-  set _data(T? value) => throw UnsupportedError(Erroring.modifyImmutable);
+  set _data(T? value) => throw UnsupportedError(ErrorMessage.modifyImmutable);
 
   @override
   set data(T value) => _data = value;
 
   @override
-  T get data => _data ?? (throw UnsupportedError(Erroring.receiveNull));
+  T get data => _data ?? (throw UnsupportedError(ErrorMessage.receiveNull));
 
   // static T? dataOrNull<T, V extends Vertex<T>>(V? vertex) {
   //   try {
   //     return vertex?.data;
   //   } on StateError catch (e) {
-  //     if (e.message == Erroring.receiveNull) return null;
+  //     if (e.message == ErrorMessage.receiveNull) return null;
   //     rethrow;
   //   }
   // }
@@ -79,7 +79,7 @@ base mixin _M_VertexNullable<T> on Vertex<T> {
     try {
       return vertex?.data.toString();
     } on StateError catch (e) {
-      if (e.message == Erroring.receiveNull) return null;
+      if (e.message == ErrorMessage.receiveNull) return null;
       rethrow;
     }
   }

@@ -11,8 +11,7 @@ part of '../collection.dart';
 /// instance methods:
 /// void callback             --> [pair], ...
 /// return bool               --> [containsAll], ...
-/// return int                --> [lengthOf], ...
-/// return string             --> [joinToLines], ...
+/// return int                --> [cardinality], ...
 /// reduce current type item  --> [reduceTogether], ...
 /// return typed item         --> [foldWith], ...
 /// return iterable           --> [takeOn], ...
@@ -47,7 +46,7 @@ extension IterableExtension<I> on Iterable<I> {
       a.length == b.length
           ? a.iterator.pairAny(b.iterator, FPredicatorFusionor.isDifferent)
           : onSizeDiff?.call() ??
-              (throw StateError(Erroring.iterableSizeInvalid));
+              (throw StateError(ErrorMessage.iterableSizeInvalid));
 
   ///
   /// [lengthOf], [cardinalityOf]
@@ -144,19 +143,19 @@ extension IterableExtension<I> on Iterable<I> {
       length == another.length
           ? iterator.pairAny(another.iterator, test)
           : onSizeDiff?.call() ??
-              (throw StateError(Erroring.iterableSizeInvalid));
+              (throw StateError(ErrorMessage.iterableSizeInvalid));
 
   bool anyWithEqual(Iterable<I> another, [Supplier<bool>? onSizeDiff]) =>
       length == another.length
           ? iterator.pairAny(another.iterator, FPredicatorFusionor.isEqual)
           : onSizeDiff?.call() ??
-              (throw StateError(Erroring.iterableSizeInvalid));
+              (throw StateError(ErrorMessage.iterableSizeInvalid));
 
   bool anyWithDifferent(Iterable<I> another, [Supplier<bool>? onSizeDiff]) =>
       length == another.length
           ? iterator.pairAny(another.iterator, FPredicatorFusionor.isDifferent)
           : onSizeDiff?.call() ??
-              (throw StateError(Erroring.iterableSizeInvalid));
+              (throw StateError(ErrorMessage.iterableSizeInvalid));
 
   ///
   /// [cardinality]
@@ -179,7 +178,7 @@ extension IterableExtension<I> on Iterable<I> {
       length == another.length
           ? iterator.pairForcer(another.iterator, initialize, collapse)
           : onSizeDiff?.call() ??
-              (throw StateError(Erroring.iterableSizeInvalid));
+              (throw StateError(ErrorMessage.iterableSizeInvalid));
 
   ///
   /// [foldWith]
@@ -192,7 +191,7 @@ extension IterableExtension<I> on Iterable<I> {
   ) =>
       length == another.length
           ? iterator.pairFold(initialValue, another.iterator, companion)
-          : throw StateError(Erroring.iterableSizeInvalid);
+          : throw StateError(ErrorMessage.iterableSizeInvalid);
 
   S foldTogether<E, S>(
     S initialValue,
@@ -211,7 +210,7 @@ extension IterableExtension<I> on Iterable<I> {
               companionAnother(value, b),
             ),
           )
-          : throw StateError(Erroring.iterableSizeInvalid);
+          : throw StateError(ErrorMessage.iterableSizeInvalid);
 
   ///
   ///
@@ -227,11 +226,11 @@ extension IterableExtension<I> on Iterable<I> {
   Iterable<I> takeOn(Iterable<bool> where) =>
       length == where.length
           ? where.iterator.takeFor(iterator)
-          : throw StateError(Erroring.iterableSizeInvalid);
+          : throw StateError(ErrorMessage.iterableSizeInvalid);
 
   Iterable<I> sub(int start, [int? end]) =>
       length.isUpperClose(start, end)
-          ? throw StateError(Erroring.iterableBoundaryInvalid)
+          ? throw StateError(ErrorMessage.iterableBoundaryInvalid)
           : iterator.sub(start, end ?? length);
 
   ///
@@ -243,7 +242,7 @@ extension IterableExtension<I> on Iterable<I> {
   ) =>
       length == another.length
           ? iterator.pairExpand(another.iterator, expanding)
-          : throw StateError(Erroring.iterableSizeInvalid);
+          : throw StateError(ErrorMessage.iterableSizeInvalid);
 
   Iterable<I> expandTogether<E>(
     Iterable<E> another,
@@ -256,7 +255,7 @@ extension IterableExtension<I> on Iterable<I> {
             another.iterator,
             (p, q) => reducing(expanding(p), expandingAnother(q)),
           )
-          : throw StateError(Erroring.iterableSizeInvalid);
+          : throw StateError(ErrorMessage.iterableSizeInvalid);
 
   ///
   /// [interval], [takeFor]
@@ -264,12 +263,12 @@ extension IterableExtension<I> on Iterable<I> {
   Iterable<S> interval<T, S>(Iterable<T> another, Linker<I, T, S> link) =>
       another.length + 1 == length
           ? iterator.pairInterval(another.iterator, link)
-          : throw StateError(Erroring.iterableSizeInvalid);
+          : throw StateError(ErrorMessage.iterableSizeInvalid);
 
   Iterable<I> takeFor(Iterable<bool> positions) =>
       positions.length == length
           ? positions.iterator.takeFor(iterator)
-          : throw StateError(Erroring.iterableSizeInvalid);
+          : throw StateError(ErrorMessage.iterableSizeInvalid);
 
   ///
   /// [mapToListWhere]

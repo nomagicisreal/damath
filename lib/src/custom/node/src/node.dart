@@ -301,8 +301,7 @@ abstract final class NodeNext<T, N extends NodeNext<T, N>> extends Vertex<T> {
 }
 
 ///
-/// it's a general node type that can be used together with [NodeReader] static functions.
-/// some [NodeWriter] functions are allowed together if [NodeNextInstance] is not immutable.
+/// [NodeNextInstance] is a general node type.
 ///
 abstract final class NodeNextInstance<T>
     extends NodeNext<T, NodeNextInstance<T>>
@@ -323,7 +322,7 @@ abstract final class NodeNextInstance<T>
 }
 
 ///
-/// it's a node type containing other node type, indicating its usecase is finished.
+/// [NodeNextContainer] is a node type containing other node type, indicating its usecase is finished.
 ///
 abstract final class NodeNextContainer<T, N extends NodeNext<T, N>>
     extends NodeNext<T, N> {

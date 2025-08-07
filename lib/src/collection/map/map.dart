@@ -252,7 +252,7 @@ extension MapExtension<K, V> on Map<K, V> {
   ///   1. return [absentReturn] if key is absent
   ///   2. [value] equal to old value returns `false`
   ///   3. update old value to new [value] returns `true`
-  /// see also [MapValueSet.inputSet], [Set.add]
+  /// see also [predicateInputYet], ..., [MapValueSet.inputSet], [Set.add], ...
   ///
   bool input(K key, V value, [bool absentReturn = true]) {
     var vOld = this[key];

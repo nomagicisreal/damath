@@ -108,6 +108,14 @@ extension DateTimeExtension on DateTime {
 
   static bool isValidMonth(int month) => month > 0 && month < 13;
 
+  static bool isInvalidHour(int hour) => hour < 0 || hour > 23;
+
+  static bool isValidHour(int hour) => hour > -1 && hour < 24;
+
+  static bool isValidMonthDynamic(dynamic month) => month > 0 && month < 13;
+
+  static bool isValidHourDynamic(dynamic hour) => hour > -1 && hour < 24;
+
   ///
   /// [predicateLeapYear]
   /// [predicateSameYearN], ..., [predicateSameDateN]

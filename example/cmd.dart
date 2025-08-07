@@ -1,10 +1,13 @@
 // ignore_for_file: unused_import, unused_local_variable, prefer_typing_uninitialized_variables
+import 'dart:math' as math;
+import 'dart:collection';
 import 'dart:developer';
+import 'dart:typed_data';
 
 import 'package:damath/damath.dart';
-import 'package:damath/src/typed_data/typed_data.dart';
 
 void main(List<String> arguments) {
+  final buffer = StringBuffer();
   // final list = List.generate(10, FKeep.applier);
   // final node =
   //     NodeBinaryAvl<int>.fromSorted(list)
@@ -15,13 +18,21 @@ void main(List<String> arguments) {
   //       // ..push(53113)
   // ;
   // print(node);
-  final container = DatesContainer.fromIterable(
-    Iterable.generate(
-      10,
-      (i) => DateTime.now().add(Duration(days: RandomExtension.intTo(50) - 1)),
-    ),
+
+  final list = Uint8List(3);
+  list[0] = 1 << 5;
+  list[1] = 1 << 3;
+  list[2] = 1 << 0;
+  print(
+    list.iterator
+        .reduce((byte0, byte) => (byte0 << 8) | byte)
+        .toRadixString(2)
+        .padLeft(24, '0')
+        .insertEvery(8),
+    // (1 << 63).toRadixString(2),
+    // list.iterator.joinMapped(
+    //   ' ',
+    //   (byte) => byte.toRadixString(2).padLeft(8, '0'),
+    // ),
   );
-  print(container);
-  print(container.contains(DateTime.now()));
-  print(container.dates.join('\n'));
 }

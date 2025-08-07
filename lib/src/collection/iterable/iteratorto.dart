@@ -30,11 +30,11 @@ extension IteratorTo<I> on Iterator<I> {
   /// [supplyMoveNext], [supplyLead]
   ///
   S supplyMoveNext<S>(Supplier<S> supply) =>
-      moveNext() ? supply() : throw StateError(Erroring.iterableNoElement);
+      moveNext() ? supply() : throw StateError(ErrorMessage.iterableNoElement);
 
   S supplyLead<S>(int ahead, Supplier<S> supply) {
     for (var i = -1; i < ahead; i++) {
-      if (!moveNext()) throw StateError(Erroring.iterableNoElement);
+      if (!moveNext()) throw StateError(ErrorMessage.iterableNoElement);
     }
     return supply();
   }
@@ -46,7 +46,7 @@ extension IteratorTo<I> on Iterator<I> {
     while (moveNext()) {
       if (test(current)) return toVal(current);
     }
-    throw StateError(Erroring.iterableElementNotFound);
+    throw StateError(ErrorMessage.iterableElementNotFound);
   }
 
   T mapFoundOr<T>(Predicator<I> test, Mapper<I, T> toVal, Supplier<T> orElse) {
@@ -117,6 +117,18 @@ extension IteratorTo<I> on Iterator<I> {
       ele = after(ele, current);
     }
     return val;
+  }
+
+  ///
+  /// [foldSkip]
+  ///
+  T foldSkip<T>(T initialValue, Companion<T, I> companion, Predicator<I> skip) {
+    var value = initialValue;
+    while (moveNext()) {
+      if (skip(current)) continue;
+      value = companion(value, current);
+    }
+    return value;
   }
 
   ///
@@ -333,7 +345,7 @@ extension IteratorTo<I> on Iterator<I> {
         T() => list..add(element),
         Iterable<T>() => list..addAll(element),
         Iterable<Iterable>() => list..addAll(element.iterator.foldNested<T>()),
-        _ => throw StateError(Erroring.iterableElementNotNest),
+        _ => throw StateError(ErrorMessage.iterableElementNotNest),
       },
     );
   }

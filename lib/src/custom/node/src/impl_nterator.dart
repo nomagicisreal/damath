@@ -18,7 +18,7 @@ mixin _M_Nterator<T, N extends NodeNext<T, N>> implements Iterator<T> {
 
   @override
   T get current =>
-      _node?.data ?? (throw StateError(Erroring.iterableNoElement));
+      _node?.data ?? (throw StateError(ErrorMessage.iterableNoElement));
 
   ///
   ///

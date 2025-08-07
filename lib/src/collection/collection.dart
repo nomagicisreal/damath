@@ -3,6 +3,7 @@
 ///
 library;
 
+import 'dart:collection' show SplayTreeMap;
 import 'dart:math' as math;
 import 'package:collection/collection.dart' as collection;
 import 'package:damath/src/custom/custom.dart';

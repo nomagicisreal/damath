@@ -6,8 +6,9 @@ part of '../primary.dart';
 /// statics usages:
 /// [sqrt2], ...
 /// [radian_angle1], ..., [radian_fromAngle], ...
-/// [proximateInfinityOf], ...
 /// [predicateFinite], ...
+/// [applyKeep], ...
+/// [applierPlus], ...
 /// [lerp], ...
 ///
 /// instance usages:
@@ -77,21 +78,6 @@ extension DoubleExtension on double {
 
   ///
   ///
-  /// static methods
-  ///
-  ///
-
-  ///
-  /// [proximateInfinityOf], [proximateNegativeInfinityOf]
-  ///
-  static double proximateInfinityOf(double precision) =>
-      1.0 / math.pow(0.1, precision);
-
-  static double proximateNegativeInfinityOf(double precision) =>
-      -1.0 / math.pow(0.1, precision);
-
-  ///
-  ///
   /// [predicateFinite], [predicateInfinite]
   /// [predicateInt], [predicateNearlyInt]
   /// [predicateZero], [predicatePositive], [predicateNegative], [predicateNaN]
@@ -114,18 +100,11 @@ extension DoubleExtension on double {
 
   ///
   ///
-  ///
-  /// applier
-  /// [applyKeep], [applyZero]
-  /// [applyOnPlus], [applyOnMinus], [applyOnMultiply], [applyOnDivided], [applyOnMod]
-  /// [applyOnTimesFactor]
-  /// [applyOnPeriod]
-  ///
-  ///
-
-  ///
+  /// apply
   /// [applyKeep], [applyZero], [applyNegate], [applyRound]
-  /// [applyOnPlus], [applyOnMinus], [applyOnMultiply], [applyOnDivided]
+  /// [applyLerpTriangleDown], [applyLerpTriangleTop]
+  /// [applyProximateInfinity], [applyProximateNegativeInfinity]
+  ///
   ///
   static double applyKeep(double v) => v;
 
@@ -135,24 +114,47 @@ extension DoubleExtension on double {
 
   static double applyRound(double v) => v.roundToDouble();
 
-  static Applier<double> applyOnPlus(double value) => (v) => v + value;
+  static double applyLerpTriangleDown(double value) => (1 - 2 * value).abs();
 
-  static Applier<double> applyOnMinus(double value) => (v) => v - value;
+  static double applyLerpTriangleTop(double value) =>
+      (1 - (1 - 2 * value).abs());
 
-  static Applier<double> applyOnMultiply(double value) => (v) => v * value;
+  static double applyProximateInfinity(double precision) =>
+      1.0 / math.pow(0.1, precision);
 
-  static Applier<double> applyOnDivided(double value) => (v) => v / value;
+  static double applyProximateNegativeInfinity(double precision) =>
+      -1.0 / math.pow(0.1, precision);
 
-  static Applier<double> applyOnMod(double value) => (v) => v % value;
+  ///
+  ///
+  /// applier
+  /// [applierPlus], [applierMinus], [applierMultiply], [applierDivided], [applierMod]
+  /// [applierTimesFactor]
+  /// [applierPeriod]
+  ///
+  ///
 
-  static Applier<double> applyOnDividedToInt(double value) =>
+  ///
+  /// [applierPlus], [applierMinus], [applierMultiply], [applierDivided]
+  ///
+  static Applier<double> applierPlus(double value) => (v) => v + value;
+
+  static Applier<double> applierMinus(double value) => (v) => v - value;
+
+  static Applier<double> applierMultiply(double value) => (v) => v * value;
+
+  static Applier<double> applierDivided(double value) => (v) => v / value;
+
+  static Applier<double> applierMod(double value) => (v) => v % value;
+
+  static Applier<double> applierDividedToInt(double value) =>
       (v) => (v ~/ value).toDouble();
 
   ///
-  /// [applyOnTimesFactor]
-  /// [applyOnPeriod]
+  /// [applierTimesFactor]
+  /// [applierPeriod]
   ///
-  static Applier<double> applyOnTimesFactor(
+  static Applier<double> applierTimesFactor(
     double times,
     double factor, [
     Applier<double> transform = math.sin,
@@ -163,7 +165,7 @@ extension DoubleExtension on double {
 
   // sin period: (0 ~ 1 ~ 0 ~ -1 ~ 0)
   // cos period: (1 ~ 0 ~ -1 ~ 0 ~ 1)
-  static Applier<double> applyOnPeriod(
+  static Applier<double> applierPeriod(
     double period, [
     Applier<double> transform = math.sin,
   ]) {
@@ -212,8 +214,8 @@ extension DoubleExtension on double {
   /// [clampDouble]
   ///
   double filterInfinity(double precision) => switch (this) {
-    double.infinity => proximateInfinityOf(precision),
-    double.negativeInfinity => proximateNegativeInfinityOf(precision),
+    double.infinity => applyProximateInfinity(precision),
+    double.negativeInfinity => applyProximateNegativeInfinity(precision),
     _ => this,
   };
 

@@ -5,6 +5,7 @@ part of '../collection.dart';
 /// void callback             --> [consumeHasNext], ...
 /// return bool               --> [any], ...
 /// return int                --> [indexFound], ...
+/// return String             --> [join], ...
 /// return current type item  --> [first], ...
 /// return iterable           --> [take], ...
 /// return iterable int       --> [indexesWhere], ...
@@ -32,7 +33,7 @@ extension IteratorExtension<I> on Iterator<I> {
   void consumeMoveNext(Consumer<I> consume) =>
       moveNext()
           ? consume(current)
-          : throw StateError(Erroring.iterableNoElement);
+          : throw StateError(ErrorMessage.iterableNoElement);
 
   ///
   /// [consumeFound], [consumeWhere]
@@ -41,7 +42,7 @@ extension IteratorExtension<I> on Iterator<I> {
     while (moveNext()) {
       if (test(current)) return action(current);
     }
-    throw StateError(Erroring.iterableElementNotFound);
+    throw StateError(ErrorMessage.iterableElementNotFound);
   }
 
   void consumeWhere(Predicator<I> test, Consumer<I> action) {
@@ -268,7 +269,7 @@ extension IteratorExtension<I> on Iterator<I> {
       if (test(current)) return i;
       i++;
     }
-    throw StateError(Erroring.iterableElementNotFound);
+    throw StateError(ErrorMessage.iterableElementNotFound);
   }
 
   int indexFoundChecked(PredicatorGenerator<I> test) {
@@ -277,7 +278,7 @@ extension IteratorExtension<I> on Iterator<I> {
       if (test(current, i)) return i;
       i++;
     }
-    throw StateError(Erroring.iterableElementNotFound);
+    throw StateError(ErrorMessage.iterableElementNotFound);
   }
 
   ///
@@ -304,10 +305,26 @@ extension IteratorExtension<I> on Iterator<I> {
       T() => 1,
       Iterable<T>() => element.length,
       Iterable<Iterable>() => element.iterator.cumulateLengthNested<T>(),
-      _ => throw StateError(Erroring.iterableElementNotNest),
+      _ => throw StateError(ErrorMessage.iterableElementNotNest),
     },
     IntExtension.reduce_plus,
   );
+
+  ///
+  ///
+  ///
+  String join([String separator = ' ', Mapper<I, String>? map]) =>
+      supplyMoveNext(() {
+        final mapping = map ?? (item) => item.toString();
+        final buffer = StringBuffer();
+        var val = current;
+        while (moveNext()) {
+          buffer.write('${mapping(val)}$separator');
+          val = current;
+        }
+        buffer.write(mapping(val));
+        return buffer.toString();
+      });
 
   ///
   ///
@@ -337,11 +354,11 @@ extension IteratorExtension<I> on Iterator<I> {
   I applyMoveNext(Applier<I> apply) =>
       moveNext()
           ? apply(current)
-          : throw StateError(Erroring.iterableNoElement);
+          : throw StateError(ErrorMessage.iterableNoElement);
 
   I applyLead(int ahead, Applier<I> apply) {
     for (var i = -1; i < ahead; i++) {
-      if (!moveNext()) throw StateError(Erroring.iterableNoElement);
+      if (!moveNext()) throw StateError(ErrorMessage.iterableNoElement);
     }
     return apply(current);
   }
@@ -353,7 +370,7 @@ extension IteratorExtension<I> on Iterator<I> {
     while (moveNext()) {
       if (test(current)) return current;
     }
-    throw StateError(Erroring.iterableElementNotFound);
+    throw StateError(ErrorMessage.iterableElementNotFound);
   }
 
   I findOr(Predicator<I> test, Supplier<I> supply) {
