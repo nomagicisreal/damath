@@ -11,7 +11,7 @@ part of '../node.dart';
 ///         --[NodeNextPushable]
 ///         --[NodeNextEnqueueable]
 ///         --[NodeNextSorted]
-///         --todo: node next sorted set
+///         --node next sorted set...
 ///         |
 ///         --[NodeBinary]...
 ///

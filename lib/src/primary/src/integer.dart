@@ -12,6 +12,7 @@ part of '../primary.dart';
 ///
 /// static methods:
 /// [maxExponentOf2In], ...
+/// [apply_1], ...
 /// [reduce_plus], ...
 /// [leading], ...
 /// [factorial], ...
@@ -310,6 +311,13 @@ extension IntExtension on int {
   ///
   ///
   ///
+  static int apply_1(int _) => 1;
+
+  ///
+  ///
+  ///
+  static int reduce_1(int v1, int v2) => 1;
+
   static int reduce_plus(int v1, int v2) => v1 + v2;
 
   static int reduce_minus(int v1, int v2) => v1 - v2;

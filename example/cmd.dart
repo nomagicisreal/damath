@@ -19,20 +19,20 @@ void main(List<String> arguments) {
   // ;
   // print(node);
 
-  final list = Uint8List(3);
-  list[0] = 1 << 5;
-  list[1] = 1 << 3;
-  list[2] = 1 << 0;
-  print(
-    list.iterator
-        .reduce((byte0, byte) => (byte0 << 8) | byte)
-        .toRadixString(2)
-        .padLeft(24, '0')
-        .insertEvery(8),
-    // (1 << 63).toRadixString(2),
-    // list.iterator.joinMapped(
-    //   ' ',
-    //   (byte) => byte.toRadixString(2).padLeft(8, '0'),
-    // ),
-  );
+  final flags = DateFlags.empty();
+  flags.include((2025, 9, 11));
+  flags.includeRange((2023, 3, 2), (2023, 4, 1));
+  flags.includeRange((2025, 8, 2), (2025, 8, 6));
+  flags.include((2023, 3, 2));
+  print(flags);
+  print(flags.firstDate);
+  print(flags.lastDate);
+  print(flags.yearsAvailable);
+  print(flags.monthsAvailable(2025));
+  print(flags.daysAvailable(2025, 8));
+
+  // final map = SplayTreeMap();
+  // map[100] = 'hello';
+  // print(map);
+  // print(map[100]);
 }

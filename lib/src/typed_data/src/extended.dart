@@ -11,13 +11,14 @@ part of '../typed_data.dart';
 ///
 ///
 ///
-typedef _MapperSplayTreeMapInt = int? Function(SplayTreeMap<int, dynamic> map);
-typedef _MapperSplayTreeMapIntBy =
-    int? Function(SplayTreeMap<int, dynamic> map, int key);
+typedef _MapperSplayTreeMapInt<T> = int? Function(SplayTreeMap<int, T> map);
+typedef _MapperSplayTreeMapIntBy<T> =
+    int? Function(SplayTreeMap<int, T> map, int by);
+
 typedef _BitsListToInt<T extends TypedDataList<int>> =
     int? Function(T list, int size);
 typedef _BitsListToIntFrom<T extends TypedDataList<int>> =
-int? Function(T list, int k, int size);
+    int? Function(T list, int k, int size);
 
 ///
 ///
@@ -51,12 +52,6 @@ extension _DateExtension on (int, int, int) {
 /// [bitOn], ...
 ///
 extension TypedDataListInt on TypedDataList<int> {
-  static const int _sizeBytes = 8;
-  static const int sizeUint8List = Uint8List.bytesPerElement * _sizeBytes;
-  static const int sizeUint16List = Uint16List.bytesPerElement * _sizeBytes;
-  static const int sizeUint32List = Uint32List.bytesPerElement * _sizeBytes;
-  static const int sizeUint64List = Uint64List.bytesPerElement * _sizeBytes;
-
   ///
   /// [comparing8First], ...
   ///
@@ -96,20 +91,34 @@ extension TypedDataListInt on TypedDataList<int> {
   static int? getBitLast1<T extends TypedDataList<int>>(T list, int size) =>
       list.bitLast(size);
 
-  static int? getBitFirst1From<T extends TypedDataList<int>>(T list, int k, int size) =>
-      list.bitFirstFrom(k, size);
+  static int? getBitFirst1From<T extends TypedDataList<int>>(
+    T list,
+    int k,
+    int size,
+  ) => list.bitFirstFrom(k, size);
 
-  static int? getBitLast1From<T extends TypedDataList<int>>(T list, int k, int size) =>
-      list.bitLastFrom(k, size);
+  static int? getBitLast1From<T extends TypedDataList<int>>(
+    T list,
+    int k,
+    int size,
+  ) => list.bitLastFrom(k, size);
 
   ///
+  /// [bitOn]
   /// [bitSet], [bitClear]
+  ///
+  bool bitOn(int p, int shift, int mask, [int bit = 1]) =>
+      (this[p >> shift] >> (p & mask) - 1) & 1 == bit;
+
+  void bitSet(int p, int shift, int mask) =>
+      this[p >> shift] |= 1 << (p & mask) - 1;
+
+  void bitClear(int p, int shift, int mask) =>
+      this[p >> shift] &= ~(1 << (p & mask) - 1);
+
+  ///
   /// [bitConsume]
   ///
-  void bitSet(int which, int p) => this[which] |= 1 << p - 1;
-
-  void bitClear(int which, int p) => this[which] &= ~(1 << p - 1);
-
   void bitConsume(
     void Function(int p) consume,
     int size,
@@ -122,12 +131,6 @@ extension TypedDataListInt on TypedDataList<int> {
       }
     }
   }
-
-  ///
-  /// [bitOn]
-  ///
-  bool bitOn(int which, int p, [int bit = 1]) =>
-      (this[which] >> p - 1) & 1 == bit;
 
   ///
   /// [bitFirst]
@@ -161,10 +164,10 @@ extension TypedDataListInt on TypedDataList<int> {
     for (var j = length - 1; j > -1; j--) {
       for (
         var bits = this[j], mask = 1 << size - 1, i = size;
-        bits > 0;
+        i > 0;
         mask >>= 1, i--
       ) {
-        if (bits & 1 == bit) return size * j + i;
+        if ((bits & mask) >> i - 1 == bit) return size * j + i;
       }
     }
     return null;
@@ -240,7 +243,7 @@ extension TypedDataListInt on TypedDataList<int> {
     var mask = 1 << i - 1;
 
     while (i > -1) {
-      if (bits & mask >> i - 1 == bit) return size * j + i;
+      if ((bits & mask) >> i - 1 == bit) return size * j + i;
       mask >>= 1;
       i--;
     }
@@ -251,7 +254,7 @@ extension TypedDataListInt on TypedDataList<int> {
       bits = this[j];
       mask = 1 << i - 1;
       while (i > -1) {
-        if (bits & mask >> i - 1 == bit) return size * j + i;
+        if ((bits & mask) >> i - 1 == bit) return size * j + i;
         mask >>= 1;
         i--;
       }
@@ -259,5 +262,71 @@ extension TypedDataListInt on TypedDataList<int> {
     }
 
     return null;
+  }
+
+  ///
+  /// [bitsAvailable]
+  /// [bitsAvailableMap]
+  /// [bitsAvailableAfter]
+  /// [bitsAvailableBefore]
+  ///
+  Iterable<int> bitsAvailable(int size) sync* {
+    final length = this.length;
+    for (var j = 0; j < length; j++) {
+      final prefix = size * j;
+      var bits = this[j];
+      for (var i = 1; bits > 0; i++, bits >>= 1) {
+        if (bits & 1 == 1) yield prefix + i;
+      }
+    }
+  }
+
+  Iterable<T> bitsAvailableMap<T>(int size, Mapper<int, T> mapper) sync* {
+    final length = this.length;
+    for (var j = 0; j < length; j++) {
+      final prefix = size * j;
+      var bits = this[j];
+      for (var i = 1; bits > 0; i++, bits >>= 1) {
+        if (bits & 1 == 1) yield mapper(prefix + i);
+      }
+    }
+  }
+
+  Iterable<int> bitsAvailableAfter(int size, int from) sync* {
+    var j = from ~/ size;
+    final prefix = size * j;
+    for (
+      var i = from & size - 1, bits = this[j] >> i - 1;
+      bits > 0;
+      i++, bits >>= 1
+    ) {
+      if (bits & 1 == 1) yield prefix + i;
+    }
+    j++;
+
+    final length = this.length;
+    while (j < length) {
+      final prefix = size * j;
+      for (var i = 1, bits = this[j]; bits > 0; i++, bits >>= 1) {
+        if (bits & 1 == 1) yield prefix + i;
+      }
+      j++;
+    }
+  }
+
+  Iterable<int> bitsAvailableBefore(int size, int to) sync* {
+    final limit = to ~/ size;
+    for (var j = 0; j < limit; j++) {
+      final prefix = size * j;
+      for (var i = 0, bits = this[j]; i < size; i++, bits >>= 1) {
+        if (bits & 1 == 1) yield prefix + i;
+      }
+    }
+
+    final max = to & size - 1;
+    final prefix = size * limit;
+    for (var i = 0, bits = this[limit]; i < max; i++, bits >>= 1) {
+      if (bits & 1 == 1) yield prefix + i;
+    }
   }
 }

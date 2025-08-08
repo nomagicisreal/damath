@@ -2,41 +2,107 @@ part of '../typed_data.dart';
 
 ///
 ///
-/// [BitFlags]
-///   --[_BitFlags8]
-///   --[_BitFlags16]
-///   --[_BitFlags32]
-///   --[_BitFlags64]
-///
-/// * [Weekday]
-/// [_DateFlags]
-///   --[_SplayDoubleIndexFlags]
-///       --[DateFlags]           with [_HourFlags]
-///       --[MonthHourFlags]------|
-///   --[WeekHourFlags]-----------|
-///
+/// [_BitFlagsParent]
+///   --[BitFlags]
+///   |   --[_BitFlags8]
+///   |   --[_BitFlags16]
+///   |   --[_BitFlags32]
+///   |   --[_BitFlags64]
+///   |
+///   --[_DateFlags]
+///       --[_DateFlagsSplayDoubleIndex]
+///       |   --[DateFlags]           with [_DateFlagsHour]
+///       |   --[MonthHourFlags]------|
+///       --[WeekHourFlags]-----------| * [Weekday]
 ///
 ///
 
 ///
 ///
 ///
-abstract class BitFlags {
-  int get size => _n * _field.length;
+abstract class _BitFlagsParent {
+  int get _sizeEach;
 
-  bool operator [](int index) =>
-      _field[index >> _shift] >> index & _filled == 1;
+  // int get _shift => math.log(_sizeEach) ~/ math.ln2 - 1;
+  int get _shift;
 
-  void operator []=(int index, bool value) =>
-      value
-          ? _field.bitSet(index & _filled, index >> _shift)
-          : _field.bitClear(index & _filled, index >> _shift);
+  // int get _mask => ~(1 << _shift);
+  int get _mask;
 
-  factory BitFlags(int length, [bool native = false]) {
-    if (length < _BitFlags8.limit) return _BitFlags8(length);
-    if (length < _BitFlags16.limit) return _BitFlags16(length);
-    if (length < _BitFlags32.limit) return _BitFlags32(length);
-    return native ? _BitFlags64(length) : _BitFlags32(length);
+  bool _bitOn<T extends TypedDataList<int>>(T list, int position) =>
+      list.bitOn(position, _shift, _mask);
+
+  void _bitSet<T extends TypedDataList<int>>(T list, int position) =>
+      list.bitSet(position, _shift, _mask);
+
+  void _bitClear<T extends TypedDataList<int>>(T list, int position) =>
+      list.bitClear(position, _shift, _mask);
+
+  const _BitFlagsParent();
+}
+
+///
+///
+///
+abstract class BitFlags extends _BitFlagsParent {
+  final int size;
+
+  int get sizeActual => _sizeEach * _field.length;
+
+  factory BitFlags(int size, [bool native = false]) {
+    if (size < _BitFlags8.limit) return _BitFlags8(size);
+    if (size < _BitFlags16.limit) return _BitFlags16(size);
+    if (size < _BitFlags32.limit) return _BitFlags32(size);
+    if (size & _BitFlags32.mask == 0) return _BitFlags32(size);
+    if (size & _BitFlags16.mask == 0) return _BitFlags16(size);
+    if (size & _BitFlags8.mask == 0) return _BitFlags8(size);
+    return native ? _BitFlags64(size) : _BitFlags32(size);
+  }
+
+  bool operator [](int position) => _bitOn(_field, position);
+
+  void operator []=(int position, bool value) =>
+      value ? _bitSet(_field, position) : _bitClear(_field, position);
+
+  @override
+  String toString() {
+    final buffer = StringBuffer('$runtimeType field:\n');
+    final size = this.size;
+    final sizeEach = _sizeEach;
+    final field = _field;
+    final length = field.length;
+    final space = (sizeEach * length).toString().length + 1;
+
+    // -----...
+    final borderLength = space * 2 + sizeEach + sizeEach ~/ _bytes + 5;
+    buffer.writeRepeat(borderLength, '-');
+
+    // 0 ~ n, ....
+    for (var j = 0; j < length; j++) {
+      final start = j * sizeEach;
+      buffer.write('|');
+      buffer.write('${start + 1}'.padLeft(space));
+      buffer.write(' ~');
+      buffer.write('${math.min(start + sizeEach, size)}'.padLeft(space));
+      buffer.write(': ');
+      var i = 0;
+      for (var bits = field[j]; bits > 0; bits >>= 1) {
+        buffer.write(bits & 1 == 1 ? '1' : '0');
+        i++;
+        if (i % 8 == 0) buffer.write(' ');
+      }
+      while (i < sizeEach && start + i < size) {
+        buffer.write('0');
+        i++;
+        if (i % 8 == 0) buffer.write(' ');
+      }
+      buffer.writeln();
+    }
+
+    // ---...
+    buffer.writeRepeat(borderLength, '-');
+    buffer.writeln();
+    return buffer.toString();
   }
 
   ///
@@ -44,13 +110,9 @@ abstract class BitFlags {
   ///
   TypedDataList<int> get _field;
 
-  int get _n;
+  const BitFlags._(this.size);
 
-  int get _filled;
-
-  int get _shift;
-
-  const BitFlags._();
+  static const int _bytes = 8;
 }
 
 ///
@@ -61,43 +123,45 @@ abstract class BitFlags {
 ///
 class _BitFlags8 extends BitFlags {
   static const int limit = 9;
-  static const int filled = 7;
+  static const int mask = 7;
   static const int shift = 3;
+  static const int sizeEach = Uint8List.bytesPerElement * BitFlags._bytes;
+
+  @override
+  int get _mask => mask;
+
+  @override
+  int get _sizeEach => sizeEach;
+
+  @override
+  int get _shift => shift;
 
   @override
   final Uint8List _field;
 
-  _BitFlags8(int length)
-    : _field = Uint8List((length + filled) >> shift),
+  _BitFlags8(super.length)
+    : _field = Uint8List((length + mask) >> shift),
       super._();
-
-  @override
-  int get _filled => filled;
-
-  @override
-  int get _n => TypedDataListInt.sizeUint8List;
-
-  @override
-  int get _shift => shift;
 }
 
 class _BitFlags16 extends BitFlags {
   static const int limit = 17;
-  static const int filled = 15;
+  static const int mask = 15;
   static const int shift = 4;
+  static const int sizeEach = Uint16List.bytesPerElement * BitFlags._bytes;
 
   @override
   final Uint16List _field;
 
-  _BitFlags16(int length)
-    : _field = Uint16List((length + filled) >> shift),
+  _BitFlags16(super.length)
+    : _field = Uint16List((length + mask) >> shift),
       super._();
 
   @override
-  int get _filled => filled;
+  int get _mask => mask;
 
   @override
-  int get _n => TypedDataListInt.sizeUint16List;
+  int get _sizeEach => sizeEach;
 
   @override
   int get _shift => shift;
@@ -105,21 +169,22 @@ class _BitFlags16 extends BitFlags {
 
 class _BitFlags32 extends BitFlags {
   static const int limit = 33;
-  static const int filled = 31;
+  static const int mask = 31;
   static const int shift = 5;
+  static const int sizeEach = Uint32List.bytesPerElement * BitFlags._bytes;
 
   @override
   final Uint32List _field;
 
-  _BitFlags32(int length)
-    : _field = Uint32List((length + filled) >> shift),
+  _BitFlags32(super.length)
+    : _field = Uint32List((length + mask) >> shift),
       super._();
 
   @override
-  int get _filled => filled;
+  int get _mask => mask;
 
   @override
-  int get _n => TypedDataListInt.sizeUint32List;
+  int get _sizeEach => sizeEach;
 
   @override
   int get _shift => shift;
@@ -129,19 +194,20 @@ class _BitFlags64 extends BitFlags {
   // static const int limit = 65;
   static const int filled = 63;
   static const int shift = 6;
+  static const int sizeEach = Uint64List.bytesPerElement * BitFlags._bytes;
 
   @override
   final Uint64List _field;
 
-  _BitFlags64(int length)
+  _BitFlags64(super.length)
     : _field = Uint64List((length + filled) >> shift),
       super._();
 
   @override
-  int get _filled => filled;
+  int get _mask => filled;
 
   @override
-  int get _n => TypedDataListInt.sizeUint64List;
+  int get _sizeEach => sizeEach;
 
   @override
   int get _shift => shift;
@@ -149,17 +215,23 @@ class _BitFlags64 extends BitFlags {
 
 ///
 ///
+/// [_DateFlags]
+/// [_DateFlagsSplayDoubleIndex]
+/// [_DateFlagsHour]
 ///
-abstract class _DateFlags<T extends TypedDataList<int>> {
+///
+
+///
+///
+///
+abstract class _DateFlags<T extends TypedDataList<int>>
+    extends _BitFlagsParent {
   const _DateFlags();
 
-  int get _length;
+  T _newValue(int value) =>
+      _newList..[value >> _shift] = 1 << (value & _mask) - 1;
 
-  int get _size;
-
-  String _fieldToString(int key, int keyKey, T value);
-
-  T _newValue(int value);
+  T get _newList;
 
   void include(Object record);
 
@@ -172,114 +244,244 @@ abstract class _DateFlags<T extends TypedDataList<int>> {
   bool get isEmpty;
 
   bool get isNotEmpty;
-}
 
-///
-///
-///
-enum Weekday {
-  monday,
-  tuesday,
-  wednesday,
-  thursday,
-  friday,
-  saturday,
-  sunday;
-
-  factory Weekday.from(DateTime dateTime) => switch (dateTime.weekday) {
-    DateTime.monday => monday,
-    DateTime.tuesday => tuesday,
-    DateTime.wednesday => wednesday,
-    DateTime.thursday => thursday,
-    DateTime.friday => friday,
-    DateTime.saturday => saturday,
-    DateTime.sunday => sunday,
-    _ => throw ArgumentError('date time weekday: ${dateTime.weekday}'),
-  };
-}
-
-///
-///
-///
-abstract class _SplayDoubleIndexFlags<T extends TypedDataList<int>>
-    extends _DateFlags<T> {
-  final int Function(int key1, int key2)? compare;
-  final int Function(int key1, int key2)? compareKeyKey;
-  final bool Function(dynamic potentialKey)? isValidKey;
-  final bool Function(dynamic potentialKey)? isValidKeyKey;
-  final SplayTreeMap<int, SplayTreeMap<int, T>> _field;
-
-  _SplayDoubleIndexFlags.empty([
-    this.compare,
-    this.isValidKey,
-    this.compareKeyKey,
-    this.isValidKeyKey,
-  ]) : _field = SplayTreeMap(compare, isValidKey);
-
+  ///
+  ///
+  ///
   @override
   String toString() {
-    final buffer = StringBuffer('DateFlags(\n');
-    for (var entry in _field.entries) {
-      final key = entry.key;
-      buffer.write('\t');
-      buffer.write('$key, \n'.padLeft(4));
-      for (var valueEntry in entry.value.entries) {
-        final keyKey = valueEntry.key;
-        buffer.write(keyKey.toString().padLeft(5));
-        buffer.write(' : ');
-        buffer.writeln(_fieldToString(key, keyKey, valueEntry.value));
-      }
-    }
-    buffer.writeln(')');
+    final buffer = StringBuffer('$runtimeType field:\n');
+    final size = _sizeEach;
+    final borderLength =
+        8 + _toStringFieldPadLeft + size + size ~/ _BitFlags8.sizeEach;
+    buffer.writeRepeat(borderLength, '-');
+    _toStringApplyBody(buffer);
+    buffer.writeRepeat(borderLength, '-');
     return buffer.toString();
   }
 
-  SplayTreeMap<int, T> _newKeyKey(int day, int v) =>
-      SplayTreeMap(compareKeyKey, isValidKeyKey)..[day] = _newValue(v);
+  int get _toStringFieldPadLeft;
+
+  void _toStringApplyBody(StringBuffer buffer);
+}
+
+///
+///
+/// [_bufferApplyField], ...
+/// [_errorEmptyFlagsNotRemoved], ...
+/// [include], ...
+/// [_findKey], ...
+///
+///
+abstract class _DateFlagsSplayDoubleIndex<T extends TypedDataList<int>>
+    extends _DateFlags<T> {
+  ///
+  ///
+  ///
+  void _bufferApplyField(StringBuffer buffer, int key, int keyKey, T value);
+
+  @override
+  void _toStringApplyBody(StringBuffer buffer) {
+    final pad = _toStringFieldPadLeft;
+    for (var entry in _field.entries) {
+      final key = entry.key;
+      buffer.write('|');
+      buffer.write('($key'.padLeft(pad));
+      buffer.write(',');
+      var padding = false;
+      for (var valueEntry in entry.value.entries) {
+        if (padding) {
+          buffer.write('|');
+          buffer.writeRepeat(pad + 1, ' ', false);
+        } else {
+          padding = true;
+        }
+        final keyKey = valueEntry.key;
+        buffer.write('$keyKey'.padLeft(3));
+        buffer.write('): ');
+        _bufferApplyField(buffer, key, keyKey, valueEntry.value);
+        buffer.writeln();
+      }
+    }
+  }
 
   ///
   ///
+  ///
+  final SplayTreeMap<int, SplayTreeMap<int, T>> _field;
+  final int Function(int key1, int key2)? compareKeyKey;
+  final bool Function(dynamic potentialKey)? isValidKeyKey;
+  final Applier<int> toKeyKeyBegin;
+  final Applier<int> toKeyKeyEnd;
+  final Reducer<int> toValueBegin;
+  final Reducer<int> toValueEnd;
+
+  _DateFlagsSplayDoubleIndex.empty({
+    bool Function(dynamic potentialKey)? isValidKey,
+    this.compareKeyKey,
+    this.isValidKeyKey,
+    required this.toKeyKeyBegin,
+    required this.toKeyKeyEnd,
+    required this.toValueBegin,
+    required this.toValueEnd,
+  }) : _field = SplayTreeMap(Comparable.compare, isValidKey);
+
+  SplayTreeMap<int, T> _newKeyKey(int keyKey, int v) =>
+      SplayTreeMap(compareKeyKey, isValidKeyKey)..[keyKey] = _newValue(v);
+
+  ///
+  /// [_errorEmptyFlagsNotRemoved]
+  /// [_excluding]
   ///
   static StateError _errorEmptyFlagsNotRemoved(int key, int keyKey) =>
       StateError('empty flags key: ($key, $keyKey) should be removed');
 
-  ///
-  /// [_include], [exclude], [clear]
-  ///
-  void _include(covariant (int, int, int) record) {
-    final valueMap = _field[record.$1];
-    if (valueMap == null) {
-      _field[record.$1] = _newKeyKey(record.$2, record.$3);
-      return;
+  static bool _excluding<T extends TypedDataList<int>>(T list) {
+    final length = list.length;
+    for (var j = 0; j < length; j++) {
+      if (list[j] != 0) return false;
     }
-    final bitsList = valueMap[record.$2];
-    if (bitsList == null) {
-      valueMap[record.$2] = _newValue(record.$3);
-      return;
-    }
-    bitsList.bitSet(record.$3, _size);
+    return true;
   }
+
+  ///
+  /// [include], [exclude], [clear]
+  ///
+  @override
+  void include(covariant (int, int, int) record) => _field.record(
+    record,
+    newKeyKey: _newKeyKey,
+    newValue: _newValue,
+    setValue: _bitSet,
+  );
 
   @override
-  void exclude(covariant (int, int, int) record) {
-    final months = _field[record.$1];
-    if (months == null) return;
-    final days = months[record.$2];
-    if (days == null) return;
-
-    days.bitClear(record.$3, _size);
-    final length = _length;
-    for (var j = 0; j < length; j++) {
-      if (days[j] != 0) return;
-    }
-    months.remove(record.$2);
-    if (months.isNotEmpty) return;
-    _field.remove(record.$2);
-  }
+  void exclude(covariant (int, int, int) record) => _field.removeRecord(
+    record,
+    clearValue: _bitClear,
+    ensureRemove: _excluding,
+  );
 
   @override
   void clear() => _field.clear();
 
+  ///
+  /// [_includeValues], [_includeKeyKeys], [_includeKeys]
+  /// [includeRange]
+  ///
+  void _includeValues(int key, int keyKey, int begin, int end) =>
+      _field.recordInts(
+        key,
+        keyKey,
+        begin,
+        end,
+        newKeyKey: _newKeyKey,
+        newValue: _newValue,
+        setValue: _bitSet,
+      );
+
+  void _includeKeyKeys(int key, int begin, int end) => _field.recordIntsKeyKeys(
+    key,
+    begin,
+    end,
+    toValueBegin,
+    toValueEnd,
+    newKeyKey: _newKeyKey,
+    newValue: _newValue,
+    setValue: _bitSet,
+  );
+
+  void _includeKeys(int begin, int end) => _field.recordIntsKey(
+    begin,
+    end,
+    toKeyKeyBegin,
+    toKeyKeyEnd,
+    toValueBegin,
+    toValueEnd,
+    newKeyKey: _newKeyKey,
+    newValue: _newValue,
+    setValue: _bitSet,
+  );
+
+  void includeRange((int, int, int) begin, (int, int, int) end) {
+    final keyBegin = begin.$1;
+    final keyEnd = end.$1;
+
+    // ==
+    if (keyBegin == keyEnd) {
+      final keyKeyBegin = begin.$2;
+      final keyKeyEnd = end.$2;
+      assert(keyKeyBegin <= keyKeyEnd);
+
+      // ==
+      if (keyKeyBegin == keyKeyEnd) {
+        _includeValues(keyBegin, keyKeyBegin, begin.$3, end.$3);
+        return;
+      }
+
+      // <
+      final toValueBegin = this.toValueBegin;
+      final toValueEnd = this.toValueEnd;
+      _includeValues(
+        keyBegin,
+        keyKeyBegin,
+        begin.$3,
+        toValueEnd(keyBegin, keyKeyBegin),
+      );
+      for (var j = keyKeyBegin + 1; j < keyKeyEnd; j++) {
+        _includeValues(
+          keyBegin,
+          j,
+          toValueBegin(keyBegin, j),
+          toValueEnd(keyBegin, j),
+        );
+      }
+      _includeValues(
+        keyBegin,
+        keyKeyEnd,
+        toValueBegin(keyBegin, keyKeyEnd),
+        end.$3,
+      );
+      return;
+    }
+
+    // <
+    final toKeyKeyEnd = this.toKeyKeyEnd;
+    final toValueEnd = this.toValueEnd;
+    final keyKeyBegin = begin.$2;
+    _includeValues(
+      keyBegin,
+      keyKeyBegin,
+      begin.$3,
+      toValueEnd(keyBegin, keyKeyBegin),
+    );
+    _includeKeyKeys(keyBegin, keyKeyBegin + 1, toKeyKeyEnd(keyBegin));
+    _includeKeys(keyBegin + 1, keyEnd - 1);
+    final keyKenEnd = end.$2;
+    _includeKeyKeys(keyEnd, toKeyKeyBegin(keyEnd), keyKenEnd - 1);
+    _includeValues(
+      keyEnd,
+      toKeyKeyEnd(keyEnd),
+      toValueEnd(keyEnd, keyKenEnd),
+      end.$3,
+    );
+  }
+
+  ///
+  ///
+  ///
+  // void _excludeRange(
+  //   (int, int, int) begin,
+  //   (int, int, int) end,
+  //   Applier<int> toKeyKeyBegin,
+  //   Applier<int> toKeyKeyEnd,
+  //   Applier<int> toValueBegin,
+  //   Applier<int> toValueEnd,
+  // );
+
+  ///
+  /// [isEmpty], [isNotEmpty], [contains]
+  ///
   @override
   bool get isEmpty => _field.isEmpty;
 
@@ -296,7 +498,168 @@ abstract class _SplayDoubleIndexFlags<T extends TypedDataList<int>>
   }
 
   ///
+  ///
+  /// [_keysAvailable], [_keyKeysAvailable], [_valuesAvailable]
+  /// [_entries], [_entriesWithinKeyKeyInKey], [_entriesWithinKeyKey]
   /// [_findKey], [_findKeyKey], [_findFlag]
+  /// [_findEntryInKey], [_findEntryAfter]
+  ///
+  ///
+
+  ///
+  /// [_keysAvailable]
+  /// [_keyKeysAvailable]
+  /// [_valuesAvailable]
+  ///
+  Iterable<int> get _keysAvailable => _field.keys;
+
+  Iterable<int> _keyKeysAvailable(int key) {
+    final dates = _field[key];
+    return dates == null ? [] : dates.keys;
+  }
+
+  Iterable<int> _valuesAvailable(int key, int keyKey) sync* {
+    final valueMap = _field[key];
+    if (valueMap == null) return;
+    final values = valueMap[keyKey];
+    if (values == null) return;
+    yield* values.bitsAvailable(_sizeEach);
+  }
+
+  ///
+  /// [_entries]
+  /// [_entriesWithinValues]
+  /// [_entriesWithinKeyKeyInKey]
+  /// [_entriesWithinKeyKey]
+  /// [_entriesWithin]
+  ///
+  Iterable<(int, int, int)> get _entries sync* {
+    for (var kEntry in _field.entries) {
+      final k = kEntry.key;
+      for (var kkEntry in kEntry.value.entries) {
+        final kk = kkEntry.key;
+        for (var v = 1, bits = kkEntry.value[0]; bits > 0; v++, bits >>= 1) {
+          if (bits & 1 == 1) yield (k, kk, v);
+        }
+      }
+    }
+  }
+
+  // Iterable<(int, int, int)> _entriesWithinValues(
+  //   int key,
+  //   int keyKey,
+  //   int begin,
+  //   int end,
+  // ) sync* {
+  //   final valueMap = _field[key];
+  //   if (valueMap == null) return;
+  //   final size = _sizeEach;
+  //   final values = valueMap[keyKey]!;
+  //   yield* values.bitsAvailableMap(size, (v) => (key, keyKey, v));
+  // }
+
+  Iterable<(int, int, int)> _entriesWithinKeyKeyInKey(
+    int key,
+    int begin,
+    int end,
+  ) sync* {
+    final valueMap = _field[key];
+    if (valueMap == null) return;
+    final size = _sizeEach;
+    for (
+      int? keyKey = begin;
+      keyKey != null && keyKey <= end;
+      keyKey = valueMap.firstKeyAfter(keyKey)
+    ) {
+      final values = valueMap[keyKey]!;
+      yield* values.bitsAvailableMap(size, (v) => (key, keyKey!, v));
+    }
+  }
+
+  Iterable<(int, int, int)> _entriesWithinKeyKey(
+    (int, int) begin,
+    (int, int) end,
+  ) sync* {
+    final keyBegin = begin.$1;
+    final keyEnd = end.$1;
+    assert(keyBegin <= keyEnd);
+
+    final keyKeyBegin = begin.$2;
+    final keyKeyEnd = end.$2;
+
+    // ==
+    if (keyEnd == keyBegin) {
+      yield* _entriesWithinKeyKeyInKey(keyEnd, keyKeyBegin, keyKeyEnd);
+      return;
+    }
+
+    // <
+    final toKeyKeyEnd = this.toKeyKeyEnd;
+    final toKeyKeyBegin = this.toKeyKeyBegin;
+    yield* _entriesWithinKeyKeyInKey(
+      keyBegin,
+      keyKeyBegin,
+      toKeyKeyEnd(keyBegin),
+    );
+    final field = _field;
+    for (
+      int? key = field.firstKeyAfter(keyBegin);
+      key != null && key < keyEnd;
+      key = field.firstKeyAfter(key)
+    ) {
+      yield* _entriesWithinKeyKeyInKey(
+        key,
+        toKeyKeyBegin(key),
+        toKeyKeyEnd(key),
+      );
+    }
+    yield* _entriesWithinKeyKeyInKey(keyEnd, toKeyKeyBegin(keyEnd), keyKeyEnd);
+  }
+
+  // Iterable<(int, int, int)> _entriesWithin(
+  //   (int, int, int) begin,
+  //   (int, int, int) end,
+  // ) sync* {
+  //   final keyBegin = begin.$1;
+  //   final keyEnd = end.$1;
+  //   assert(keyBegin <= keyEnd);
+  //
+  //   final keyKeyBegin = begin.$2;
+  //   final keyKeyEnd = end.$2;
+  //
+  //   // ==
+  //   if (keyEnd == keyBegin) {
+  //     yield* _entriesWithinKeyKeyInKey(keyEnd, keyKeyBegin, keyKeyEnd);
+  //     return;
+  //   }
+  //
+  //   // <
+  //   final toKeyKeyEnd = this.toKeyKeyEnd;
+  //   final toKeyKeyBegin = this.toKeyKeyBegin;
+  //   yield* _entriesWithinKeyKeyInKey(
+  //     keyBegin,
+  //     keyKeyBegin,
+  //     toKeyKeyEnd(keyBegin),
+  //   );
+  //   final field = _field;
+  //   for (
+  //     int? key = field.firstKeyAfter(keyBegin);
+  //     key != null && key < keyEnd;
+  //     key = field.firstKeyAfter(key)
+  //   ) {
+  //     yield* _entriesWithinKeyKeyInKey(
+  //       key,
+  //       toKeyKeyBegin(key),
+  //       toKeyKeyEnd(key),
+  //     );
+  //   }
+  //   yield* _entriesWithinKeyKeyInKey(keyEnd, toKeyKeyBegin(keyEnd), keyKeyEnd);
+  // }
+
+  ///
+  /// [_findKey]
+  /// [_findKeyKey]
+  /// [_findFlag]
   ///
   int? _findKey(_MapperSplayTreeMapInt toKey) => toKey(_field);
 
@@ -310,21 +673,19 @@ abstract class _SplayDoubleIndexFlags<T extends TypedDataList<int>>
     _MapperSplayTreeMapInt toKey,
     _BitsListToInt<T> toBits,
   ) {
-    final key = toKey(_field);
+    final field = _field;
+    final key = toKey(field);
     if (key == null) return null;
-    final valueMap = _field[key]!;
+    final valueMap = field[key]!;
     final keyKey = toKey(valueMap)!;
-    final length = _length;
-    final size = _size;
-    for (var i = 0, values = valueMap[keyKey]!; i < length; i++) {
-      final value = toBits(values, size);
-      if (value != null) return (key, keyKey, value);
-    }
+    final value = toBits(valueMap[keyKey]!, _sizeEach);
+    if (value != null) return (key, keyKey, value);
     throw _errorEmptyFlagsNotRemoved(key, keyKey);
   }
 
   ///
-  /// [_findEntryInKey], [_findEntryAfter]
+  /// [_findEntryInKey]
+  /// [_findEntryAfter]
   ///
   (int, int, int)? _findEntryInKey(
     int key,
@@ -334,13 +695,8 @@ abstract class _SplayDoubleIndexFlags<T extends TypedDataList<int>>
     final valueMap = _field[key];
     if (valueMap == null) return null;
     final keyKey = toKey(valueMap)!;
-    final values = valueMap[keyKey]!;
-    final length = _length;
-    final size = _size;
-    for (var i = 0; i < length; i++) {
-      final value = toPosition(values, size);
-      if (value != null) return (key, keyKey, value);
-    }
+    final value = toPosition(valueMap[keyKey]!, _sizeEach);
+    if (value != null) return (key, keyKey, value);
     throw _errorEmptyFlagsNotRemoved(key, keyKey);
   }
 
@@ -366,20 +722,20 @@ abstract class _SplayDoubleIndexFlags<T extends TypedDataList<int>>
       final valueMap = field[a]!;
       int? keyKey = toKey(valueMap)!;
       if (predicate(keyKey, b)) {
-        return (a, keyKey, toPosition(valueMap[keyKey]!, _size)!);
+        return (a, keyKey, toPosition(valueMap[keyKey]!, _sizeEach)!);
       }
 
       // recent value > c || latest value < c
       if (keyKey == b) {
         final c = record.$3;
-        final value = toPositionFrom(valueMap[b]!, c, _size);
+        final value = toPositionFrom(valueMap[b]!, c, _sizeEach);
         if (value != null) return (a, b, value);
       }
 
       // next keyKey > b || previous keyKey < b
       keyKey = toKeyBy(valueMap, b);
       if (keyKey != null) {
-        return (a, keyKey, toPosition(valueMap[keyKey]!, _size)!);
+        return (a, keyKey, toPosition(valueMap[keyKey]!, _sizeEach)!);
       }
     }
 
@@ -389,388 +745,40 @@ abstract class _SplayDoubleIndexFlags<T extends TypedDataList<int>>
 
     return null;
   }
+}
+
+///
+///
+///
+mixin _DateFlagsHour on _DateFlags<Uint8List> {
+  @override
+  Uint8List get _newList => Uint8List(howManyList8);
+
+  @override
+  int get _sizeEach => _BitFlags8.sizeEach * howManyList8;
+
+  @override
+  int get _shift => _BitFlags8.shift;
+
+  @override
+  int get _mask => _BitFlags8.mask;
 
   ///
   ///
-  /// [_keysAvailable], [_keyKeysAvailable], [_valuesAvailable]
-  /// [_entries], [_entriesWithinMonths], [_entriesWithin]
   ///
-  ///
-  ///
+  static const int howManyList8 = 3;
 
-  ///
-  /// [_keysAvailable], [_keyKeysAvailable], [_valuesAvailable]
-  ///
-  Iterable<int> get _keysAvailable => _field.keys;
-
-  Iterable<int> _keyKeysAvailable(int key) {
-    final dates = _field[key];
-    return dates == null ? [] : dates.keys;
-  }
-
-  Iterable<int> _valuesAvailable(int key, int keyKey) sync* {
-    final mList = _field[key];
-    if (mList == null) return;
-    final dList = mList[keyKey];
-    if (dList == null) return;
-    final length = _length;
-    final size = _size;
+  static void _bufferApplyHours(StringBuffer buffer, Uint8List hours) {
+    final length = _DateFlagsHour.howManyList8;
     for (var j = 0; j < length; j++) {
-      final prefix = size * j;
-      var bits = dList[j];
-      for (var i = 1; bits > 0; i++, bits >>= 1) {
-        if (bits & 1 == 1) yield prefix + i;
+      var i = 0;
+      var bits = hours[j];
+      while (i < _BitFlags8.sizeEach) {
+        buffer.writeBit(bits);
+        bits >>= 1;
+        i++;
       }
+      buffer.write(' ');
     }
-  }
-
-  ///
-  /// [_entries], [_entriesWithinMonths], [_entriesWithin]
-  ///
-  Iterable<(int, int, int)> get _entries sync* {
-    for (var yEntry in _field.entries) {
-      final y = yEntry.key;
-      for (var mEntry in yEntry.value.entries) {
-        final m = mEntry.key;
-        for (var d = 1, bits = mEntry.value[0]; bits > 0; d++, bits >>>= 1) {
-          if (bits & 1 == 1) yield (y, m, d);
-        }
-      }
-    }
-  }
-
-  Iterable<(int, int, int)> _entriesWithinMonths(
-    int key,
-    int begin,
-    int end,
-  ) sync* {
-    final months = _field[key];
-    if (months == null) return;
-    for (var m = begin; m <= end; m++) {
-      final dates = months[m];
-      if (dates == null) continue;
-      for (var d = 1, bits = dates[0]; bits > 0; d++, bits >>>= 1) {
-        if (bits & 1 == 1) yield (key, m, d);
-      }
-    }
-  }
-
-  Iterable<(int, int, int)> _entriesWithin(
-    (int, int) begin,
-    (int, int) end,
-  ) sync* {
-    final yBegin = begin.$1;
-    final yEnd = end.$1;
-    assert(yBegin > yEnd);
-
-    final mBegin = begin.$2;
-    final mEnd = end.$2;
-
-    // yEnd == yBegin
-    if (yEnd == yBegin) {
-      yield* _entriesWithinMonths(yEnd, mBegin, mEnd);
-      return;
-    }
-
-    // yEnd > yBegin
-    yield* _entriesWithinMonths(yBegin, mBegin, DateTime.december);
-    for (var y = yBegin + 1; y < yEnd; y++) {
-      yield* _entriesWithinMonths(y, DateTime.january, DateTime.december);
-    }
-    yield* _entriesWithinMonths(yEnd, DateTime.january, mEnd);
   }
 }
-
-///
-///
-/// [DateFlags.empty]
-/// [_which], ...
-/// [include], ...
-/// [_keysAvailable], ...
-/// [_entries], ...
-///
-///
-class DateFlags extends _SplayDoubleIndexFlags<Uint32List> {
-  @override
-  int get _length => 1;
-
-  @override
-  int get _size => TypedDataListInt.sizeUint32List;
-
-  @override
-  String _fieldToString(int year, int month, Uint32List value) => value[0]
-      .toRadixString(2)
-      .padLeft(DateTimeExtension.monthDaysOf(year, month), '0')
-      .reversed
-      .insertEvery(8);
-
-  @override
-  Uint32List _newValue(int day) => Uint32List(_length)..[0] = 1 << day - 1;
-
-  @override
-  void include(covariant (int, int, int) date) => _include(date);
-
-  ///
-  ///
-  ///
-  DateFlags.empty()
-    : super.empty(null, null, null, DateTimeExtension.isValidMonthDynamic);
-
-  factory DateFlags.from((int, int, int) date) {
-    final flags = DateFlags.empty();
-    flags._field[date.$1] = flags._newKeyKey(date.$2, date.$3);
-    return flags;
-  }
-
-  factory DateFlags.fromIterable(Iterable<(int, int, int)> iterable) => iterable
-      .iterator
-      .inductInited(DateFlags.from, (flags, date) => flags..include(date));
-
-  ///
-  ///
-  /// [firstYear], [firstMonth], [lastYear], [lastMonth]
-  /// [firstDate], [lastDate]
-  /// [firstDateInYear], [firstDateAfter]
-  /// [lastDateInYear], [lastDateBefore]
-  ///
-  ///
-  int? get firstYear => _findKey(SplayTreeMapKeyInt.toFirstKey);
-
-  (int, int)? get firstMonth => _findKeyKey(SplayTreeMapKeyInt.toFirstKey);
-
-  int? get lastYear => _findKey(SplayTreeMapKeyInt.toLastKey);
-
-  (int, int)? get lastMonth => _findKeyKey(SplayTreeMapKeyInt.toLastKey);
-
-  (int, int, int)? get firstDate =>
-      _findFlag(SplayTreeMapKeyInt.toFirstKey, TypedDataListInt.getBitFirst1);
-
-  (int, int, int)? get lastDate =>
-      _findFlag(SplayTreeMapKeyInt.toLastKey, TypedDataListInt.getBitLast1);
-
-  (int, int, int)? firstDateInYear(int year) => _findEntryInKey(
-    year,
-    SplayTreeMapKeyInt.toFirstKey,
-    TypedDataListInt.getBitLast1,
-  );
-
-  (int, int, int)? firstDateAfter((int, int, int) date) => _findEntryAfter(
-    date,
-    SplayTreeMapKeyInt.toFirstKey,
-    SplayTreeMapKeyInt.toFirstKeyAfter,
-    IntExtension.predicateReduce_larger,
-    TypedDataListInt.getBitFirst1,
-    TypedDataListInt.getBitFirst1From,
-  );
-
-  (int, int, int)? lastDateInYear(int year) => _findEntryInKey(
-    year,
-    SplayTreeMapKeyInt.toLastKey,
-    TypedDataListInt.getBitLast1,
-  );
-
-  (int, int, int)? lastDateBefore((int, int, int) date) => _findEntryAfter(
-    date,
-    SplayTreeMapKeyInt.toLastKey,
-    SplayTreeMapKeyInt.toLastKeyBefore,
-    IntExtension.predicateReduce_less,
-    TypedDataListInt.getBitLast1,
-    TypedDataListInt.getBitLast1From,
-  );
-
-  ///
-  /// [yearsAvailable], [monthsAvailable], [daysAvailable]
-  /// [dates], [datesWithinMonths], [datesWithin]
-  ///
-  Iterable<int> get yearsAvailable => _keysAvailable;
-
-  Iterable<int> monthsAvailable(int year) => _keyKeysAvailable(year);
-
-  Iterable<int> daysAvailable(int year, int month) =>
-      _valuesAvailable(year, month);
-
-  Iterable<(int, int, int)> get dates => _entries;
-
-  Iterable<(int, int, int)> datesWithinMonths(int year, int begin, int end) =>
-      _entriesWithinMonths(year, begin, end);
-
-  Iterable<(int, int, int)> datesWithin((int, int) begin, (int, int) end) =>
-      _entriesWithin(begin, end);
-}
-
-///
-///
-///
-mixin _HourFlags on _DateFlags<Uint8List> {
-  @override
-  int get _length => 3;
-
-  @override
-  int get _size => TypedDataListInt.sizeUint8List;
-
-  @override
-  String _fieldToString(int month, int day, Uint8List hour) => hour.iterator
-      .join(' ', (byte) => byte.toRadixString(2).padLeft(_size, '0'));
-
-  @override
-  Uint8List _newValue(int hour) =>
-      Uint8List(hour ~/ _size)..[0] = 1 << hour & _BitFlags8.filled;
-}
-
-///
-///
-///
-class MonthHourFlags extends _SplayDoubleIndexFlags<Uint8List> with _HourFlags {
-  @override
-  void include(covariant (int, int, int) hour) => _include(hour);
-
-  MonthHourFlags.empty()
-    : super.empty(
-        null,
-        DateTimeExtension.isValidMonthDynamic,
-        null,
-        DateTimeExtension.isValidHourDynamic,
-      );
-
-  ///
-  /// [include]
-  /// [firstMonth], [firstDate], [firstHour]
-  /// [lastMonth], [lastDate], [lastHour]
-  /// [firstDayInMonth], [firstHourAfter]
-  /// [lastDayInMonth], [lastHourBefore]
-  ///
-  int? get firstMonth => _findKey(SplayTreeMapKeyInt.toFirstKey);
-
-  (int, int)? get firstDate => _findKeyKey(SplayTreeMapKeyInt.toFirstKey);
-
-  (int, int, int)? get firstHour =>
-      _findFlag(SplayTreeMapKeyInt.toFirstKey, TypedDataListInt.getBitFirst1);
-
-  int? get lastMonth => _findKey(SplayTreeMapKeyInt.toLastKey);
-
-  (int, int)? get lastDate => _findKeyKey(SplayTreeMapKeyInt.toLastKey);
-
-  (int, int, int)? get lastHour =>
-      _findFlag(SplayTreeMapKeyInt.toLastKey, TypedDataListInt.getBitLast1);
-
-  (int, int, int)? firstDayInMonth(int month) => _findEntryInKey(
-    month,
-    SplayTreeMapKeyInt.toFirstKey,
-    TypedDataListInt.getBitLast1,
-  );
-
-  (int, int, int)? firstHourAfter((int, int, int) hour) => _findEntryAfter(
-    hour,
-    SplayTreeMapKeyInt.toFirstKey,
-    SplayTreeMapKeyInt.toFirstKeyAfter,
-    IntExtension.predicateReduce_larger,
-    TypedDataListInt.getBitFirst1,
-    TypedDataListInt.getBitFirst1From,
-  );
-
-  (int, int, int)? lastDayInMonth(int month) => _findEntryInKey(
-    month,
-    SplayTreeMapKeyInt.toLastKey,
-    TypedDataListInt.getBitLast1,
-  );
-
-  (int, int, int)? lastHourBefore((int, int, int) hour) => _findEntryAfter(
-    hour,
-    SplayTreeMapKeyInt.toLastKey,
-    SplayTreeMapKeyInt.toLastKeyBefore,
-    IntExtension.predicateReduce_larger,
-    TypedDataListInt.getBitLast1,
-    TypedDataListInt.getBitFirst1From,
-  );
-
-  ///
-  /// [monthsAvailable], [daysAvailable], [hoursAvailable]
-  /// [hours], [hoursWithinMonths], [hoursWithin]
-  ///
-  Iterable<int> get monthsAvailable => _keysAvailable;
-
-  Iterable<int> daysAvailable(int month) => _keyKeysAvailable(month);
-
-  Iterable<int> hoursAvailable(int month, int day) =>
-      _valuesAvailable(month, day);
-
-  Iterable<(int, int, int)> get hours => _entries;
-
-  Iterable<(int, int, int)> hoursWithinMonths(int month, int begin, int end) =>
-      _entriesWithinMonths(month, begin, end);
-
-  Iterable<(int, int, int)> hoursWithin((int, int) begin, (int, int) end) =>
-      _entriesWithin(begin, end);
-}
-
-///
-///
-///
-class WeekHourFlags extends _DateFlags<Uint8List> with _HourFlags {
-  final Map<Weekday, Uint8List> _field;
-
-  WeekHourFlags.empty() : _field = {};
-
-  @override
-  bool get isEmpty => _field.isEmpty;
-
-  @override
-  bool get isNotEmpty => _field.isNotEmpty;
-
-  @override
-  bool contains(covariant (Weekday, int) record) {
-    final hours = _field[record.$1];
-    if (hours == null) return false;
-    final hour = record.$2;
-    return hours.bitOn(hour ~/ _size, hour & _BitFlags8.filled);
-  }
-
-  @override
-  void exclude(covariant (Weekday, int) record) {
-    final hours = _field[record.$1];
-    if (hours == null) return;
-    final hour = record.$2;
-    hours.bitClear(hour ~/ _size, hour & _BitFlags8.filled);
-    for (var j = 0; j < _length; j++) {
-      if (hours[j] != 0) return;
-    }
-    _field.remove(record.$1);
-  }
-
-  @override
-  void include(covariant (Weekday, int) record) {
-    final hours = _field[record.$1];
-    if (hours == null) {
-      _field[record.$1] = _newValue(record.$2);
-      return;
-    }
-    final hour = record.$2;
-    hours.bitSet(hour ~/ _size, hour & _BitFlags8.filled);
-  }
-
-  @override
-  void clear() => _field.clear();
-}
-//
-// class DaysHourFlags {
-//   final List<Uint8List> _field;
-//
-//   const DaysHourFlags(this._field);
-// }
-
-///
-///
-/// timetable for traffic, time sensitive work
-///
-///
-// class DayMinute30Flags {
-//   final Uint16List _field; // * 3
-//
-//   const DayMinute30Flags(this._field);
-// }
-//
-// class DayMinute10Flags {
-//   final Uint16List _field; // * 9
-//
-//   const DayMinute10Flags(this._field);
-// }

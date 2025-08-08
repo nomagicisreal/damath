@@ -56,6 +56,7 @@ extension DurationExtension on Duration {
 /// statics:
 /// constants                 --> [sunday_inChinese], ...
 /// methods return bool       --> [predicateSameYearN], ...
+/// methods return int        --> [monthDaysOf], ...
 /// methods return dateTime   --> [parseTimestamp], ...
 ///
 /// instances:
@@ -114,7 +115,8 @@ extension DateTimeExtension on DateTime {
 
   static bool isValidMonthDynamic(dynamic month) => month > 0 && month < 13;
 
-  static bool isValidHourDynamic(dynamic hour) => hour > -1 && hour < 24;
+  // it's not precise
+  static bool isValidDaysDynamic(dynamic days) => days > 0 && days < 32;
 
   ///
   /// [predicateLeapYear]
@@ -193,7 +195,8 @@ extension DateTimeExtension on DateTime {
       dates.any((day) => day < DateTime.monday || day > DateTime.sunday);
 
   ///
-  ///
+  /// [monthDaysOf]
+  /// [apply_monthBegin], [apply_monthEnd]
   ///
   static int monthDaysOf(int year, int month) => switch (month) {
     1 => 31,
@@ -210,6 +213,17 @@ extension DateTimeExtension on DateTime {
     12 => 31,
     _ => throw StateError('invalid month $month'),
   };
+
+  static int apply_monthBegin(int year) => DateTime.january;
+
+  static int apply_monthEnd(int year) => DateTime.december;
+
+  static Applier<int> applier_daysEnd(int year) =>
+      (month) => monthDaysOf(year, month);
+
+  static int reducer_hourBegin(int month, int day) => 1; // 00:00 ~ 01:00
+
+  static int reducer_hourEnd(int month, int day) => 24; // 23:00 ~ 24:00
 
   ///
   ///

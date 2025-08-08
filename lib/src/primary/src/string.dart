@@ -20,7 +20,6 @@ extension RegExpExtension on RegExp {
   static String wordUntilFor(String source) =>
       RegExp(r'\w+').firstMatch(source)?.group0 ??
       (throw StateError(ErrorMessage.regexNotMatchAny));
-
 }
 
 ///
@@ -114,6 +113,15 @@ extension StringExtension on String {
 ///
 ///
 extension StringBufferExtension on StringBuffer {
+  void writeBit(int bits) => write(bits & 1 == 1 ? '1' : '0');
+
+  void writeRepeat(int n, String value, [bool newLine = true]) {
+    for (var i = 0; i < n; i++) {
+      write(value);
+    }
+    if (newLine) writeln();
+  }
+
   void writeIfNotNull(Object? object) {
     if (object != null) write(object);
   }
