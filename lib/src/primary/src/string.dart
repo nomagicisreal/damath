@@ -111,15 +111,68 @@ extension StringExtension on String {
 
 ///
 ///
+/// [writeBit], ...
+/// [writeRepeat], ...
+///
 ///
 extension StringBufferExtension on StringBuffer {
+  ///
+  /// [writeBit]
+  /// [writeBits8]
+  /// [writeBitsOfMonth]
+  ///
   void writeBit(int bits) => write(bits & 1 == 1 ? '1' : '0');
 
-  void writeRepeat(int n, String value, [bool newLine = true]) {
+  int writeBits8(int bits) {
+    var i = 0;
+    while (i < 8) {
+      writeBit(bits);
+      bits >>= 1;
+      i++;
+    }
+    return bits;
+  }
+
+  int writeBitsN(int bits, int n) {
+    var i = 0;
+    while (i < n) {
+      writeBit(bits);
+      bits >>= 1;
+      i++;
+    }
+    return bits;
+  }
+
+  void writeBitsOfMonth(int days, int dayLast) {
+    var i = 0;
+    // 1 ~ 24
+    for (var j = 1; j < 4; j++) {
+      final last = j * 8;
+      while (i < last) {
+        writeBit(days);
+        days >>= 1;
+        i++;
+      }
+      write(' ');
+    }
+
+    // 25 ~ lastDay
+    while (i < dayLast) {
+      writeBit(days);
+      days >>= 1;
+      i++;
+    }
+  }
+
+  ///
+  /// [writeRepeat]
+  /// [writeIfNotNull]
+  /// [writeUntilNull]
+  ///
+  void writeRepeat(int n, String value) {
     for (var i = 0; i < n; i++) {
       write(value);
     }
-    if (newLine) writeln();
   }
 
   void writeIfNotNull(Object? object) {

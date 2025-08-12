@@ -68,14 +68,21 @@ extension IterableExtension<I> on Iterable<I> {
 
   ///
   ///
+  /// [consumeAll]
   /// [pair]
   /// [copyInto]
   ///
   ///
 
   ///
-  /// [pair], [copyInto]
+  /// [consumeAll], [pair], [copyInto]
   ///
+  void consumeAll(Consumer<I> listen) {
+    for (var item in this) {
+      listen(item);
+    }
+  }
+
   void pair(
     Iterable<I> another,
     Intersector<I> paring, [

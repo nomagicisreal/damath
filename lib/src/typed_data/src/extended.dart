@@ -2,9 +2,14 @@ part of '../typed_data.dart';
 
 ///
 ///
+///
+///
 /// [_MapperSplayTreeMapInt], ...
-/// [_DateExtension]
 /// [TypedDataListInt]
+///
+/// [Weekday]
+/// [MinutePeriod]
+///
 ///
 ///
 
@@ -15,36 +20,10 @@ typedef _MapperSplayTreeMapInt<T> = int? Function(SplayTreeMap<int, T> map);
 typedef _MapperSplayTreeMapIntBy<T> =
     int? Function(SplayTreeMap<int, T> map, int by);
 
-typedef _BitsListToInt<T extends TypedDataList<int>> =
-    int? Function(T list, int size);
-typedef _BitsListToIntFrom<T extends TypedDataList<int>> =
-    int? Function(T list, int k, int size);
-
-///
-///
-///
-extension _DateExtension on (int, int, int) {
-  ///
-  ///
-  ///
-  static int comparing((int, int, int) d1, (int, int, int) d2) {
-    final cYear = d1.$1.compareTo(d2.$1);
-    if (cYear != 0) return cYear;
-    final cMonth = d1.$2.compareTo(d2.$2);
-    if (cMonth != 0) return cMonth;
-    final cDay = d1.$3.compareTo(d2.$3);
-    return cDay;
-  }
-
-  ///
-  ///
-  ///
-  // bool operator >((int, int, int) another) =>
-  //     this.$1 > another.$1 && this.$2 > another.$2 && this.$3 > another.$3;
-  //
-  // bool operator <((int, int, int) another) =>
-  //     this.$1 < another.$1 && this.$2 < another.$2 && this.$3 < another.$3;
-}
+typedef _BitsListToInt =
+    int? Function(TypedDataList<int> list, int size);
+typedef _BitsListToIntFrom =
+    int? Function(TypedDataList<int> list, int k, int size);
 
 ///
 /// [comparing8First], ...
@@ -52,6 +31,8 @@ extension _DateExtension on (int, int, int) {
 /// [bitOn], ...
 ///
 extension TypedDataListInt on TypedDataList<int> {
+  static const int countsAByte = 8;
+
   ///
   /// [comparing8First], ...
   ///
@@ -265,34 +246,34 @@ extension TypedDataListInt on TypedDataList<int> {
   }
 
   ///
-  /// [bitsAvailable]
-  /// [bitsAvailableMap]
-  /// [bitsAvailableAfter]
-  /// [bitsAvailableBefore]
   ///
-  Iterable<int> bitsAvailable(int size) sync* {
+  /// [bitsAvailable] // prevent replicate implementation
+  /// [mapBitsAvailable]
+  /// [mapBitsAvailableFrom]
+  /// [mapBitsAvailableTo]
+  /// [mapBitsAvailableBetween]
+  /// notice that [size] must be 2^n, so [size] - 1 will be [_FlagsBits8.mask], [_FlagsBits16.mask], ...
+  ///
+  ///
+  Iterable<T> mapBitsAvailable<T>(int size, Mapper<int, T> mapping) sync* {
     final length = this.length;
     for (var j = 0; j < length; j++) {
       final prefix = size * j;
       var bits = this[j];
       for (var i = 1; bits > 0; i++, bits >>= 1) {
-        if (bits & 1 == 1) yield prefix + i;
+        if (bits & 1 == 1) yield mapping(prefix + i);
       }
     }
   }
 
-  Iterable<T> bitsAvailableMap<T>(int size, Mapper<int, T> mapper) sync* {
-    final length = this.length;
-    for (var j = 0; j < length; j++) {
-      final prefix = size * j;
-      var bits = this[j];
-      for (var i = 1; bits > 0; i++, bits >>= 1) {
-        if (bits & 1 == 1) yield mapper(prefix + i);
-      }
-    }
-  }
-
-  Iterable<int> bitsAvailableAfter(int size, int from) sync* {
+  // inclusive
+  Iterable<T> mapBitsAvailableFrom<T>(
+    int size,
+    int from,
+    Mapper<int, T> mapping, [
+    bool inclusive = true,
+  ]) sync* {
+    from += inclusive ? 0 : 1;
     var j = from ~/ size;
     final prefix = size * j;
     for (
@@ -300,33 +281,143 @@ extension TypedDataListInt on TypedDataList<int> {
       bits > 0;
       i++, bits >>= 1
     ) {
-      if (bits & 1 == 1) yield prefix + i;
+      if (bits & 1 == 1) yield mapping(prefix + i);
     }
     j++;
 
     final length = this.length;
-    while (j < length) {
+    for (; j < length; j++) {
       final prefix = size * j;
       for (var i = 1, bits = this[j]; bits > 0; i++, bits >>= 1) {
-        if (bits & 1 == 1) yield prefix + i;
+        if (bits & 1 == 1) yield mapping(prefix + i);
       }
-      j++;
     }
   }
 
-  Iterable<int> bitsAvailableBefore(int size, int to) sync* {
+  // inclusive
+  Iterable<T> mapBitsAvailableTo<T>(
+    int size,
+    int to,
+    Mapper<int, T> mapping, [
+    bool inclusive = true,
+  ]) sync* {
+    to -= inclusive ? 0 : 1;
+    if (to < 1) return;
+
     final limit = to ~/ size;
     for (var j = 0; j < limit; j++) {
       final prefix = size * j;
-      for (var i = 0, bits = this[j]; i < size; i++, bits >>= 1) {
-        if (bits & 1 == 1) yield prefix + i;
+      for (var i = 1, bits = this[j]; bits > 0; bits >>= 1, i++) {
+        if (bits & 1 == 1) yield mapping(prefix + i);
       }
     }
 
     final max = to & size - 1;
     final prefix = size * limit;
-    for (var i = 0, bits = this[limit]; i < max; i++, bits >>= 1) {
-      if (bits & 1 == 1) yield prefix + i;
+    for (var i = 1, bits = this[limit]; i <= max; bits >>= 1, i++) {
+      if (bits & 1 == 1) yield mapping(prefix + i);
+    }
+  }
+
+  // inclusive
+  Iterable<T> mapBitsAvailableBetween<T>(
+    int size,
+    int? from,
+    int? to,
+    Mapper<int, T> mapping, [
+    bool inclusive = true,
+  ]) sync* {
+    if (from == null) {
+      if (to == null) {
+        yield* mapBitsAvailable(size, mapping);
+        return;
+      }
+      yield* mapBitsAvailableTo(size, to, mapping);
+      return;
+    }
+    if (to == null) {
+      yield* mapBitsAvailableFrom(size, from, mapping);
+      return;
+    }
+
+    from += inclusive ? 0 : 1;
+    to -= inclusive ? 0 : 1;
+    if (from > to) return;
+
+    final limit = to ~/ size;
+    final max = to & size - 1;
+    var j = from ~/ size;
+    var i = from & size - 1;
+    var prefix = size * j;
+
+    // on from && on to
+    if (j == limit) {
+      for (var bits = this[j]; i <= max; bits >>= 1, i++) {
+        if (bits & 1 == 1) yield mapping(prefix + i);
+      }
+      return;
+    }
+
+    // on from
+    for (var bits = this[j] >> i - 1; bits > 0; i++, bits >>= 1) {
+      if (bits & 1 == 1) yield mapping(prefix + i);
+    }
+    j++;
+
+    // after from, before to
+    for (; j < limit; j++) {
+      prefix = size * j;
+      i = 1;
+      for (var bits = this[j]; bits > 0; bits >>= 1, i++) {
+        if (bits & 1 == 1) yield mapping(prefix + i);
+      }
+    }
+
+    // on to
+    prefix = size * limit;
+    i = 1;
+    for (var bits = this[limit]; i <= max; bits >>= 1, i++) {
+      if (bits & 1 == 1) yield mapping(prefix + i);
     }
   }
 }
+
+///
+///
+///
+enum Weekday {
+  monday,
+  tuesday,
+  wednesday,
+  thursday,
+  friday,
+  saturday,
+  sunday;
+
+  factory Weekday.from(DateTime dateTime) => switch (dateTime.weekday) {
+    DateTime.monday => monday,
+    DateTime.tuesday => tuesday,
+    DateTime.wednesday => wednesday,
+    DateTime.thursday => thursday,
+    DateTime.friday => friday,
+    DateTime.saturday => saturday,
+    DateTime.sunday => sunday,
+    _ => throw ArgumentError('date time weekday: ${dateTime.weekday}'),
+  };
+}
+
+// enum MinutePeriod {
+//   per1,
+//   per5,
+//   per10,
+//   per20,
+//   per30;
+//
+//   int get number => switch (this) {
+//     MinutePeriod.per1 => 1,
+//     MinutePeriod.per5 => 5,
+//     MinutePeriod.per10 => 10,
+//     MinutePeriod.per20 => 20,
+//     MinutePeriod.per30 => 30,
+//   };
+// }

@@ -7,6 +7,8 @@ part of '../collection.dart';
 /// [MapValueDouble]
 /// [SplayTreeMapKeyInt]
 ///
+/// [SplayTreeMapIntIntInt]
+///
 ///
 
 ///
@@ -63,20 +65,41 @@ extension SplayTreeMapKeyInt<V> on SplayTreeMap<int, V> {
       field.lastKeyBefore(key);
 }
 
-extension SplayTreeMapKeyIntKeyInt<V>
-    on SplayTreeMap<int, SplayTreeMap<int, V>> {
+///
+///
+///
+class SplayTreeMapIntIntInt<V> {
+  final SplayTreeMap<int, SplayTreeMap<int, V>> field;
+  final void Function(int value, V values) setValue;
+  final void Function(int value, V values) clearValue;
+  final bool Function(V values) ensureRemove;
+  final V Function(int value) newValue;
+  final SplayTreeMap<int, V> Function(int key, int keyKey, int value) newKeyKey;
+  final Applier<int> toKeyKeyBegin;
+  final Applier<int> toKeyKeyEnd;
+  final Reducer<int> toValueBegin;
+  final Reducer<int> toValueEnd;
+
+  SplayTreeMapIntIntInt(
+    this.field, {
+    required this.setValue,
+    required this.clearValue,
+    required this.ensureRemove,
+    required this.newValue,
+    required this.newKeyKey,
+    required this.toKeyKeyBegin,
+    required this.toKeyKeyEnd,
+    required this.toValueBegin,
+    required this.toValueEnd,
+  });
+
   ///
   ///
   ///
-  void record<T>(
-    (int, int, T) record, {
-    required SplayTreeMap<int, V> Function(int keyKey, T value) newKeyKey,
-    required V Function(T value) newValue,
-    required void Function(V values, T) setValue,
-  }) {
-    final valueMap = this[record.$1];
+  void setRecord((int, int, int) record) {
+    final valueMap = field[record.$1];
     if (valueMap == null) {
-      this[record.$1] = newKeyKey(record.$2, record.$3);
+      field[record.$1] = newKeyKey(record.$1, record.$2, record.$3);
       return;
     }
     final values = valueMap[record.$2];
@@ -84,117 +107,52 @@ extension SplayTreeMapKeyIntKeyInt<V>
       valueMap[record.$2] = newValue(record.$3);
       return;
     }
-    setValue(values, record.$3);
+    setValue(record.$3, values);
   }
 
-  void removeRecord<T>(
-    (int, int, T) record, {
-    required void Function(V values, T) clearValue,
-    required Predicator<V> ensureRemove,
-  }) {
-    final months = this[record.$1];
+  void removeRecord((int, int, int) record) {
+    final months = field[record.$1];
     if (months == null) return;
     final days = months[record.$2];
     if (days == null) return;
 
-    clearValue(days, record.$3);
+    clearValue(record.$3,days);
     if (ensureRemove(days)) {
       months.remove(record.$2);
       if (months.isNotEmpty) return;
-      remove(record.$2);
+      field.remove(record.$2);
     }
   }
 
   ///
-  /// [recordInts]
-  /// [recordIntsKey]
-  /// [recordIntsKeyKeys]
+  /// [setRecordInts]
+  /// [setRecordIntsKey]
+  /// [setRecordIntsKeyKeys]
   ///
-  void recordInts(
-    int key,
-    int keyKey,
-    int begin,
-    int end, {
-    required SplayTreeMap<int, V> Function(int keyKey, int value) newKeyKey,
-    required V Function(int value) newValue,
-    required void Function(V values, int) setValue,
-  }) {
-    record(
-      (key, keyKey, begin),
-      newKeyKey: newKeyKey,
-      newValue: newValue,
-      setValue: setValue,
-    );
-    final previous = this[key]![keyKey] as V;
-    for (var i = begin + 1; i <= end; i++) {
-      setValue(previous, i);
+  void setRecordInts(int key, int keyKey, int? begin, int? end) {
+    begin ??= toValueBegin(key, keyKey);
+    end ??= toValueEnd(key, keyKey);
+    setRecord((key, keyKey, begin));
+    final values = field[key]![keyKey] as V;
+    for (var p = begin + 1; p <= end; p++) {
+      setValue(p, values);
     }
   }
 
-  void recordIntsKeyKeys(
-    int key,
-    int begin,
-    int end,
-    Reducer<int> toValueBegin,
-    Reducer<int> toValueEnd, {
-    required SplayTreeMap<int, V> Function(int keyKey, int value) newKeyKey,
-    required V Function(int value) newValue,
-    required void Function(V values, int) setValue,
-  }) {
-    recordInts(
-      key,
-      begin,
-      toValueBegin(key, begin),
-      toValueEnd(key, end),
-      newKeyKey: newKeyKey,
-      newValue: newValue,
-      setValue: setValue,
-    );
+  void setRecordIntsKeyKeys(int key, int? begin, int? end) {
+    begin ??= toKeyKeyBegin(key);
+    end ??= toKeyKeyEnd(key);
+    setRecordInts(key, begin, toValueBegin(key, begin), toValueEnd(key, end));
     for (var j = begin + 1; j <= end; j++) {
-      recordInts(
-        key,
-        j,
-        toValueBegin(key, j),
-        toValueEnd(key, j),
-        newKeyKey: newKeyKey,
-        newValue: newValue,
-        setValue: setValue,
-      );
+      setRecordInts(key, j, toValueBegin(key, j), toValueEnd(key, j));
     }
   }
 
-  void recordIntsKey(
-    int begin,
-    int end,
-    Applier<int> toKeyKeyBegin,
-    Applier<int> toKeyKeyEnd,
-    Reducer<int> toValueBegin,
-    Reducer<int> toValueEnd, {
-    required SplayTreeMap<int, V> Function(int keyKey, int value) newKeyKey,
-    required V Function(int value) newValue,
-    required void Function(V values, int) setValue,
-  }) {
-    recordIntsKeyKeys(
-      begin,
-      toKeyKeyBegin(begin),
-      toKeyKeyEnd(begin),
-      toValueBegin,
-      toValueEnd,
-      newKeyKey: newKeyKey,
-      newValue: newValue,
-      setValue: setValue,
-    );
-    for (var key = begin + 1; key <= end; key++) {
-      recordIntsKeyKeys(
-        key,
-        toKeyKeyBegin(key),
-        toKeyKeyEnd(key),
-        toValueBegin,
-        toValueEnd,
-        newKeyKey: newKeyKey,
-        newValue: newValue,
-        setValue: setValue,
-      );
+  void setRecordIntsKey(int begin, int end) {
+    for (var key = begin; key <= end; key++) {
+      setRecordIntsKeyKeys(key, toKeyKeyBegin(key), toKeyKeyEnd(key));
     }
   }
+
+  void clear() => field.clear();
 }

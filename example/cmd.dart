@@ -19,20 +19,15 @@ void main(List<String> arguments) {
   // ;
   // print(node);
 
-  final flags = DateFlags.empty();
-  flags.include((2025, 9, 11));
-  flags.includeRange((2023, 3, 2), (2023, 4, 1));
-  flags.includeRange((2025, 8, 2), (2025, 8, 6));
-  flags.include((2023, 3, 2));
-  print(flags);
-  print(flags.firstDate);
-  print(flags.lastDate);
-  print(flags.yearsAvailable);
-  print(flags.monthsAvailable(2025));
-  print(flags.daysAvailable(2025, 8));
-
-  // final map = SplayTreeMap();
-  // map[100] = 'hello';
-  // print(map);
-  // print(map[100]);
+  // final flags = FlagDay.per10Minute();
+  // final flags = FlagDay.per20Minute();
+  // final flags = FlagDay.per30Minute();
+  // final flags = FlagsRangingDates((2025, 1, 20), (2025, 8, 20));
+  final flags = FlagsRangingDaysHours(1, 20, 8);
+  // final flags = FlagsADay.perHour();
+  flags.include((1, 10));
+  flags.include((5, 12));
+  flags.include((7, 18));
+  // flags.include((3, 11));
+  print(flags.toString());
 }

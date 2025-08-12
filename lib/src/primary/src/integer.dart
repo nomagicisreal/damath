@@ -290,7 +290,11 @@ extension IntExtension on int {
   ///
   static bool predicateReduce_larger(int a, int b) => a > b;
 
+  static bool predicateReduce_largerOrEqual(int a, int b) => a >= b;
+
   static bool predicateReduce_less(int a, int b) => a < b;
+
+  static bool predicateReduce_lessOrEqual(int a, int b) => a <= b;
 
   static bool predicateReduce_equal(int a, int b) => a == b;
 

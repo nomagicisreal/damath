@@ -80,6 +80,17 @@ extension DateTimeExtension on DateTime {
   static const String saturday_inChinese = '（六）';
 
   ///
+  ///
+  ///
+  static const int limitMonthBegin = 0;
+  static const int limitMonthEnd = 13;
+  static const int limitHourBegin = -1;
+  static const int limitHourEnd = 24;
+  static const int hourBegin = 0;
+  static const int hourEnd = 23;
+  static const int daysAYearNormal = 365;
+
+  ///
   /// [isYearLeapYear]
   ///
   /// [predicateLeapYear]
@@ -107,16 +118,26 @@ extension DateTimeExtension on DateTime {
   static bool isInvalidMonth(int month) =>
       month < DateTime.january || month > DateTime.december;
 
-  static bool isValidMonth(int month) => month > 0 && month < 13;
+  static bool isValidMonth(int month) =>
+      month > limitMonthBegin && month < limitMonthEnd;
 
-  static bool isInvalidHour(int hour) => hour < 0 || hour > 23;
+  static bool isValidHour(int hour) =>
+      hour > limitHourBegin && hour < limitHourEnd;
 
-  static bool isValidHour(int hour) => hour > -1 && hour < 24;
+  static bool isInvalidHour(int hour) => hour < hourBegin || hour > hourEnd;
 
-  static bool isValidMonthDynamic(dynamic month) => month > 0 && month < 13;
+  static bool isValidDays(int year, int month, int days) =>
+      days > 0 && days < monthDaysOf(year, month) + 1;
 
-  // it's not precise
-  static bool isValidDaysDynamic(dynamic days) => days > 0 && days < 32;
+  static bool Function(dynamic) isValidMonthDynamicOf(int year) =>
+      (month) => month > limitMonthBegin && month < limitMonthEnd;
+
+  static bool isValidMonthDynamic(dynamic month) =>
+      month > limitMonthBegin && month < limitMonthEnd;
+
+  static bool Function(dynamic) Function(int month) isValidDaysDynamicOf(
+    int year,
+  ) => (month) => (days) => days > 0 && days < monthDaysOf(year, month) + 1;
 
   ///
   /// [predicateLeapYear]
@@ -195,24 +216,30 @@ extension DateTimeExtension on DateTime {
       dates.any((day) => day < DateTime.monday || day > DateTime.sunday);
 
   ///
+  /// [_monthsDays]
   /// [monthDaysOf]
   /// [apply_monthBegin], [apply_monthEnd]
   ///
-  static int monthDaysOf(int year, int month) => switch (month) {
-    1 => 31,
-    2 => isYearLeapYear(year) ? 29 : 28,
-    3 => 31,
-    4 => 30,
-    5 => 31,
-    6 => 30,
-    7 => 31,
-    8 => 31,
-    9 => 30,
-    10 => 31,
-    11 => 30,
-    12 => 31,
-    _ => throw StateError('invalid month $month'),
+  static const Map<int, int> _monthsDays = {
+    1: 31,
+    3: 31,
+    4: 30,
+    5: 31,
+    6: 30,
+    7: 31,
+    8: 31,
+    9: 30,
+    10: 31,
+    11: 30,
+    12: 31,
   };
+
+  static int monthDaysOf(int year, int month) =>
+      month == 2
+          ? isYearLeapYear(year)
+              ? 29
+              : 28
+          : _monthsDays[month]!;
 
   static int apply_monthBegin(int year) => DateTime.january;
 
