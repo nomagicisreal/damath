@@ -252,7 +252,7 @@ extension TypedDataListInt on TypedDataList<int> {
   /// [mapBitsAvailableFrom]
   /// [mapBitsAvailableTo]
   /// [mapBitsAvailableBetween]
-  /// notice that [size] must be 2^n, so [size] - 1 will be [_FlagsBits8.mask], [_FlagsBits16.mask], ...
+  /// notice that [size] must be 2^n, so [size] - 1 will be [_FieldBits8.mask], [_FieldBits16.mask], ...
   ///
   ///
   Iterable<T> mapBitsAvailable<T>(int size, Mapper<int, T> mapping) sync* {

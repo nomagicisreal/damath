@@ -19,15 +19,15 @@ void main(List<String> arguments) {
   // ;
   // print(node);
 
-  // final flags = FlagDay.per10Minute();
-  // final flags = FlagDay.per20Minute();
-  // final flags = FlagDay.per30Minute();
-  // final flags = FlagsRangingDates((2025, 1, 20), (2025, 8, 20));
-  final flags = FlagsRangingDaysHours(1, 20, 8);
   // final flags = FlagsADay.perHour();
-  flags.include((1, 10));
-  flags.include((5, 12));
-  flags.include((7, 18));
+  // final flags = FlagsADay.per10Minute();
+  // final flags = FlagsADay.per20Minute();
+  // final flags = FlagsADay.per30Minute();
+  // final flags = FlagsRangingDates((2025, 1, 20), (2025, 8, 20));
+  final flags = Field2D(12, 20, 8);
+  flags.includes((1, 16));
+  flags.includes((3, 16));
+  // flags.exclude((3, 16));
   // flags.include((3, 11));
   print(flags.toString());
 }
