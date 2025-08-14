@@ -29,14 +29,16 @@ class FlagsMapDate extends _FlagsParentMapSplay with _MixinFlagsOperate32 {
         toValueEnd: DateTimeExtension.monthDaysOf,
       );
 
-  factory FlagsMapDate.from((int, int, int) date) =>
-      FlagsMapDate.empty()..includes(date);
+  factory FlagsMapDate.from((int, int, int) date) {
+    assert(date.isValidDate);
+    return FlagsMapDate.empty()..[date] = true;
+  }
 
   factory FlagsMapDate.fromIterable(Iterable<(int, int, int)> iterable) =>
-      iterable.iterator.inductInited(
-        FlagsMapDate.from,
-        (flags, date) => flags..includes(date),
-      );
+      iterable.iterator.inductInited(FlagsMapDate.from, (flags, date) {
+        assert(date.isValidDate);
+        return flags..[date] = true;
+      });
 
   ///
   ///
@@ -55,15 +57,15 @@ class FlagsMapDate extends _FlagsParentMapSplay with _MixinFlagsOperate32 {
   (int, int)? get lastMonth => _findKeyKey(SplayTreeMapKeyInt.toLastKey);
 
   (int, int, int)? get firstDate =>
-      _findFlag(SplayTreeMapKeyInt.toFirstKey, TypedDataListInt.getBitFirst1);
+      _findFlag(SplayTreeMapKeyInt.toFirstKey, TypedIntList.getBitFirst1);
 
   (int, int, int)? get lastDate =>
-      _findFlag(SplayTreeMapKeyInt.toLastKey, TypedDataListInt.getBitLast1);
+      _findFlag(SplayTreeMapKeyInt.toLastKey, TypedIntList.getBitLast1);
 
   (int, int, int)? firstDateInYear(int year) => _findEntryInKey(
     year,
     SplayTreeMapKeyInt.toFirstKey,
-    TypedDataListInt.getBitLast1,
+    TypedIntList.getBitLast1,
   );
 
   (int, int, int)? firstDateAfter((int, int, int) date) => _findEntryNearBy(
@@ -71,14 +73,14 @@ class FlagsMapDate extends _FlagsParentMapSplay with _MixinFlagsOperate32 {
     SplayTreeMapKeyInt.toFirstKey,
     SplayTreeMapKeyInt.toFirstKeyAfter,
     IntExtension.predicateReduce_larger,
-    TypedDataListInt.getBitFirst1,
-    TypedDataListInt.getBitFirst1From,
+    TypedIntList.getBitFirst1,
+    TypedIntList.getBitFirst1From,
   );
 
   (int, int, int)? lastDateInYear(int year) => _findEntryInKey(
     year,
     SplayTreeMapKeyInt.toLastKey,
-    TypedDataListInt.getBitLast1,
+    TypedIntList.getBitLast1,
   );
 
   (int, int, int)? lastDateBefore((int, int, int) date) => _findEntryNearBy(
@@ -86,8 +88,8 @@ class FlagsMapDate extends _FlagsParentMapSplay with _MixinFlagsOperate32 {
     SplayTreeMapKeyInt.toLastKey,
     SplayTreeMapKeyInt.toLastKeyBefore,
     IntExtension.predicateReduce_less,
-    TypedDataListInt.getBitLast1,
-    TypedDataListInt.getBitLast1From,
+    TypedIntList.getBitLast1,
+    TypedIntList.getBitLast1From,
   );
 
   ///
@@ -138,6 +140,9 @@ class FlagsMapDate extends _FlagsParentMapSplay with _MixinFlagsOperate32 {
   ///
   ///
   @override
+  bool validateIndex((int, int, int) index) => index.isValidDate;
+
+  @override
   Uint32List get _newList => Uint32List(1);
 
   @override
@@ -187,19 +192,19 @@ class FlagsMapHourDate extends _FlagsParentMapSplay {
   (int, int)? get firstDate => _findKeyKey(SplayTreeMapKeyInt.toFirstKey);
 
   (int, int, int)? get firstHour =>
-      _findFlag(SplayTreeMapKeyInt.toFirstKey, TypedDataListInt.getBitFirst1);
+      _findFlag(SplayTreeMapKeyInt.toFirstKey, TypedIntList.getBitFirst1);
 
   int? get lastMonth => _findKey(SplayTreeMapKeyInt.toLastKey);
 
   (int, int)? get lastDate => _findKeyKey(SplayTreeMapKeyInt.toLastKey);
 
   (int, int, int)? get lastHour =>
-      _findFlag(SplayTreeMapKeyInt.toLastKey, TypedDataListInt.getBitLast1);
+      _findFlag(SplayTreeMapKeyInt.toLastKey, TypedIntList.getBitLast1);
 
   (int, int, int)? firstDayInMonth(int month) => _findEntryInKey(
     month,
     SplayTreeMapKeyInt.toFirstKey,
-    TypedDataListInt.getBitLast1,
+    TypedIntList.getBitLast1,
   );
 
   (int, int, int)? firstHourAfter((int, int, int) hour) => _findEntryNearBy(
@@ -207,14 +212,14 @@ class FlagsMapHourDate extends _FlagsParentMapSplay {
     SplayTreeMapKeyInt.toFirstKey,
     SplayTreeMapKeyInt.toFirstKeyAfter,
     IntExtension.predicateReduce_larger,
-    TypedDataListInt.getBitFirst1,
-    TypedDataListInt.getBitFirst1From,
+    TypedIntList.getBitFirst1,
+    TypedIntList.getBitFirst1From,
   );
 
   (int, int, int)? lastDayInMonth(int month) => _findEntryInKey(
     month,
     SplayTreeMapKeyInt.toLastKey,
-    TypedDataListInt.getBitLast1,
+    TypedIntList.getBitLast1,
   );
 
   (int, int, int)? lastHourBefore((int, int, int) hour) => _findEntryNearBy(
@@ -222,8 +227,8 @@ class FlagsMapHourDate extends _FlagsParentMapSplay {
     SplayTreeMapKeyInt.toLastKey,
     SplayTreeMapKeyInt.toLastKeyBefore,
     IntExtension.predicateReduce_larger,
-    TypedDataListInt.getBitLast1,
-    TypedDataListInt.getBitFirst1From,
+    TypedIntList.getBitLast1,
+    TypedIntList.getBitFirst1From,
   );
 
   ///
@@ -267,13 +272,21 @@ class FlagsMapHourDate extends _FlagsParentMapSplay {
   ///
   ///
   @override
-  int get _sizeEach => _FieldBits8.sizeEach * 3;
+  int get _sizeEach => TypedIntList.sizeEach8 * 3;
 
   @override
-  int get _shift => _FieldBits8.shift;
+  int get _shift => TypedIntList.shift8;
 
   @override
-  int get _mask => _FieldBits8.mask;
+  int get _mask => TypedIntList.mask8;
+
+  @override
+  bool validateIndex((int, int, int) index) {
+    final month = index.$1;
+    return DateTimeExtension.isValidMonth(month) &&
+        DateTimeExtension.isValidDays(year, month, index.$2) &&
+        DateTimeExtension.isValidHour(index.$3);
+  }
 
   @override
   Uint8List get _newList => Uint8List(3);
@@ -292,7 +305,7 @@ class FlagsMapHourDate extends _FlagsParentMapSplay {
     int keyKey,
     TypedDataList<int> values,
   ) {
-    final size = _FieldBits8.sizeEach;
+    final size = TypedIntList.sizeEach8;
     for (var j = 0; j < 3; j++) {
       var i = 0;
       var bits = values[j];

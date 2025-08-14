@@ -3,23 +3,26 @@ part of '../typed_data.dart';
 ///
 ///
 /// [_FlagsParent]
-///   --[_FlagsField], [_FlagsOperator], [_FlagsContainer]
+///   **[_FlagsOperator]
 ///   |   --[_MixinFlagsOperate8], [_MixinFlagsOperate16], [_MixinFlagsOperate32], [_MixinFlagsOperate64]
-///   |   --[_MixinFieldPositionAble]
-///   |   --[_MixinFieldInsertAble]
+///   |   --[_MixinFlagsInsertAble]
+///   **[_FlagsField]
+///   |   --[_MixinFieldPositionAble] implements [_FlagsOperator]
+///   **[_FlagsContainer]
+///   |   --[_MixinContainerFieldPositionAble] implements [_MixinFieldPositionAble]
 ///   |
 ///   --[_FieldParent] implements [_FlagsField]
-///   |   --[Field] with [_MixinFieldPositionAble]
-///   |   |   --[_FieldBits8], [_FieldBits16]
-///   |   |   --[_FieldBits32], [_FieldBits64]
-///   |   |
-///   |   --[_FieldParentPositionAble] with [_MixinFieldPositionAble] implements [_FlagsContainer]
-///   |   |   --[FieldADay]
-///   |   |   --[Field2D]
+///   |   --[_MixinFieldOperatable]
 ///   |   |
 ///   |   --[FieldMonthDates] implements [_FlagsContainer]
+///   |   --[_FieldParentOperatable] with [_MixinFieldPositionAble], [_MixinFieldOperatable] implements [_FlagsContainer]
+///   |       --[FieldADay] with [_MixinContainerFieldPositionAble]
+///   |       --[Field]
+///   |       --[_FieldParentSpace] with [_MixinContainerFieldPositionAble]
+///   |           --[Field2D]
+///   |           --[Field3D]
 ///   |
-///   --[_FlagsParentMapSplay] with [_MixinFieldInsertAble] implements [_FlagsContainer]
+///   --[_FlagsParentMapSplay] with [_MixinFlagsInsertAble] implements [_FlagsContainer]
 ///       --[FlagsMapDate]
 ///       --[FlagsMapHourDate] with [_MixinFlagsInsertAbleHoursADay]
 ///
@@ -35,23 +38,23 @@ abstract class _FlagsParent {
 
   void clear();
 
-  int get _sizeEach;
-
-  int get _toStringFieldBorderLength;
-
-  void _toStringFlagsBodyApply(StringBuffer buffer);
-
   @override
   String toString() {
     final buffer = StringBuffer('$runtimeType field:\n');
     final borderLength = _toStringFieldBorderLength;
     buffer.writeRepeat(borderLength, '-');
     buffer.writeln();
-    _toStringFlagsBodyApply(buffer);
+    _toStringFlagsBy(buffer);
     buffer.writeRepeat(borderLength, '-');
     buffer.writeln();
     return buffer.toString();
   }
+
+  int get _sizeEach;
+
+  int get _toStringFieldBorderLength;
+
+  void _toStringFlagsBy(StringBuffer buffer);
 }
 
 abstract class _FlagsOperator implements _FlagsParent {
@@ -70,101 +73,103 @@ abstract class _FlagsField implements _FlagsParent {
   TypedDataList<int> get _field;
 }
 
-abstract class _FlagsContainer implements _FlagsParent {
+abstract class _FlagsContainer<T> implements _FlagsParent {
   const _FlagsContainer();
 
-  bool contains(dynamic record);
+  bool validateIndex(T index);
 
-  void includes(dynamic record);
+  bool operator [](T index);
 
-  void excludes(dynamic record);
+  void operator []=(T index, bool value);
 }
 
 ///
 ///
 ///
-/// [_MixinFlagsMutable]
-/// [_MixinFlagsOperate8], [_MixinFlagsOperate16]
-/// [_MixinFlagsOperate32], [_MixinFlagsOperate64]
-///
-/// [_MixinFieldInsertAble]
-/// [_MixinFlagsInsertAbleHoursADay]
-///
-///
-///
-mixin _MixinFlagsOperate8 implements _FlagsOperator {
-  @override
-  int get _shift => _FieldBits8.shift;
+abstract class _FieldParentSpace<F extends _FieldParent, T>
+    extends _FieldParentOperatable<F, T>
+    with _MixinContainerFieldPositionAble<T> {
+  final int width;
+  final int height;
+
+  const _FieldParentSpace(this.width, this.height, super.field);
 
   @override
-  int get _mask => _FieldBits8.mask;
+  int get _toStringFieldBorderLength =>
+      2 + '$height'.length + 2 + (width + 5) ~/ 6 * 7 + 2;
 
   @override
-  int get _sizeEach => _FieldBits8.sizeEach;
-}
+  void _toStringFlagsBy(StringBuffer buffer, [int i = 0, int shift = 0]) {
+    final pad = '$height'.length + 1;
+    final width = this.width; // hour per day
 
-mixin _MixinFlagsOperate16 implements _FlagsOperator {
-  @override
-  int get _shift => _FieldBits16.shift;
+    //
+    buffer.write('|');
+    buffer.writeRepeat(pad + 2, ' ');
+    for (var per = 0; per < width; per += 6) {
+      buffer.write(' ');
+      buffer.write('$per'.padRight(6, ' '));
+    }
+    buffer.write(' ');
+    buffer.write('|');
+    buffer.writeln();
 
-  @override
-  int get _mask => _FieldBits16.mask;
-
-  @override
-  int get _sizeEach => _FieldBits16.sizeEach;
-}
-
-mixin _MixinFlagsOperate32 implements _FlagsOperator {
-  @override
-  int get _shift => _FieldBits32.shift;
-
-  @override
-  int get _mask => _FieldBits32.mask;
-
-  @override
-  int get _sizeEach => _FieldBits32.sizeEach;
-}
-
-mixin _MixinFlagsOperate64 implements _FlagsOperator {
-  @override
-  int get _shift => _FieldBits64.shift;
-
-  @override
-  int get _mask => _FieldBits64.mask;
+    buffer.write('|');
+    buffer.writeRepeat(pad + 2, ' ');
+    for (var per = 0; per < width; per += 6) {
+      buffer.write(' ');
+      buffer.write('v');
+      buffer.writeRepeat(5, ' ');
+    }
+    buffer.write(' ');
+    buffer.write('|');
+    buffer.writeln();
+    super._toStringFlagsBy(buffer, i, shift);
+  }
 
   @override
-  int get _sizeEach => _FieldBits64.sizeEach;
-}
+  int get _toStringFlagsIterationLimit => height;
 
-///
-///
-///
-mixin _MixinFieldPositionAble implements _FlagsOperator, _FlagsField {
-  bool _bitOn(int position) => _field.bitOn(position, _shift, _mask);
+  @override
+  Consumer<int> _toStringFlagsEachLineBy(
+    StringBuffer buffer, [
+    int i = 0,
+    int modulo = 0,
+  ]) {
+    final field = _field;
+    final mask = _mask;
+    final width = this.width;
+    final pad = '$height'.length + 1;
+    // final spaceAfterBits = (width + 5) ~/ 6 * 7 - width - (width + 5) ~/ 6 + 1;
+    final spaceAfterBits = (width + 5) ~/ 6 * 6 - width + 1;
 
-  void _bitSet(int position) => _field.bitSet(position, _shift, _mask);
-
-  void _bitClear(int position) => _field.bitClear(position, _shift, _mask);
-}
-
-mixin _MixinFieldInsertAble implements _FlagsOperator {
-  bool _mutateBitOn(int position, TypedDataList<int> list) =>
-      list.bitOn(position, _shift, _mask);
-
-  void _mutateBitSet(int position, TypedDataList<int> list) =>
-      list.bitSet(position, _shift, _mask);
-
-  void _mutateBitClear(int position, TypedDataList<int> list) =>
-      list.bitClear(position, _shift, _mask);
-
-  TypedDataList<int> get _newList;
-
-  TypedDataList<int> _newInsertion(int position) =>
-      _newList..[position >> _shift] = 1 << (position & _mask) - 1;
-
-  bool get isEmpty;
-
-  bool get isNotEmpty;
+    var bits = field[i] >> modulo;
+    i++;
+    final nextField =
+        field.length == 1
+            ? null
+            : (h, w) {
+              if (w == width) return;
+              if (h * width + modulo + w & mask == 0) {
+                bits = field[i];
+                i++;
+              }
+            };
+    return (h) {
+      buffer.write('${h + 1}'.padLeft(pad));
+      buffer.write(' :');
+      var w = 0;
+      while (w < width) {
+        if (w % 6 == 0) buffer.write(' ');
+        buffer.writeBit(bits);
+        bits >>= 1;
+        w++;
+        nextField?.call(h, w);
+      }
+      buffer.writeRepeat(spaceAfterBits, ' ');
+      buffer.write('|');
+    };
+  }
 }
 
 ///
@@ -186,39 +191,65 @@ abstract class _FieldParent extends _FlagsParent implements _FlagsField {
     }
   }
 
+  ///
+  ///
+  ///
   @override
-  void _toStringFlagsBodyApply(StringBuffer buffer) {
-    final length = _toStringFlagsBodyLines;
-    final consume = _toStringFlagsBodyApplyEachLine(buffer);
-    for (var j = 0; j < length; j++) {
+  void _toStringFlagsBy(StringBuffer buffer, [int i = 0, int shift = 0]) {
+    final limit = _toStringFlagsIterationLimit;
+    final consume = _toStringFlagsEachLineBy(buffer, i, shift);
+    for (var j = 0; j < limit; j++) {
       buffer.write('|');
       consume(j);
       buffer.writeln();
     }
   }
 
-  int get _toStringFlagsBodyLines;
+  int get _toStringFlagsIterationLimit;
 
-  Consumer<int> _toStringFlagsBodyApplyEachLine(StringBuffer buffer);
+  Consumer<int> _toStringFlagsEachLineBy(
+    StringBuffer buffer, [
+    int i = 0,
+    int modulo = 0,
+  ]);
+}
+
+abstract class _FieldParentOperatable<F extends _FieldParent, T>
+    extends _FieldParent
+    with _MixinFieldPositionAble, _MixinFieldOperatable<F>
+    implements _FlagsContainer<T> {
+  const _FieldParentOperatable(super._field);
 }
 
 ///
 ///
 ///
-abstract class Field extends _FieldParent with _MixinFieldPositionAble {
-  final int size;
+abstract class Field extends _FieldParentOperatable<Field, int> {
+  final int width;
 
-  bool operator [](int position) => _bitOn(position);
+  factory Field(int width, [bool native = false]) {
+    assert(width > 1);
+    if (width < TypedIntList.limit8) return _Field8(width);
+    if (width < TypedIntList.limit16) return _Field16(width);
+    if (width > TypedIntList.sizeEach32 && native) {
+      return _Field64(TypedIntList.quotientCeil64(width));
+    }
+    return _Field32(TypedIntList.quotientCeil32(width));
+  }
 
-  void operator []=(int position, bool value) =>
-      value ? _bitSet(position) : _bitClear(position);
+  @override
+  bool validateIndex(int index) => index.isRangeOpenUpper(0, width);
 
-  factory Field(int size, [bool native = false]) {
-    assert(size > 0);
-    if (size < _FieldBits8.limit) return _FieldBits8(size);
-    if (size < _FieldBits16.limit) return _FieldBits16(size);
-    if (size < _FieldBits32.limit || !native) return _FieldBits32(size);
-    return _FieldBits64(size);
+  @override
+  bool operator [](int index) {
+    assert(validateIndex(index));
+    return _bitOn(index);
+  }
+
+  @override
+  void operator []=(int index, bool value) {
+    assert(validateIndex(index));
+    return value ? _bitSet(index) : _bitClear(index);
   }
 
   ///
@@ -228,18 +259,19 @@ abstract class Field extends _FieldParent with _MixinFieldPositionAble {
   int get _toStringFieldBorderLength {
     final sizeEach = _sizeEach;
     final titleSpace = (sizeEach * _field.length).toString().length + 1;
-    return titleSpace * 2 +
-        sizeEach +
-        sizeEach ~/ TypedDataListInt.countsAByte +
-        5;
+    return titleSpace * 2 + sizeEach + sizeEach ~/ TypedIntList.countsAByte + 5;
   }
 
   @override
-  int get _toStringFlagsBodyLines => _field.length;
+  int get _toStringFlagsIterationLimit => _field.length;
 
   @override
-  Consumer<int> _toStringFlagsBodyApplyEachLine(StringBuffer buffer) {
-    final size = this.size;
+  Consumer<int> _toStringFlagsEachLineBy(
+    StringBuffer buffer, [
+    int i = 0,
+    int modulo = 0,
+  ]) {
+    final width = this.width;
     final sizeEach = _sizeEach;
     final field = _field;
     final titleSpace = (sizeEach * field.length).toString().length + 1;
@@ -247,91 +279,23 @@ abstract class Field extends _FieldParent with _MixinFieldPositionAble {
       final start = j * sizeEach;
       buffer.write('${start + 1}'.padLeft(titleSpace));
       buffer.write(' ~');
-      buffer.write('${math.min(start + sizeEach, size)}'.padLeft(titleSpace));
+      buffer.write('${math.min(start + sizeEach, width)}'.padLeft(titleSpace));
       buffer.write(': ');
-      var i = 0;
       for (var bits = field[j]; bits > 0; bits >>= 1) {
         buffer.write(bits & 1 == 1 ? '1' : '0');
         i++;
         if (i % 8 == 0) buffer.write(' ');
       }
-      while (i < sizeEach && start + i < size) {
+      while (i < sizeEach && start + i < width) {
         buffer.write('0');
         i++;
         if (i % 8 == 0) buffer.write(' ');
       }
+      i = 0;
     };
   }
 
-  Field._(this.size, super._field);
-}
-
-///
-/// ```dart
-/// (x + (n - 1)) ~/ n; // faster
-/// (x / n).ceil();     // slower unless x is already double
-/// ```
-///
-class _FieldBits8 extends Field with _MixinFlagsOperate8 {
-  static const int limit = 9;
-  static const int mask = 7;
-  static const int shift = 3;
-  static const int sizeEach =
-      Uint8List.bytesPerElement * TypedDataListInt.countsAByte;
-
-  _FieldBits8(int size) : super._(size, Uint8List((size + mask) >> shift));
-}
-
-class _FieldBits16 extends Field with _MixinFlagsOperate16 {
-  static const int limit = 17;
-  static const int mask = 15;
-  static const int shift = 4;
-  static const int sizeEach =
-      Uint16List.bytesPerElement * TypedDataListInt.countsAByte;
-
-  _FieldBits16(int size) : super._(size, Uint16List((size + mask) >> shift));
-}
-
-class _FieldBits32 extends Field with _MixinFlagsOperate32 {
-  static const int limit = 33;
-  static const int mask = 31;
-  static const int shift = 5;
-  static const int sizeEach =
-      Uint32List.bytesPerElement * TypedDataListInt.countsAByte;
-
-  _FieldBits32(int size) : super._(size, Uint32List((size + mask) >> shift));
-}
-
-class _FieldBits64 extends Field with _MixinFlagsOperate64 {
-  // static const int limit = 65;
-  static const int mask = 63;
-  static const int shift = 6;
-  static const int sizeEach =
-      Uint64List.bytesPerElement * TypedDataListInt.countsAByte;
-
-  _FieldBits64(int size) : super._(size, Uint64List((size + mask) >> shift));
-}
-
-///
-///
-///
-abstract class _FieldParentPositionAble<T> extends _FieldParent
-    with _MixinFieldPositionAble
-    implements _FlagsContainer {
-  const _FieldParentPositionAble(super.field);
-
-  int _positionOf(T record);
-
-  bool validateRecord(T record);
-
-  @override
-  bool contains(covariant T record) => _bitOn(_positionOf(record));
-
-  @override
-  void includes(covariant T record) => _bitSet(_positionOf(record));
-
-  @override
-  void excludes(covariant T record) => _bitClear(_positionOf(record));
+  Field._(this.width, super._field);
 }
 
 ///
@@ -342,8 +306,8 @@ abstract class _FieldParentPositionAble<T> extends _FieldParent
 ///
 ///
 abstract class _FlagsParentMapSplay
-    with _MixinFieldInsertAble
-    implements _FlagsContainer {
+    with _MixinFlagsInsertAble
+    implements _FlagsContainer<(int, int, int)> {
   ///
   /// [_map], [_field]
   /// [_errorEmptyFlagsNotRemoved]
@@ -399,29 +363,22 @@ abstract class _FlagsParentMapSplay
   }
 
   ///
-  /// [includes], [excludes], [clear]
-  /// [isEmpty], [isNotEmpty], [contains]
+  ///
   ///
   @override
-  void includes(covariant (int, int, int) record) {
-    assert(record.isValidDate);
-    _map.setRecord(record);
-  }
-
-  @override
-  void excludes(covariant (int, int, int) record) {
-    assert(record.isValidDate);
-    _map.removeRecord(record);
-  }
-
-  @override
-  bool contains(covariant (int, int, int) date) {
-    assert(date.isValidDate);
-    final months = _map.field[date.$1];
+  bool operator []((int, int, int) index) {
+    assert(index.isValidDate);
+    final months = _map.field[index.$1];
     if (months == null) return false;
-    final days = months[date.$2];
+    final days = months[index.$2];
     if (days == null) return false;
-    return days[0] >> date.$3 - 1 == 1;
+    return days[0] >> index.$3 - 1 == 1;
+  }
+
+  @override
+  void operator []=((int, int, int) index, bool value) {
+    assert(index.isValidDate);
+    value ? _map.setRecord(index) : _map.removeRecord(index);
   }
 
   @override
@@ -595,7 +552,7 @@ abstract class _FlagsParentMapSplay
   );
 
   @override
-  void _toStringFlagsBodyApply(StringBuffer buffer) {
+  void _toStringFlagsBy(StringBuffer buffer) {
     final pad = _toStringFieldTitleLength;
     for (var entry in _map.field.entries) {
       final key = entry.key;

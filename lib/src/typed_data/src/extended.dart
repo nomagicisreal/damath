@@ -5,7 +5,7 @@ part of '../typed_data.dart';
 ///
 ///
 /// [_MapperSplayTreeMapInt], ...
-/// [TypedDataListInt]
+/// [TypedIntList]
 ///
 /// [Weekday]
 /// [MinutePeriod]
@@ -20,8 +20,7 @@ typedef _MapperSplayTreeMapInt<T> = int? Function(SplayTreeMap<int, T> map);
 typedef _MapperSplayTreeMapIntBy<T> =
     int? Function(SplayTreeMap<int, T> map, int by);
 
-typedef _BitsListToInt =
-    int? Function(TypedDataList<int> list, int size);
+typedef _BitsListToInt = int? Function(TypedDataList<int> list, int size);
 typedef _BitsListToIntFrom =
     int? Function(TypedDataList<int> list, int k, int size);
 
@@ -30,8 +29,41 @@ typedef _BitsListToIntFrom =
 /// [bitConsume], ...
 /// [bitOn], ...
 ///
-extension TypedDataListInt on TypedDataList<int> {
+extension TypedIntList on TypedDataList<int> {
   static const int countsAByte = 8;
+  static const int limit8 = 9;
+  static const int mask8 = 7;
+  static const int shift8 = 3;
+  static const int sizeEach8 =
+      Uint8List.bytesPerElement * TypedIntList.countsAByte;
+  static const int limit16 = 17;
+  static const int mask16 = 15;
+  static const int shift16 = 4;
+  static const int sizeEach16 =
+      Uint16List.bytesPerElement * TypedIntList.countsAByte;
+
+  // static const int limit32 = 33;
+  static const int mask32 = 31;
+  static const int shift32 = 5;
+  static const int sizeEach32 =
+      Uint32List.bytesPerElement * TypedIntList.countsAByte;
+
+  // static const int limit64 = 65;
+  static const int mask64 = 63;
+  static const int shift64 = 6;
+  static const int sizeEach64 =
+      Uint64List.bytesPerElement * TypedIntList.countsAByte;
+
+  ///
+  ///
+  ///
+  static int quotientCeil64(int value) => value + mask64 >> shift64;
+
+  static int quotientCeil32(int value) => value + mask32 >> shift32;
+
+  static int quotientCeil16(int value) => value + mask16 >> shift16;
+
+  static int quotientCeil8(int value) => value + mask8 >> shift8;
 
   ///
   /// [comparing8First], ...
@@ -89,13 +121,13 @@ extension TypedDataListInt on TypedDataList<int> {
   /// [bitSet], [bitClear]
   ///
   bool bitOn(int p, int shift, int mask, [int bit = 1]) =>
-      (this[p >> shift] >> (p & mask) - 1) & 1 == bit;
+      (this[p >> shift] >> (p & mask)) & 1 == bit;
 
   void bitSet(int p, int shift, int mask) =>
-      this[p >> shift] |= 1 << (p & mask) - 1;
+      this[p >> shift] |= 1 << (p & mask);
 
   void bitClear(int p, int shift, int mask) =>
-      this[p >> shift] &= ~(1 << (p & mask) - 1);
+      this[p >> shift] &= ~(1 << (p & mask));
 
   ///
   /// [bitConsume]
@@ -252,7 +284,7 @@ extension TypedDataListInt on TypedDataList<int> {
   /// [mapBitsAvailableFrom]
   /// [mapBitsAvailableTo]
   /// [mapBitsAvailableBetween]
-  /// notice that [size] must be 2^n, so [size] - 1 will be [_FieldBits8.mask], [_FieldBits16.mask], ...
+  /// notice that [size] must be 2^n, so [size] - 1 will be [_Field8.mask8], [TypedIntList.mask16], ...
   ///
   ///
   Iterable<T> mapBitsAvailable<T>(int size, Mapper<int, T> mapping) sync* {
