@@ -81,55 +81,53 @@ extension Erroring on Error {
   ///
   ///
   ///
+  static const String name_invalidYearMonthScope = 'invalid year month scope';
+  static const String name_invalidRangeBoundary = 'invalid range boundary';
+  static const String name_invalidMonth = 'invalid month';
+  static const String name_invalidHour = 'invalid hour';
+  static const String name_invalidMinute = 'invalid minute';
+  static const String name_invalidInt = 'invalid int';
+  static const String name_invalidPartition = 'invalid partition';
+
+  ///
   /// functions
   ///
-  ///
-  ///
-  static Error invalidIndex(int index, [int? max]) =>
-      RangeError.range(index, 0, max);
+  static ArgumentError invalidInt(int i) =>
+      ArgumentError.value(i, name_invalidInt);
 
-  static Error invalidInt(int i) => ArgumentError.value(i, 'invalid integer');
+  static ArgumentError invalidPartition(int m, int n) =>
+      ArgumentError('$m into $n group', name_invalidPartition);
 
-  static Error invalidIntOver(int i, [int min = 0]) =>
-      RangeError.range(i, min, i - 1);
+  static ArgumentError invalidMonth(int month) =>
+      ArgumentError.value(month, name_invalidMonth);
 
-  static Error invalidPartition(int m, int n) =>
-      ArgumentError('it is impossible to partition $m into $n group');
+  static ArgumentError invalidHour(int hour) =>
+      ArgumentError.value(hour, name_invalidHour);
 
-  static Error invalidComparableResult(int value) =>
-      StateError('comparable value not provided: $value');
+  static ArgumentError invalidMinute(int minute) =>
+      ArgumentError.value(minute, name_invalidMinute);
 
-  static Error invalidYearMonthsScope(
+  static ArgumentError invalidYearMonthsScope(
     (int, int) monthBegin,
     (int, int) monthEnd,
-  ) => StateError(
-    'invalid year month scope: '
-    '(${monthBegin.$1}.${monthBegin.$2} ~ ${monthEnd.$1} ~ ${monthEnd.$2})',
+  ) => ArgumentError.value(
+    '${monthBegin.$1}.${monthBegin.$2} ~ ${monthEnd.$1} ~ ${monthEnd.$2}',
+    name_invalidYearMonthScope,
   );
 
-  static Error invalidMonth(int month) => StateError('invalid month: $month');
+  static ArgumentError invalidRangeBoundary(int begin, int end) =>
+      ArgumentError.value('$begin ~ $end', name_invalidRangeBoundary);
 
-  static Error invalidRangeBoundary(int begin, int end) =>
-      StateError('invalid range boundary (begin: $begin, end: $end)');
+  //
+  static RangeError invalidIndex(int index, [int? max]) =>
+      RangeError.range(index, 0, max);
 
-  ///
-  /// [validateMonth], [validateMonthRange]
-  ///
-  static void validateMonth(int month) {
-    if (DateTimeExtension.isInvalidMonth(month)) {
-      throw Erroring.invalidMonth(month);
-    }
-  }
+  static RangeError invalidIntOver(int i, [int min = 0]) =>
+      RangeError.range(i, min, i - 1);
 
-  static void validateMonthRange(int begin, int end) {
-    if (DateTimeExtension.isInvalidMonth(begin)) {
-      throw Erroring.invalidMonth(begin);
-    }
-    if (DateTimeExtension.isInvalidMonth(end)) {
-      throw Erroring.invalidMonth(end);
-    }
-    if (begin > end) throw Erroring.invalidRangeBoundary(begin, end);
-  }
+  //
+  static StateError invalidComparableResult(int value) =>
+      StateError('comparable value not provided: $value');
 }
 
 extension NullableExtension<T> on T? {

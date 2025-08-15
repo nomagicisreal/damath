@@ -56,7 +56,7 @@ part of '../unimplement.dart';
 //     Listener onCancel = FListener.none,
 //     required BeatsStyle style,
 //   }) =>
-//       Timer.periodic(
+//       Timer.dayPeriodic(
 //         segment ~/ style.interval,
 //         _limitedListener(
 //           listener: _checkIfListenOnSequences(

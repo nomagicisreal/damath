@@ -6,7 +6,7 @@ part of '../typed_data.dart';
 /// [_MixinFlagsOperate8], [_MixinFlagsOperate16], [_MixinFlagsOperate32], [_MixinFlagsOperate64]
 /// [_MixinFlagsInsertAble]
 /// [_MixinFieldPositionAble], [_MixinFieldOperatable]
-/// [_MixinContainerFieldPositionAble]
+/// [_MixinFieldPositionAbleContainer]
 ///
 /// concrete class:
 /// [_Field8], ...
@@ -92,16 +92,19 @@ mixin _MixinFlagsInsertAble implements _FlagsOperator {
 ///
 ///
 ///
-mixin _MixinFieldPositionAble implements _FlagsOperator, _FlagsField {
-  bool _bitOn(int position) => _field.bitOn(position, _shift, _mask);
+/// [sizeEqual], [newFieldZero]
+/// [==], [&], [|], [^]
+/// [setAnd], [setOr], [setXOr]
+///
+///
+mixin _MixinFieldOperatable<F extends _FieldParent> on _FieldParent {
+  bool sizeEqual(F other) {
+    if (_sizeEach != other._sizeEach) return false;
+    return _field.length == other._field.length;
+  }
 
-  void _bitSet(int position) => _field.bitSet(position, _shift, _mask);
+  F get newFieldZero;
 
-  void _bitClear(int position) => _field.bitClear(position, _shift, _mask);
-}
-
-mixin _MixinFieldOperatable<F extends _FieldParent>
-    implements _FlagsOperator, _FlagsField {
   @override
   bool operator ==(Object other) {
     if (other is! F) return false;
@@ -116,23 +119,11 @@ mixin _MixinFieldOperatable<F extends _FieldParent>
     return true;
   }
 
-  ///
-  /// [sizeEqual], [zero]
-  /// [&], [|], [^]
-  /// [setAnd], [setOr], [setXOr]
-  ///
-  bool sizeEqual(F other) {
-    if (_sizeEach != other._sizeEach) return false;
-    return _field.length == other._field.length;
-  }
-
-  F get zero;
-
   F operator &(F other) {
     assert(sizeEqual(other));
     final fA = _field;
     final length = fA.length;
-    final result = zero;
+    final result = newFieldZero;
     final fB = other._field;
     final fR = result._field;
     for (var i = 0; i < length; i++) {
@@ -145,7 +136,7 @@ mixin _MixinFieldOperatable<F extends _FieldParent>
     assert(sizeEqual(other));
     final fA = _field;
     final length = fA.length;
-    final result = zero;
+    final result = newFieldZero;
     final fB = other._field;
     final fR = result._field;
     for (var i = 0; i < length; i++) {
@@ -158,7 +149,7 @@ mixin _MixinFieldOperatable<F extends _FieldParent>
     assert(sizeEqual(other));
     final fA = _field;
     final length = fA.length;
-    final result = zero;
+    final result = newFieldZero;
     final fB = other._field;
     final fR = result._field;
     for (var i = 0; i < length; i++) {
@@ -198,11 +189,19 @@ mixin _MixinFieldOperatable<F extends _FieldParent>
   }
 }
 
+mixin _MixinFieldPositionAble on _FieldParent implements _FlagsOperator {
+  bool _bitOn(int position) => _field.bitOn(position, _shift, _mask);
+
+  void _bitSet(int position) => _field.bitSet(position, _shift, _mask);
+
+  void _bitClear(int position) => _field.bitClear(position, _shift, _mask);
+}
+
 ///
 ///
 ///
-mixin _MixinContainerFieldPositionAble<T>
-    implements _FlagsContainer<T>, _MixinFieldPositionAble {
+mixin _MixinFieldPositionAbleContainer<T> on _MixinFieldPositionAble
+    implements _FlagsContainer<T> {
   int _positionOf(T index);
 
   @override
@@ -223,28 +222,28 @@ class _Field8 extends Field with _MixinFlagsOperate8 {
   _Field8(int width) : super._(width, Uint8List(1));
 
   @override
-  Field get zero => _Field8(width);
+  Field get newFieldZero => _Field8(width);
 }
 
 class _Field16 extends Field with _MixinFlagsOperate16 {
   _Field16(int width) : super._(width, Uint16List(1));
 
   @override
-  Field get zero => _Field16(width);
+  Field get newFieldZero => _Field16(width);
 }
 
 class _Field32 extends Field with _MixinFlagsOperate32 {
   _Field32(int s) : super._(s, Uint32List(s));
 
   @override
-  Field get zero => _Field32(_field.length);
+  Field get newFieldZero => _Field32(_field.length);
 }
 
 class _Field64 extends Field with _MixinFlagsOperate64 {
   _Field64(int s) : super._(s, Uint64List(s));
 
   @override
-  Field get zero => _Field64(_field.length);
+  Field get newFieldZero => _Field64(_field.length);
 }
 
 //
@@ -252,28 +251,28 @@ class _Field2D8 extends Field2D with _MixinFlagsOperate8 {
   _Field2D8(int w, int h) : super._(w, h, Uint8List(1));
 
   @override
-  Field2D get zero => _Field2D8(width, height);
+  Field2D get newFieldZero => _Field2D8(width, height);
 }
 
 class _Field2D16 extends Field2D with _MixinFlagsOperate16 {
   _Field2D16(int w, int h) : super._(w, h, Uint16List(1));
 
   @override
-  Field2D get zero => _Field2D8(width, height);
+  Field2D get newFieldZero => _Field2D8(width, height);
 }
 
 class _Field2D32 extends Field2D with _MixinFlagsOperate32 {
   _Field2D32(int w, int h, int s) : super._(w, h, Uint32List(s));
 
   @override
-  Field2D get zero => _Field2D32(width, height, _field.length);
+  Field2D get newFieldZero => _Field2D32(width, height, _field.length);
 }
 
 class _Field2D64 extends Field2D with _MixinFlagsOperate64 {
   _Field2D64(int w, int h, int s) : super._(w, h, Uint64List(s));
 
   @override
-  Field2D get zero => _Field2D64(width, height, _field.length);
+  Field2D get newFieldZero => _Field2D64(width, height, _field.length);
 }
 
 //
@@ -281,77 +280,80 @@ class _Field3D8 extends Field3D with _MixinFlagsOperate8 {
   _Field3D8(int w, int h, int d) : super._(w, h, d, Uint8List(1));
 
   @override
-  Field3D get zero => _Field3D8(width, height, depth);
+  Field3D get newFieldZero => _Field3D8(width, height, depth);
 }
 
 class _Field3D16 extends Field3D with _MixinFlagsOperate16 {
   _Field3D16(int w, int h, int d) : super._(w, h, d, Uint16List(1));
 
   @override
-  Field3D get zero => _Field3D16(width, height, depth);
+  Field3D get newFieldZero => _Field3D16(width, height, depth);
 }
 
 class _Field3D32 extends Field3D with _MixinFlagsOperate32 {
   _Field3D32(int w, int h, int d, int s) : super._(w, h, d, Uint32List(s));
 
   @override
-  Field3D get zero => _Field3D32(width, height, depth, _field.length);
+  Field3D get newFieldZero => _Field3D32(width, height, depth, _field.length);
 }
 
 class _Field3D64 extends Field3D with _MixinFlagsOperate64 {
   _Field3D64(int w, int h, int d, int s) : super._(w, h, d, Uint64List(s));
 
   @override
-  Field3D get zero => _Field3D64(width, height, depth, _field.length);
+  Field3D get newFieldZero => _Field3D64(width, height, depth, _field.length);
 }
 
 //
-class _FieldADay8 extends FieldADay with _MixinFlagsOperate8 {
-  _FieldADay8.perHour() // 24 bits
-    : super._(FieldADay._validateMinute_perHour, 6, 1, 60, Uint8List(3));
+class _FieldAB8 extends FieldAB with _MixinFlagsOperate8 {
+  _FieldAB8.dayPer12Minute() : super._(_validate_per12m, 5, Uint8List(9));
 
-  _FieldADay8.per30Minute() // 72 bits
-    : super._(FieldADay._validateMinute_per20Minute, 4, 3, 20, Uint8List(9));
+  _FieldAB8.dayPer20Minute() : super._(_validate_per20m, 3, Uint8List(9));
 
-  _FieldADay8._(
-    super.validateMinute,
-    super._toStringHoursPerLine,
-    super._hourDivision,
-    super._minuteModulus,
-    super._field,
-  ) : super._();
+  _FieldAB8.dayPerHour() : super._(_validate_perH, 1, Uint8List(3));
+
+  _FieldAB8._(super.bValidate, super.bDivision, super._field) : super._();
 
   @override
-  FieldADay get zero => _FieldADay8._(
-    validateMinute,
-    _toStringHoursPerLine,
-    _hourDivision,
-    _minuteModulus,
-    Uint8List(_field.length),
-  );
+  FieldAB get newFieldZero =>
+      _FieldAB8._(bValidate, bDivision, Uint8List(_field.length));
+
+  static bool _validate_perH(int minute) => minute == 0;
+
+  static bool _validate_per20m(int minute) =>
+      minute == 0 || minute == 20 || minute == 40;
+
+  static bool _validate_per12m(int minute) =>
+      minute == 0 ||
+      minute == 12 ||
+      minute == 24 ||
+      minute == 36 ||
+      minute == 48;
 }
 
-class _FieldADay16 extends FieldADay with _MixinFlagsOperate16 {
-  _FieldADay16.per30Minute() // 48 bits
-    : super._(FieldADay._validateMinute_per30Minute, 4, 2, 30, Uint16List(3));
+class _FieldAB16 extends FieldAB with _MixinFlagsOperate16 {
+  _FieldAB16.dayPer10Minute() : super._(_validate_per10m, 6, Uint16List(9));
 
-  _FieldADay16.per10Minute() // 144 bits
-    : super._(FieldADay._validateMinute_per10Minute, 3, 6, 10, Uint16List(9));
+  _FieldAB16.dayPer15Minute() : super._(_validate_per15m, 4, Uint16List(9));
 
-  _FieldADay16._(
-    super.validateMinute,
-    super._toStringHoursPerLine,
-    super._hourDivision,
-    super._minuteModulus,
-    super._field,
-  ) : super._();
+  _FieldAB16.dayPer30Minute() : super._(_validate_per30m, 2, Uint16List(3));
+
+  _FieldAB16._(super.bValidate, super.bDivision, super._field) : super._();
 
   @override
-  FieldADay get zero => _FieldADay16._(
-    validateMinute,
-    _toStringHoursPerLine,
-    _hourDivision,
-    _minuteModulus,
-    Uint16List(_field.length),
-  );
+  FieldAB get newFieldZero =>
+      _FieldAB16._(bValidate, bDivision, Uint16List(_field.length));
+
+  static bool _validate_per30m(int minute) => minute == 0 || minute == 30;
+
+  static bool _validate_per15m(int minute) =>
+      minute == 0 || minute == 15 || minute == 30 || minute == 45;
+
+  static bool _validate_per10m(int minute) =>
+      minute == 0 ||
+      minute == 10 ||
+      minute == 20 ||
+      minute == 30 ||
+      minute == 40 ||
+      minute == 50;
 }

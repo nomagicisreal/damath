@@ -5,11 +5,291 @@ part of '../typed_data.dart';
 ///
 /// to know the inheritance detail, see the comment above [_FlagsParent]
 ///
+/// [_FlagsParentMapSplay]
 /// [FlagsMapDate]
 /// [FlagsMapHourDate]
 ///
 ///
 ///
+
+///
+///
+/// [_bufferApplyField], ...
+/// [_errorEmptyFlagsNotRemoved], ...
+/// [_findKey], ...
+///
+///
+abstract class _FlagsParentMapSplay
+    with _MixinFlagsInsertAble
+    implements _FlagsContainer<(int, int, int)> {
+  ///
+  /// [_map], [_field]
+  /// [_errorEmptyFlagsNotRemoved]
+  /// [_excluding]
+  ///
+  late final SplayTreeMapIntIntInt<TypedDataList<int>> _map;
+
+  SplayTreeMap<int, SplayTreeMap<int, TypedDataList<int>>> get _field =>
+      _map.field;
+
+  static StateError _errorEmptyFlagsNotRemoved(int key, int keyKey) =>
+      StateError('empty flags key: ($key, $keyKey) should be removed');
+
+  static bool _excluding(TypedDataList<int> list) {
+    final length = list.length;
+    for (var j = 0; j < length; j++) {
+      if (list[j] != 0) return false;
+    }
+    return true;
+  }
+
+  _FlagsParentMapSplay.empty({
+    bool Function(dynamic potentialKey)? isValidKey,
+    int Function(int, int)? compareKeyKey,
+    bool Function(dynamic)? Function(int)? isValidKeyKey,
+    required int Function(int) toKeyKeyBegin,
+    required int Function(int) toKeyKeyEnd,
+    required int Function(int, int) toValueBegin,
+    required int Function(int, int) toValueEnd,
+  }) {
+    final bool Function(dynamic)? Function(int) validate =
+        isValidKeyKey ?? (_) => null;
+    SplayTreeMap<int, TypedDataList<int>> newKeyKey(
+      int key,
+      int keyKey,
+      int value,
+    ) =>
+        SplayTreeMap(compareKeyKey, validate(key))
+          ..[keyKey] = _newInsertion(value);
+
+    _map = SplayTreeMapIntIntInt(
+      SplayTreeMap(Comparable.compare, isValidKey),
+      setValue: _mutateBitSet,
+      clearValue: _mutateBitClear,
+      ensureRemove: _excluding,
+      newValue: _newInsertion,
+      newKeyKey: newKeyKey,
+      toKeyKeyBegin: toKeyKeyBegin,
+      toKeyKeyEnd: toKeyKeyEnd,
+      toValueBegin: toValueBegin,
+      toValueEnd: toValueEnd,
+    );
+  }
+
+  ///
+  ///
+  ///
+  @override
+  bool operator []((int, int, int) index) {
+    assert(index.isValidDate);
+    final months = _map.field[index.$1];
+    if (months == null) return false;
+    final days = months[index.$2];
+    if (days == null) return false;
+    return days[0] >> index.$3 - 1 == 1;
+  }
+
+  @override
+  void operator []=((int, int, int) index, bool value) {
+    assert(index.isValidDate);
+    value ? _map.setRecord(index) : _map.removeRecord(index);
+  }
+
+  @override
+  void clear() => _map.clear();
+
+  @override
+  bool get isEmpty => _map.field.isEmpty;
+
+  @override
+  bool get isNotEmpty => _map.field.isNotEmpty;
+
+  ///
+  /// [includeRange]
+  ///
+  void includeRange((int, int, int) begin, (int, int, int) end) {
+    assert(begin.isValidDate && end.isValidDate && end >= begin);
+    final keyBegin = begin.$1;
+    final keyEnd = end.$1;
+    final map = _map;
+
+    // ==
+    if (keyBegin == keyEnd) {
+      final keyKeyBegin = begin.$2;
+      final keyKeyEnd = end.$2;
+
+      // ==
+      if (keyKeyBegin == keyKeyEnd) {
+        map.setRecordInts(keyBegin, keyKeyBegin, begin.$3, end.$3);
+        return;
+      }
+
+      // <
+      map.setRecordInts(keyBegin, keyKeyBegin, begin.$3, null);
+      for (var j = keyKeyBegin + 1; j < keyKeyEnd; j++) {
+        map.setRecordInts(keyBegin, j, null, null);
+      }
+      map.setRecordInts(keyBegin, keyKeyEnd, null, end.$3);
+      return;
+    }
+
+    // <
+    final keyKeyBegin = begin.$2;
+    map.setRecordInts(keyBegin, keyKeyBegin, begin.$3, null);
+    map.setRecordIntsKeyKeys(keyBegin, keyKeyBegin + 1, null);
+    map.setRecordIntsKey(keyBegin + 1, keyEnd - 1);
+    final keyKenEnd = end.$2;
+    map.setRecordIntsKeyKeys(keyEnd, null, keyKenEnd - 1);
+    map.setRecordInts(keyEnd, keyKenEnd, null, end.$3);
+  }
+
+  ///
+  ///
+  ///
+  // void _excludeRange(
+  //   (int, int, int) begin,
+  //   (int, int, int) end,
+  //   Applier<int> toKeyKeyBegin,
+  //   Applier<int> toKeyKeyEnd,
+  //   Applier<int> toValueBegin,
+  //   Applier<int> toValueEnd,
+  // );
+
+  ///
+  ///
+  /// [_findKey], [_findKeyKey], [_findFlag]
+  /// [_findEntryInKey], [_findEntryNearBy]
+  ///
+  ///
+
+  ///
+  /// [_findKey]
+  /// [_findKeyKey]
+  /// [_findFlag]
+  ///
+  int? _findKey(_MapperSplayTreeMapInt toKey) => toKey(_map.field);
+
+  (int, int)? _findKeyKey(_MapperSplayTreeMapInt toKey) {
+    final field = _map.field;
+    final key = toKey(field);
+    if (key == null) return null;
+    return (key, toKey(field[key]!)!);
+  }
+
+  (int, int, int)? _findFlag(
+    _MapperSplayTreeMapInt toKey,
+    _BitsListToInt toBits,
+  ) {
+    final field = _map.field;
+    final key = toKey(field);
+    if (key == null) return null;
+    final valueMap = field[key]!;
+    final keyKey = toKey(valueMap)!;
+    final value = toBits(valueMap[keyKey]!, _sizeEach);
+    if (value != null) return (key, keyKey, value);
+    throw _errorEmptyFlagsNotRemoved(key, keyKey);
+  }
+
+  ///
+  /// [_findEntryInKey]
+  /// [_findEntryNearBy]
+  ///
+  (int, int, int)? _findEntryInKey(
+    int key,
+    _MapperSplayTreeMapInt toKey,
+    _BitsListToInt toPosition,
+  ) {
+    final valueMap = _map.field[key];
+    if (valueMap == null) return null;
+    final keyKey = toKey(valueMap)!;
+    final value = toPosition(valueMap[keyKey]!, _sizeEach);
+    if (value != null) return (key, keyKey, value);
+    throw _errorEmptyFlagsNotRemoved(key, keyKey);
+  }
+
+  (int, int, int)? _findEntryNearBy(
+    (int, int, int) record,
+    _MapperSplayTreeMapInt toKey,
+    _MapperSplayTreeMapIntBy toKeyBy,
+    PredicatorReducer<int> predicate,
+    _BitsListToInt toPosition,
+    _BitsListToIntFrom toPositionFrom,
+  ) {
+    final field = _map.field;
+    var key = toKey(field);
+    if (key == null) return null;
+
+    // recent key > a || latest key < a
+    final a = record.$1;
+    if (predicate(key, a)) return _findEntryInKey(key, toKey, toPosition);
+
+    // recent keyKey > b || latest keyKey < b
+    if (key == a) {
+      final b = record.$2;
+      final valueMap = field[a]!;
+      int? keyKey = toKey(valueMap)!;
+      if (predicate(keyKey, b)) {
+        return (a, keyKey, toPosition(valueMap[keyKey]!, _sizeEach)!);
+      }
+
+      // recent value > c || latest value < c
+      if (keyKey == b) {
+        final c = record.$3;
+        final value = toPositionFrom(valueMap[b]!, c, _sizeEach);
+        if (value != null) return (a, b, value);
+      }
+
+      // next keyKey > b || previous keyKey < b
+      keyKey = toKeyBy(valueMap, b);
+      if (keyKey != null) {
+        return (a, keyKey, toPosition(valueMap[keyKey]!, _sizeEach)!);
+      }
+    }
+
+    // next key > a || previous keyKey < a
+    key = toKeyBy(field, a);
+    if (key != null) return _findEntryInKey(key, toKey, toPosition);
+
+    return null;
+  }
+
+  ///
+  ///
+  ///
+  int get _toStringFieldTitleLength;
+
+  void _bufferApplyField(
+    StringBuffer buffer,
+    int key,
+    int keyKey,
+    TypedDataList<int> values,
+  );
+
+  @override
+  void _toStringFlagsBy(StringBuffer buffer) {
+    final pad = _toStringFieldTitleLength;
+    for (var entry in _map.field.entries) {
+      final key = entry.key;
+      buffer.write('|');
+      buffer.write('($key'.padLeft(pad));
+      buffer.write(',');
+      var padding = false;
+      for (var valueEntry in entry.value.entries) {
+        if (padding) {
+          buffer.write('|');
+          buffer.writeRepeat(pad + 1, ' ');
+        } else {
+          padding = true;
+        }
+        final keyKey = valueEntry.key;
+        buffer.write('$keyKey)'.padLeft(4));
+        buffer.write(' : ');
+        _bufferApplyField(buffer, key, keyKey, valueEntry.value);
+        buffer.writeln();
+      }
+    }
+  }
+}
 
 ///
 ///

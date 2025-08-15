@@ -389,7 +389,7 @@ mixin _MixinSplayDate<K, V> on _SplayTreeMapValueList<K, V> {
 ///
 class Dated<T> extends _SplayTreeMapValueList<(int, int, int), T>
     with _MixinSplayDate {
-  Dated.empty() : super.empty(DateExtension.comparing);
+  Dated.empty() : super.empty(Record3Int.comparing);
 
   factory Dated.on((int, int, int) date, List<T> events) =>
       Dated.empty().._field[date] = events;

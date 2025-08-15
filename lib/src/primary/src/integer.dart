@@ -301,7 +301,14 @@ extension IntExtension on int {
   ///
   ///
   ///
+  static Predicator<int> predicator_larger(int value) => (v) => v > value;
+
+  static Predicator<int> predicator_less(int value) => (v) => v < value;
+
   static Predicator<int> predicator_equalTo(int value) => (n) => n == value;
+
+  static Predicator<int> predicator_additionLess(int begin, int value) =>
+      (v) => begin + v < value;
 
   ///
   ///

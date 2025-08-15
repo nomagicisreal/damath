@@ -5,10 +5,11 @@ part of '../typed_data.dart';
 ///
 /// to know the inheritance detail, see the comment above [_FlagsParent]
 ///
-/// [FieldMonthDates]
-/// [FieldADay]
+/// [Field]
 /// [Field2D]
 /// [Field3D]
+/// [FieldDatesInMonths]
+/// [FieldAB]
 ///
 ///
 ///
@@ -16,180 +17,214 @@ part of '../typed_data.dart';
 ///
 ///
 ///
-class FieldMonthDates extends _FieldParent
+class FieldDatesInMonths extends _FieldParentScope<(int, int)>
+    with _MixinFieldOperatable<FieldDatesInMonths>
     implements _FlagsContainer<(int, int, int)> {
-  final (int, int, int) begin;
-  final (int, int, int) end;
+  final int Function((int, int, int) record) _indexOf;
 
-  FieldMonthDates(this.begin, this.end)
-    : assert(begin.isValidDate && end.isValidDate, 'invalid date $begin, $end'),
+  FieldDatesInMonths((int, int) begin, (int, int) end)
+    : assert(
+        DateTimeExtension.isValidMonth(begin.$2) &&
+            DateTimeExtension.isValidMonth(end.$2),
+        'invalid date $begin ~ $end',
+      ),
       assert(end > begin, 'invalid range begin($begin), end($end)'),
-      super(Uint32List(1 + begin.monthsToDates(end.$1, end.$2)));
+      _indexOf = begin.monthsToDates,
+      super(begin, end, Uint32List(begin.monthsToMonth(end) + 1));
 
-  int _indexOf(int year, int month) => begin.monthsToDates(year, month);
-
+  ///
+  ///
+  ///
   @override
   bool validateIndex((int, int, int) index) =>
-      index.isValidDate && begin <= index && index <= end;
+      index.isValidDate &&
+      begin.lessOrEqualThan3(index) &&
+      end.largerOrEqualThan3(index);
 
   @override
   int get _sizeEach => TypedIntList.sizeEach32;
 
   @override
+  FieldDatesInMonths get newFieldZero => FieldDatesInMonths(begin, end);
+
+  @override
   bool operator []((int, int, int) index) {
     assert(validateIndex(index));
-    return 1 == _field[_indexOf(index.$1, index.$2)] >> index.$3 - 1 & 1;
+    return _field[_indexOf(index)] >> index.$3 - 1 & 1 == 1;
   }
 
   @override
   void operator []=((int, int, int) index, bool value) {
     assert(validateIndex(index));
     if (value) {
-      _field[_indexOf(index.$1, index.$2)] |= 1 << index.$3 - 1;
+      _field[_indexOf(index)] |= 1 << index.$3 - 1;
       return;
     }
-    _field[_indexOf(index.$1, index.$2)] &= ~(1 << index.$3 - 1);
+    _field[_indexOf(index)] &= ~(1 << index.$3 - 1);
   }
 
   @override
   int get _toStringFieldBorderLength => 15 + 32 + 4;
 
   @override
-  int get _toStringFlagsIterationLimit => _field.length;
-
-  @override
-  Consumer<int> _toStringFlagsEachLineBy(
-    StringBuffer buffer, [
-    int i = 0,
-    int modulo = 0,
-  ]) {
+  void _toStringFlagsBy(StringBuffer buffer) {
     final field = _field;
     final december = DateTime.december;
     final daysOf = DateTimeExtension.monthDaysOf;
     final begin = this.begin;
     var year = begin.$1;
     var month = begin.$2;
-    return (j) {
+
+    final limit = _field.length;
+    for (var j = 0; j < limit; j++) {
+      buffer.write('|');
       buffer.write('($year'.padLeft(6));
       buffer.write(',');
       buffer.write('$month)'.padLeft(4));
       buffer.write(' :');
       buffer.write(' ');
       buffer.writeBitsOfMonth(field[j], daysOf(year, month));
-      buffer.writeln();
+      buffer.writeln(' |');
       month++;
       if (month > december) {
         month = 1;
         year++;
       }
-    };
+    }
   }
 }
 
 ///
 ///
 ///
-abstract class FieldADay extends _FieldParentOperatable<FieldADay, (int, int)>
-    with _MixinContainerFieldPositionAble<(int, int)> {
-  factory FieldADay.perHour() = _FieldADay8.perHour;
+abstract class FieldAB extends _FieldParent
+    with
+        _MixinFieldPositionAble,
+        _MixinFieldPositionAbleContainer<(int, int)>,
+        _MixinFieldOperatable<FieldAB> {
+  factory FieldAB.dayPerHour() = _FieldAB8.dayPerHour;
 
-  factory FieldADay.per30Minute() = _FieldADay16.per30Minute;
+  factory FieldAB.dayPer10Minute() = _FieldAB16.dayPer10Minute;
 
-  factory FieldADay.per20Minute() = _FieldADay8.per30Minute;
+  factory FieldAB.dayPer12Minute() = _FieldAB8.dayPer12Minute;
 
-  factory FieldADay.per10Minute() = _FieldADay16.per10Minute;
+  factory FieldAB.dayPer15Minute() = _FieldAB16.dayPer15Minute;
 
-  static const String invalidMinute_errorName = 'invalid minute';
-  static const String invalidMinutePeriod_errorName = 'invalid minute period';
+  factory FieldAB.dayPer20Minute() = _FieldAB8.dayPer20Minute;
 
-  static ArgumentError invalidMinute_erroring(int minute) =>
-      ArgumentError.value(minute, invalidMinute_errorName);
-
-  ///
-  ///
-  ///
-  static bool _validateMinute_perHour(int minute) => minute == 0;
-
-  static bool _validateMinute_per30Minute(int minute) =>
-      minute == 0 || minute == 30;
-
-  static bool _validateMinute_per20Minute(int minute) =>
-      minute == 0 || minute == 20 || minute == 40;
-
-  static bool _validateMinute_per10Minute(int minute) =>
-      minute == 0 ||
-      minute == 10 ||
-      minute == 20 ||
-      minute == 30 ||
-      minute == 40 ||
-      minute == 50;
+  factory FieldAB.dayPer30Minute() = _FieldAB16.dayPer30Minute;
 
   ///
   ///
   ///
-  final int _hourDivision;
-  final int _minuteModulus;
-  final Predicator<int> validateMinute;
-  final int _toStringHoursPerLine;
+  final int aLimit;
+  final Predicator<int> bValidate;
+  final int bDivision;
+  final int bDivisionSize;
 
   @override
-  bool validateIndex((int, int) index) =>
-      DateTimeExtension.isValidHour(index.$1) && validateMinute(index.$2);
+  bool validateIndex((int, int) index) {
+    final a = index.$1;
+    return -1 < a && a < aLimit && bValidate(index.$2);
+  }
 
   @override
   int _positionOf((int, int) index) {
     assert(validateIndex(index));
-    return index.$1 * _hourDivision + index.$2 ~/ _minuteModulus;
+    return index.$1 * bDivision + index.$2 ~/ bDivisionSize;
   }
 
   @override
   int get _toStringFieldBorderLength =>
-      1 + 3 + 3 + 5 + 3 + (_hourDivision + 1) * _toStringHoursPerLine;
+      3 + 6 + 2 + _toStringHoursPerLine(bDivision) * (bDivision + 1) + 2;
 
   @override
-  Consumer<int> _toStringFlagsEachLineBy(
-    StringBuffer buffer, [
-    int i = 0,
-    int modulo = 0,
-  ]) {
+  void _toStringFlagsBy(StringBuffer buffer) {
     final field = _field;
     final shift = _shift;
     final mask = _mask;
-    final division = _hourDivision;
-    final hoursPerLine = _toStringHoursPerLine;
+    final division = bDivision;
+    final hoursPerLine = _toStringHoursPerLine(division);
     final size = hoursPerLine * division;
-    return (j) {
+
+    final limit = (aLimit - 1) ~/ hoursPerLine;
+    var i = 0;
+    for (var j = 0; j < limit; j++) {
       final h = j * hoursPerLine;
+      buffer.write('|');
       buffer.write('$h'.padLeft(3));
-      buffer.write(' ~ ');
-      buffer.write('${h + hoursPerLine - 1}'.padRight(3));
-      buffer.write('hr');
-      buffer.write(' : ');
+      buffer.write(' ~');
+      buffer.write('${h + hoursPerLine - 1}'.padLeft(3));
+      buffer.write(' :');
       for (var m = 0; m < size; m++) {
+        if (m % division == 0) buffer.write(' ');
         buffer.writeBit(field[i >> shift] >> (i & mask));
         i++;
-        if (m % division == 0) buffer.write(' ');
       }
-    };
+      buffer.writeln(' |');
+    }
   }
 
-  @override
-  int get _toStringFlagsIterationLimit => 24 ~/ _toStringHoursPerLine;
+  static int _toStringHoursPerLine(int division) => switch (division) {
+    1 => 6,
+    2 || 3 => 4,
+    _ => 3,
+  };
 
-  FieldADay._(
-    this.validateMinute,
-    this._toStringHoursPerLine,
-    this._hourDivision,
-    this._minuteModulus,
-    super._field,
-  );
+  FieldAB._(
+    this.bValidate,
+    this.bDivision,
+    super._field, {
+    this.aLimit = 25,
+    int bSizeTotal = DateTimeExtension.minutesAHour,
+  }) : bDivisionSize = bSizeTotal ~/ bDivision;
 }
 
 ///
 ///
 ///
-sealed class Field2D extends _FieldParentSpace<Field2D, (int, int)> {
+abstract class Field extends _FieldParentSpatial1
+    with _MixinFieldOperatable<Field>
+    implements _FlagsContainer<int> {
+  const Field._(super.width, super._field);
+
+  factory Field(int width, [bool native = false]) {
+    assert(width > 1);
+    if (width < TypedIntList.limit8) return _Field8(width);
+    if (width < TypedIntList.limit16) return _Field16(width);
+    if (width > TypedIntList.sizeEach32 && native) {
+      return _Field64(TypedIntList.quotientCeil64(width));
+    }
+    return _Field32(TypedIntList.quotientCeil32(width));
+  }
+
+  @override
+  bool validateIndex(int index) => index.isRangeOpenUpper(0, width);
+
+  @override
+  bool operator [](int index) {
+    assert(validateIndex(index));
+    return _bitOn(index);
+  }
+
+  @override
+  void operator []=(int index, bool value) {
+    assert(validateIndex(index));
+    return value ? _bitSet(index) : _bitClear(index);
+  }
+}
+
+///
+///
+///
+abstract class Field2D extends _FieldParentSpatial2
+    with
+        _MixinFieldPositionAbleContainer<(int, int)>,
+        _MixinFieldOperatable<Field2D> {
+  const Field2D._(super.width, super.height, super._field);
+
   factory Field2D(int width, int height, {bool native = false}) {
+    assert(width > 1 && height > 1);
     final size = width * height;
     if (size < TypedIntList.limit8) return _Field2D8(width, height);
     if (size < TypedIntList.limit16) return _Field2D16(width, height);
@@ -198,15 +233,6 @@ sealed class Field2D extends _FieldParentSpace<Field2D, (int, int)> {
     }
     return _Field2D32(width, height, TypedIntList.quotientCeil32(size));
   }
-
-  ///
-  ///
-  ///
-  static bool validateDaysHours(int limit, int count, [int begin = 0]) =>
-      DateTimeExtension.isValidHour(begin) &&
-      DateTimeExtension.isValidHour(limit) &&
-      count > 1 &&
-      limit - begin > 1; // hours per day > 1
 
   @override
   bool validateIndex((int, int) index) =>
@@ -217,17 +243,19 @@ sealed class Field2D extends _FieldParentSpace<Field2D, (int, int)> {
     assert(validateIndex(index));
     return (index.$1 - 1) * width + index.$2;
   }
-
-  const Field2D._(super.width, super.height, super._field);
 }
 
 ///
 ///
 ///
-sealed class Field3D extends _FieldParentSpace<Field3D, (int, int, int)> {
-  final int depth;
+abstract class Field3D extends _FieldParentSpatial3
+    with
+        _MixinFieldPositionAbleContainer<(int, int, int)>,
+        _MixinFieldOperatable<Field3D> {
+  const Field3D._(super.width, super.height, super.depth, super.field);
 
   factory Field3D(int width, int height, int depth, [bool native = false]) {
+    assert(width > 1 && height > 1 && depth > 1);
     final size = width * height * depth;
     if (size < TypedIntList.limit8) return _Field3D8(width, height, depth);
     if (size < TypedIntList.limit16) return _Field3D16(width, height, depth);
@@ -253,28 +281,4 @@ sealed class Field3D extends _FieldParentSpace<Field3D, (int, int, int)> {
     assert(validateIndex(index));
     return (index.$1 - 1) * width * height + (index.$2 - 1) * width + index.$3;
   }
-
-  @override
-  void _toStringFlagsBy(StringBuffer buffer, [int i = 0, int shift = 0]) {
-    final depth = this.depth;
-    final width = this.width;
-    final height = this.height;
-    final sizeEach = _sizeEach;
-    final borderLength = _toStringFieldBorderLength;
-    for (var d = 0; d < depth; d++) {
-      final start = d * width * height;
-      super._toStringFlagsBy(buffer, start ~/ sizeEach, start % sizeEach);
-      if (d < depth - 1) {
-        buffer.write('\\');
-        buffer.write('${d + 1}/'.padLeft(borderLength - 1, '-'));
-        buffer.writeln();
-
-        buffer.write('/${d + 2}'.padRight(borderLength - 1, '-'));
-        buffer.write('\\');
-        buffer.writeln();
-      }
-    }
-  }
-
-  const Field3D._(super.width, super.height, this.depth, super.field);
 }

@@ -89,6 +89,7 @@ extension DateTimeExtension on DateTime {
   static const int hourBegin = 0;
   static const int hourEnd = 23;
   static const int daysAYearNormal = 365;
+  static const int minutesAHour = 60;
 
   ///
   /// [isYearLeapYear]
@@ -128,6 +129,12 @@ extension DateTimeExtension on DateTime {
 
   static bool isValidDays(int year, int month, int days) =>
       days > 0 && days < monthDaysOf(year, month) + 1;
+
+  static bool isValidDate((int, int, int) date) {
+    final month = date.$2;
+    if (isInvalidMonth(month)) return false;
+    return isValidDays(date.$1, month, date.$3);
+  }
 
   static bool Function(dynamic) isValidMonthDynamicOf(int year) =>
       (month) => month > limitMonthBegin && month < limitMonthEnd;

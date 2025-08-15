@@ -19,15 +19,16 @@ void main(List<String> arguments) {
   // ;
   // print(node);
 
-  // final field = FieldADay.perHour();
-  // final field = FieldADay.per10Minute();
-  // final field = FieldADay.per20Minute();
-  // final field = FieldADay.per30Minute();
+  // final field = FieldAB.dayPerHour();
+  // final field = FieldAB.dayPer10Minute();
+  final field = FieldAB.dayPer20Minute();
+  // final field = FieldAB.dayPer30Minute();
   // final field = FieldRangingDates((2025, 1, 20), (2025, 8, 20));
   // final field = Field2D(17, 5, begin: 8);
-  final field = Field3D(20, 3, 5);
+  // final field = Field3D(20, 3, 5);
+  field[(14, 0)] = true;
   // field[(1, 1, 16)] = true;
-  field[(2, 3, 9)] = true;
+  // field[(2, 3, 9)] = true;
   // field[(3, 16)];
   // field[(3, 11)];
   print(field.toString());

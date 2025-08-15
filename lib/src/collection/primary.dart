@@ -7,7 +7,7 @@ part of 'collection.dart';
 /// [IteratorNullable]
 /// [IterableNullable]
 ///
-/// [DateExtension]
+/// [Record3Int]
 ///
 ///
 
@@ -107,91 +107,177 @@ extension IterableNullable<I> on Iterable<I?> {
 ///
 ///
 ///
-extension DateExtension on (int, int, int) {
+extension Record2Int on (int, int) {
   ///
   ///
   ///
-  static int comparing((int, int, int) d1, (int, int, int) d2) {
-    final cYear = d1.$1.compareTo(d2.$1);
-    if (cYear != 0) return cYear;
-    final cMonth = d1.$2.compareTo(d2.$2);
-    if (cMonth != 0) return cMonth;
-    final cDay = d1.$3.compareTo(d2.$3);
-    return cDay;
+  static int comparing((int, int) r1, (int, int) r2) {
+    final c1 = r1.$1.compareTo(r2.$1);
+    if (c1 != 0) return c1;
+    final c2 = r1.$2.compareTo(r2.$2);
+    return c2;
   }
 
   ///
-  /// [isValidDate]
-  /// [daysToDates]
+  ///
+  /// [_comparing],
+  /// [>], [<], [largerThan3], [lessThan3]
+  /// [>=], [<=], [largerOrEqualThan3], [lessOrEqualThan3]
+  ///
+  ///
+  bool _comparing(
+    int a,
+    int b,
+    PredicatorReducer<int> reduceInvalid,
+    PredicatorReducer<int> reduce,
+    PredicatorReducer<int> reduceFinal,
+  ) {
+    final one = this.$1;
+    if (reduceInvalid(one, a)) return false;
+    if (reduce(one, a)) return true;
+    final two = this.$2;
+    if (reduceInvalid(two, b)) return false;
+    return reduceFinal(two, b);
+  }
+
+  bool operator >((int, int) other) => _comparing(
+    other.$1,
+    other.$2,
+    IntExtension.predicateReduce_less,
+    IntExtension.predicateReduce_larger,
+    IntExtension.predicateReduce_larger,
+  );
+
+  bool operator <((int, int) other) => _comparing(
+    other.$1,
+    other.$2,
+    IntExtension.predicateReduce_larger,
+    IntExtension.predicateReduce_less,
+    IntExtension.predicateReduce_less,
+  );
+
+  bool largerThan3((int, int, int) other) => _comparing(
+    other.$1,
+    other.$2,
+    IntExtension.predicateReduce_less,
+    IntExtension.predicateReduce_larger,
+    IntExtension.predicateReduce_larger,
+  );
+
+  bool lessThan3((int, int, int) other) => _comparing(
+    other.$1,
+    other.$2,
+    IntExtension.predicateReduce_larger,
+    IntExtension.predicateReduce_less,
+    IntExtension.predicateReduce_less,
+  );
+
+  bool operator >=((int, int) other) => _comparing(
+    other.$1,
+    other.$2,
+    IntExtension.predicateReduce_less,
+    IntExtension.predicateReduce_larger,
+    IntExtension.predicateReduce_largerOrEqual,
+  );
+
+  bool operator <=((int, int) other) => _comparing(
+    other.$1,
+    other.$2,
+    IntExtension.predicateReduce_larger,
+    IntExtension.predicateReduce_less,
+    IntExtension.predicateReduce_lessOrEqual,
+  );
+
+  bool largerOrEqualThan3((int, int, int) other) => _comparing(
+    other.$1,
+    other.$2,
+    IntExtension.predicateReduce_less,
+    IntExtension.predicateReduce_larger,
+    IntExtension.predicateReduce_largerOrEqual,
+  );
+
+  bool lessOrEqualThan3((int, int, int) other) => _comparing(
+    other.$1,
+    other.$2,
+    IntExtension.predicateReduce_larger,
+    IntExtension.predicateReduce_less,
+    IntExtension.predicateReduce_lessOrEqual,
+  );
+
+  ///
+  /// [monthsToMonth]
   /// [monthsToDates]
   ///
-  bool get isValidDate =>
-      this.$1 > 0 &&
+  int monthsToMonth((int, int) record) {
+    assert(
       DateTimeExtension.isValidMonth(this.$2) &&
-      DateTimeExtension.isValidDays(this.$1, this.$2, this.$3);
-
-  int daysToDates((int, int, int) another) {
-    final year = another.$1;
-    final month = another.$2;
-    final day = another.$3;
-
-    final yearCurrent = this.$1;
-    assert(yearCurrent <= year);
-    final monthCurrent = this.$2;
-    final dayCurrent = this.$3;
-
-    // ==
-    if (yearCurrent == year) {
-      assert(monthCurrent <= month);
-      if (monthCurrent == month) {
-        assert(dayCurrent <= day);
-        return day - dayCurrent;
-      }
-      var days = 0;
-      final daysOf = DateTimeExtension.monthDaysOf;
-      for (var m = monthCurrent; m < month; m++) {
-        days += daysOf(yearCurrent, m);
-      }
-      return days + day - dayCurrent;
-    }
-
-    // <
-    var days = 0;
-    final daysOf = DateTimeExtension.monthDaysOf;
-    final isLeapYear = DateTimeExtension.isYearLeapYear;
-    final mEnd = DateTimeExtension.limitMonthEnd;
-    for (var m = monthCurrent; m < mEnd; m++) {
-      days += daysOf(yearCurrent, m);
-    }
-    final daysAYear = DateTimeExtension.daysAYearNormal;
-    for (var y = yearCurrent + 1; y < year; y++) {
-      days += daysAYear;
-      if (isLeapYear(y)) days++;
-    }
-    for (var m = DateTime.january; m < month; m++) {
-      days += daysOf(year, m);
-    }
-    return days + day - dayCurrent;
-  }
-
-  int monthsToDates(int year, int month) {
+          DateTimeExtension.isValidMonth(this.$2),
+      'invalid date: $this, $record',
+    );
+    final year = record.$1;
     final yearCurrent = this.$1;
     assert(yearCurrent <= year);
     final monthCurrent = this.$2;
 
     // ==
+    final month = record.$2;
     if (yearCurrent == year) {
       assert(monthCurrent <= month);
       return month - monthCurrent;
     }
+
+    // <
     return DateTimeExtension.limitMonthEnd -
         monthCurrent +
         DateTime.december * (year - yearCurrent) +
         month;
   }
 
+  int monthsToDates((int, int, int) record) {
+    assert(
+      DateTimeExtension.isValidMonth(this.$2) &&
+          DateTimeExtension.isValidMonth(this.$2),
+      'invalid date: $this, $record',
+    );
+    final year = record.$1;
+    final yearCurrent = this.$1;
+    assert(yearCurrent <= year);
+    final monthCurrent = this.$2;
+
+    // ==
+    final month = record.$2;
+    if (yearCurrent == year) {
+      assert(monthCurrent <= month);
+      return month - monthCurrent;
+    }
+
+    // <
+    return DateTimeExtension.limitMonthEnd -
+        monthCurrent +
+        DateTime.december * (year - yearCurrent) +
+        month;
+  }
+}
+
+///
+///
+///
+extension Record3Int on (int, int, int) {
   ///
-  /// [_comparing], ...
+  ///
+  ///
+  static int comparing((int, int, int) r1, (int, int, int) r2) {
+    final c1 = r1.$1.compareTo(r2.$1);
+    if (c1 != 0) return c1;
+    final c2 = r1.$2.compareTo(r2.$2);
+    if (c2 != 0) return c2;
+    final c3 = r1.$3.compareTo(r2.$3);
+    return c3;
+  }
+
+  ///
+  /// [_comparing],
+  /// [>], [<], [>=], [<=]
   ///
   bool _comparing(
     (int, int, int) another,
@@ -240,4 +326,60 @@ extension DateExtension on (int, int, int) {
     IntExtension.predicateReduce_less,
     IntExtension.predicateReduce_lessOrEqual,
   );
+
+  ///
+  /// [isValidDate]
+  /// [daysToDates]
+  /// [monthsToDates]
+  ///
+  bool get isValidDate => DateTimeExtension.isValidDate(this);
+
+  int daysToDates((int, int, int) another) {
+    assert(
+      DateTimeExtension.isValidDate(this) &&
+          DateTimeExtension.isValidDate(another),
+      'invalid date: $this, $another',
+    );
+    final year = another.$1;
+    final month = another.$2;
+    final day = another.$3;
+
+    final yearCurrent = this.$1;
+    assert(yearCurrent <= year);
+    final monthCurrent = this.$2;
+    final dayCurrent = this.$3;
+
+    // ==
+    if (yearCurrent == year) {
+      assert(monthCurrent <= month);
+      if (monthCurrent == month) {
+        assert(dayCurrent <= day);
+        return day - dayCurrent;
+      }
+      var days = 0;
+      final daysOf = DateTimeExtension.monthDaysOf;
+      for (var m = monthCurrent; m < month; m++) {
+        days += daysOf(yearCurrent, m);
+      }
+      return days + day - dayCurrent;
+    }
+
+    // <
+    var days = 0;
+    final daysOf = DateTimeExtension.monthDaysOf;
+    final isLeapYear = DateTimeExtension.isYearLeapYear;
+    final mEnd = DateTimeExtension.limitMonthEnd;
+    for (var m = monthCurrent; m < mEnd; m++) {
+      days += daysOf(yearCurrent, m);
+    }
+    final daysAYear = DateTimeExtension.daysAYearNormal;
+    for (var y = yearCurrent + 1; y < year; y++) {
+      days += daysAYear;
+      if (isLeapYear(y)) days++;
+    }
+    for (var m = DateTime.january; m < month; m++) {
+      days += daysOf(year, m);
+    }
+    return days + day - dayCurrent;
+  }
 }
