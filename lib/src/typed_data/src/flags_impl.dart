@@ -12,6 +12,8 @@ part of '../typed_data.dart';
 /// [_Field8], ...
 /// [_Field2D8], ...
 /// [_Field3D8], ...
+/// [_Field4D8], ...
+/// [_FieldAB8], ...
 ///
 ///
 ///
@@ -89,7 +91,6 @@ mixin _MixinFlagsInsertAble implements _FlagsOperator {
   bool get isNotEmpty;
 }
 
-///
 ///
 ///
 /// [sizeEqual], [newFieldZero]
@@ -189,6 +190,9 @@ mixin _MixinFieldOperatable<F extends _FieldParent> on _FieldParent {
   }
 }
 
+///
+///
+///
 mixin _MixinFieldPositionAble on _FieldParent implements _FlagsOperator {
   bool _bitOn(int position) => _field.bitOn(position, _shift, _mask);
 
@@ -197,13 +201,16 @@ mixin _MixinFieldPositionAble on _FieldParent implements _FlagsOperator {
   void _bitClear(int position) => _field.bitClear(position, _shift, _mask);
 }
 
-///
-///
-///
+// mixin _MixinFieldPositionAbleIterable<T> on _FieldParent {
+//   T _indexOf(int position);
+//
+//   T? get first => _field.bitFirst(_sizeEach).nullOrMap(_indexOf);
+//
+//   T? get last => _field.bitLast(_sizeEach).nullOrMap(_indexOf);
+// }
+
 mixin _MixinFieldPositionAbleContainer<T> on _MixinFieldPositionAble
     implements _FlagsContainer<T> {
-  int _positionOf(T index);
-
   @override
   bool operator [](covariant T index) {
     assert(validateIndex(index));
@@ -215,6 +222,8 @@ mixin _MixinFieldPositionAbleContainer<T> on _MixinFieldPositionAble
     assert(validateIndex(index));
     value ? _bitSet(_positionOf(index)) : _bitClear(_positionOf(index));
   }
+
+  int _positionOf(T index);
 }
 
 //
@@ -222,28 +231,28 @@ class _Field8 extends Field with _MixinFlagsOperate8 {
   _Field8(int width) : super._(width, Uint8List(1));
 
   @override
-  Field get newFieldZero => _Field8(width);
+  Field get newFieldZero => _Field8(spatial1);
 }
 
 class _Field16 extends Field with _MixinFlagsOperate16 {
   _Field16(int width) : super._(width, Uint16List(1));
 
   @override
-  Field get newFieldZero => _Field16(width);
+  Field get newFieldZero => _Field16(spatial1);
 }
 
 class _Field32 extends Field with _MixinFlagsOperate32 {
-  _Field32(int s) : super._(s, Uint32List(s));
+  _Field32(int width, int s) : super._(width, Uint32List(s));
 
   @override
-  Field get newFieldZero => _Field32(_field.length);
+  Field get newFieldZero => _Field32(spatial1, _field.length);
 }
 
 class _Field64 extends Field with _MixinFlagsOperate64 {
-  _Field64(int s) : super._(s, Uint64List(s));
+  _Field64(int width, int s) : super._(width, Uint64List(s));
 
   @override
-  Field get newFieldZero => _Field64(_field.length);
+  Field get newFieldZero => _Field64(spatial1, _field.length);
 }
 
 //
@@ -251,28 +260,28 @@ class _Field2D8 extends Field2D with _MixinFlagsOperate8 {
   _Field2D8(int w, int h) : super._(w, h, Uint8List(1));
 
   @override
-  Field2D get newFieldZero => _Field2D8(width, height);
+  Field2D get newFieldZero => _Field2D8(spatial1, spatial2);
 }
 
 class _Field2D16 extends Field2D with _MixinFlagsOperate16 {
   _Field2D16(int w, int h) : super._(w, h, Uint16List(1));
 
   @override
-  Field2D get newFieldZero => _Field2D8(width, height);
+  Field2D get newFieldZero => _Field2D8(spatial1, spatial2);
 }
 
 class _Field2D32 extends Field2D with _MixinFlagsOperate32 {
   _Field2D32(int w, int h, int s) : super._(w, h, Uint32List(s));
 
   @override
-  Field2D get newFieldZero => _Field2D32(width, height, _field.length);
+  Field2D get newFieldZero => _Field2D32(spatial1, spatial2, _field.length);
 }
 
 class _Field2D64 extends Field2D with _MixinFlagsOperate64 {
   _Field2D64(int w, int h, int s) : super._(w, h, Uint64List(s));
 
   @override
-  Field2D get newFieldZero => _Field2D64(width, height, _field.length);
+  Field2D get newFieldZero => _Field2D64(spatial1, spatial2, _field.length);
 }
 
 //
@@ -280,28 +289,64 @@ class _Field3D8 extends Field3D with _MixinFlagsOperate8 {
   _Field3D8(int w, int h, int d) : super._(w, h, d, Uint8List(1));
 
   @override
-  Field3D get newFieldZero => _Field3D8(width, height, depth);
+  Field3D get newFieldZero => _Field3D8(spatial1, spatial2, spatial3);
 }
 
 class _Field3D16 extends Field3D with _MixinFlagsOperate16 {
   _Field3D16(int w, int h, int d) : super._(w, h, d, Uint16List(1));
 
   @override
-  Field3D get newFieldZero => _Field3D16(width, height, depth);
+  Field3D get newFieldZero => _Field3D16(spatial1, spatial2, spatial3);
 }
 
 class _Field3D32 extends Field3D with _MixinFlagsOperate32 {
   _Field3D32(int w, int h, int d, int s) : super._(w, h, d, Uint32List(s));
 
   @override
-  Field3D get newFieldZero => _Field3D32(width, height, depth, _field.length);
+  Field3D get newFieldZero =>
+      _Field3D32(spatial1, spatial2, spatial3, _field.length);
 }
 
 class _Field3D64 extends Field3D with _MixinFlagsOperate64 {
   _Field3D64(int w, int h, int d, int s) : super._(w, h, d, Uint64List(s));
 
   @override
-  Field3D get newFieldZero => _Field3D64(width, height, depth, _field.length);
+  Field3D get newFieldZero =>
+      _Field3D64(spatial1, spatial2, spatial3, _field.length);
+}
+
+//
+class _Field4D8 extends Field4D with _MixinFlagsOperate8 {
+  _Field4D8(int a, int b, int c, int d) : super._(a, b, c, d, Uint8List(1));
+
+  @override
+  Field4D get newFieldZero => _Field4D8(spatial1, spatial2, spatial3, spatial4);
+}
+
+class _Field4D16 extends Field4D with _MixinFlagsOperate16 {
+  _Field4D16(int a, int b, int c, int d) : super._(a, b, c, d, Uint16List(1));
+
+  @override
+  Field4D get newFieldZero =>
+      _Field4D16(spatial1, spatial2, spatial3, spatial4);
+}
+
+class _Field4D32 extends Field4D with _MixinFlagsOperate32 {
+  _Field4D32(int a, int b, int c, int d, int s)
+    : super._(a, b, c, d, Uint32List(s));
+
+  @override
+  Field4D get newFieldZero =>
+      _Field4D32(spatial1, spatial2, spatial3, spatial4, _field.length);
+}
+
+class _Field4D64 extends Field4D with _MixinFlagsOperate64 {
+  _Field4D64(int a, int b, int c, int d, int s)
+    : super._(a, b, c, d, Uint64List(s));
+
+  @override
+  Field4D get newFieldZero =>
+      _Field4D64(spatial1, spatial2, spatial3, spatial4, _field.length);
 }
 
 //

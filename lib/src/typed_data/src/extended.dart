@@ -31,6 +31,9 @@ typedef _BitsListToIntFrom =
 ///
 extension TypedIntList on TypedDataList<int> {
   static const int countsAByte = 8;
+  static const int limit4 = 5;
+  static const int mask4 = 3;
+  static const int shift4 = 2;
   static const int limit8 = 9;
   static const int mask8 = 7;
   static const int shift8 = 3;

@@ -12,14 +12,17 @@ part of '../typed_data.dart';
 ///   |   --[_MixinFieldOperatable] for all [_FieldParent] children
 ///   |   --[_MixinFieldPositionAble] implements [_FlagsOperator]
 ///   |   |   --[_MixinFieldPositionAbleContainer] implements [_FlagsContainer]
+///   |   --[_MixinFieldPositionAbleIterable]
 ///   |   |
 ///   |   --[_FieldParentSpatial1] with [_MixinFieldPositionAble]
 ///   |   |   --[Field]
 ///   |   |   --[_FieldParentSpatial2]
+///   |   |       **[_FieldSpatialCollapse] for all [_FieldParentSpatial2] children
 ///   |   |       --[Field2D] with [_MixinFieldPositionAbleContainer]
 ///   |   |       --[_FieldParentSpatial3]
 ///   |   |           --[Field3D] with [_MixinFieldPositionAbleContainer]
 ///   |   |           --[_FieldParentSpatial4]
+///   |   |               --[Field4D] with [_MixinFieldPositionAbleContainer]
 ///   |   |
 ///   |   --[_FieldParentScope]
 ///   |   |   --[FieldDatesInMonths]
@@ -111,24 +114,34 @@ abstract class _FieldParent extends _FlagsParent {
 }
 
 //
+abstract class _FieldSpatialCollapse<S> implements _FieldParentSpatial2 {
+  S collapseOn(int index);
+}
+
+//
 abstract class _FieldParentSpatial1 extends _FieldParent
     with _MixinFieldPositionAble {
-  final int width;
+  final int spatial1;
 
-  const _FieldParentSpatial1(this.width, super._field);
+  const _FieldParentSpatial1(this.spatial1, super._field);
 
   @override
   int get _toStringFieldBorderLength =>
-      3 + '$width'.length * 2 + 4 + (_sizeEach + 7) ~/ 8 * 9 + 2;
+      3 +
+      '$spatial1'.length * 2 +
+      4 +
+      (_sizeEach + TypedIntList.mask4 >> TypedIntList.shift4) * 5 +
+      2;
 
   @override
   void _toStringFlagsBy(StringBuffer buffer) {
     final size = _sizeEach;
     final field = _field;
-    final max = width;
+    final max = spatial1;
     final pad = '${size * field.length}'.length + 1;
-    final mask = TypedIntList.mask8;
     final jLast = field.length - 1;
+    final maskChunk = TypedIntList.mask4;
+    final countLastLine = max & _mask;
 
     //
     final limit = _field.length;
@@ -137,11 +150,14 @@ abstract class _FieldParentSpatial1 extends _FieldParent
       late final int space;
       late final String end;
       late final Predicator<int> predicate;
-      if (j == jLast) {
-        end = '$max';
+      if (j == jLast && countLastLine != 0) {
+        end = '${max - 1}';
         predicate = IntExtension.predicator_additionLess(start, max);
-        final count = max & _mask;
-        space = count + 7 ~/ 8 * 8 - count + 1;
+        space =
+            1 +
+            (size >> TypedIntList.shift4) * 5 -
+            countLastLine -
+            (countLastLine + TypedIntList.mask4 >> TypedIntList.shift4);
       } else {
         end = '${start + size}';
         predicate = IntExtension.predicator_less(size);
@@ -149,48 +165,48 @@ abstract class _FieldParentSpatial1 extends _FieldParent
       }
 
       buffer.write('|');
-      buffer.write('${start + 1}'.padLeft(pad));
+      buffer.write('$start'.padLeft(pad));
       buffer.write(' ~');
       buffer.write(end.padLeft(pad));
       buffer.write(' :');
       var i = 0;
       for (var bits = field[j]; bits > 0; bits >>= 1) {
-        buffer.writeIfNotNull(i & mask == 0 ? ' ' : null);
+        buffer.writeIfNotNull(i & maskChunk == 0 ? ' ' : null);
         buffer.writeBit(bits);
         i++;
       }
       while (predicate(i)) {
-        buffer.writeIfNotNull(i & mask == 0 ? ' ' : null);
+        buffer.writeIfNotNull(i & maskChunk == 0 ? ' ' : null);
         buffer.write('0');
         i++;
       }
       buffer.writeRepeat(space, ' ');
-      buffer.write('|');
+      buffer.writeln('|');
     }
   }
 }
 
 //
 abstract class _FieldParentSpatial2 extends _FieldParentSpatial1 {
-  final int height;
+  final int spatial2;
 
-  const _FieldParentSpatial2(super.width, this.height, super.field);
+  const _FieldParentSpatial2(super.spatial1, this.spatial2, super.field);
 
   @override
   int get _toStringFieldBorderLength =>
-      2 + '$height'.length + 2 + (width + 5) ~/ 6 * 7 + 2;
+      2 + '$spatial2'.length + 2 + (spatial1 + 3) ~/ 4 * 5 + 2;
 
   @override
-  void _toStringFlagsBy(StringBuffer buffer, [int i = 0, int pass = 0]) {
-    final pad = '$height'.length + 1;
-    final width = this.width; // hour per day
+  void _toStringFlagsBy(StringBuffer buffer, [int l = 0, int pass = 0]) {
+    final pad = '$spatial2'.length + 1;
+    final spatial1 = this.spatial1; // hour per day
 
     //
     buffer.write('|');
     buffer.writeRepeat(pad + 2, ' ');
-    for (var per = 0; per < width; per += 6) {
+    for (var per = 0; per < spatial1; per += 4) {
       buffer.write(' ');
-      buffer.write('$per'.padRight(6, ' '));
+      buffer.write('$per'.padRight(4, ' '));
     }
     buffer.write(' ');
     buffer.write('|');
@@ -198,10 +214,10 @@ abstract class _FieldParentSpatial2 extends _FieldParentSpatial1 {
 
     buffer.write('|');
     buffer.writeRepeat(pad + 2, ' ');
-    for (var per = 0; per < width; per += 6) {
+    for (var per = 0; per < spatial1; per += 4) {
       buffer.write(' ');
       buffer.write('v');
-      buffer.writeRepeat(5, ' ');
+      buffer.writeRepeat(3, ' ');
     }
     buffer.write(' ');
     buffer.write('|');
@@ -210,33 +226,33 @@ abstract class _FieldParentSpatial2 extends _FieldParentSpatial1 {
     //
     final field = _field;
     final mask = _mask;
-    final spaceAfterBits = (width + 5) ~/ 6 * 6 - width + 1;
+    final spaceAfterBits = (spatial1 + 3) ~/ 4 * 4 - spatial1 + 1;
 
-    var bits = field[i] >> pass;
-    i++;
+    var bits = field[l] >> pass;
+    l++;
     final nextField =
         field.length == 1
             ? null
-            : (h, w) {
-              if (w == width) return;
-              if (h * width + pass + w & mask == 0) {
-                bits = field[i];
+            : (j, i) {
+              if (i == spatial1) return;
+              if (j * spatial1 + pass + i & mask == 0) {
+                bits = field[l];
                 pass = 0;
-                i++;
+                l++;
               }
             };
-    final limit = height;
-    for (var h = 0; h < limit; h++) {
+    final limit = spatial2;
+    for (var j = 0; j < limit; j++) {
       buffer.write('|');
-      buffer.write('${h + 1}'.padLeft(pad));
+      buffer.write('${j + 1}'.padLeft(pad));
       buffer.write(' :');
-      var w = 0;
-      while (w < width) {
-        if (w % 6 == 0) buffer.write(' ');
+      var i = 0;
+      while (i < spatial1) {
+        if (i % 4 == 0) buffer.write(' ');
         buffer.writeBit(bits);
         bits >>= 1;
-        w++;
-        nextField?.call(h, w);
+        i++;
+        nextField?.call(j, i);
       }
       buffer.writeRepeat(spaceAfterBits, ' ');
       buffer.writeln('|');
@@ -246,31 +262,30 @@ abstract class _FieldParentSpatial2 extends _FieldParentSpatial1 {
 
 //
 abstract class _FieldParentSpatial3 extends _FieldParentSpatial2 {
-  final int depth;
+  final int spatial3;
 
   const _FieldParentSpatial3(
-    super.width,
-    super.height,
-    this.depth,
+    super.spatial1,
+    super.spatial2,
+    this.spatial3,
     super.field,
   );
 
   @override
-  void _toStringFlagsBy(StringBuffer buffer, [int i = 0, int pass = 0]) {
-    final depth = this.depth;
-    final width = this.width;
-    final height = this.height;
+  void _toStringFlagsBy(StringBuffer buffer, [int l = 0, int pass = 0]) {
+    final space = spatial1 * spatial2;
+    final spatial3 = this.spatial3;
     final sizeEach = _sizeEach;
     final borderLength = _toStringFieldBorderLength;
-    for (var d = 0; d < depth; d++) {
-      final start = d * width * height;
+    for (var k = 0; k < spatial3; k++) {
+      final start = k * space;
       super._toStringFlagsBy(buffer, start ~/ sizeEach, start % sizeEach);
-      if (d < depth - 1) {
+      if (k < spatial3 - 1) {
         buffer.write('\\');
-        buffer.write('${d + 1}/'.padLeft(borderLength - 1, '-'));
+        buffer.write('${k + 1}/'.padLeft(borderLength - 1, '-'));
         buffer.writeln();
 
-        buffer.write('/${d + 2}'.padRight(borderLength - 1, '-'));
+        buffer.write('/${k + 2}'.padRight(borderLength - 1, '-'));
         buffer.write('\\');
         buffer.writeln();
       }
@@ -278,11 +293,26 @@ abstract class _FieldParentSpatial3 extends _FieldParentSpatial2 {
   }
 }
 
-// abstract class _FieldParentSpatial4 extends _FieldParentSpatial3 {
-//   // final int
-//   const _FieldParentSpatial4(super.width, super.height, super.depth, super.field);
-//
-// }
+abstract class _FieldParentSpatial4 extends _FieldParentSpatial3 {
+  final int spatial4;
+
+  const _FieldParentSpatial4(
+    super.spatial1,
+    super.spatial2,
+    super.spatial3,
+    this.spatial4,
+    super.field,
+  );
+
+  @override
+  void _toStringFlagsBy(StringBuffer buffer, [int l = 0, int pass = 0]) {
+    final borderLine = _toStringFieldBorderLength;
+    buffer.writeRepeat(borderLine, '==');
+    super._toStringFlagsBy(buffer, l, pass);
+    buffer.writeRepeat(borderLine, '==');
+    throw UnimplementedError();
+  }
+}
 
 ///
 ///
