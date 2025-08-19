@@ -1,18 +1,20 @@
 part of '../typed_data.dart';
 
 ///
-///
 /// [_FlagsParent]
 ///   **[_FlagsContainer] for all [_FlagsParent] concrete children
 ///   **[_FlagsOperator]
 ///   |   --[_MixinFlagsOperate8], [_MixinFlagsOperate16], [_MixinFlagsOperate32], [_MixinFlagsOperate64]
 ///   |   --[_MixinFlagsInsertAble]
+///   **[_FlagsIterable]
 ///   |
 ///   --[_FieldParent]
 ///   |   --[_MixinFieldOperatable] for all [_FieldParent] children
 ///   |   --[_MixinFieldPositionAble] implements [_FlagsOperator]
+///   |   |   --[_MixinFieldPositionAbleIterable]
 ///   |   |   --[_MixinFieldPositionAbleContainer] implements [_FlagsContainer]
-///   |   --[_MixinFieldPositionAbleIterable]
+///   |   --[_MixinFieldIterable]
+///   |   --[_MixinFieldIterableIndex]
 ///   |   |
 ///   |   --[_FieldParentSpatial1] with [_MixinFieldPositionAble]
 ///   |   |   --[Field]
@@ -64,16 +66,6 @@ abstract class _FlagsParent {
   void _toStringFlagsBy(StringBuffer buffer);
 }
 
-abstract class _FlagsOperator implements _FlagsParent {
-  const _FlagsOperator();
-
-  // int get _shift => math.log(_sizeEach) ~/ math.ln2 - 1;
-  int get _shift;
-
-  // int get _mask => ~(1 << _shift);
-  int get _mask;
-}
-
 ///
 /// the abstract functions be in [_FlagsContainer], instead of be in [_FieldParent],
 /// preventing redundant, ambiguous generic type pass through out many-level inheritance.
@@ -86,6 +78,40 @@ abstract class _FlagsContainer<T> implements _FlagsParent {
   bool operator [](T index);
 
   void operator []=(T index, bool value);
+}
+
+abstract class _FlagsOperator implements _FlagsParent {
+  const _FlagsOperator();
+
+  // int get _shift => math.log(_sizeEach) ~/ math.ln2 - 1;
+  int get _shift;
+
+  // int get _mask => ~(1 << _shift);
+  int get _mask;
+}
+
+abstract class _FlagsIterable<T> implements _FlagsParent {
+  const _FlagsIterable();
+
+  T? get flagFirst;
+
+  T? get flagLast;
+
+  void includesRange(T begin, T end);
+
+  void excludesRange(T begin, T end);
+
+  // T? flagsFirstAfter(int position);
+  //
+  // T? flagsLastBefore(int position);
+  //
+  // Iterable<T> get flags;
+  //
+  // Iterable<T> flagsFrom(int position, [bool inclusive = true]);
+  //
+  // Iterable<T> flagsTo(int position, [bool inclusive = true]);
+  //
+  // Iterable<T> flagsBetween(int pBegin, int pEnd, [bool inclusive = true]);
 }
 
 ///
@@ -111,11 +137,6 @@ abstract class _FieldParent extends _FlagsParent {
 
   @override
   void _toStringFlagsBy(StringBuffer buffer);
-}
-
-//
-abstract class _FieldSpatialCollapse<S> implements _FieldParentSpatial2 {
-  S collapseOn(int index);
 }
 
 //
@@ -187,6 +208,11 @@ abstract class _FieldParentSpatial1 extends _FieldParent
 }
 
 //
+abstract class _FieldSpatialCollapse<S> implements _FieldParentSpatial2 {
+  S collapseOn(int index);
+}
+
+//
 abstract class _FieldParentSpatial2 extends _FieldParentSpatial1 {
   final int spatial2;
 
@@ -201,7 +227,9 @@ abstract class _FieldParentSpatial2 extends _FieldParentSpatial1 {
     final pad = '$spatial2'.length + 1;
     final spatial1 = this.spatial1; // hour per day
 
-    //
+    ///
+    ///
+    ///
     buffer.write('|');
     buffer.writeRepeat(pad + 2, ' ');
     for (var per = 0; per < spatial1; per += 4) {
@@ -223,7 +251,9 @@ abstract class _FieldParentSpatial2 extends _FieldParentSpatial1 {
     buffer.write('|');
     buffer.writeln();
 
-    //
+    ///
+    ///
+    ///
     final field = _field;
     final mask = _mask;
     final spaceAfterBits = (spatial1 + 3) ~/ 4 * 4 - spatial1 + 1;

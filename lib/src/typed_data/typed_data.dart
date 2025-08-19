@@ -1,6 +1,5 @@
 library;
 
-import 'dart:math' as math;
 import 'dart:collection';
 import 'dart:typed_data';
 
@@ -12,5 +11,8 @@ part 'src/extended.dart';
 part 'src/extended_collection.dart';
 part 'src/flags.dart';
 part 'src/flags_impl.dart';
-part 'src/flags_map.dart';
-part 'src/flags_field.dart';
+part 'src/field/field_custom.dart';
+part 'src/map/extended.dart';
+part 'src/map/flags.dart';
+part 'src/field/field.dart';
+part 'src/field/field_impl.dart';

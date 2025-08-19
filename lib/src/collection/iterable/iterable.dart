@@ -85,7 +85,7 @@ extension IterableExtension<I> on Iterable<I> {
 
   void pair(
     Iterable<I> another,
-    Intersector<I> paring, [
+    BiCallback<I> paring, [
     Callback? onSizeDiff,
   ]) =>
       length == another.length

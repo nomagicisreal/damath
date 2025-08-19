@@ -3,26 +3,11 @@ part of '../typed_data.dart';
 ///
 ///
 ///
-///
 /// [_MapperSplayTreeMapInt], ...
 /// [TypedIntList]
 ///
-/// [Weekday]
-/// [MinutePeriod]
 ///
 ///
-///
-
-///
-///
-///
-typedef _MapperSplayTreeMapInt<T> = int? Function(SplayTreeMap<int, T> map);
-typedef _MapperSplayTreeMapIntBy<T> =
-    int? Function(SplayTreeMap<int, T> map, int by);
-
-typedef _BitsListToInt = int? Function(TypedDataList<int> list, int size);
-typedef _BitsListToIntFrom =
-    int? Function(TypedDataList<int> list, int k, int size);
 
 ///
 /// [comparing8First], ...
@@ -156,7 +141,7 @@ extension TypedIntList on TypedDataList<int> {
   int? bitFirst(int size, [int bit = 1]) {
     final length = this.length;
     for (var j = 0; j < length; j++) {
-      for (var i = 1, bits = this[j]; bits > 0; i++, bits >>= 1) {
+      for (var i = 0, bits = this[j]; bits > 0; i++, bits >>= 1) {
         if (bits & 1 == bit) return size * j + i;
       }
     }
@@ -166,7 +151,7 @@ extension TypedIntList on TypedDataList<int> {
   int? bitN(int n, int size, [int bit = 1]) {
     final length = this.length;
     for (var j = 0; j < length; j++) {
-      for (var i = 1, bits = this[j]; bits > 0; i++, bits >>= 1) {
+      for (var i = 0, bits = this[j]; bits > 0; i++, bits >>= 1) {
         if (bits & 1 == bit) {
           n--;
           if (n == 0) return size * j * i;
@@ -179,11 +164,11 @@ extension TypedIntList on TypedDataList<int> {
   int? bitLast(int size, [int bit = 1]) {
     for (var j = length - 1; j > -1; j--) {
       for (
-        var bits = this[j], mask = 1 << size - 1, i = size;
-        i > 0;
+        var bits = this[j], mask = 1 << size - 1, i = size - 1;
+        mask > 0;
         mask >>= 1, i--
       ) {
-        if ((bits & mask) >> i - 1 == bit) return size * j + i;
+        if ((bits & mask) >> i == bit) return size * j + i;
       }
     }
     return null;
@@ -208,7 +193,7 @@ extension TypedIntList on TypedDataList<int> {
 
     final length = this.length;
     while (j < length) {
-      i = 1;
+      i = 0;
       bits = this[j];
       while (bits > 0) {
         if (bits & 1 == bit) return size * j + i;
@@ -237,7 +222,7 @@ extension TypedIntList on TypedDataList<int> {
 
     final length = this.length;
     while (j < length) {
-      i = 1;
+      i = 0;
       bits = this[j];
       while (bits > 0) {
         if (bits & 1 == bit) {
@@ -254,23 +239,23 @@ extension TypedIntList on TypedDataList<int> {
 
   int? bitLastFrom(int k, int size, [int bit = 1]) {
     var j = k ~/ size;
-    var i = k & size - 1;
+    var i = k % size - 1;
     var bits = this[j];
     var mask = 1 << i - 1;
 
-    while (i > -1) {
-      if ((bits & mask) >> i - 1 == bit) return size * j + i;
+    while (mask > 0) {
+      if ((bits & mask) >> i == bit) return size * j + i;
       mask >>= 1;
       i--;
     }
     j--;
 
     while (j > -1) {
-      i = size;
+      i = size - 1;
       bits = this[j];
       mask = 1 << i - 1;
-      while (i > -1) {
-        if ((bits & mask) >> i - 1 == bit) return size * j + i;
+      while (mask > 0) {
+        if ((bits & mask) >> i == bit) return size * j + i;
         mask >>= 1;
         i--;
       }
@@ -282,7 +267,7 @@ extension TypedIntList on TypedDataList<int> {
 
   ///
   ///
-  /// [bitsAvailable] // prevent replicate implementation
+  /// [bitsAvailable]
   /// [mapBitsAvailable]
   /// [mapBitsAvailableFrom]
   /// [mapBitsAvailableTo]
@@ -290,12 +275,23 @@ extension TypedIntList on TypedDataList<int> {
   /// notice that [size] must be 2^n, so [size] - 1 will be [_Field8.mask8], [TypedIntList.mask16], ...
   ///
   ///
+  Iterable<int> bitsAvailable<T>(int size) sync* {
+    final length = this.length;
+    for (var j = 0; j < length; j++) {
+      final prefix = size * j;
+      var bits = this[j];
+      for (var i = 0; bits > 0; i++, bits >>= 1) {
+        if (bits & 1 == 1) yield prefix + i;
+      }
+    }
+  }
+
   Iterable<T> mapBitsAvailable<T>(int size, Mapper<int, T> mapping) sync* {
     final length = this.length;
     for (var j = 0; j < length; j++) {
       final prefix = size * j;
       var bits = this[j];
-      for (var i = 1; bits > 0; i++, bits >>= 1) {
+      for (var i = 0; bits > 0; i++, bits >>= 1) {
         if (bits & 1 == 1) yield mapping(prefix + i);
       }
     }
@@ -323,7 +319,7 @@ extension TypedIntList on TypedDataList<int> {
     final length = this.length;
     for (; j < length; j++) {
       final prefix = size * j;
-      for (var i = 1, bits = this[j]; bits > 0; i++, bits >>= 1) {
+      for (var i = 0, bits = this[j]; bits > 0; i++, bits >>= 1) {
         if (bits & 1 == 1) yield mapping(prefix + i);
       }
     }
@@ -342,14 +338,14 @@ extension TypedIntList on TypedDataList<int> {
     final limit = to ~/ size;
     for (var j = 0; j < limit; j++) {
       final prefix = size * j;
-      for (var i = 1, bits = this[j]; bits > 0; bits >>= 1, i++) {
+      for (var i = 0, bits = this[j]; bits > 0; bits >>= 1, i++) {
         if (bits & 1 == 1) yield mapping(prefix + i);
       }
     }
 
     final max = to & size - 1;
     final prefix = size * limit;
-    for (var i = 1, bits = this[limit]; i <= max; bits >>= 1, i++) {
+    for (var i = 0, bits = this[limit]; i <= max; bits >>= 1, i++) {
       if (bits & 1 == 1) yield mapping(prefix + i);
     }
   }
@@ -367,11 +363,11 @@ extension TypedIntList on TypedDataList<int> {
         yield* mapBitsAvailable(size, mapping);
         return;
       }
-      yield* mapBitsAvailableTo(size, to, mapping);
+      yield* mapBitsAvailableTo(size, to, mapping, inclusive);
       return;
     }
     if (to == null) {
-      yield* mapBitsAvailableFrom(size, from, mapping);
+      yield* mapBitsAvailableFrom(size, from, mapping, inclusive);
       return;
     }
 
@@ -402,7 +398,7 @@ extension TypedIntList on TypedDataList<int> {
     // after from, before to
     for (; j < limit; j++) {
       prefix = size * j;
-      i = 1;
+      i = 0;
       for (var bits = this[j]; bits > 0; bits >>= 1, i++) {
         if (bits & 1 == 1) yield mapping(prefix + i);
       }
@@ -410,49 +406,9 @@ extension TypedIntList on TypedDataList<int> {
 
     // on to
     prefix = size * limit;
-    i = 1;
+    i = 0;
     for (var bits = this[limit]; i <= max; bits >>= 1, i++) {
       if (bits & 1 == 1) yield mapping(prefix + i);
     }
   }
 }
-
-///
-///
-///
-enum Weekday {
-  monday,
-  tuesday,
-  wednesday,
-  thursday,
-  friday,
-  saturday,
-  sunday;
-
-  factory Weekday.from(DateTime dateTime) => switch (dateTime.weekday) {
-    DateTime.monday => monday,
-    DateTime.tuesday => tuesday,
-    DateTime.wednesday => wednesday,
-    DateTime.thursday => thursday,
-    DateTime.friday => friday,
-    DateTime.saturday => saturday,
-    DateTime.sunday => sunday,
-    _ => throw ArgumentError('date time weekday: ${dateTime.weekday}'),
-  };
-}
-
-// enum MinutePeriod {
-//   per1,
-//   per5,
-//   per10,
-//   per20,
-//   per30;
-//
-//   int get number => switch (this) {
-//     MinutePeriod.per1 => 1,
-//     MinutePeriod.per5 => 5,
-//     MinutePeriod.per10 => 10,
-//     MinutePeriod.per20 => 20,
-//     MinutePeriod.per30 => 30,
-//   };
-// }

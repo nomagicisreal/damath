@@ -69,7 +69,7 @@ extension IteratorExtension<I> on Iterator<I> {
   ///
   /// [consumePair], [consumePairByIndex]
   ///
-  void consumePair(Intersector<I> paring, [Consumer<I>? trailing]) {
+  void consumePair(BiCallback<I> paring, [Consumer<I>? trailing]) {
     late I a;
     late I b;
     while (moveNext()) {
@@ -104,7 +104,7 @@ extension IteratorExtension<I> on Iterator<I> {
   ///
   /// [consumeAccompany], [consumeAccompanyByIndex]
   ///
-  void consumeAccompany(I value, Intersector<I> paring) {
+  void consumeAccompany(I value, BiCallback<I> paring) {
     while (moveNext()) {
       paring(current, value);
     }

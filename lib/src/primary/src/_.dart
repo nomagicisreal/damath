@@ -5,17 +5,16 @@ part of '../primary.dart';
 /// [Developing]
 /// [ErrorMessage]
 /// [ErrorMessage]
-///
 /// ----------------
 ///
 /// [NullableExtension]
 /// [BoolExtension]
 /// [NumExtension]
 /// [BigIntExtension]
-/// [ComparableExtension]
-/// [DamathComparatorExtension]
-///
 /// [RandomExtension]
+/// ----------------
+///
+/// [Weekday]
 ///
 ///
 
@@ -293,4 +292,28 @@ extension RandomExtension on math.Random {
 
   static T get1FromList<T>(List<T> list) =>
       list[math.Random().nextInt(list.length)];
+}
+
+///
+///
+///
+enum Weekday {
+  monday,
+  tuesday,
+  wednesday,
+  thursday,
+  friday,
+  saturday,
+  sunday;
+
+  factory Weekday.from(DateTime dateTime) => switch (dateTime.weekday) {
+    DateTime.monday => monday,
+    DateTime.tuesday => tuesday,
+    DateTime.wednesday => wednesday,
+    DateTime.thursday => thursday,
+    DateTime.friday => friday,
+    DateTime.saturday => saturday,
+    DateTime.sunday => sunday,
+    _ => throw ArgumentError('date time weekday: ${dateTime.weekday}'),
+  };
 }

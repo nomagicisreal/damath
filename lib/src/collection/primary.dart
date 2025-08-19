@@ -205,13 +205,37 @@ extension Record2Int on (int, int) {
   );
 
   ///
+  /// [monthsToYearMonth]
   /// [monthsToMonth]
   /// [monthsToDates]
   ///
+  int monthsToYearMonth(int year, int month) {
+    assert(
+      DateTimeExtension.isValidMonth(this.$2) &&
+          DateTimeExtension.isValidMonth(month),
+      'invalid date: $this, ($year, $month)',
+    );
+    final yearCurrent = this.$1;
+    assert(yearCurrent <= year);
+    final monthCurrent = this.$2;
+
+    // ==
+    if (yearCurrent == year) {
+      assert(monthCurrent <= month);
+      return month - monthCurrent;
+    }
+
+    // <
+    return DateTimeExtension.limitMonthEnd -
+        monthCurrent +
+        DateTime.december * (year - yearCurrent) +
+        month;
+  }
+
   int monthsToMonth((int, int) record) {
     assert(
       DateTimeExtension.isValidMonth(this.$2) &&
-          DateTimeExtension.isValidMonth(this.$2),
+          DateTimeExtension.isValidMonth(record.$2),
       'invalid date: $this, $record',
     );
     final year = record.$1;
@@ -236,7 +260,7 @@ extension Record2Int on (int, int) {
   int monthsToDates((int, int, int) record) {
     assert(
       DateTimeExtension.isValidMonth(this.$2) &&
-          DateTimeExtension.isValidMonth(this.$2),
+          DateTimeExtension.isValidMonth(record.$2),
       'invalid date: $this, $record',
     );
     final year = record.$1;
@@ -261,6 +285,14 @@ extension Record2Int on (int, int) {
 
 ///
 ///
+/// static methods:
+/// [comparing], ...
+///
+/// instance methods:
+/// return void:      [consumeTo], ...
+/// return bool:      [isValidDate], ...
+/// return int:       [daysToDates], ...
+///
 ///
 extension Record3Int on (int, int, int) {
   ///
@@ -276,9 +308,96 @@ extension Record3Int on (int, int, int) {
   }
 
   ///
+  ///
+  ///
+  static BiCallback<(int, int, int)> biCallbackFrom(
+    TriCallback<int> consume,
+    Applier<int> toKeyKeyBegin,
+    Applier<int> toKeyKeyLimit,
+    Reducer<int> toValueBegin,
+    Reducer<int> toValueLimit,
+  ) => (begin, end) {
+    final a1 = begin.$1;
+    final a2 = begin.$2;
+    final a3 = begin.$3;
+    final b1 = end.$1;
+    assert(a1 <= b1);
+    final b2 = end.$2;
+    final b3 = end.$3;
+
+    // ==
+    if (a1 == b1) {
+      assert(a2 <= b2);
+
+      // ==
+      if (a2 == b2) {
+        assert(a3 <= b3);
+        for (var i = a3; i <= b3; i++) {
+          consume(a1, a2, i);
+        }
+        return;
+      }
+
+      // <
+      var i = a3;
+      var limit = toValueLimit(a1, a2);
+      for (; i < limit; i++) {
+        consume(a1, a2, i);
+      }
+      for (var j = a2 + 1; j < b2; j++) {
+        limit = toValueLimit(a1, j);
+        for (i = toValueBegin(a1, j); i < limit; i++) {
+          consume(a1, j, i);
+        }
+      }
+      for (i = toValueBegin(a1, b2); i <= b3; i++) {
+        consume(a1, b2, i);
+      }
+      return;
+    }
+
+    // <
+    var i = a3;
+    var limit = toValueLimit(a1, a2);
+    for (; i < limit; i++) {
+      consume(a1, a2, i);
+    }
+    var j = a2 + 1;
+    var limitKeyKey = toKeyKeyLimit(a1);
+    for (; j < limitKeyKey; j++) {
+      limit = toValueLimit(a1, j);
+      for (i = toValueBegin(a1, j); i < limit; i++) {
+        consume(a1, j, i);
+      }
+    }
+    for (var k = a1 + 1; k < b1; k++) {
+      limitKeyKey = toKeyKeyLimit(k);
+      for (j = toKeyKeyBegin(k); j < limitKeyKey; j++) {
+        limit = toValueLimit(k, j);
+        for (i = toValueBegin(k, j); i < limit; i++) {
+          consume(k, j, i);
+        }
+      }
+    }
+    for (j = toKeyKeyBegin(b1); j < b2; j++) {
+      limit = toValueLimit(b1, j);
+      for (i = toValueBegin(b1, j); i < limit; i++) {
+        consume(b1, j, i);
+      }
+    }
+    limit = toValueLimit(b1, b2);
+    for (i = toValueBegin(b1, b2); i < limit; i++) {
+      consume(b1, b2, i);
+    }
+  };
+
+  ///
+  /// [isValidDate]
   /// [_comparing],
   /// [>], [<], [>=], [<=]
   ///
+  bool get isValidDate => DateTimeExtension.isValidDate(this);
+
   bool _comparing(
     (int, int, int) another,
     PredicatorReducer<int> reduceInvalid,
@@ -328,12 +447,8 @@ extension Record3Int on (int, int, int) {
   );
 
   ///
-  /// [isValidDate]
   /// [daysToDates]
-  /// [monthsToDates]
   ///
-  bool get isValidDate => DateTimeExtension.isValidDate(this);
-
   int daysToDates((int, int, int) another) {
     assert(
       DateTimeExtension.isValidDate(this) &&

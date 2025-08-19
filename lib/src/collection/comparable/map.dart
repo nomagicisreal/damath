@@ -76,9 +76,11 @@ class SplayTreeMapIntIntInt<V> {
   final V Function(int value) newValue;
   final SplayTreeMap<int, V> Function(int key, int keyKey, int value) newKeyKey;
   final Applier<int> toKeyKeyBegin;
-  final Applier<int> toKeyKeyEnd;
+  final Applier<int> toKeyKeyLimit;
   final Reducer<int> toValueBegin;
-  final Reducer<int> toValueEnd;
+  final Reducer<int> toValueLimit;
+  late final BiCallback<(int, int, int)> includesRange;
+  late final BiCallback<(int, int, int)> excludesRange;
 
   SplayTreeMapIntIntInt(
     this.field, {
@@ -88,39 +90,54 @@ class SplayTreeMapIntIntInt<V> {
     required this.newValue,
     required this.newKeyKey,
     required this.toKeyKeyBegin,
-    required this.toKeyKeyEnd,
+    required this.toKeyKeyLimit,
     required this.toValueBegin,
-    required this.toValueEnd,
-  });
-
-  ///
-  ///
-  ///
-  void setRecord((int, int, int) record) {
-    final valueMap = field[record.$1];
-    if (valueMap == null) {
-      field[record.$1] = newKeyKey(record.$1, record.$2, record.$3);
-      return;
-    }
-    final values = valueMap[record.$2];
-    if (values == null) {
-      valueMap[record.$2] = newValue(record.$3);
-      return;
-    }
-    setValue(record.$3, values);
+    required this.toValueLimit,
+  }) {
+    includesRange = Record3Int.biCallbackFrom(
+      setRecord,
+      toKeyKeyBegin,
+      toKeyKeyLimit,
+      toValueBegin,
+      toValueLimit,
+    );
+    excludesRange = Record3Int.biCallbackFrom(
+      setRecord,
+      toKeyKeyBegin,
+      toKeyKeyLimit,
+      toValueBegin,
+      toValueLimit,
+    );
   }
 
-  void removeRecord((int, int, int) record) {
-    final months = field[record.$1];
+  ///
+  ///
+  ///
+  void setRecord(int a, int b, int c) {
+    final valueMap = field[a];
+    if (valueMap == null) {
+      field[a] = newKeyKey(a, b, c);
+      return;
+    }
+    final values = valueMap[b];
+    if (values == null) {
+      valueMap[b] = newValue(c);
+      return;
+    }
+    setValue(c, values);
+  }
+
+  void removeRecord(int a, int b, int c) {
+    final months = field[a];
     if (months == null) return;
-    final days = months[record.$2];
+    final days = months[b];
     if (days == null) return;
 
-    clearValue(record.$3,days);
+    clearValue(c, days);
     if (ensureRemove(days)) {
-      months.remove(record.$2);
+      months.remove(b);
       if (months.isNotEmpty) return;
-      field.remove(record.$2);
+      field.remove(b);
     }
   }
 
@@ -131,26 +148,26 @@ class SplayTreeMapIntIntInt<V> {
   ///
   void setRecordInts(int key, int keyKey, int? begin, int? end) {
     begin ??= toValueBegin(key, keyKey);
-    end ??= toValueEnd(key, keyKey);
-    setRecord((key, keyKey, begin));
+    end ??= toValueLimit(key, keyKey);
+    setRecord(key, keyKey, begin);
     final values = field[key]![keyKey] as V;
-    for (var p = begin + 1; p <= end; p++) {
+    for (var p = begin + 1; p < end; p++) {
       setValue(p, values);
     }
   }
 
   void setRecordIntsKeyKeys(int key, int? begin, int? end) {
     begin ??= toKeyKeyBegin(key);
-    end ??= toKeyKeyEnd(key);
-    setRecordInts(key, begin, toValueBegin(key, begin), toValueEnd(key, end));
-    for (var j = begin + 1; j <= end; j++) {
-      setRecordInts(key, j, toValueBegin(key, j), toValueEnd(key, j));
+    end ??= toKeyKeyLimit(key);
+    setRecordInts(key, begin, toValueBegin(key, begin), toValueLimit(key, end));
+    for (var j = begin + 1; j < end; j++) {
+      setRecordInts(key, j, toValueBegin(key, j), toValueLimit(key, j));
     }
   }
 
-  void setRecordIntsKey(int begin, int end) {
-    for (var key = begin; key <= end; key++) {
-      setRecordIntsKeyKeys(key, toKeyKeyBegin(key), toKeyKeyEnd(key));
+  void setRecordIntsKey(int begin, int limit) {
+    for (var key = begin; key < limit; key++) {
+      setRecordIntsKeyKeys(key, toKeyKeyBegin(key), toKeyKeyLimit(key));
     }
   }
 

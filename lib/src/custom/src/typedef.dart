@@ -28,7 +28,9 @@ part of '../custom.dart';
 ///
 typedef Callback = void Function();
 typedef Consumer<T> = void Function(T value);
-typedef Intersector<T> = void Function(T v1, T v2);
+typedef BiCallback<T> = void Function(T v1, T v2);
+typedef TriCallback<T> = void Function(T v1, T v2, T v3);
+typedef MixedTriCallback<T, S> = void Function(T value, S v1, S v2);
 typedef Pairitor<A, B> = void Function(A a, B b);
 
 ///

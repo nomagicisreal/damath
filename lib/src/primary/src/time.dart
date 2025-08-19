@@ -252,6 +252,8 @@ extension DateTimeExtension on DateTime {
 
   static int apply_monthEnd(int year) => DateTime.december;
 
+  static int apply_monthLimit(int year) => DateTimeExtension.limitMonthEnd;
+
   static Applier<int> applier_daysEnd(int year) =>
       (month) => monthDaysOf(year, month);
 

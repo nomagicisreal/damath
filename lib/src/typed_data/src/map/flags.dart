@@ -1,4 +1,4 @@
-part of '../typed_data.dart';
+part of '../../typed_data.dart';
 
 ///
 ///
@@ -70,9 +70,9 @@ abstract class _FlagsParentMapSplay
       newValue: _newInsertion,
       newKeyKey: newKeyKey,
       toKeyKeyBegin: toKeyKeyBegin,
-      toKeyKeyEnd: toKeyKeyEnd,
+      toKeyKeyLimit: toKeyKeyEnd,
       toValueBegin: toValueBegin,
-      toValueEnd: toValueEnd,
+      toValueLimit: toValueEnd,
     );
   }
 
@@ -92,7 +92,9 @@ abstract class _FlagsParentMapSplay
   @override
   void operator []=((int, int, int) index, bool value) {
     assert(index.isValidDate);
-    value ? _map.setRecord(index) : _map.removeRecord(index);
+    value
+        ? _map.setRecord(index.$1, index.$2, index.$3)
+        : _map.removeRecord(index.$1, index.$2, index.$3);
   }
 
   @override
@@ -103,57 +105,6 @@ abstract class _FlagsParentMapSplay
 
   @override
   bool get isNotEmpty => _map.field.isNotEmpty;
-
-  ///
-  /// [includeRange]
-  ///
-  void includeRange((int, int, int) begin, (int, int, int) end) {
-    assert(begin.isValidDate && end.isValidDate && end >= begin);
-    final keyBegin = begin.$1;
-    final keyEnd = end.$1;
-    final map = _map;
-
-    // ==
-    if (keyBegin == keyEnd) {
-      final keyKeyBegin = begin.$2;
-      final keyKeyEnd = end.$2;
-
-      // ==
-      if (keyKeyBegin == keyKeyEnd) {
-        map.setRecordInts(keyBegin, keyKeyBegin, begin.$3, end.$3);
-        return;
-      }
-
-      // <
-      map.setRecordInts(keyBegin, keyKeyBegin, begin.$3, null);
-      for (var j = keyKeyBegin + 1; j < keyKeyEnd; j++) {
-        map.setRecordInts(keyBegin, j, null, null);
-      }
-      map.setRecordInts(keyBegin, keyKeyEnd, null, end.$3);
-      return;
-    }
-
-    // <
-    final keyKeyBegin = begin.$2;
-    map.setRecordInts(keyBegin, keyKeyBegin, begin.$3, null);
-    map.setRecordIntsKeyKeys(keyBegin, keyKeyBegin + 1, null);
-    map.setRecordIntsKey(keyBegin + 1, keyEnd - 1);
-    final keyKenEnd = end.$2;
-    map.setRecordIntsKeyKeys(keyEnd, null, keyKenEnd - 1);
-    map.setRecordInts(keyEnd, keyKenEnd, null, end.$3);
-  }
-
-  ///
-  ///
-  ///
-  // void _excludeRange(
-  //   (int, int, int) begin,
-  //   (int, int, int) end,
-  //   Applier<int> toKeyKeyBegin,
-  //   Applier<int> toKeyKeyEnd,
-  //   Applier<int> toValueBegin,
-  //   Applier<int> toValueEnd,
-  // );
 
   ///
   ///
@@ -294,7 +245,7 @@ abstract class _FlagsParentMapSplay
 ///
 ///
 /// [FlagsMapDate.empty]
-/// [includes], ...
+/// [includesRange], ...
 /// [firstYear], ...
 /// [yearsAvailable], ...
 ///
