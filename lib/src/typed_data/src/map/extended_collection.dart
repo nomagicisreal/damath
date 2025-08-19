@@ -1,4 +1,4 @@
-part of '../typed_data.dart';
+part of '../../typed_data.dart';
 
 ///
 ///

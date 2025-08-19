@@ -8,8 +8,9 @@ import 'package:damath/src/collection/collection.dart';
 import 'package:damath/src/custom/custom.dart';
 
 part 'src/extended.dart';
-part 'src/extended_collection.dart';
+part 'src/map/extended_collection.dart';
 part 'src/flags.dart';
+part 'src/flags_abstraction.dart';
 part 'src/flags_impl.dart';
 part 'src/field/field_custom.dart';
 part 'src/map/extended.dart';

@@ -5,6 +5,7 @@ part of '../../typed_data.dart';
 /// mixin:
 /// [_MixinFieldOperatable]
 /// [_MixinFieldPositionAble]
+/// [_MixinFieldPositionAbleIterable]
 /// [_MixinFieldPositionAbleContainer]
 /// [_MixinFieldIterable]
 /// [_MixinFieldIterableIndex]
@@ -131,10 +132,10 @@ mixin _MixinFieldPositionAble on _FieldParent implements _FlagsOperator {
 mixin _MixinFieldPositionAbleIterable<T> on _MixinFieldPositionAble
     implements _FlagsIterable<T> {
   @override
-  void includesRange(T begin, T end) => _ranges(_bitSet, begin, end);
+  void includesRange(T begin, T limit) => _ranges(_bitSet, begin, limit);
 
   @override
-  void excludesRange(T begin, T end) => _ranges(_bitClear, begin, end);
+  void excludesRange(T begin, T limit) => _ranges(_bitClear, begin, limit);
 
   void _ranges(Consumer<int> consume, T begin, T limit);
 }

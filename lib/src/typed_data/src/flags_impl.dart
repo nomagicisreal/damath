@@ -3,7 +3,7 @@ part of '../typed_data.dart';
 ///
 ///
 /// [_MixinFlagsOperate8], [_MixinFlagsOperate16], [_MixinFlagsOperate32], [_MixinFlagsOperate64]
-/// [_MixinFlagsInsertAble]
+/// [_MixinFlagsValueInsert]
 ///
 ///
 
@@ -55,30 +55,3 @@ mixin _MixinFlagsOperate64 implements _FlagsOperator {
   int get _sizeEach => TypedIntList.sizeEach64;
 }
 
-///
-///
-///
-mixin _MixinFlagsInsertAble implements _FlagsOperator {
-  bool _mutateBitOn(int position, TypedDataList<int> list) =>
-      list.bitOn(position, _shift, _mask);
-
-  void _mutateBitSet(int position, TypedDataList<int> list) =>
-      list.bitSet(position, _shift, _mask);
-
-  void _mutateBitClear(int position, TypedDataList<int> list) =>
-      list.bitClear(position, _shift, _mask);
-
-  TypedDataList<int> get _newList;
-
-  TypedDataList<int> _newInsertion(int position) =>
-      _newList..[position >> _shift] = 1 << (position & _mask) - 1;
-
-  bool get isEmpty;
-
-  bool get isNotEmpty;
-}
-
-///
-/// integrate string utils here
-///
-// void _toStringField() {}

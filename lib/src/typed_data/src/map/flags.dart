@@ -5,6 +5,7 @@ part of '../../typed_data.dart';
 ///
 /// to know the inheritance detail, see the comment above [_FlagsParent]
 ///
+/// [_MixinFlagsValueInsert]
 /// [_FlagsParentMapSplay]
 /// [FlagsMapDate]
 /// [FlagsMapHourDate]
@@ -14,13 +15,35 @@ part of '../../typed_data.dart';
 
 ///
 ///
-/// [_bufferApplyField], ...
+///
+mixin _MixinFlagsValueInsert implements _FlagsOperator {
+  bool _mutateBitOn(int position, TypedDataList<int> list) =>
+      list.bitOn(position, _shift, _mask);
+
+  void _mutateBitSet(int position, TypedDataList<int> list) =>
+      list.bitSet(position, _shift, _mask);
+
+  void _mutateBitClear(int position, TypedDataList<int> list) =>
+      list.bitClear(position, _shift, _mask);
+
+  TypedDataList<int> get _newList;
+
+  TypedDataList<int> _newInsertion(int position) =>
+      _newList..[position >> _shift] = 1 << (position & _mask) - 1;
+
+  bool get isEmpty;
+
+  bool get isNotEmpty;
+}
+
+///
+///
 /// [_errorEmptyFlagsNotRemoved], ...
 /// [_findKey], ...
 ///
 ///
-abstract class _FlagsParentMapSplay
-    with _MixinFlagsInsertAble
+sealed class _FlagsParentMapSplay
+    with _MixinFlagsValueInsert
     implements _FlagsContainer<(int, int, int)> {
   ///
   /// [_map], [_field]
@@ -203,43 +226,6 @@ abstract class _FlagsParentMapSplay
 
     return null;
   }
-
-  ///
-  ///
-  ///
-  int get _toStringFieldTitleLength;
-
-  void _bufferApplyField(
-    StringBuffer buffer,
-    int key,
-    int keyKey,
-    TypedDataList<int> values,
-  );
-
-  @override
-  void _toStringFlagsBy(StringBuffer buffer) {
-    final pad = _toStringFieldTitleLength;
-    for (var entry in _map.field.entries) {
-      final key = entry.key;
-      buffer.write('|');
-      buffer.write('($key'.padLeft(pad));
-      buffer.write(',');
-      var padding = false;
-      for (var valueEntry in entry.value.entries) {
-        if (padding) {
-          buffer.write('|');
-          buffer.writeRepeat(pad + 1, ' ');
-        } else {
-          padding = true;
-        }
-        final keyKey = valueEntry.key;
-        buffer.write('$keyKey)'.padLeft(4));
-        buffer.write(' : ');
-        _bufferApplyField(buffer, key, keyKey, valueEntry.value);
-        buffer.writeln();
-      }
-    }
-  }
 }
 
 ///
@@ -375,23 +361,6 @@ class FlagsMapDate extends _FlagsParentMapSplay with _MixinFlagsOperate32 {
 
   @override
   Uint32List get _newList => Uint32List(1);
-
-  @override
-  int get _toStringFieldTitleLength => 6; // for '([year]'
-
-  @override
-  int get _toStringFieldBorderLength => 15 + 32 + 4;
-
-  @override
-  void _bufferApplyField(
-    StringBuffer buffer,
-    int year,
-    int month,
-    TypedDataList<int> values,
-  ) => buffer.writeBitsOfMonth(
-    values[0],
-    DateTimeExtension.monthDaysOf(year, month),
-  );
 }
 
 ///
@@ -521,31 +490,4 @@ class FlagsMapHourDate extends _FlagsParentMapSplay {
 
   @override
   Uint8List get _newList => Uint8List(3);
-
-  @override
-  int get _toStringFieldTitleLength => 4; // for '([month]'
-
-  @override
-  int get _toStringFieldBorderLength =>
-      _toStringFieldTitleLength + 5 + 3 + 32 + 4;
-
-  @override
-  void _bufferApplyField(
-    StringBuffer buffer,
-    int key,
-    int keyKey,
-    TypedDataList<int> values,
-  ) {
-    final size = TypedIntList.sizeEach8;
-    for (var j = 0; j < 3; j++) {
-      var i = 0;
-      var bits = values[j];
-      while (i < size) {
-        buffer.writeBit(bits);
-        bits >>= 1;
-        i++;
-      }
-      buffer.write(' ');
-    }
-  }
 }

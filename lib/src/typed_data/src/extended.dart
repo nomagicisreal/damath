@@ -3,7 +3,6 @@ part of '../typed_data.dart';
 ///
 ///
 ///
-/// [_MapperSplayTreeMapInt], ...
 /// [TypedIntList]
 ///
 ///

@@ -158,39 +158,6 @@ class FieldDatesInMonths extends _FieldParentScope<(int, int)>
       consume(yEnd, mEnd, i);
     }
   }
-
-  ///
-  ///
-  ///
-  @override
-  int get _toStringFieldBorderLength => 15 + 32 + 4;
-
-  @override
-  void _toStringFlagsBy(StringBuffer buffer) {
-    final field = _field;
-    final december = DateTime.december;
-    final daysOf = DateTimeExtension.monthDaysOf;
-    final begin = this.begin;
-    var year = begin.$1;
-    var month = begin.$2;
-
-    final limit = _field.length;
-    for (var j = 0; j < limit; j++) {
-      buffer.write('|');
-      buffer.write('($year'.padLeft(6));
-      buffer.write(',');
-      buffer.write('$month)'.padLeft(4));
-      buffer.write(' :');
-      buffer.write(' ');
-      buffer.writeBitsOfMonth(field[j], daysOf(year, month));
-      buffer.writeln(' |');
-      month++;
-      if (month > december) {
-        month = 1;
-        year++;
-      }
-    }
-  }
 }
 
 ///
@@ -274,44 +241,4 @@ abstract class FieldAB extends _FieldParent
       consume(aEnd + d);
     }
   }
-
-  ///
-  ///
-  ///
-  @override
-  int get _toStringFieldBorderLength =>
-      3 + 6 + 2 + _toStringHoursPerLine(bDivision) * (bDivision + 1) + 2;
-
-  @override
-  void _toStringFlagsBy(StringBuffer buffer) {
-    final field = _field;
-    final shift = _shift;
-    final mask = _mask;
-    final division = bDivision;
-    final hoursPerLine = _toStringHoursPerLine(division);
-    final size = hoursPerLine * division;
-
-    final limit = (aLimit - 1) ~/ hoursPerLine;
-    var i = 0;
-    for (var j = 0; j < limit; j++) {
-      final h = j * hoursPerLine;
-      buffer.write('|');
-      buffer.write('$h'.padLeft(3));
-      buffer.write(' ~');
-      buffer.write('${h + hoursPerLine - 1}'.padLeft(3));
-      buffer.write(' :');
-      for (var m = 0; m < size; m++) {
-        if (m % division == 0) buffer.write(' ');
-        buffer.writeBit(field[i >> shift] >> (i & mask));
-        i++;
-      }
-      buffer.writeln(' |');
-    }
-  }
-
-  static int _toStringHoursPerLine(int division) => switch (division) {
-    1 => 6,
-    2 || 3 => 4,
-    _ => 3,
-  };
 }
