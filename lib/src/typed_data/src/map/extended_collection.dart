@@ -92,7 +92,7 @@ mixin _MixinSplayDate<K, V> on _SplayTreeMapValueList<K, V> {
   }) {
     final result = SplayTreeMap<K, List<V>>(_compare, _isValidKey);
     final flagsField = flags._map.field;
-    final bitOn = flags._mutateBitOn;
+    final bitOn = flags._bitOn;
 
     int? invalidYear;
     int? invalidMonth;

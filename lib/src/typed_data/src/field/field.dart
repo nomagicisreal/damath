@@ -3,7 +3,7 @@ part of '../../typed_data.dart';
 ///
 ///
 ///
-/// to know the inheritance detail, see the comment above [_FlagsParent]
+/// to know the inheritance detail, see the comment above [_PFlags]
 ///
 /// [Field]
 /// [Field2D]
@@ -16,13 +16,13 @@ part of '../../typed_data.dart';
 ///
 ///
 ///
-abstract class Field extends _FieldParentSpatial1
+abstract class Field extends _PFieldSpatial1
     with
-        _MixinFieldIterable,
-        _MixinFieldPositionAble,
-        _MixinFieldPositionAbleIterable<int>,
-        _MixinFieldOperatable<Field>
-    implements _FlagsContainer<int> {
+        _MIterableField,
+        _MBitsField,
+        _MFieldBitsIterable<int>,
+        _MFieldOperatable<Field>
+    implements _AFlagsContainer<int> {
   factory Field(int width, [bool native = false]) {
     assert(width > 1);
     if (width < TypedIntList.limit8) return _Field8(width);
@@ -61,13 +61,13 @@ abstract class Field extends _FieldParentSpatial1
 ///
 ///
 ///
-abstract class Field2D extends _FieldParentSpatial2
+abstract class Field2D extends _PFieldSpatial2
     with
-        _MixinFieldIterableIndex<(int, int)>,
-        _MixinFieldPositionAbleContainer<(int, int)>,
-        _MixinFieldPositionAbleIterable<(int, int)>,
-        _MixinFieldOperatable<Field2D>
-    implements _FieldSpatialCollapse<Field> {
+        _MIterableFieldIndexable<(int, int)>,
+        _MFieldContainerBits<(int, int)>,
+        _MFieldBitsIterable<(int, int)>,
+        _MFieldOperatable<Field2D>
+    implements _AFieldCollapse<Field> {
   factory Field2D(int width, int height, {bool native = false}) {
     assert(width > 1 && height > 1);
     final size = width * height;
@@ -151,13 +151,13 @@ abstract class Field2D extends _FieldParentSpatial2
 ///
 ///
 ///
-abstract class Field3D extends _FieldParentSpatial3
+abstract class Field3D extends _PFieldSpatial3
     with
-        _MixinFieldIterableIndex<(int, int, int)>,
-        _MixinFieldPositionAbleContainer<(int, int, int)>,
-        _MixinFieldPositionAbleIterable<(int, int, int)>,
-        _MixinFieldOperatable<Field3D>
-    implements _FieldSpatialCollapse<Field2D> {
+        _MIterableFieldIndexable<(int, int, int)>,
+        _MFieldContainerBits<(int, int, int)>,
+        _MFieldBitsIterable<(int, int, int)>,
+        _MFieldOperatable<Field3D>
+    implements _AFieldCollapse<Field2D> {
   factory Field3D(int width, int height, int depth, [bool native = false]) {
     assert(width > 1 && height > 1 && depth > 1);
     final size = width * height * depth;
@@ -294,13 +294,13 @@ abstract class Field3D extends _FieldParentSpatial3
 ///
 ///
 ///
-abstract class Field4D extends _FieldParentSpatial4
+abstract class Field4D extends _PFieldSpatial4
     with
-        _MixinFieldIterableIndex<(int, int, int, int)>,
-        _MixinFieldPositionAbleContainer<(int, int, int, int)>,
-        _MixinFieldPositionAbleIterable<(int, int, int, int)>,
-        _MixinFieldOperatable<Field4D>
-    implements _FieldSpatialCollapse<Field3D> {
+        _MIterableFieldIndexable<(int, int, int, int)>,
+        _MFieldContainerBits<(int, int, int, int)>,
+        _MFieldBitsIterable<(int, int, int, int)>,
+        _MFieldOperatable<Field4D>
+    implements _AFieldCollapse<Field3D> {
   factory Field4D(int s1, int s2, int s3, int s4, [bool native = false]) {
     assert(s1 > 1 && s2 > 1 && s3 > 1 && s4 > 1);
     final size = s1 * s2 * s3 * s4;

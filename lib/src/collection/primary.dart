@@ -231,56 +231,6 @@ extension Record2Int on (int, int) {
         DateTime.december * (year - yearCurrent) +
         month;
   }
-
-  int monthsToMonth((int, int) record) {
-    assert(
-      DateTimeExtension.isValidMonth(this.$2) &&
-          DateTimeExtension.isValidMonth(record.$2),
-      'invalid date: $this, $record',
-    );
-    final year = record.$1;
-    final yearCurrent = this.$1;
-    assert(yearCurrent <= year);
-    final monthCurrent = this.$2;
-
-    // ==
-    final month = record.$2;
-    if (yearCurrent == year) {
-      assert(monthCurrent <= month);
-      return month - monthCurrent;
-    }
-
-    // <
-    return DateTimeExtension.limitMonthEnd -
-        monthCurrent +
-        DateTime.december * (year - yearCurrent) +
-        month;
-  }
-
-  int monthsToDates((int, int, int) record) {
-    assert(
-      DateTimeExtension.isValidMonth(this.$2) &&
-          DateTimeExtension.isValidMonth(record.$2),
-      'invalid date: $this, $record',
-    );
-    final year = record.$1;
-    final yearCurrent = this.$1;
-    assert(yearCurrent <= year);
-    final monthCurrent = this.$2;
-
-    // ==
-    final month = record.$2;
-    if (yearCurrent == year) {
-      assert(monthCurrent <= month);
-      return month - monthCurrent;
-    }
-
-    // <
-    return DateTimeExtension.limitMonthEnd -
-        monthCurrent +
-        DateTime.december * (year - yearCurrent) +
-        month;
-  }
 }
 
 ///

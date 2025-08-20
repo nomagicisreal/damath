@@ -1,75 +1,73 @@
 part of '../typed_data.dart';
 
 ///
-/// [_FlagsParent]
-///   **[_FlagsContainer] for all [_FlagsParent] concrete children
-///   **[_FlagsOperator] -> [_MixinFlagsOperate8], [_MixinFlagsOperate16], [_MixinFlagsOperate32], [_MixinFlagsOperate64]
-///   |   --[_MixinFlagsValueInsert]
-///   **[_FlagsIterable]
+///
+///
+/// [_PFlags]
+///   **[_AFlagsContainer] for all [_PFlags] concrete children
+///   **[_AFlagsIdentical]
+///   **[_AFlagsBits]
+///   **[_AFlagsIterable]
+///   **[_AFlagsOperatable]
 ///   |
-///   --[_FieldParent]
-///   |   --[_MixinFieldOperatable] for all [_FieldParent] children
-///   |   --[_MixinFieldPositionAble] implements [_FlagsOperator]
-///   |   |   --[_MixinFieldPositionAbleIterable]
-///   |   |   --[_MixinFieldPositionAbleContainer] implements [_FlagsContainer]
-///   |   --[_MixinFieldIterable]
-///   |   --[_MixinFieldIterableIndex]
-///   |   |
-///   |   --[_FieldParentSpatial1] with [_MixinFieldPositionAble]
+///   --[_PField]
+///   |   --[_PFieldSpatial1]
 ///   |   |   --[Field]
-///   |   |   --[_FieldParentSpatial2]
-///   |   |       **[_FieldSpatialCollapse] for all [_FieldParentSpatial2] children
-///   |   |       --[Field2D] with [_MixinFieldPositionAbleContainer]
-///   |   |       --[_FieldParentSpatial3]
-///   |   |           --[Field3D] with [_MixinFieldPositionAbleContainer]
-///   |   |           --[_FieldParentSpatial4]
-///   |   |               --[Field4D] with [_MixinFieldPositionAbleContainer]
+///   |   |   --[_PFieldSpatial2]
+///   |   |       **[_AFieldCollapse] for all [_PFieldSpatial2] concrete children
+///   |   |       --[Field2D]
+///   |   |       --[_PFieldSpatial3]
+///   |   |           --[Field3D]
+///   |   |           --[_PFieldSpatial4]
+///   |   |               --[Field4D]
 ///   |   |
-///   |   --[_FieldParentScope]
+///   |   --[_PFieldScoped]
 ///   |   |   --[FieldDatesInMonths]
 ///   |   |
-///   |   --[FieldAB] with [_MixinFieldPositionAbleContainer]
+///   |   --[FieldAB]
 ///   |
-///   --[_FlagsParentMapSplay] with [_MixinFlagsValueInsert] implements [_FlagsContainer]
+///   --[_FlagsParentMapSplay]
 ///       --[FlagsMapDate]
-///       --[FlagsMapHourDate] with [_MixinFlagsInsertAbleHoursADay]
+///       --[FlagsMapHourDate]
 ///
 ///
 ///
 ///
 
 ///
+/// there are only two functions here: [clear], [toString]
 ///
-///
-abstract class _FlagsParent {
-  const _FlagsParent();
+abstract class _PFlags {
+  const _PFlags();
 
+  ///
+  /// clear all flags
+  ///
   void clear();
-
-  int get _sizeEach;
 
   @override
   String toString() {
     String result = '';
+
     assert(() {
+      final buffer = StringBuffer('$runtimeType field:\n');
       final instance = this;
       final borderLength = switch (instance) {
-        _FieldParentSpatial1() => switch (instance) {
-          // spatial 2, 3, 4 are the same
-          _FieldParentSpatial2() =>
+        _PFieldSpatial1() => switch (instance) {
+          // border length of spatial 2, 3, 4 are the same
+          _PFieldSpatial2() =>
             2 +
                 '${instance.spatial2}'.length +
                 2 +
-                (instance.spatial1 + 3) ~/ 4 * 5 +
+                (instance.spatial1 + 3 >> 2) * 5 +
                 2,
           Field() =>
             3 +
                 '${instance.spatial1}'.length * 2 +
                 4 +
-                (_sizeEach + TypedIntList.mask4 >> TypedIntList.shift4) * 5 +
+                (instance._sizeEach + 3 >> 2) * 5 +
                 2,
         },
-        FieldDatesInMonths() || FlagsMapDate() => 15 + 32 + 4,
         FieldAB() =>
           3 +
               6 +
@@ -81,15 +79,10 @@ abstract class _FlagsParent {
                   } *
                   (instance.bDivision + 1) +
               2,
-        FlagsMapHourDate() => 4 + 5 + 3 + 32 + 4,
-        _FlagsParent() =>
-          throw UnimplementedError(instance.runtimeType.toString()),
+        FieldDatesInMonths() || FlagsMapDate() => 15 + 32 + 4 + 2,
+        FlagsMapHourDate() => 4 + 5 + 3 + 32 + 4 + 2,
+        _PFlags() => throw UnimplementedError(instance.runtimeType.toString()),
       };
-
-      ///
-      ///
-      ///
-      final buffer = StringBuffer('$runtimeType field:\n');
       buffer.writeRepeat(borderLength, '-');
       buffer.writeln();
 
@@ -97,33 +90,36 @@ abstract class _FlagsParent {
       /// body
       ///
       // field 1d ~ 4d
-      if (instance is _FieldParent) {
+      if (instance is _PField) {
         final field = instance._field;
-        if (instance is _FieldParentSpatial1) {
+        if (instance is _PFieldSpatial1) {
+          final sizeEach = instance._sizeEach;
+          final spatial1 = instance.spatial1;
+          final pad = '${sizeEach * field.length}'.length + 1;
+          final jLast = field.length - 1;
+          final countLastLine = spatial1 & instance._mask;
+          final limit = field.length;
+
           void fieldFlags1() {
-            final size = _sizeEach;
-            final max = instance.spatial1;
-            final pad = '${size * field.length}'.length + 1;
-            final jLast = field.length - 1;
-            final maskChunk = TypedIntList.mask4;
-            final countLastLine = max & instance._mask;
-            final limit = field.length;
             for (var j = 0; j < limit; j++) {
-              final start = j * size;
+              final start = j * sizeEach;
               late final int space;
               late final String end;
               late final Predicator<int> predicate;
               if (j == jLast && countLastLine != 0) {
-                end = '${max - 1}';
-                predicate = IntExtension.predicator_additionLess(start, max);
+                end = '${spatial1 - 1}';
+                predicate = IntExtension.predicator_additionLess(
+                  start,
+                  spatial1,
+                );
                 space =
                     1 +
-                    (size >> TypedIntList.shift4) * 5 -
+                    (sizeEach >> TypedIntList.shift4) * 5 -
                     countLastLine -
                     (countLastLine + TypedIntList.mask4 >> TypedIntList.shift4);
               } else {
-                end = '${start + size}';
-                predicate = IntExtension.predicator_less(size);
+                end = '${start + sizeEach}';
+                predicate = IntExtension.predicator_less(sizeEach);
                 space = 1;
               }
 
@@ -134,12 +130,12 @@ abstract class _FlagsParent {
               buffer.write(' :');
               var i = 0;
               for (var bits = field[j]; bits > 0; bits >>= 1) {
-                buffer.writeIfNotNull(i & maskChunk == 0 ? ' ' : null);
+                buffer.writeIfNotNull(i & 3 == 0 ? ' ' : null);
                 buffer.writeBit(bits);
                 i++;
               }
               while (predicate(i)) {
-                buffer.writeIfNotNull(i & maskChunk == 0 ? ' ' : null);
+                buffer.writeIfNotNull(i & 3 == 0 ? ' ' : null);
                 buffer.write('0');
                 i++;
               }
@@ -151,7 +147,7 @@ abstract class _FlagsParent {
           ///
           ///
           ///
-          if (instance is _FieldParentSpatial2) {
+          if (instance is _PFieldSpatial2) {
             final mask = instance._mask;
             final spatial1 = instance.spatial1; // hour per day
             final spatial2 = instance.spatial2;
@@ -213,11 +209,10 @@ abstract class _FlagsParent {
             ///
             ///
             ///
-            if (instance is _FieldParentSpatial3) {
+            if (instance is _PFieldSpatial3) {
+              final space = spatial1 * spatial2;
+              final spatial3 = instance.spatial3;
               void fieldFlags3() {
-                final space = spatial1 * spatial2;
-                final spatial3 = instance.spatial3;
-                final sizeEach = _sizeEach;
                 for (var k = 0; k < spatial3; k++) {
                   final start = k * space;
                   fieldFlags2(start ~/ sizeEach, start % sizeEach);
@@ -236,7 +231,7 @@ abstract class _FlagsParent {
               ///
               ///
               ///
-              if (instance is _FieldParentSpatial4) {
+              if (instance is _PFieldSpatial4) {
                 buffer.writeRepeat(borderLength, '==');
                 buffer.writeRepeat(borderLength, '==');
                 throw UnimplementedError();
@@ -254,7 +249,6 @@ abstract class _FlagsParent {
           ///
           ///
         } else if (instance is FieldDatesInMonths) {
-          final field = instance._field;
           final december = DateTime.december;
           final daysOf = DateTimeExtension.monthDaysOf;
           final begin = instance.begin;
@@ -282,7 +276,6 @@ abstract class _FlagsParent {
           ///
           ///
         } else if (instance is FieldAB) {
-          final field = instance._field;
           final shift = instance._shift;
           final mask = instance._mask;
           final division = instance.bDivision;
@@ -319,8 +312,7 @@ abstract class _FlagsParent {
       } else if (instance is _FlagsParentMapSplay) {
         void flags(
           int pad,
-          void Function(int year, int month, TypedDataList<int> values)
-          applyField,
+          void Function(int y, int m, TypedDataList<int> d) applyField,
         ) {
           for (var entry in instance._map.field.entries) {
             final key = entry.key;
@@ -372,6 +364,10 @@ abstract class _FlagsParent {
       } else {
         throw UnimplementedError();
       }
+
+      ///
+      ///
+      ///
       buffer.writeRepeat(borderLength, '-');
       buffer.writeln();
       result = buffer.toString();

@@ -30,7 +30,7 @@ void main(List<String> arguments) {
     ..[(1, 1, 16)] = true
     ..[(2, 3, 9)] = true;
 
-  final field2 = field.newFieldZero;
+  final field2 = field.newZero;
   field2
     ..[(2, 1, 1)] = true
     ..[(4, 1, 1)] = true

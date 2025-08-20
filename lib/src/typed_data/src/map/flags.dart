@@ -3,9 +3,9 @@ part of '../../typed_data.dart';
 ///
 ///
 ///
-/// to know the inheritance detail, see the comment above [_FlagsParent]
+/// to know the inheritance detail, see the comment above [_PFlags]
 ///
-/// [_MixinFlagsValueInsert]
+/// [_MBitsFlagsField]
 /// [_FlagsParentMapSplay]
 /// [FlagsMapDate]
 /// [FlagsMapHourDate]
@@ -16,25 +16,6 @@ part of '../../typed_data.dart';
 ///
 ///
 ///
-mixin _MixinFlagsValueInsert implements _FlagsOperator {
-  bool _mutateBitOn(int position, TypedDataList<int> list) =>
-      list.bitOn(position, _shift, _mask);
-
-  void _mutateBitSet(int position, TypedDataList<int> list) =>
-      list.bitSet(position, _shift, _mask);
-
-  void _mutateBitClear(int position, TypedDataList<int> list) =>
-      list.bitClear(position, _shift, _mask);
-
-  TypedDataList<int> get _newList;
-
-  TypedDataList<int> _newInsertion(int position) =>
-      _newList..[position >> _shift] = 1 << (position & _mask) - 1;
-
-  bool get isEmpty;
-
-  bool get isNotEmpty;
-}
 
 ///
 ///
@@ -43,8 +24,8 @@ mixin _MixinFlagsValueInsert implements _FlagsOperator {
 ///
 ///
 sealed class _FlagsParentMapSplay
-    with _MixinFlagsValueInsert
-    implements _FlagsContainer<(int, int, int)> {
+    with _MBitsFlagsField
+    implements _AFlagsIdentical, _AFlagsContainer<(int, int, int)> {
   ///
   /// [_map], [_field]
   /// [_errorEmptyFlagsNotRemoved]
@@ -83,14 +64,14 @@ sealed class _FlagsParentMapSplay
       int value,
     ) =>
         SplayTreeMap(compareKeyKey, validate(key))
-          ..[keyKey] = _newInsertion(value);
+          ..[keyKey] = _bitSetNewField(value);
 
     _map = SplayTreeMapIntIntInt(
       SplayTreeMap(Comparable.compare, isValidKey),
-      setValue: _mutateBitSet,
-      clearValue: _mutateBitClear,
+      setValue: _bitSet,
+      clearValue: _bitClear,
       ensureRemove: _excluding,
-      newValue: _newInsertion,
+      newValue: _bitSetNewField,
       newKeyKey: newKeyKey,
       toKeyKeyBegin: toKeyKeyBegin,
       toKeyKeyLimit: toKeyKeyEnd,
@@ -236,7 +217,7 @@ sealed class _FlagsParentMapSplay
 /// [yearsAvailable], ...
 ///
 ///
-class FlagsMapDate extends _FlagsParentMapSplay with _MixinFlagsOperate32 {
+class FlagsMapDate extends _FlagsParentMapSplay with _MFlagsO32 {
   FlagsMapDate.empty()
     : super.empty(
         isValidKeyKey: DateTimeExtension.isValidMonthDynamicOf,
@@ -360,7 +341,7 @@ class FlagsMapDate extends _FlagsParentMapSplay with _MixinFlagsOperate32 {
   bool validateIndex((int, int, int) index) => index.isValidDate;
 
   @override
-  Uint32List get _newList => Uint32List(1);
+  Uint32List get _newField => Uint32List(1);
 }
 
 ///
@@ -489,5 +470,5 @@ class FlagsMapHourDate extends _FlagsParentMapSplay {
   }
 
   @override
-  Uint8List get _newList => Uint8List(3);
+  Uint8List get _newField => Uint8List(3);
 }

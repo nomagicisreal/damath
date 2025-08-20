@@ -2,7 +2,7 @@ part of '../../typed_data.dart';
 
 ///
 ///
-/// to know the inheritance detail, see the comment above [_FlagsParent]
+/// to know the inheritance detail, see the comment above [_PFlags]
 ///
 /// [FieldDatesInMonths]
 /// [FieldAB]
@@ -12,13 +12,14 @@ part of '../../typed_data.dart';
 ///
 ///
 ///
-class FieldDatesInMonths extends _FieldParentScope<(int, int)>
-    with _MixinFieldOperatable<FieldDatesInMonths>
-    implements _FlagsContainer<(int, int, int)> {
-  late final int Function((int, int, int) index) _fieldIndexFrom;
-  late final BiCallback<(int, int, int)> includes;
-  late final BiCallback<(int, int, int)> excludes;
-
+class FieldDatesInMonths extends _PFieldScoped<(int, int)>
+    with
+        _MBitsFieldMonthsDates,
+        _MFieldContainerBitsMonthsDates,
+        _MFieldBitsIterableMonthsDates,
+        _MIterableFieldMonthsDatesScoped,
+        _MFieldOperatable<FieldDatesInMonths>
+    implements _AFlagsContainer<(int, int, int)> {
   FieldDatesInMonths((int, int) begin, (int, int) end)
     : assert(
         DateTimeExtension.isValidMonth(begin.$2) &&
@@ -26,34 +27,11 @@ class FieldDatesInMonths extends _FieldParentScope<(int, int)>
         'invalid date $begin ~ $end',
       ),
       assert(end > begin, 'invalid range begin($begin), end($end)'),
-      super(begin, end, Uint32List(begin.monthsToMonth(end) + 1)) {
-    final field = _field;
-    final index = begin.monthsToYearMonth;
-    void including(int y, int m, int d) => field[index(y, m)] |= 1 << d - 1;
-    void excluding(int y, int m, int d) => field[index(y, m)] &= ~(1 << d - 1);
-    _fieldIndexFrom = begin.monthsToDates;
-    includes = (begin, end) {
-      assert(validateIndex(begin));
-      assert(validateIndex(end));
-      assert(begin < end);
-      _ranges(including, begin, end);
-    };
-    excludes = (begin, end) {
-      assert(validateIndex(begin));
-      assert(validateIndex(end));
-      assert(begin < end);
-      _ranges(excluding, begin, end);
-    };
-  }
-
-  ///
-  ///
-  ///
-  @override
-  int get _sizeEach => TypedIntList.sizeEach32;
-
-  @override
-  FieldDatesInMonths get newFieldZero => FieldDatesInMonths(begin, end);
+      super(
+        begin,
+        end,
+        Uint32List(begin.monthsToYearMonth(end.$1, end.$2) + 1),
+      );
 
   @override
   bool validateIndex((int, int, int) index) =>
@@ -62,29 +40,22 @@ class FieldDatesInMonths extends _FieldParentScope<(int, int)>
       end.largerOrEqualThan3(index);
 
   @override
-  bool operator []((int, int, int) index) {
-    assert(validateIndex(index));
-    return _field[_fieldIndexFrom(index)] >> index.$3 - 1 & 1 == 1;
-  }
-
-  @override
-  void operator []=((int, int, int) index, bool value) {
-    assert(validateIndex(index));
-    if (value) {
-      _field[_fieldIndexFrom(index)] |= 1 << index.$3 - 1;
-      return;
-    }
-    _field[_fieldIndexFrom(index)] &= ~(1 << index.$3 - 1);
-  }
+  int _fieldIndexFrom(int year, int month) =>
+      begin.monthsToYearMonth(year, month);
 
   ///
   /// [_ranges] is the same algorithm with [Record3Int.biCallbackFrom]
   ///
-  static void _ranges(
+  @override
+  void _ranges(
     TriCallback<int> consume,
     (int, int, int) begin,
     (int, int, int) end,
   ) {
+    assert(validateIndex(begin));
+    assert(validateIndex(end));
+    assert(begin < end);
+
     final yBegin = begin.$1;
     final mBegin = begin.$2;
     final dBegin = begin.$3;
@@ -158,18 +129,21 @@ class FieldDatesInMonths extends _FieldParentScope<(int, int)>
       consume(yEnd, mEnd, i);
     }
   }
+
+  @override
+  FieldDatesInMonths get newZero => FieldDatesInMonths(begin, end);
 }
 
 ///
 ///
 ///
-abstract class FieldAB extends _FieldParent
+abstract class FieldAB extends _PField
     with
-        _MixinFieldIterableIndex<(int, int)>,
-        _MixinFieldPositionAble,
-        _MixinFieldPositionAbleContainer<(int, int)>,
-        _MixinFieldPositionAbleIterable<(int, int)>,
-        _MixinFieldOperatable<FieldAB> {
+        _MIterableFieldIndexable<(int, int)>,
+        _MBitsField,
+        _MFieldContainerBits<(int, int)>,
+        _MFieldBitsIterable<(int, int)>,
+        _MFieldOperatable<FieldAB> {
   final int aLimit;
   final Predicator<int> bValidate;
   final int bDivision;

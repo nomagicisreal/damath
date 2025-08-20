@@ -9,9 +9,16 @@ part of '../typed_data.dart';
 ///
 
 ///
-/// [comparing8First], ...
-/// [bitConsume], ...
-/// [bitOn], ...
+/// static constants and methods:
+/// [countsAByte], ...
+/// [quotientCeil8], ...
+///
+/// instances methods:
+/// return void                   : [bitConsume], ...
+/// return bool                   : [bitOn], ...
+/// return integer                : [bitFirst], ...
+/// return iterable integer       : [bitsAvailable], ...
+/// return iterable provided type : [mapBitsAvailable], ...
 ///
 extension TypedIntList on TypedDataList<int> {
   static const int countsAByte = 8;
@@ -67,23 +74,10 @@ extension TypedIntList on TypedDataList<int> {
       a[0].compareTo(b[0]);
 
   ///
-  /// [bytesFrom]
-  /// [bytesFirstFrom8], ...
-  ///
-  static int bytesFrom<T extends TypedDataList<int>>(T list, int index) =>
-      list[index];
-
-  static int bytesFirstFrom8(Uint8List list) => list[0];
-
-  static int bytesFirstFrom16(Uint16List list) => list[0];
-
-  static int bytesFirstFrom32(Uint32List list) => list[0];
-
-  static int bytesFirstFrom64(Uint64List list) => list[0];
-
-  ///
   /// [getBitFirst1]
   /// [getBitLast1]
+  /// [getBitFirst1From]
+  /// [getBitLast1From]
   ///
   static int? getBitFirst1<T extends TypedDataList<int>>(T list, int size) =>
       list.bitFirst(size);
@@ -104,21 +98,15 @@ extension TypedIntList on TypedDataList<int> {
   ) => list.bitLastFrom(k, size);
 
   ///
-  /// [bitOn]
   /// [bitSet], [bitClear]
+  /// [bitConsume]
   ///
-  bool bitOn(int p, int shift, int mask, [int bit = 1]) =>
-      (this[p >> shift] >> (p & mask)) & 1 == bit;
-
   void bitSet(int p, int shift, int mask) =>
       this[p >> shift] |= 1 << (p & mask);
 
   void bitClear(int p, int shift, int mask) =>
       this[p >> shift] &= ~(1 << (p & mask));
 
-  ///
-  /// [bitConsume]
-  ///
   void bitConsume(
     void Function(int p) consume,
     int size,
@@ -131,6 +119,12 @@ extension TypedIntList on TypedDataList<int> {
       }
     }
   }
+
+  ///
+  /// [bitOn]
+  ///
+  bool bitOn(int p, int shift, int mask, [int bit = 1]) =>
+      (this[p >> shift] >> (p & mask)) & 1 == bit;
 
   ///
   /// [bitFirst]
@@ -266,8 +260,7 @@ extension TypedIntList on TypedDataList<int> {
 
   ///
   ///
-  /// [bitsAvailable]
-  /// [mapBitsAvailable]
+  /// [bitsAvailable], [mapBitsAvailable]
   /// [mapBitsAvailableFrom]
   /// [mapBitsAvailableTo]
   /// [mapBitsAvailableBetween]

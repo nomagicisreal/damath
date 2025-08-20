@@ -2,28 +2,26 @@ part of '../typed_data.dart';
 
 ///
 ///
-/// abstract contract
-/// [_FlagsContainer]
-/// [_FlagsOperator]
-/// [_FlagsIterable]
-/// [_FieldSpatialCollapse]
+/// prefix 'A' stands for abstraction, with contract
+/// [_AFlagsContainer]
+/// [_AFlagsBits]
+/// [_AFlagsOperatable]
+/// [_AFlagsIterable]
+/// [_AFlagsIdentical]
+/// [_AFieldCollapse]
 ///
-/// parent class:
-/// [_FieldParent]
-/// [_FieldParentSpatial1]
-/// [_FieldParentSpatial2]
-/// [_FieldParentSpatial3]
-/// [_FieldParentSpatial4]
-/// [_FieldParentScope]
+/// prefix 'P' stands for parent class, with  (with field)
+/// [_PField]
+/// [_PFieldSpatial1]
+/// [_PFieldSpatial2]
+/// [_PFieldSpatial3]
+/// [_PFieldSpatial4]
+/// [_PFieldScoped]
 ///
 ///
 
-///
-/// the abstract functions be in [_FlagsContainer], instead of be in [_FieldParent],
-/// preventing redundant, ambiguous generic type pass through out many-level inheritance.
-///
-abstract class _FlagsContainer<T> implements _FlagsParent {
-  const _FlagsContainer();
+abstract class _AFlagsContainer<T> implements _PFlags {
+  const _AFlagsContainer();
 
   bool validateIndex(T index);
 
@@ -32,8 +30,14 @@ abstract class _FlagsContainer<T> implements _FlagsParent {
   void operator []=(T index, bool value);
 }
 
-abstract class _FlagsOperator implements _FlagsParent {
-  const _FlagsOperator();
+abstract class _AFlagsIdentical implements _PFlags {
+  const _AFlagsIdentical();
+
+  int get _sizeEach;
+}
+
+abstract class _AFlagsBits implements _PFlags {
+  const _AFlagsBits();
 
   // int get _shift => math.log(_sizeEach) ~/ math.ln2 - 1;
   int get _shift;
@@ -42,8 +46,28 @@ abstract class _FlagsOperator implements _FlagsParent {
   int get _mask;
 }
 
-abstract class _FlagsIterable<T> implements _FlagsParent {
-  const _FlagsIterable();
+abstract class _AFlagsOperatable<F> implements _PFlags {
+  const _AFlagsOperatable();
+
+  bool isIdentical(F other);
+
+  F get newZero;
+
+  F operator &(F other);
+
+  F operator |(F other);
+
+  F operator ^(F other);
+
+  void setAnd(F other);
+
+  void setOr(F other);
+
+  void setXOr(F other);
+}
+
+abstract class _AFlagsIterable<T> implements _PFlags {
+  const _AFlagsIterable();
 
   T? get flagFirst;
 
@@ -66,8 +90,8 @@ abstract class _FlagsIterable<T> implements _FlagsParent {
   // Iterable<T> flagsBetween(int pBegin, int pEnd, [bool inclusive = true]);
 }
 
-abstract class _FieldSpatialCollapse<S> implements _FieldParentSpatial2 {
-  const _FieldSpatialCollapse();
+abstract class _AFieldCollapse<S> implements _PFieldSpatial2 {
+  const _AFieldCollapse();
 
   S collapseOn(int index);
 }
@@ -75,15 +99,10 @@ abstract class _FieldSpatialCollapse<S> implements _FieldParentSpatial2 {
 ///
 ///
 ///
-///
-///
-///
-abstract class _FieldParent extends _FlagsParent {
+abstract class _PField extends _PFlags implements _AFlagsIdentical {
   final TypedDataList<int> _field;
 
-  const _FieldParent(this._field);
-
-  int get sizeField => _sizeEach * _field.length;
+  const _PField(this._field);
 
   @override
   void clear() {
@@ -92,26 +111,27 @@ abstract class _FieldParent extends _FlagsParent {
       _field[i] = 0;
     }
   }
+
+  int get sizeField => _sizeEach * _field.length;
 }
 
 //
-sealed class _FieldParentSpatial1 extends _FieldParent
-    with _MixinFieldPositionAble {
+sealed class _PFieldSpatial1 extends _PField with _MBitsField {
   final int spatial1;
 
-  const _FieldParentSpatial1(this.spatial1, super._field);
+  const _PFieldSpatial1(this.spatial1, super._field);
 }
 
-abstract class _FieldParentSpatial2 extends _FieldParentSpatial1 {
+abstract class _PFieldSpatial2 extends _PFieldSpatial1 {
   final int spatial2;
 
-  const _FieldParentSpatial2(super.spatial1, this.spatial2, super.field);
+  const _PFieldSpatial2(super.spatial1, this.spatial2, super.field);
 }
 
-abstract class _FieldParentSpatial3 extends _FieldParentSpatial2 {
+abstract class _PFieldSpatial3 extends _PFieldSpatial2 {
   final int spatial3;
 
-  const _FieldParentSpatial3(
+  const _PFieldSpatial3(
     super.spatial1,
     super.spatial2,
     this.spatial3,
@@ -119,10 +139,10 @@ abstract class _FieldParentSpatial3 extends _FieldParentSpatial2 {
   );
 }
 
-abstract class _FieldParentSpatial4 extends _FieldParentSpatial3 {
+abstract class _PFieldSpatial4 extends _PFieldSpatial3 {
   final int spatial4;
 
-  const _FieldParentSpatial4(
+  const _PFieldSpatial4(
     super.spatial1,
     super.spatial2,
     super.spatial3,
@@ -134,9 +154,9 @@ abstract class _FieldParentSpatial4 extends _FieldParentSpatial3 {
 ///
 ///
 ///
-abstract class _FieldParentScope<T> extends _FieldParent {
+abstract class _PFieldScoped<T> extends _PField {
   final T begin;
   final T end;
 
-  const _FieldParentScope(this.begin, this.end, super.field);
+  const _PFieldScoped(this.begin, this.end, super.field);
 }
