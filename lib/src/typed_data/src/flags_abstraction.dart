@@ -3,15 +3,17 @@ part of '../typed_data.dart';
 ///
 ///
 /// prefix 'A' stands for abstraction, with contract
-/// [_AFlagsContainer]
-/// [_AFlagsBits]
+/// [_AFieldContainer]
+/// [_AField]
+/// [_AFieldBits]
+/// [_AFlagsSpatial1], [_AFlagsSpatial2], [_AFlagsSpatial3], [_AFlagsSpatial4]
+/// [_AFlagsCollapse]
 /// [_AFlagsOperatable]
-/// [_AFlagsIterable]
-/// [_AFlagsIdentical]
-/// [_AFieldCollapse]
+/// [_AFlagsSet]
+/// [_AFieldIdentical]
 ///
 /// prefix 'P' stands for parent class, with  (with field)
-/// [_PField]
+/// [FieldParent]
 /// [_PFieldSpatial1]
 /// [_PFieldSpatial2]
 /// [_PFieldSpatial3]
@@ -20,39 +22,41 @@ part of '../typed_data.dart';
 ///
 ///
 
-abstract class _AFlagsContainer<T> implements _PFlags {
-  const _AFlagsContainer();
+abstract class _AFlagsContainer<I, S> implements _PFlags {
+  bool validateIndex(I index);
 
-  bool validateIndex(T index);
+  S operator [](I index);
 
-  bool operator [](T index);
-
-  void operator []=(T index, bool value);
+  void operator []=(I index, S value);
 }
 
-abstract class _AFlagsIdentical implements _PFlags {
-  const _AFlagsIdentical();
-
-  int get _sizeEach;
+abstract class _AFlagsSpatial1 implements _PFlags {
+  int get spatial1;
 }
 
-abstract class _AFlagsBits implements _PFlags {
-  const _AFlagsBits();
-
-  // int get _shift => math.log(_sizeEach) ~/ math.ln2 - 1;
-  int get _shift;
-
-  // int get _mask => ~(1 << _shift);
-  int get _mask;
+abstract class _AFlagsSpatial2 implements _AFlagsSpatial1 {
+  int get spatial2;
 }
 
-abstract class _AFlagsOperatable<F> implements _PFlags {
-  const _AFlagsOperatable();
+abstract class _AFlagsSpatial3 implements _AFlagsSpatial2 {
+  int get spatial3;
+}
 
-  bool isIdentical(F other);
+abstract class _AFlagsSpatial4 implements _AFlagsSpatial3 {
+  int get spatial4;
+}
+
+abstract class _AFlagsCollapse<S> implements _PFlags {
+  S collapseOn(int index);
+}
+
+abstract class _AFlagsInit<F> implements _PFlags {
+  bool isSizeEqual(F other);
 
   F get newZero;
+}
 
+abstract class _AFlagsOperatable<F> implements _AFlagsInit<F> {
   F operator &(F other);
 
   F operator |(F other);
@@ -66,13 +70,44 @@ abstract class _AFlagsOperatable<F> implements _PFlags {
   void setXOr(F other);
 }
 
-abstract class _AFlagsIterable<T> implements _PFlags {
-  const _AFlagsIterable();
+abstract class _AFlagsSet<T> implements _PFlags {
+  T? get first;
 
-  T? get flagFirst;
+  T? get last;
 
-  T? get flagLast;
+  // T? flagsFirstAfter(int position);
+  //
+  // T? flagsLastBefore(int position);
+  //
+  // Iterable<T> get flags;
+  //
+  // Iterable<T> flagsFrom(int position, [bool inclusive = true]);
+  //
+  // Iterable<T> flagsTo(int position, [bool inclusive = true]);
+  //
+  // Iterable<T> flagsBetween(int pBegin, int pEnd, [bool inclusive = true]);
+}
 
+///
+///
+///
+abstract class _AField implements _PFlags {
+  TypedDataList<int> get _field;
+}
+
+abstract class _AFieldIdentical implements _PFlags {
+  int get _sizeEach;
+}
+
+abstract class _AFieldBits implements _PFlags {
+  // int get _shift => math.log(_sizeEach) ~/ math.ln2 - 1;
+  int get _shift;
+
+  // int get _mask => ~(1 << _shift);
+  int get _mask;
+}
+
+abstract class _AFieldSet<T> implements _AFlagsSet<T> {
   void includesRange(T begin, T limit);
 
   void excludesRange(T begin, T limit);
@@ -90,19 +125,12 @@ abstract class _AFlagsIterable<T> implements _PFlags {
   // Iterable<T> flagsBetween(int pBegin, int pEnd, [bool inclusive = true]);
 }
 
-abstract class _AFieldCollapse<S> implements _PFieldSpatial2 {
-  const _AFieldCollapse();
-
-  S collapseOn(int index);
-}
-
-///
-///
-///
-abstract class _PField extends _PFlags implements _AFlagsIdentical {
+//
+sealed class FieldParent extends _PFlags implements _AField, _AFieldIdentical {
+  @override
   final TypedDataList<int> _field;
 
-  const _PField(this._field);
+  const FieldParent(this._field);
 
   @override
   void clear() {
@@ -112,51 +140,34 @@ abstract class _PField extends _PFlags implements _AFlagsIdentical {
     }
   }
 
-  int get sizeField => _sizeEach * _field.length;
+  int get size => _sizeEach * _field.length;
 }
 
 //
-sealed class _PFieldSpatial1 extends _PField with _MBitsField {
-  final int spatial1;
-
-  const _PFieldSpatial1(this.spatial1, super._field);
-}
-
-abstract class _PFieldSpatial2 extends _PFieldSpatial1 {
-  final int spatial2;
-
-  const _PFieldSpatial2(super.spatial1, this.spatial2, super.field);
-}
-
-abstract class _PFieldSpatial3 extends _PFieldSpatial2 {
-  final int spatial3;
-
-  const _PFieldSpatial3(
-    super.spatial1,
-    super.spatial2,
-    this.spatial3,
-    super.field,
-  );
-}
-
-abstract class _PFieldSpatial4 extends _PFieldSpatial3 {
-  final int spatial4;
-
-  const _PFieldSpatial4(
-    super.spatial1,
-    super.spatial2,
-    super.spatial3,
-    this.spatial4,
-    super.field,
-  );
-}
-
-///
-///
-///
-abstract class _PFieldScoped<T> extends _PField {
+abstract class _PFieldScoped<T> extends FieldParent {
   final T begin;
   final T end;
 
   const _PFieldScoped(this.begin, this.end, super.field);
+}
+
+///
+///
+///
+abstract class _ASlot<T> implements _PFlags {
+  List<T?> get _slot;
+}
+
+abstract class _ASlotSet<T> implements _AFlagsSet<T> {
+  Iterable<T> filterOn(FieldParent field);
+}
+
+abstract class _PSlot<T> extends _PFlags implements _ASlot<T> {
+  @override
+  final List<T?> _slot;
+
+  const _PSlot(this._slot);
+
+  @override
+  void clear() => _slot.filled(null);
 }

@@ -51,6 +51,9 @@ extension StringExtension on String {
 
   static String reduceComma(String v1, String v2) => '$v1, $v2';
 
+  static String reduceMaxLength(String v1, String v2) =>
+      v1.length > v2.length ? v1 : v2;
+
   ///
   ///
   ///

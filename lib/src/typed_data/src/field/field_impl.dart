@@ -2,8 +2,6 @@ part of '../../typed_data.dart';
 
 ///
 ///
-/// mixin:
-///
 /// concrete class:
 /// [_Field8], ...
 /// [_Field2D8], ...

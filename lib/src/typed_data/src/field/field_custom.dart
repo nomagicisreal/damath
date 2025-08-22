@@ -16,10 +16,10 @@ class FieldDatesInMonths extends _PFieldScoped<(int, int)>
     with
         _MBitsFieldMonthsDates,
         _MFieldContainerBitsMonthsDates,
-        _MFieldBitsIterableMonthsDates,
-        _MIterableFieldMonthsDatesScoped,
+        _MFieldBitsSetMonthsDates,
+        _MSetFieldMonthsDatesScoped,
         _MFieldOperatable<FieldDatesInMonths>
-    implements _AFlagsContainer<(int, int, int)> {
+    implements _AFlagsContainer<(int, int, int), bool> {
   FieldDatesInMonths((int, int) begin, (int, int) end)
     : assert(
         DateTimeExtension.isValidMonth(begin.$2) &&
@@ -40,7 +40,7 @@ class FieldDatesInMonths extends _PFieldScoped<(int, int)>
       end.largerOrEqualThan3(index);
 
   @override
-  int _fieldIndexFrom(int year, int month) =>
+  int _fieldIndexOf(int year, int month) =>
       begin.monthsToYearMonth(year, month);
 
   ///
@@ -48,9 +48,9 @@ class FieldDatesInMonths extends _PFieldScoped<(int, int)>
   ///
   @override
   void _ranges(
-    TriCallback<int> consume,
     (int, int, int) begin,
     (int, int, int) end,
+    TriCallback<int> consume,
   ) {
     assert(validateIndex(begin));
     assert(validateIndex(end));
@@ -137,12 +137,12 @@ class FieldDatesInMonths extends _PFieldScoped<(int, int)>
 ///
 ///
 ///
-abstract class FieldAB extends _PField
+abstract class FieldAB extends FieldParent
     with
-        _MIterableFieldIndexable<(int, int)>,
+        _MSetFieldIndexable<(int, int)>,
         _MBitsField,
         _MFieldContainerBits<(int, int)>,
-        _MFieldBitsIterable<(int, int)>,
+        _MFieldBitsSet<(int, int)>,
         _MFieldOperatable<FieldAB> {
   final int aLimit;
   final Predicator<int> bValidate;
@@ -192,7 +192,7 @@ abstract class FieldAB extends _PField
   }
 
   @override
-  void _ranges(Consumer<int> consume, (int, int) begin, (int, int) limit) {
+  void _ranges((int, int) begin, (int, int) limit, Consumer<int> consume) {
     assert(validateIndex(begin));
     assert(validateIndex(limit));
     assert(begin < limit);

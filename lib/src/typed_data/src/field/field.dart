@@ -16,13 +16,9 @@ part of '../../typed_data.dart';
 ///
 ///
 ///
-abstract class Field extends _PFieldSpatial1
-    with
-        _MIterableField,
-        _MBitsField,
-        _MFieldBitsIterable<int>,
-        _MFieldOperatable<Field>
-    implements _AFlagsContainer<int> {
+abstract class Field extends FieldParent
+    with _MBitsField, _MSetField, _MFieldBitsSet<int>, _MFieldOperatable<Field>
+    implements _AFlagsContainer<int, bool>, _AFlagsSpatial1 {
   factory Field(int width, [bool native = false]) {
     assert(width > 1);
     if (width < TypedIntList.limit8) return _Field8(width);
@@ -49,25 +45,29 @@ abstract class Field extends _PFieldSpatial1
   }
 
   @override
-  void _ranges(Consumer<int> consume, int begin, int limit) {
+  void _ranges(int begin, int limit, Consumer<int> consume) {
     for (var i = begin; i < limit; i++) {
       consume(i);
     }
   }
 
-  Field._(super.spatial1, super._field);
+  @override
+  final int spatial1;
+
+  const Field._(this.spatial1, super._field);
 }
 
 ///
 ///
 ///
-abstract class Field2D extends _PFieldSpatial2
+abstract class Field2D extends FieldParent
     with
-        _MIterableFieldIndexable<(int, int)>,
+        _MBitsField,
+        _MSetFieldIndexable<(int, int)>,
         _MFieldContainerBits<(int, int)>,
-        _MFieldBitsIterable<(int, int)>,
+        _MFieldBitsSet<(int, int)>,
         _MFieldOperatable<Field2D>
-    implements _AFieldCollapse<Field> {
+    implements _AFlagsCollapse<Field>, _AFlagsSpatial2 {
   factory Field2D(int width, int height, {bool native = false}) {
     assert(width > 1 && height > 1);
     final size = width * height;
@@ -110,7 +110,7 @@ abstract class Field2D extends _PFieldSpatial2
   }
 
   @override
-  void _ranges(Consumer<int> consume, (int, int) begin, (int, int) limit) {
+  void _ranges((int, int) begin, (int, int) limit, Consumer<int> consume) {
     var i = begin.$2;
     var j = begin.$1;
     final iLimit = limit.$2;
@@ -145,19 +145,25 @@ abstract class Field2D extends _PFieldSpatial2
     }
   }
 
-  Field2D._(super.spatial1, super.spatial2, super.field);
+  @override
+  final int spatial1;
+  @override
+  final int spatial2;
+
+  Field2D._(this.spatial1, this.spatial2, super.field);
 }
 
 ///
 ///
 ///
-abstract class Field3D extends _PFieldSpatial3
+abstract class Field3D extends FieldParent
     with
-        _MIterableFieldIndexable<(int, int, int)>,
+        _MBitsField,
+        _MSetFieldIndexable<(int, int, int)>,
         _MFieldContainerBits<(int, int, int)>,
-        _MFieldBitsIterable<(int, int, int)>,
+        _MFieldBitsSet<(int, int, int)>,
         _MFieldOperatable<Field3D>
-    implements _AFieldCollapse<Field2D> {
+    implements _AFlagsCollapse<Field2D>, _AFlagsSpatial3 {
   factory Field3D(int width, int height, int depth, [bool native = false]) {
     assert(width > 1 && height > 1 && depth > 1);
     final size = width * height * depth;
@@ -214,9 +220,9 @@ abstract class Field3D extends _PFieldSpatial3
 
   @override
   void _ranges(
-    Consumer<int> consume,
     (int, int, int) begin,
     (int, int, int) limit,
+    Consumer<int> consume,
   ) {
     var i = begin.$3;
     var j = begin.$2;
@@ -288,19 +294,27 @@ abstract class Field3D extends _PFieldSpatial3
     }
   }
 
-  Field3D._(super.spatial1, super.spatial2, super.spatial3, super.field);
+  @override
+  final int spatial1;
+  @override
+  final int spatial2;
+  @override
+  final int spatial3;
+
+  Field3D._(this.spatial1, this.spatial2, this.spatial3, super.field);
 }
 
 ///
 ///
 ///
-abstract class Field4D extends _PFieldSpatial4
+abstract class Field4D extends FieldParent
     with
-        _MIterableFieldIndexable<(int, int, int, int)>,
+        _MBitsField,
+        _MSetFieldIndexable<(int, int, int, int)>,
         _MFieldContainerBits<(int, int, int, int)>,
-        _MFieldBitsIterable<(int, int, int, int)>,
+        _MFieldBitsSet<(int, int, int, int)>,
         _MFieldOperatable<Field4D>
-    implements _AFieldCollapse<Field3D> {
+    implements _AFlagsCollapse<Field3D>, _AFlagsSpatial4 {
   factory Field4D(int s1, int s2, int s3, int s4, [bool native = false]) {
     assert(s1 > 1 && s2 > 1 && s3 > 1 && s4 > 1);
     final size = s1 * s2 * s3 * s4;
@@ -370,9 +384,9 @@ abstract class Field4D extends _PFieldSpatial4
 
   @override
   void _ranges(
-    Consumer<int> consume,
     (int, int, int, int) begin,
     (int, int, int, int) limit,
+    Consumer<int> consume,
   ) {
     var i = begin.$4;
     var j = begin.$3;
@@ -496,11 +510,20 @@ abstract class Field4D extends _PFieldSpatial4
     }
   }
 
+  @override
+  final int spatial1;
+  @override
+  final int spatial2;
+  @override
+  final int spatial3;
+  @override
+  final int spatial4;
+
   Field4D._(
-    super.spatial1,
-    super.spatial2,
-    super.spatial3,
-    super.spatial4,
+    this.spatial1,
+    this.spatial2,
+    this.spatial3,
+    this.spatial4,
     super.field,
   );
 }

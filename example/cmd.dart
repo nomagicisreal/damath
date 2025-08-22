@@ -47,9 +47,11 @@ void main(List<String> arguments) {
   //   ..[(2, 2)] = true
   //   ..[(2, 4)] = true;
 
-  print(field & field2);
-  print(field.collapseOn(2));
-  print(field.collapseOn(2).collapseOn(3));
+  // print(field & field2);
+  // print(field.collapseOn(2));
+  // print(field.collapseOn(2).collapseOn(3));
   print(field.collapseOn(2)..includesRange((2, 5), (3, 8)));
+  final slot = Slot<String>.emptyFrom(field);
+  print(slot..[100] = 'he');
 
 }

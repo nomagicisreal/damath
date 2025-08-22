@@ -85,7 +85,7 @@ abstract class _SplayTreeMapValueList<K, V> {
 ///
 mixin _MixinSplayDate<K, V> on _SplayTreeMapValueList<K, V> {
   SplayTreeMap<K, List<V>> _filtered(
-    FlagsMapDate flags, {
+    FieldMapDate flags, {
     required int Function(K date) toYear,
     required int Function(K date) toMonth,
     required int Function(K date) toDay,
@@ -154,7 +154,7 @@ class Dated<T> extends _SplayTreeMapValueList<(int, int, int), T>
   ///
   /// [filteredBy]
   ///
-  SplayTreeMap<(int, int, int), List<T>> filteredBy(FlagsMapDate flags) =>
+  SplayTreeMap<(int, int, int), List<T>> filteredBy(FieldMapDate flags) =>
       _filtered(
         flags,
         toYear: (date) => date.$1,
@@ -191,7 +191,7 @@ class DateTimed<T> extends _SplayTreeMapValueList<DateTime, T>
   ///
   /// [filteredByDate]
   ///
-  SplayTreeMap<DateTime, List<T>> filteredByDate(FlagsMapDate flags) =>
+  SplayTreeMap<DateTime, List<T>> filteredByDate(FieldMapDate flags) =>
       _filtered(
         flags,
         toYear: (date) => date.year,

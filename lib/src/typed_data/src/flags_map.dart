@@ -1,14 +1,13 @@
-part of '../../typed_data.dart';
+part of '../typed_data.dart';
 
 ///
 ///
 ///
 /// to know the inheritance detail, see the comment above [_PFlags]
 ///
-/// [_MBitsFlagsField]
-/// [_FlagsParentMapSplay]
-/// [FlagsMapDate]
-/// [FlagsMapHourDate]
+/// [_PFieldMapSplay]
+/// [FieldMapDate]
+/// [FieldMapHourDate]
 ///
 ///
 ///
@@ -23,9 +22,9 @@ part of '../../typed_data.dart';
 /// [_findKey], ...
 ///
 ///
-sealed class _FlagsParentMapSplay
+sealed class _PFieldMapSplay
     with _MBitsFlagsField
-    implements _AFlagsIdentical, _AFlagsContainer<(int, int, int)> {
+    implements _AFieldIdentical, _AFlagsContainer<(int, int, int), bool> {
   ///
   /// [_map], [_field]
   /// [_errorEmptyFlagsNotRemoved]
@@ -47,7 +46,7 @@ sealed class _FlagsParentMapSplay
     return true;
   }
 
-  _FlagsParentMapSplay.empty({
+  _PFieldMapSplay.empty({
     bool Function(dynamic potentialKey)? isValidKey,
     int Function(int, int)? compareKeyKey,
     bool Function(dynamic)? Function(int)? isValidKeyKey,
@@ -217,8 +216,8 @@ sealed class _FlagsParentMapSplay
 /// [yearsAvailable], ...
 ///
 ///
-class FlagsMapDate extends _FlagsParentMapSplay with _MFlagsO32 {
-  FlagsMapDate.empty()
+class FieldMapDate extends _PFieldMapSplay with _MFlagsO32 {
+  FieldMapDate.empty()
     : super.empty(
         isValidKeyKey: DateTimeExtension.isValidMonthDynamicOf,
         toKeyKeyBegin: DateTimeExtension.apply_monthBegin,
@@ -227,13 +226,13 @@ class FlagsMapDate extends _FlagsParentMapSplay with _MFlagsO32 {
         toValueEnd: DateTimeExtension.monthDaysOf,
       );
 
-  factory FlagsMapDate.from((int, int, int) date) {
+  factory FieldMapDate.from((int, int, int) date) {
     assert(date.isValidDate);
-    return FlagsMapDate.empty()..[date] = true;
+    return FieldMapDate.empty()..[date] = true;
   }
 
-  factory FlagsMapDate.fromIterable(Iterable<(int, int, int)> iterable) =>
-      iterable.iterator.inductInited(FlagsMapDate.from, (flags, date) {
+  factory FieldMapDate.fromIterable(Iterable<(int, int, int)> iterable) =>
+      iterable.iterator.inductInited(FieldMapDate.from, (flags, date) {
         assert(date.isValidDate);
         return flags..[date] = true;
       });
@@ -347,10 +346,10 @@ class FlagsMapDate extends _FlagsParentMapSplay with _MFlagsO32 {
 ///
 ///
 ///
-class FlagsMapHourDate extends _FlagsParentMapSplay {
+class FieldMapHourDate extends _PFieldMapSplay {
   final int year;
 
-  FlagsMapHourDate.emptyOn(this.year)
+  FieldMapHourDate.emptyOn(this.year)
     : super.empty(
         isValidKey: DateTimeExtension.isValidMonthDynamicOf(year),
         isValidKeyKey: DateTimeExtension.isValidDaysDynamicOf(year),
@@ -360,7 +359,7 @@ class FlagsMapHourDate extends _FlagsParentMapSplay {
         toValueEnd: DateTimeExtension.reducer_hourEnd,
       );
 
-  FlagsMapHourDate.empty() : this.emptyOn(DateTime.now().year);
+  FieldMapHourDate.empty() : this.emptyOn(DateTime.now().year);
 
   ///
   /// [firstMonth], [firstDate], [firstHour]

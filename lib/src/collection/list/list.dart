@@ -142,18 +142,21 @@ extension ListExtension<T> on List<T> {
   /// [updateReduce]
   ///
   void updateAll(T value) {
+    final length = this.length;
     for (var i = 0; i < length; i++) {
       this[i] = value;
     }
   }
 
   void updateAllApply(Applier<T> applier) {
+    final length = this.length;
     for (var i = 0; i < length; i++) {
       this[i] = applier(this[i]);
     }
   }
 
   void updateAllApplyByIndex(ApplierGenerator<T> applier) {
+    final length = this.length;
     for (var i = 0; i < length; i++) {
       this[i] = applier(this[i], i);
     }
@@ -190,12 +193,14 @@ extension ListExtension<T> on List<T> {
   /// [fillUntil]
   ///
   void filled(T value) {
+    final length = this.length;
     for (var i = 0; i < length; i++) {
       this[i] = value;
     }
   }
 
   void fillGenerate(Generator<T> generate) {
+    final length = this.length;
     for (var i = 0; i < length; i++) {
       this[i] = generate(i);
     }
