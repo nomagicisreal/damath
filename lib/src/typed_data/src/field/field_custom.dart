@@ -15,10 +15,10 @@ part of '../../typed_data.dart';
 class FieldDatesInMonths extends _PFieldScoped<(int, int)>
     with
         _MBitsFieldMonthsDates,
-        _MFieldContainerBitsMonthsDates,
-        _MFieldBitsSetMonthsDates,
+        _MFieldContainerMonthsDates,
+        _MSetFieldBitsMonthsDates,
         _MSetFieldMonthsDatesScoped,
-        _MFieldOperatable<FieldDatesInMonths>
+        _MOperatableField<FieldDatesInMonths>
     implements _AFlagsContainer<(int, int, int), bool> {
   FieldDatesInMonths((int, int) begin, (int, int) end)
     : assert(
@@ -141,9 +141,9 @@ abstract class FieldAB extends FieldParent
     with
         _MSetFieldIndexable<(int, int)>,
         _MBitsField,
-        _MFieldContainerBits<(int, int)>,
-        _MFieldBitsSet<(int, int)>,
-        _MFieldOperatable<FieldAB> {
+        _MFieldContainerPositionAble<(int, int)>,
+        _MSetFieldBits<(int, int)>,
+        _MOperatableField<FieldAB> {
   final int aLimit;
   final Predicator<int> bValidate;
   final int bDivision;

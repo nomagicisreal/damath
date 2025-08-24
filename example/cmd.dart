@@ -51,7 +51,7 @@ void main(List<String> arguments) {
   // print(field.collapseOn(2));
   // print(field.collapseOn(2).collapseOn(3));
   print(field.collapseOn(2)..includesRange((2, 5), (3, 8)));
-  final slot = Slot<String>.emptyFrom(field);
+  final slot = Slot<String>(field.size);
   print(slot..[100] = 'he');
 
 }

@@ -17,20 +17,16 @@ part of '../../typed_data.dart';
 ///
 ///
 abstract class Field extends FieldParent
-    with _MBitsField, _MSetField, _MFieldBitsSet<int>, _MFieldOperatable<Field>
-    implements _AFlagsContainer<int, bool>, _AFlagsSpatial1 {
-  factory Field(int width, [bool native = false]) {
-    assert(width > 1);
-    if (width < TypedIntList.limit8) return _Field8(width);
-    if (width < TypedIntList.limit16) return _Field16(width);
-    if (width > TypedIntList.sizeEach32 && native) {
-      return _Field64(width, TypedIntList.quotientCeil64(width));
-    }
-    return _Field32(width, TypedIntList.quotientCeil32(width));
-  }
-
+    with
+        _MFlagsContainerSpatial1<bool>,
+        _MBitsField,
+        _MSetField,
+        _MSetFieldBits<int>,
+        _MOperatableField<Field> {
   @override
-  bool validateIndex(int index) => index.isRangeOpenUpper(0, spatial1);
+  final int spatial1;
+
+  const Field._(this.spatial1, super._field);
 
   @override
   bool operator [](int index) {
@@ -51,10 +47,15 @@ abstract class Field extends FieldParent
     }
   }
 
-  @override
-  final int spatial1;
-
-  const Field._(this.spatial1, super._field);
+  factory Field(int width, [bool native = false]) {
+    assert(width > 1);
+    if (width < TypedIntList.limit8) return _Field8(width);
+    if (width < TypedIntList.limit16) return _Field16(width);
+    if (width > TypedIntList.sizeEach32 && native) {
+      return _Field64(width, TypedIntList.quotientCeil64(width));
+    }
+    return _Field32(width, TypedIntList.quotientCeil32(width));
+  }
 }
 
 ///
@@ -62,22 +63,19 @@ abstract class Field extends FieldParent
 ///
 abstract class Field2D extends FieldParent
     with
+        _MFlagsContainerSpatial2<bool>,
         _MBitsField,
+        _MFieldContainerPositionAble<(int, int)>,
+        _MSetFieldBits<(int, int)>,
         _MSetFieldIndexable<(int, int)>,
-        _MFieldContainerBits<(int, int)>,
-        _MFieldBitsSet<(int, int)>,
-        _MFieldOperatable<Field2D>
-    implements _AFlagsCollapse<Field>, _AFlagsSpatial2 {
-  factory Field2D(int width, int height, {bool native = false}) {
-    assert(width > 1 && height > 1);
-    final size = width * height;
-    if (size < TypedIntList.limit8) return _Field2D8(width, height);
-    if (size < TypedIntList.limit16) return _Field2D16(width, height);
-    if (size > TypedIntList.sizeEach32 && native) {
-      return _Field2D64(width, height, TypedIntList.quotientCeil64(size));
-    }
-    return _Field2D32(width, height, TypedIntList.quotientCeil32(size));
-  }
+        _MOperatableField<Field2D>
+    implements _AFlagsCollapse<Field> {
+  @override
+  final int spatial1;
+  @override
+  final int spatial2;
+
+  const Field2D._(this.spatial1, this.spatial2, super.field);
 
   @override
   Field collapseOn(int index) {
@@ -89,17 +87,6 @@ abstract class Field2D extends FieldParent
       if (_bitOn(start + i)) result._bitSet(i);
     }
     return result;
-  }
-
-  @override
-  bool validateIndex((int, int) index) =>
-      index.$1.isRangeClose(1, spatial2) &&
-      index.$2.isRangeOpenUpper(0, spatial1);
-
-  @override
-  int _positionOf((int, int) index) {
-    assert(validateIndex(index));
-    return (index.$1 - 1) * spatial1 + index.$2;
   }
 
   @override
@@ -145,12 +132,16 @@ abstract class Field2D extends FieldParent
     }
   }
 
-  @override
-  final int spatial1;
-  @override
-  final int spatial2;
-
-  Field2D._(this.spatial1, this.spatial2, super.field);
+  factory Field2D(int width, int height, {bool native = false}) {
+    assert(width > 1 && height > 1);
+    final size = width * height;
+    if (size < TypedIntList.limit8) return _Field2D8(width, height);
+    if (size < TypedIntList.limit16) return _Field2D16(width, height);
+    if (size > TypedIntList.sizeEach32 && native) {
+      return _Field2D64(width, height, TypedIntList.quotientCeil64(size));
+    }
+    return _Field2D32(width, height, TypedIntList.quotientCeil32(size));
+  }
 }
 
 ///
@@ -158,12 +149,22 @@ abstract class Field2D extends FieldParent
 ///
 abstract class Field3D extends FieldParent
     with
+        _MFlagsContainerSpatial3<bool>,
         _MBitsField,
+        _MFieldContainerPositionAble<(int, int, int)>,
+        _MSetFieldBits<(int, int, int)>,
         _MSetFieldIndexable<(int, int, int)>,
-        _MFieldContainerBits<(int, int, int)>,
-        _MFieldBitsSet<(int, int, int)>,
-        _MFieldOperatable<Field3D>
-    implements _AFlagsCollapse<Field2D>, _AFlagsSpatial3 {
+        _MOperatableField<Field3D>
+    implements _AFlagsCollapse<Field2D> {
+  @override
+  final int spatial1;
+  @override
+  final int spatial2;
+  @override
+  final int spatial3;
+
+  const Field3D._(this.spatial1, this.spatial2, this.spatial3, super.field);
+
   factory Field3D(int width, int height, int depth, [bool native = false]) {
     assert(width > 1 && height > 1 && depth > 1);
     final size = width * height * depth;
@@ -181,12 +182,6 @@ abstract class Field3D extends FieldParent
   }
 
   @override
-  bool validateIndex((int, int, int) index) =>
-      index.$1.isRangeClose(1, spatial3) &&
-      index.$2.isRangeClose(1, spatial2) &&
-      index.$3.isRangeOpenUpper(0, spatial1);
-
-  @override
   Field2D collapseOn(int index) {
     assert(index.isRangeClose(1, spatial3));
     final spatial2 = this.spatial2;
@@ -201,12 +196,6 @@ abstract class Field3D extends FieldParent
       }
     }
     return result;
-  }
-
-  @override
-  int _positionOf((int, int, int) index) {
-    assert(validateIndex(index));
-    return ((index.$1 - 1) * spatial2 + index.$2 - 1) * spatial1 + index.$3;
   }
 
   @override
@@ -293,15 +282,6 @@ abstract class Field3D extends FieldParent
       consume(index);
     }
   }
-
-  @override
-  final int spatial1;
-  @override
-  final int spatial2;
-  @override
-  final int spatial3;
-
-  Field3D._(this.spatial1, this.spatial2, this.spatial3, super.field);
 }
 
 ///
@@ -309,12 +289,30 @@ abstract class Field3D extends FieldParent
 ///
 abstract class Field4D extends FieldParent
     with
+        _MFlagsContainerSpatial4<bool>,
         _MBitsField,
+        _MFieldContainerPositionAble<(int, int, int, int)>,
+        _MSetFieldBits<(int, int, int, int)>,
         _MSetFieldIndexable<(int, int, int, int)>,
-        _MFieldContainerBits<(int, int, int, int)>,
-        _MFieldBitsSet<(int, int, int, int)>,
-        _MFieldOperatable<Field4D>
-    implements _AFlagsCollapse<Field3D>, _AFlagsSpatial4 {
+        _MOperatableField<Field4D>
+    implements _AFlagsCollapse<Field3D> {
+  @override
+  final int spatial1;
+  @override
+  final int spatial2;
+  @override
+  final int spatial3;
+  @override
+  final int spatial4;
+
+  const Field4D._(
+    this.spatial1,
+    this.spatial2,
+    this.spatial3,
+    this.spatial4,
+    super.field,
+  );
+
   factory Field4D(int s1, int s2, int s3, int s4, [bool native = false]) {
     assert(s1 > 1 && s2 > 1 && s3 > 1 && s4 > 1);
     final size = s1 * s2 * s3 * s4;
@@ -325,13 +323,6 @@ abstract class Field4D extends FieldParent
     }
     return _Field4D32(s1, s2, s3, s4, TypedIntList.quotientCeil32(size));
   }
-
-  @override
-  bool validateIndex((int, int, int, int) index) =>
-      index.$1.isRangeClose(1, spatial4) &&
-      index.$2.isRangeClose(1, spatial3) &&
-      index.$3.isRangeClose(1, spatial2) &&
-      index.$4.isRangeOpenUpper(0, spatial1);
 
   @override
   Field3D collapseOn(int index) {
@@ -352,16 +343,6 @@ abstract class Field4D extends FieldParent
       }
     }
     return result;
-  }
-
-  @override
-  int _positionOf((int, int, int, int) index) {
-    assert(validateIndex(index));
-    return (((index.$1 - 1) * spatial3 + index.$2 - 1) * spatial2 +
-                index.$3 -
-                1) *
-            spatial1 +
-        index.$4;
   }
 
   @override
@@ -509,21 +490,4 @@ abstract class Field4D extends FieldParent
       consume(index);
     }
   }
-
-  @override
-  final int spatial1;
-  @override
-  final int spatial2;
-  @override
-  final int spatial3;
-  @override
-  final int spatial4;
-
-  Field4D._(
-    this.spatial1,
-    this.spatial2,
-    this.spatial3,
-    this.spatial4,
-    super.field,
-  );
 }

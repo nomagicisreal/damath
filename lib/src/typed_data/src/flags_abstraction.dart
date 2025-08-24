@@ -46,17 +46,21 @@ abstract class _AFlagsSpatial4 implements _AFlagsSpatial3 {
   int get spatial4;
 }
 
+abstract class _AFlagsPositionAble<I> implements _PFlags {
+  int _positionOf(I index);
+}
+
 abstract class _AFlagsCollapse<S> implements _PFlags {
   S collapseOn(int index);
 }
 
-abstract class _AFlagsInit<F> implements _PFlags {
+abstract class _AFlagsEquatable<F> implements _PFlags {
   bool isSizeEqual(F other);
 
   F get newZero;
 }
 
-abstract class _AFlagsOperatable<F> implements _AFlagsInit<F> {
+abstract class _AFlagsOperatable<F> implements _AFlagsEquatable<F> {
   F operator &(F other);
 
   F operator |(F other);
@@ -162,11 +166,12 @@ abstract class _ASlotSet<T> implements _AFlagsSet<T> {
   Iterable<T> filterOn(FieldParent field);
 }
 
-abstract class _PSlot<T> extends _PFlags implements _ASlot<T> {
+abstract class _PSlot<T> extends _PFlags
+    with _MSetSlot<T> {
   @override
   final List<T?> _slot;
 
-  const _PSlot(this._slot);
+  _PSlot(int size) : _slot = List.filled(size, null);
 
   @override
   void clear() => _slot.filled(null);

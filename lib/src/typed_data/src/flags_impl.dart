@@ -4,25 +4,25 @@ part of '../typed_data.dart';
 ///
 ///
 /// mixin:
-/// [_MFlagsO8]
-/// [_MFlagsO16]
-/// [_MFlagsO32]
-/// [_MFlagsO64]
+/// [_MFlagsO8], [_MFlagsO16], [_MFlagsO32], [_MFlagsO64]
+/// [_MFlagsContainerSpatial1], [_MFlagsContainerSpatial2], [_MFlagsContainerSpatial3], [_MFlagsContainerSpatial4]
 ///
 /// [_MBitsField]
 /// [_MBitsFieldMonthsDates]
 /// [_MBitsFlagsField]
 ///
-/// [_MFieldContainerBits]
-/// [_MFieldContainerBitsMonthsDates]
-/// [_MFieldBitsSet]
-/// [_MFieldBitsSetMonthsDates]
+/// [_MFieldContainerPositionAble]
+/// [_MFieldContainerMonthsDates]
+/// [_MSlotContainerPositionAble]
+///
+/// [_MSetFieldBits]
+/// [_MSetFieldBitsMonthsDates]
 ///
 /// [_MSetField]
 /// [_MSetFieldIndexable]
 /// [_MSetFieldMonthsDatesScoped]
 ///
-/// [_MFieldOperatable]
+/// [_MOperatableField]
 ///
 ///
 
@@ -77,6 +77,73 @@ mixin _MFlagsO64 implements _AFieldBits, _AFieldIdentical {
 ///
 ///
 ///
+mixin _MFlagsContainerSpatial1<T>
+    implements _AFlagsContainer<int, T>, _AFlagsSpatial1 {
+  @override
+  bool validateIndex(int index) => index.isRangeOpenUpper(0, spatial1);
+}
+
+mixin _MFlagsContainerSpatial2<T>
+    implements
+        _AFlagsContainer<(int, int), T>,
+        _AFlagsSpatial2,
+        _AFlagsPositionAble<(int, int)> {
+  @override
+  bool validateIndex((int, int) index) =>
+      index.$1.isRangeClose(1, spatial2) &&
+      index.$2.isRangeOpenUpper(0, spatial1);
+
+  @override
+  int _positionOf((int, int) index) {
+    assert(validateIndex(index));
+    return (index.$1 - 1) * spatial1 + index.$2;
+  }
+}
+
+mixin _MFlagsContainerSpatial3<T>
+    implements
+        _AFlagsContainer<(int, int, int), T>,
+        _AFlagsSpatial3,
+        _AFlagsPositionAble<(int, int, int)> {
+  @override
+  bool validateIndex((int, int, int) index) =>
+      index.$1.isRangeClose(1, spatial3) &&
+      index.$2.isRangeClose(1, spatial2) &&
+      index.$3.isRangeOpenUpper(0, spatial1);
+
+  @override
+  int _positionOf((int, int, int) index) {
+    assert(validateIndex(index));
+    return ((index.$1 - 1) * spatial2 + index.$2 - 1) * spatial1 + index.$3;
+  }
+}
+
+mixin _MFlagsContainerSpatial4<T>
+    implements
+        _AFlagsContainer<(int, int, int, int), T>,
+        _AFlagsSpatial4,
+        _AFlagsPositionAble<(int, int, int, int)> {
+  @override
+  bool validateIndex((int, int, int, int) index) =>
+      index.$1.isRangeClose(1, spatial4) &&
+      index.$2.isRangeClose(1, spatial3) &&
+      index.$3.isRangeOpenUpper(0, spatial2) &&
+      index.$4.isRangeOpenUpper(0, spatial1);
+
+  @override
+  int _positionOf((int, int, int, int) index) {
+    assert(validateIndex(index));
+    return (((index.$1 - 1) * spatial3 + index.$2 - 1) * spatial2 +
+                index.$3 -
+                1) *
+            spatial1 +
+        index.$4;
+  }
+}
+
+///
+///
+///
 ///
 mixin _MBitsField implements _AField, _AFieldBits {
   bool _bitOn(int position) => _field.bitOn(position, _shift, _mask);
@@ -125,24 +192,22 @@ mixin _MBitsFlagsField implements _AFieldBits {
 ///
 ///
 ///
-mixin _MFieldContainerBits<I> on _MBitsField
-    implements _AFlagsContainer<I, bool> {
+mixin _MFieldContainerPositionAble<I> on _MBitsField
+    implements _AFlagsContainer<I, bool>, _AFlagsPositionAble<I> {
   @override
-  bool operator [](covariant I index) {
+  bool operator [](I index) {
     assert(validateIndex(index));
     return _bitOn(_positionOf(index));
   }
 
   @override
-  void operator []=(covariant I index, bool value) {
+  void operator []=(I index, bool value) {
     assert(validateIndex(index));
     value ? _bitSet(_positionOf(index)) : _bitClear(_positionOf(index));
   }
-
-  int _positionOf(I index);
 }
 
-mixin _MFieldContainerBitsMonthsDates on _MBitsFieldMonthsDates
+mixin _MFieldContainerMonthsDates on _MBitsFieldMonthsDates
     implements _AFlagsContainer<(int, int, int), bool> {
   @override
   bool operator []((int, int, int) index) {
@@ -159,43 +224,25 @@ mixin _MFieldContainerBitsMonthsDates on _MBitsFieldMonthsDates
   }
 }
 
-// mixin _MSlotContainerBits<I, T> implements _ASlot<T>, _AFlagsContainer<I, T?> {
-//   @override
-//   T? operator [](covariant I index) {
-//     assert(validateIndex(index));
-//     return _slot[_positionOf(index)];
-//   }
-//
-//   @override
-//   void operator []=(covariant I index, covariant T value) {
-//     assert(validateIndex(index));
-//     _slot[_positionOf(index)] = value;
-//   }
-//
-//   int _positionOf(I index);
-// }
-//
-// mixin _MSlotContainerBitsMonthsDates<T>
-//     implements _ASlot<T>, _AFlagsContainer<(int, int, int), T?> {
-//   @override
-//   T? operator []((int, int, int) index) {
-//     assert(validateIndex(index));
-//     return _slot[daysOf(index.$1, index.$2, index.$3)];
-//   }
-//
-//   @override
-//   void operator []=((int, int, int) index, T? value) {
-//     assert(validateIndex(index));
-//     _slot[daysOf(index.$1, index.$2, index.$3)] = value;
-//   }
-//
-//   int daysOf(int year, int month, int day);
-// }
+mixin _MSlotContainerPositionAble<I, T>
+    implements _AFlagsContainer<I, T?>, _AFlagsPositionAble<I>, _ASlot<T> {
+  @override
+  T? operator [](I index) {
+    assert(validateIndex(index));
+    return _slot[_positionOf(index)];
+  }
+
+  @override
+  void operator []=(I index, T? value) {
+    assert(validateIndex(index));
+    _slot[_positionOf(index)] = value;
+  }
+}
 
 ///
 ///
 ///
-mixin _MFieldBitsSet<T> on _MBitsField implements _AFieldSet<T> {
+mixin _MSetFieldBits<T> on _MBitsField implements _AFieldSet<T> {
   @override
   void includesRange(T begin, T limit) => _ranges(begin, limit, _bitSet);
 
@@ -205,7 +252,7 @@ mixin _MFieldBitsSet<T> on _MBitsField implements _AFieldSet<T> {
   void _ranges(T begin, T limit, Consumer<int> consume);
 }
 
-mixin _MFieldBitsSetMonthsDates on _MBitsFieldMonthsDates
+mixin _MSetFieldBitsMonthsDates on _MBitsFieldMonthsDates
     implements _AFieldSet<(int, int, int)> {
   @override
   void includesRange((int, int, int) begin, (int, int, int) limit) =>
@@ -340,7 +387,7 @@ mixin _MSetSlot<T> implements _ASlot<T>, _ASlotSet<T> {
 ///
 ///
 ///
-mixin _MFieldOperatable<F extends FieldParent>
+mixin _MOperatableField<F extends FieldParent>
     implements _AField, _AFieldIdentical, _AFlagsOperatable<F> {
   @override
   bool isSizeEqual(F other) {
@@ -441,7 +488,8 @@ mixin _MFieldOperatable<F extends FieldParent>
   }
 }
 
-mixin _MSlotInit<T, S extends _PSlot<T>> implements _ASlot<T>, _AFlagsInit<S> {
+mixin _MEquatableSlot<T, S extends _PSlot<T>>
+    implements _ASlot<T>, _AFlagsEquatable<S> {
   @override
   bool isSizeEqual(S other) => _slot.length == other._slot.length;
 
