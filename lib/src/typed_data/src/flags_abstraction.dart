@@ -3,12 +3,12 @@ part of '../typed_data.dart';
 ///
 ///
 /// prefix 'A' stands for abstraction, with contract
-/// [_AFieldContainer]
-/// [_AField]
-/// [_AFieldBits]
+/// [_AFlagsContainer]
 /// [_AFlagsSpatial1], [_AFlagsSpatial2], [_AFlagsSpatial3], [_AFlagsSpatial4]
 /// [_AFlagsCollapse]
 /// [_AFlagsOperatable]
+/// [_AField]
+/// [_AFieldBits]
 /// [_AFlagsSet]
 /// [_AFieldIdentical]
 ///
@@ -28,6 +28,12 @@ abstract class _AFlagsContainer<I, S> implements _PFlags {
   S operator [](I index);
 
   void operator []=(I index, S value);
+}
+
+abstract class _AFlagsScoped<T> implements _PFlags {
+  T get begin;
+
+  T get end;
 }
 
 abstract class _AFlagsSpatial1 implements _PFlags {
@@ -57,10 +63,11 @@ abstract class _AFlagsCollapse<S> implements _PFlags {
 abstract class _AFlagsEquatable<F> implements _PFlags {
   bool isSizeEqual(F other);
 
-  F get newZero;
 }
 
 abstract class _AFlagsOperatable<F> implements _AFlagsEquatable<F> {
+  F get newZero;
+
   F operator &(F other);
 
   F operator |(F other);
@@ -112,9 +119,9 @@ abstract class _AFieldBits implements _PFlags {
 }
 
 abstract class _AFieldSet<T> implements _AFlagsSet<T> {
-  void includesRange(T begin, T limit);
+  void includesSub(T begin, [T? limit]);
 
-  void excludesRange(T begin, T limit);
+  void excludesSub(T begin, [T? limit]);
 
   // T? flagsFirstAfter(int position);
   //
@@ -147,14 +154,6 @@ sealed class FieldParent extends _PFlags implements _AField, _AFieldIdentical {
   int get size => _sizeEach * _field.length;
 }
 
-//
-abstract class _PFieldScoped<T> extends FieldParent {
-  final T begin;
-  final T end;
-
-  const _PFieldScoped(this.begin, this.end, super.field);
-}
-
 ///
 ///
 ///
@@ -162,16 +161,20 @@ abstract class _ASlot<T> implements _PFlags {
   List<T?> get _slot;
 }
 
-abstract class _ASlotSet<T> implements _AFlagsSet<T> {
+abstract class _ASlotSet<I, T> implements _AFlagsSet<T> {
   Iterable<T> filterOn(FieldParent field);
+
+  void pasteSub(T value, I begin, [I? limit]);
+
+  void includesFrom(Iterable<T> iterable, I begin, [bool inclusive]);
+  void includesTo(Iterable<T> iterable, I limit, [bool inclusive]);
 }
 
-abstract class _PSlot<T> extends _PFlags
-    with _MSetSlot<T> {
+abstract class ParentSlot<T> extends _PFlags implements _ASlot<T> {
   @override
   final List<T?> _slot;
 
-  _PSlot(int size) : _slot = List.filled(size, null);
+  ParentSlot(int size) : _slot = List.filled(size, null);
 
   @override
   void clear() => _slot.filled(null);

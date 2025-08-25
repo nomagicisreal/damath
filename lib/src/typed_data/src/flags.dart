@@ -10,7 +10,7 @@ part of '../typed_data.dart';
 ///   **[_AFlagsSet]
 ///   **[_AFlagsOperatable]
 ///   |
-///   --[FieldParent], [_PSlot]
+///   --[FieldParent], [ParentSlot]
 ///   |   --[Field]
 ///   |   --[Field2D]
 ///   |   --[Field3D]
@@ -24,7 +24,7 @@ part of '../typed_data.dart';
 ///   |   --[FieldMapDate]
 ///   |   --[FieldMapHourDate]
 ///   |
-///   --[_PSlot]
+///   --[ParentSlot]
 ///   |   --[Slot]
 ///   |
 ///
@@ -48,7 +48,7 @@ sealed class _PFlags {
     assert(() {
       final buffer = StringBuffer('$runtimeType field:\n');
       final instance = this;
-      if (instance is _PSlot) {
+      if (instance is ParentSlot) {
         final slot = instance._slot;
         final length = slot.length;
         final pad = '$length'.length + 1;
@@ -304,7 +304,7 @@ sealed class _PFlags {
               buffer.writeln(' |');
             }
           }(),
-          _PFieldScoped() => () {
+          FieldDatesInMonths() => () {
             final december = DateTime.december;
             final daysOf = DateTimeExtension.monthDaysOf;
             final begin = instance.begin;

@@ -206,30 +206,46 @@ extension Record2Int on (int, int) {
 
   ///
   /// [monthsToYearMonth]
-  /// [monthsToMonth]
-  /// [monthsToDates]
+  /// [daysToDate]
+  /// [daysToDate]
   ///
   int monthsToYearMonth(int year, int month) {
     assert(
-      DateTimeExtension.isValidMonth(this.$2) &&
-          DateTimeExtension.isValidMonth(month),
+      DateTimeExtension.isValidYearMonthScope(this, (year, month)),
       'invalid date: $this, ($year, $month)',
     );
+    final y = this.$1;
+    return month - this.$2 + y == year
+        ? 0
+        : DateTimeExtension.limitMonthEnd + DateTime.december * (year - y);
+  }
+
+  int daysToDate(int year, int month, [int? day]) {
+    assert(
+      DateTimeExtension.isValidYearMonthScope(this, (year, month)),
+      'invalid date: $this, ($year, $month)',
+    );
+    assert(
+      day == null || DateTimeExtension.isValidDay(year, month, day),
+      'invalid day: ($year, $month, $day)',
+    );
     final yearCurrent = this.$1;
-    assert(yearCurrent <= year);
-    final monthCurrent = this.$2;
-
-    // ==
-    if (yearCurrent == year) {
-      assert(monthCurrent <= month);
-      return month - monthCurrent;
+    final daysOf = DateTimeExtension.monthDaysOf;
+    var d = 0;
+    var m = this.$2;
+    if (yearCurrent < year) {
+      for (; m < 13; m++) {
+        d += daysOf(yearCurrent, m);
+      }
+      for (var y = yearCurrent + 1; y < year; y++) {
+        d += DateTimeExtension.yearDaysOf(y);
+      }
+      m = 1;
     }
-
-    // <
-    return DateTimeExtension.limitMonthEnd -
-        monthCurrent +
-        DateTime.december * (year - yearCurrent) +
-        month;
+    for (; m < month; m++) {
+      d += daysOf(year, m);
+    }
+    return d + (day ?? daysOf(year, month));
   }
 }
 

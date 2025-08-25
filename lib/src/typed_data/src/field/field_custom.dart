@@ -12,56 +12,47 @@ part of '../../typed_data.dart';
 ///
 ///
 ///
-class FieldDatesInMonths extends _PFieldScoped<(int, int)>
+class FieldDatesInMonths extends FieldParent
     with
+        _MFlagsContainerScopedDate<bool>,
         _MBitsFieldMonthsDates,
         _MFieldContainerMonthsDates,
-        _MSetFieldBitsMonthsDates,
         _MSetFieldMonthsDatesScoped,
-        _MOperatableField<FieldDatesInMonths>
-    implements _AFlagsContainer<(int, int, int), bool> {
-  FieldDatesInMonths((int, int) begin, (int, int) end)
+        _MSetFieldBitsMonthsDates,
+        _MOperatableField<FieldDatesInMonths> {
+  @override
+  final (int, int) begin;
+  @override
+  final (int, int) end;
+
+  FieldDatesInMonths(this.begin, this.end)
     : assert(
-        DateTimeExtension.isValidMonth(begin.$2) &&
-            DateTimeExtension.isValidMonth(end.$2),
+        DateTimeExtension.isValidYearMonthScope(begin, end),
         'invalid date $begin ~ $end',
       ),
-      assert(end > begin, 'invalid range begin($begin), end($end)'),
-      super(
-        begin,
-        end,
-        Uint32List(begin.monthsToYearMonth(end.$1, end.$2) + 1),
-      );
+      super(Uint32List(begin.monthsToYearMonth(end.$1, end.$2) + 1));
 
   @override
-  bool validateIndex((int, int, int) index) =>
-      index.isValidDate &&
-      begin.lessOrEqualThan3(index) &&
-      end.largerOrEqualThan3(index);
-
-  @override
-  int _fieldIndexOf(int year, int month) =>
-      begin.monthsToYearMonth(year, month);
+  FieldDatesInMonths get newZero => FieldDatesInMonths(begin, end);
 
   ///
-  /// [_ranges] is the same algorithm with [Record3Int.biCallbackFrom]
+  /// [_sub] is the same algorithm with [Record3Int.biCallbackFrom]
   ///
   @override
-  void _ranges(
-    (int, int, int) begin,
-    (int, int, int) end,
+  void _sub(
     TriCallback<int> consume,
+    (int, int, int) begin,
+    (int, int, int)? limit,
   ) {
     assert(validateIndex(begin));
-    assert(validateIndex(end));
-    assert(begin < end);
+    assert(limit == null || (validateIndex(limit) && begin < limit));
 
     final yBegin = begin.$1;
     final mBegin = begin.$2;
     final dBegin = begin.$3;
-    final yEnd = end.$1;
-    final mEnd = end.$2;
-    final dEnd = end.$3;
+    final yEnd = limit?.$1 ?? end.$1;
+    final mEnd = limit?.$2 ?? end.$2;
+    final dEnd = limit?.$3 ?? DateTimeExtension.monthDaysOf(yEnd, mEnd);
     assert(yBegin <= yEnd);
 
     // ==
@@ -99,39 +90,36 @@ class FieldDatesInMonths extends _PFieldScoped<(int, int)>
     // <
     final daysOf = DateTimeExtension.monthDaysOf;
     var i = dBegin;
-    var limit = daysOf(yBegin, mBegin);
-    for (; i < limit; i++) {
+    var iLimit = daysOf(yBegin, mBegin);
+    for (; i < iLimit; i++) {
       consume(yBegin, mBegin, i);
     }
     var j = mBegin + 1;
     for (; j < 13; j++) {
-      limit = daysOf(yBegin, j);
-      for (i = 1; i < limit; i++) {
+      iLimit = daysOf(yBegin, j);
+      for (i = 1; i < iLimit; i++) {
         consume(yBegin, j, i);
       }
     }
     for (var k = yBegin + 1; k < yEnd; k++) {
       for (j = 1; j < 13; j++) {
-        limit = daysOf(k, j);
-        for (i = 1; i < limit; i++) {
+        iLimit = daysOf(k, j);
+        for (i = 1; i < iLimit; i++) {
           consume(k, j, i);
         }
       }
     }
     for (j = 1; j < mEnd; j++) {
-      limit = daysOf(yEnd, j);
-      for (i = 1; i < limit; i++) {
+      iLimit = daysOf(yEnd, j);
+      for (i = 1; i < iLimit; i++) {
         consume(yEnd, j, i);
       }
     }
-    limit = daysOf(yEnd, mEnd);
-    for (i = 1; i < limit; i++) {
+    iLimit = daysOf(yEnd, mEnd);
+    for (i = 1; i < iLimit; i++) {
       consume(yEnd, mEnd, i);
     }
   }
-
-  @override
-  FieldDatesInMonths get newZero => FieldDatesInMonths(begin, end);
 }
 
 ///
@@ -147,14 +135,15 @@ abstract class FieldAB extends FieldParent
   final int aLimit;
   final Predicator<int> bValidate;
   final int bDivision;
+  final int bSize;
   final int bSizeDivision;
 
   FieldAB._(
     this.bValidate,
     this.bDivision,
     super._field, {
-    this.aLimit = 25,
-    int bSize = DateTimeExtension.minutesAHour,
+    this.aLimit = DateTimeExtension.hoursADay,
+    this.bSize = DateTimeExtension.minutesAHour,
   }) : assert(
          bSize % bDivision == 0,
          'invalid division: $bDivision for $bSize',
@@ -192,15 +181,14 @@ abstract class FieldAB extends FieldParent
   }
 
   @override
-  void _ranges((int, int) begin, (int, int) limit, Consumer<int> consume) {
+  void _ranges(Consumer<int> consume, (int, int) begin, (int, int)? limit) {
     assert(validateIndex(begin));
-    assert(validateIndex(limit));
-    assert(begin < limit);
+    assert(limit == null || (validateIndex(limit) && begin < limit));
 
     final division = bDivision;
     final sizeDivision = bSizeDivision;
     final aBegin = begin.$1 * division;
-    final aEnd = limit.$1 * division;
+    final aEnd = (limit?.$1 ?? aLimit - 1) * division;
     var d = begin.$2 ~/ sizeDivision;
     for (; d < sizeDivision; d++) {
       consume(aBegin + d);
@@ -210,7 +198,7 @@ abstract class FieldAB extends FieldParent
         consume(a + d);
       }
     }
-    final dEnd = limit.$2 ~/ sizeDivision;
+    final dEnd = (limit?.$2 ?? size) ~/ sizeDivision;
     for (d = 0; d <= dEnd; d++) {
       consume(aEnd + d);
     }

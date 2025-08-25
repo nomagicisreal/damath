@@ -10,7 +10,6 @@ part of '../typed_data.dart';
 /// [FieldMapHourDate]
 ///
 ///
-///
 
 ///
 ///
@@ -211,7 +210,7 @@ sealed class _PFieldMapSplay
 ///
 ///
 /// [FlagsMapDate.empty]
-/// [includesRange], ...
+/// [includesSub], ...
 /// [firstYear], ...
 /// [yearsAvailable], ...
 ///
@@ -464,7 +463,7 @@ class FieldMapHourDate extends _PFieldMapSplay {
   bool validateIndex((int, int, int) index) {
     final month = index.$1;
     return DateTimeExtension.isValidMonth(month) &&
-        DateTimeExtension.isValidDays(year, month, index.$2) &&
+        DateTimeExtension.isValidDay(year, month, index.$2) &&
         DateTimeExtension.isValidHour(index.$3);
   }
 

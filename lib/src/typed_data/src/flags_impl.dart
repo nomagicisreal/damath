@@ -5,7 +5,13 @@ part of '../typed_data.dart';
 ///
 /// mixin:
 /// [_MFlagsO8], [_MFlagsO16], [_MFlagsO32], [_MFlagsO64]
-/// [_MFlagsContainerSpatial1], [_MFlagsContainerSpatial2], [_MFlagsContainerSpatial3], [_MFlagsContainerSpatial4]
+///
+/// [_MFlagsContainerSpatial1]
+/// [_MFlagsContainerSpatial2]
+/// [_MFlagsContainerSpatial3]
+/// [_MFlagsContainerSpatial4]
+/// [_MFlagsContainerScopedDate]
+/// [_MFlagsScopedDatePositionDay]
 ///
 /// [_MBitsField]
 /// [_MBitsFieldMonthsDates]
@@ -15,14 +21,16 @@ part of '../typed_data.dart';
 /// [_MFieldContainerMonthsDates]
 /// [_MSlotContainerPositionAble]
 ///
-/// [_MSetFieldBits]
-/// [_MSetFieldBitsMonthsDates]
 ///
 /// [_MSetField]
 /// [_MSetFieldIndexable]
 /// [_MSetFieldMonthsDatesScoped]
+/// [_MSetFieldBits]
+/// [_MSetFieldBitsMonthsDates]
+/// [_MSetSlot]
 ///
 /// [_MOperatableField]
+/// [_MEquatableSlot]
 ///
 ///
 
@@ -141,6 +149,22 @@ mixin _MFlagsContainerSpatial4<T>
   }
 }
 
+mixin _MFlagsContainerScopedDate<T>
+    implements _AFlagsContainer<(int, int, int), T>, _AFlagsScoped<(int, int)> {
+  @override
+  bool validateIndex((int, int, int) index) =>
+      index.isValidDate &&
+      begin.lessOrEqualThan3(index) &&
+      end.largerOrEqualThan3(index);
+}
+
+mixin _MFlagsScopedDatePositionDay
+    implements _AFlagsScoped<(int, int)>, _AFlagsPositionAble<(int, int, int)> {
+  @override
+  int _positionOf((int, int, int) index) =>
+      begin.daysToDate(index.$1, index.$2, index.$3);
+}
+
 ///
 ///
 ///
@@ -153,20 +177,19 @@ mixin _MBitsField implements _AField, _AFieldBits {
   void _bitClear(int position) => _field.bitClear(position, _shift, _mask);
 }
 
-mixin _MBitsFieldMonthsDates implements _AField, _AFieldIdentical {
+mixin _MBitsFieldMonthsDates
+    implements _AField, _AFieldIdentical, _AFlagsScoped<(int, int)> {
   bool _bitOn(int year, int month, int day) =>
-      _field[_fieldIndexOf(year, month)] >> day - 1 & 1 == 1;
+      _field[begin.monthsToYearMonth(year, month)] >> day - 1 & 1 == 1;
 
   void _bitSet(int year, int month, int day) =>
-      _field[_fieldIndexOf(year, month)] |= 1 << day - 1;
+      _field[begin.monthsToYearMonth(year, month)] |= 1 << day - 1;
 
   void _bitClear(int year, int month, int day) =>
-      _field[_fieldIndexOf(year, month)] &= ~(1 << day - 1);
+      _field[begin.monthsToYearMonth(year, month)] &= ~(1 << day - 1);
 
   @override
   int get _sizeEach => TypedIntList.sizeEach32;
-
-  int _fieldIndexOf(int year, int month);
 }
 
 mixin _MBitsFlagsField implements _AFieldBits {
@@ -207,8 +230,8 @@ mixin _MFieldContainerPositionAble<I> on _MBitsField
   }
 }
 
-mixin _MFieldContainerMonthsDates on _MBitsFieldMonthsDates
-    implements _AFlagsContainer<(int, int, int), bool> {
+mixin _MFieldContainerMonthsDates
+    implements _AFlagsContainer<(int, int, int), bool>, _MBitsFieldMonthsDates {
   @override
   bool operator []((int, int, int) index) {
     assert(validateIndex(index));
@@ -242,36 +265,6 @@ mixin _MSlotContainerPositionAble<I, T>
 ///
 ///
 ///
-mixin _MSetFieldBits<T> on _MBitsField implements _AFieldSet<T> {
-  @override
-  void includesRange(T begin, T limit) => _ranges(begin, limit, _bitSet);
-
-  @override
-  void excludesRange(T begin, T limit) => _ranges(begin, limit, _bitClear);
-
-  void _ranges(T begin, T limit, Consumer<int> consume);
-}
-
-mixin _MSetFieldBitsMonthsDates on _MBitsFieldMonthsDates
-    implements _AFieldSet<(int, int, int)> {
-  @override
-  void includesRange((int, int, int) begin, (int, int, int) limit) =>
-      _ranges(begin, limit, _bitSet);
-
-  @override
-  void excludesRange((int, int, int) begin, (int, int, int) limit) =>
-      _ranges(begin, limit, _bitClear);
-
-  void _ranges(
-    (int, int, int) begin,
-    (int, int, int) limit,
-    TriCallback<int> consume,
-  );
-}
-
-///
-///
-///
 mixin _MSetField implements _AField, _AFieldIdentical, _AFlagsSet<int> {
   @override
   int? get first => _field.bitFirst(_sizeEach);
@@ -291,8 +284,8 @@ mixin _MSetFieldIndexable<T>
   T _indexOf(int position);
 }
 
-mixin _MSetFieldMonthsDatesScoped on _PFieldScoped<(int, int)>
-    implements _AFlagsSet<(int, int, int)> {
+mixin _MSetFieldMonthsDatesScoped
+    implements _AFlagsSet<(int, int, int)>, _AFlagsScoped<(int, int)>, _AField {
   @override
   (int, int, int)? get first {
     final begin = this.begin;
@@ -341,7 +334,41 @@ mixin _MSetFieldMonthsDatesScoped on _PFieldScoped<(int, int)>
   }
 }
 
-mixin _MSetSlot<T> implements _ASlot<T>, _ASlotSet<T> {
+///
+///
+///
+mixin _MSetFieldBits<T> on _MBitsField implements _AFieldSet<T> {
+  @override
+  void includesSub(T begin, [T? limit]) => _ranges(_bitSet, begin, limit);
+
+  @override
+  void excludesSub(T begin, [T? limit]) => _ranges(_bitClear, begin, limit);
+
+  void _ranges(Consumer<int> consume, T begin, T? limit);
+}
+
+mixin _MSetFieldBitsMonthsDates on _MBitsFieldMonthsDates
+    implements _AFieldSet<(int, int, int)> {
+  @override
+  void includesSub((int, int, int) begin, [(int, int, int)? limit]) =>
+      _sub(_bitSet, begin, limit);
+
+  @override
+  void excludesSub((int, int, int) begin, [(int, int, int)? limit]) =>
+      _sub(_bitClear, begin, limit);
+
+  void _sub(
+    TriCallback<int> consume,
+    (int, int, int) begin,
+    (int, int, int)? limit,
+  );
+}
+
+///
+///
+///
+mixin _MSetSlot<I, T>
+    implements _ASlot<T>, _ASlotSet<I, T>, _AFlagsPositionAble<I> {
   @override
   T? get first {
     final slot = _slot;
@@ -382,6 +409,39 @@ mixin _MSetSlot<T> implements _ASlot<T>, _ASlotSet<T> {
       }
     }
   }
+
+  @override
+  void pasteSub(T value, I begin, [I? limit]) {
+    final slot = _slot;
+    final length = limit == null ? slot.length : _positionOf(limit);
+    for (var i = _positionOf(begin); i < length; i++) {
+      slot[i] = value;
+    }
+  }
+
+  @override
+  void includesFrom(Iterable<T> iterable, I begin, [bool inclusive = true]) {
+    final slot = _slot;
+    var i = inclusive ? _positionOf(begin) : _positionOf(begin) + 1;
+    assert(i > -1 && i < slot.length);
+    for (var it in iterable) {
+      slot[i] = it;
+      i++;
+    }
+  }
+
+  @override
+  void includesTo(Iterable<T> iterable, I limit, [bool inclusive = true]) {
+    final slot = _slot;
+    var last = inclusive ? _positionOf(limit) + 1 : _positionOf(limit);
+    assert(last < slot.length);
+    var i = last - iterable.length;
+    assert(i > -1);
+    for (var it in iterable) {
+      slot[i] = it;
+      i++;
+    }
+  }
 }
 
 ///
@@ -394,9 +454,6 @@ mixin _MOperatableField<F extends FieldParent>
     if (_sizeEach != other._sizeEach) return false;
     return _field.length == other._field.length;
   }
-
-  @override
-  F get newZero;
 
   @override
   bool operator ==(Object other) {
@@ -488,13 +545,10 @@ mixin _MOperatableField<F extends FieldParent>
   }
 }
 
-mixin _MEquatableSlot<T, S extends _PSlot<T>>
+mixin _MEquatableSlot<T, S extends ParentSlot<T>>
     implements _ASlot<T>, _AFlagsEquatable<S> {
   @override
   bool isSizeEqual(S other) => _slot.length == other._slot.length;
-
-  @override
-  S get newZero;
 
   @override
   bool operator ==(Object other) {

@@ -16,15 +16,15 @@ part of '../../typed_data.dart';
 ///
 ///
 ///
-class Slot<T> extends _PSlot<T>
-    with _MFlagsContainerSpatial1<T?>, _MEquatableSlot<T, Slot<T>> {
+class Slot<T> extends ParentSlot<T>
+    with
+        _MFlagsContainerSpatial1<T?>,
+        _MSetSlot<int, T>,
+        _MEquatableSlot<T, Slot<T>> {
   Slot(super.size);
 
   @override
   int get spatial1 => _slot.length;
-
-  @override
-  Slot<T> get newZero => Slot(_slot.length);
 
   @override
   T? operator [](int index) {
@@ -37,12 +37,16 @@ class Slot<T> extends _PSlot<T>
     assert(validateIndex(index));
     _slot[index] = value;
   }
+
+  @override
+  int _positionOf(int index) => index;
 }
 
-class Slot2D<T> extends _PSlot<T>
+class Slot2D<T> extends ParentSlot<T>
     with
         _MFlagsContainerSpatial2<T?>,
         _MSlotContainerPositionAble<(int, int), T>,
+        _MSetSlot<(int, int), T>,
         _MEquatableSlot<T, Slot2D<T>> {
   @override
   final int spatial1;
@@ -52,15 +56,13 @@ class Slot2D<T> extends _PSlot<T>
   Slot2D(this.spatial1, this.spatial2) : super(spatial1 * spatial2);
 
   Slot2D.from(Field2D field) : this(field.spatial1, field.spatial2);
-
-  @override
-  Slot2D<T> get newZero => Slot2D(spatial1, spatial2);
 }
 
-class Slot3D<T> extends _PSlot<T>
+class Slot3D<T> extends ParentSlot<T>
     with
         _MFlagsContainerSpatial3<T?>,
         _MSlotContainerPositionAble<(int, int, int), T>,
+        _MSetSlot<(int, int, int), T>,
         _MEquatableSlot<T, Slot3D<T>> {
   @override
   final int spatial1;
@@ -75,14 +77,13 @@ class Slot3D<T> extends _PSlot<T>
   Slot3D.from(Field3D field)
     : this(field.spatial1, field.spatial2, field.spatial3);
 
-  @override
-  Slot3D<T> get newZero => Slot3D(spatial1, spatial2, spatial3);
 }
 
-class Slot4D<T> extends _PSlot<T>
+class Slot4D<T> extends ParentSlot<T>
     with
         _MFlagsContainerSpatial4<T?>,
         _MSlotContainerPositionAble<(int, int, int, int), T>,
+        _MSetSlot<(int, int, int, int), T>,
         _MEquatableSlot<T, Slot4D<T>> {
   @override
   final int spatial1;
@@ -98,7 +99,4 @@ class Slot4D<T> extends _PSlot<T>
 
   Slot4D.from(Field4D field)
     : this(field.spatial1, field.spatial2, field.spatial3, field.spatial4);
-
-  @override
-  Slot4D<T> get newZero => Slot4D(spatial1, spatial2, spatial3, spatial4);
 }

@@ -89,6 +89,7 @@ extension DateTimeExtension on DateTime {
   static const int hourBegin = 0;
   static const int hourEnd = 23;
   static const int daysAYearNormal = 365;
+  static const int hoursADay = 23;
   static const int minutesAHour = 60;
 
   ///
@@ -127,14 +128,17 @@ extension DateTimeExtension on DateTime {
 
   static bool isInvalidHour(int hour) => hour < hourBegin || hour > hourEnd;
 
-  static bool isValidDays(int year, int month, int days) =>
-      days > 0 && days < monthDaysOf(year, month) + 1;
+  static bool isValidDay(int year, int month, int day) =>
+      day > 0 && day < monthDaysOf(year, month) + 1;
 
   static bool isValidDate((int, int, int) date) {
     final month = date.$2;
     if (isInvalidMonth(month)) return false;
-    return isValidDays(date.$1, month, date.$3);
+    return isValidDay(date.$1, month, date.$3);
   }
+
+  static bool isValidYearMonthScope((int, int) begin, (int, int) end) =>
+      isValidMonth(begin.$2) && isValidMonth(end.$2) && begin < end;
 
   static bool Function(dynamic) isValidMonthDynamicOf(int year) =>
       (month) => month > limitMonthBegin && month < limitMonthEnd;
@@ -247,6 +251,8 @@ extension DateTimeExtension on DateTime {
               ? 29
               : 28
           : _monthsDays[month]!;
+
+  static int yearDaysOf(int year) => isYearLeapYear(year) ? 366 : 365;
 
   static int apply_monthBegin(int year) => DateTime.january;
 
