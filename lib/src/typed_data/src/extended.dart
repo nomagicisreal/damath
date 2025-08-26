@@ -6,10 +6,6 @@ part of '../typed_data.dart';
 /// [TypedIntList]
 ///
 ///
-/// [_MapperSplayTreeMapInt], ...
-/// [_SplayTreeMapIntIntTypedInt]
-///
-///
 ///
 ///
 
@@ -19,11 +15,11 @@ part of '../typed_data.dart';
 /// [quotientCeil8], ...
 ///
 /// instances methods:
-/// return void                   : [bitConsume], ...
-/// return bool                   : [bitOn], ...
-/// return integer                : [bitFirst], ...
-/// return iterable integer       : [bitsAvailable], ...
-/// return iterable provided type : [mapBitsAvailable], ...
+/// return void                   : [pConsume], ...
+/// return bool                   : [pOn], ...
+/// return integer                : [pFirst], ...
+/// return iterable integer       : [pAvailable], ...
+/// return iterable provided type : [mapPAvailable], ...
 ///
 extension TypedIntList on TypedDataList<int> {
   static const int countsAByte = 8;
@@ -79,40 +75,75 @@ extension TypedIntList on TypedDataList<int> {
       a[0].compareTo(b[0]);
 
   ///
-  /// [getBitFirst1]
-  /// [getBitLast1]
-  /// [getBitFirst1From]
-  /// [getBitLast1From]
+  /// [getPFirst1]
+  /// [getPLast1]
+  /// [getPFirst1From]
+  /// [getPLast1From]
   ///
-  static int? getBitFirst1<T extends TypedDataList<int>>(T list, int size) =>
-      list.bitFirst(size);
+  static int? getPFirst1<T extends TypedDataList<int>>(T list, int sizeEach) =>
+      list.pFirst(sizeEach);
 
-  static int? getBitLast1<T extends TypedDataList<int>>(T list, int size) =>
-      list.bitLast(size);
+  static int? getPLast1<T extends TypedDataList<int>>(T list, int sizeEach) =>
+      list.pLast(sizeEach);
 
-  static int? getBitFirst1From<T extends TypedDataList<int>>(
+  static int? getPFirst1From<T extends TypedDataList<int>>(
     T list,
     int k,
-    int size,
-  ) => list.bitFirstFrom(k, size);
+    int sizeEach,
+  ) => list.pFirstFrom(k, sizeEach);
 
-  static int? getBitLast1From<T extends TypedDataList<int>>(
+  static int? getPLast1From<T extends TypedDataList<int>>(
     T list,
     int k,
-    int size,
-  ) => list.bitLastFrom(k, size);
+    int sizeEach,
+  ) => list.pLastFrom(k, sizeEach);
 
   ///
-  /// [bitSet], [bitClear]
-  /// [bitConsume]
+  /// [bFirstOf]
+  /// [bLastOf]
+  /// [bsOf]
+  /// [bsMappedOf]
   ///
-  void bitSet(int p, int shift, int mask) =>
-      this[p >> shift] |= 1 << (p & mask);
+  int? bFirstOf(int i) {
+    for (var bits = this[i], p = 1; bits > 0; bits >>= 1, p++) {
+      if (bits & 1 == 1) return p;
+    }
+    return null;
+  }
 
-  void bitClear(int p, int shift, int mask) =>
+  int? bLastOf(int i, int from) {
+    for (
+      var bits = this[i], mask = 1 << from - 1, p = from;
+      mask > 0;
+      mask >>= 1, p--
+    ) {
+      if (bits & 1 == 1) return p;
+    }
+    return null;
+  }
+
+  Iterable<int> bsOf(int i) sync* {
+    for (var bits = this[i], p = 1; bits > 0; bits >>= 1, p++) {
+      if (bits & 1 == 1) yield p;
+    }
+  }
+
+  Iterable<T> bsMappedOf<T>(int i, Mapper<int, T> mapping) sync* {
+    for (var bits = this[i], p = 1; bits > 0; bits >>= 1, p++) {
+      if (bits & 1 == 1) yield mapping(p);
+    }
+  }
+
+  ///
+  /// [pSet], [pClear]
+  /// [pConsume]
+  ///
+  void pSet(int p, int shift, int mask) => this[p >> shift] |= 1 << (p & mask);
+
+  void pClear(int p, int shift, int mask) =>
       this[p >> shift] &= ~(1 << (p & mask));
 
-  void bitConsume(
+  void pConsume(
     void Function(int p) consume,
     int size,
     int max, [
@@ -126,17 +157,17 @@ extension TypedIntList on TypedDataList<int> {
   }
 
   ///
-  /// [bitOn]
+  /// [pOn]
   ///
-  bool bitOn(int p, int shift, int mask, [int bit = 1]) =>
+  bool pOn(int p, int shift, int mask, [int bit = 1]) =>
       (this[p >> shift] >> (p & mask)) & 1 == bit;
 
   ///
-  /// [bitFirst]
-  /// [bitN]
-  /// [bitLast]
+  /// [pFirst]
+  /// [pN]
+  /// [pLast]
   ///
-  int? bitFirst(int size, [int bit = 1]) {
+  int? pFirst(int size, [int bit = 1]) {
     final length = this.length;
     for (var j = 0; j < length; j++) {
       for (var i = 0, bits = this[j]; bits > 0; i++, bits >>= 1) {
@@ -146,7 +177,7 @@ extension TypedIntList on TypedDataList<int> {
     return null;
   }
 
-  int? bitN(int n, int size, [int bit = 1]) {
+  int? pN(int n, int size, [int bit = 1]) {
     final length = this.length;
     for (var j = 0; j < length; j++) {
       for (var i = 0, bits = this[j]; bits > 0; i++, bits >>= 1) {
@@ -159,7 +190,7 @@ extension TypedIntList on TypedDataList<int> {
     return null;
   }
 
-  int? bitLast(int size, [int bit = 1]) {
+  int? pLast(int size, [int bit = 1]) {
     for (var j = length - 1; j > -1; j--) {
       for (
         var bits = this[j], mask = 1 << size - 1, i = size - 1;
@@ -173,11 +204,11 @@ extension TypedIntList on TypedDataList<int> {
   }
 
   ///
-  /// [bitFirstFrom]
-  /// [bitNFrom]
-  /// [bitLastFrom]
+  /// [pFirstFrom]
+  /// [pNFrom]
+  /// [pLastFrom]
   ///
-  int? bitFirstFrom(int k, int size, [int bit = 1]) {
+  int? pFirstFrom(int k, int size, [int bit = 1]) {
     var j = k ~/ size;
     var i = k & size - 1;
     var bits = this[j];
@@ -203,7 +234,7 @@ extension TypedIntList on TypedDataList<int> {
     return null;
   }
 
-  int? bitNFrom(int k, int size, int n, [int bit = 1]) {
+  int? pNFrom(int k, int size, int n, [int bit = 1]) {
     var j = k ~/ size;
     var i = k & size - 1;
     var bits = this[j];
@@ -235,7 +266,7 @@ extension TypedIntList on TypedDataList<int> {
     return null;
   }
 
-  int? bitLastFrom(int k, int size, [int bit = 1]) {
+  int? pLastFrom(int k, int size, [int bit = 1]) {
     var j = k ~/ size;
     var i = k % size - 1;
     var bits = this[j];
@@ -265,14 +296,14 @@ extension TypedIntList on TypedDataList<int> {
 
   ///
   ///
-  /// [bitsAvailable], [mapBitsAvailable]
-  /// [mapBitsAvailableFrom]
-  /// [mapBitsAvailableTo]
-  /// [mapBitsAvailableBetween]
+  /// [pAvailable], [mapPAvailable]
+  /// [mapPAvailableFrom]
+  /// [mapPAvailableTo]
+  /// [mapPAvailableBetween]
   /// notice that [size] must be 2^n, so [size] - 1 will be [_Field8.mask8], [TypedIntList.mask16], ...
   ///
   ///
-  Iterable<int> bitsAvailable<T>(int size) sync* {
+  Iterable<int> pAvailable<T>(int size) sync* {
     final length = this.length;
     for (var j = 0; j < length; j++) {
       final prefix = size * j;
@@ -283,7 +314,7 @@ extension TypedIntList on TypedDataList<int> {
     }
   }
 
-  Iterable<T> mapBitsAvailable<T>(int size, Mapper<int, T> mapping) sync* {
+  Iterable<T> mapPAvailable<T>(int size, Mapper<int, T> mapping) sync* {
     final length = this.length;
     for (var j = 0; j < length; j++) {
       final prefix = size * j;
@@ -295,7 +326,7 @@ extension TypedIntList on TypedDataList<int> {
   }
 
   // inclusive
-  Iterable<T> mapBitsAvailableFrom<T>(
+  Iterable<T> mapPAvailableFrom<T>(
     int size,
     int from,
     Mapper<int, T> mapping, [
@@ -323,7 +354,7 @@ extension TypedIntList on TypedDataList<int> {
   }
 
   // inclusive
-  Iterable<T> mapBitsAvailableTo<T>(
+  Iterable<T> mapPAvailableTo<T>(
     int size,
     int to,
     Mapper<int, T> mapping, [
@@ -348,7 +379,7 @@ extension TypedIntList on TypedDataList<int> {
   }
 
   // inclusive
-  Iterable<T> mapBitsAvailableBetween<T>(
+  Iterable<T> mapPAvailableBetween<T>(
     int size,
     int? from,
     int? to,
@@ -357,14 +388,14 @@ extension TypedIntList on TypedDataList<int> {
   ]) sync* {
     if (from == null) {
       if (to == null) {
-        yield* mapBitsAvailable(size, mapping);
+        yield* mapPAvailable(size, mapping);
         return;
       }
-      yield* mapBitsAvailableTo(size, to, mapping, inclusive);
+      yield* mapPAvailableTo(size, to, mapping, inclusive);
       return;
     }
     if (to == null) {
-      yield* mapBitsAvailableFrom(size, from, mapping, inclusive);
+      yield* mapPAvailableFrom(size, from, mapping, inclusive);
       return;
     }
 
@@ -406,273 +437,6 @@ extension TypedIntList on TypedDataList<int> {
     i = 0;
     for (var bits = this[limit]; i <= max; bits >>= 1, i++) {
       if (bits & 1 == 1) yield mapping(prefix + i);
-    }
-  }
-}
-
-///
-///
-///
-typedef _MapperSplayTreeMapInt<T> = int? Function(SplayTreeMap<int, T> map);
-typedef _MapperSplayTreeMapIntBy<T> =
-int? Function(SplayTreeMap<int, T> map, int by);
-
-typedef _BitsListToInt = int? Function(TypedDataList<int> list, int size);
-typedef _BitsListToIntFrom =
-int? Function(TypedDataList<int> list, int k, int size);
-
-///
-///
-///
-extension _SplayTreeMapIntIntTypedInt<T extends TypedDataList<int>>
-on SplayTreeMap<int, SplayTreeMap<int, T>> {
-  ///
-  /// [_valuesAvailable]
-  ///
-  Iterable<int> _valuesAvailable(int sizeEach, int key, int keyKey) sync* {
-    final valueMap = this[key];
-    if (valueMap == null) return;
-    final values = valueMap[keyKey];
-    if (values == null) return;
-    yield* values.mapBitsAvailable(sizeEach, FKeep.applier);
-  }
-
-  ///
-  /// [_records], [_recordsInKey], [_recordsInKeyKey]
-  /// [_recordsWithinKeyKey]
-  /// [_recordsWithin]
-  /// [_recordsWithinValues]
-  ///
-  ///
-
-  ///
-  /// [_records]
-  /// [_recordsInKey]
-  /// [_recordsInKeyKey]
-  ///
-  Iterable<(int, int, int)> _records(int sizeEach) sync* {
-    for (var eA in entries) {
-      final key = eA.key;
-      for (var eB in eA.value.entries) {
-        final keyKey = eB.key;
-        yield* eB.value.mapBitsAvailable(sizeEach, (v) => (key, keyKey, v));
-      }
-    }
-  }
-
-  Iterable<(int, int, int)> _recordsInKey(int sizeEach, int key) sync* {
-    final valueMap = this[key];
-    if (valueMap == null) return;
-    for (var entry in valueMap.entries) {
-      final keyKey = entry.key;
-      yield* entry.value.mapBitsAvailable(sizeEach, (v) => (key, keyKey, v));
-    }
-  }
-
-  Iterable<(int, int, int)> _recordsInKeyKey(
-      int sizeEach,
-      int key,
-      int keyKey,
-      ) sync* {
-    final valueMap = this[key];
-    if (valueMap == null) return;
-    final values = valueMap[keyKey];
-    if (values == null) return;
-    yield* values.mapBitsAvailable(sizeEach, (v) => (key, keyKey, v));
-  }
-
-  ///
-  /// [_recordsWithinValues]
-  /// [_recordsWithinKeyKey]
-  /// [_recordsWithin]
-  ///
-  Iterable<(int, int, int)> _recordsWithinValues(
-      int sizeEach,
-      int key,
-      int keyKey,
-      int? begin,
-      int? end,
-      ) sync* {
-    final valueMap = this[key];
-    if (valueMap == null) return;
-    final values = valueMap[keyKey];
-    if (values == null) return;
-    yield* values.mapBitsAvailableBetween(
-      sizeEach,
-      begin,
-      end,
-          (v) => (key, keyKey, v),
-    );
-  }
-
-  Iterable<(int, int, int)> _recordsWithinKeyKey(
-      int sizeEach,
-      int key,
-      int begin,
-      int end,
-      ) sync* {
-    final valueMap = this[key];
-    if (valueMap == null) return;
-    for (
-    int? keyKey = begin;
-    keyKey != null && keyKey <= end;
-    keyKey = valueMap.firstKeyAfter(keyKey)
-    ) {
-      final values = valueMap[keyKey]!;
-      yield* values.mapBitsAvailable(sizeEach, (v) => (key, keyKey!, v));
-    }
-  }
-
-  Iterable<(int, int, int)> _recordsWithinKey(
-      int sizeEach,
-      int begin,
-      int end,
-      ) sync* {
-    for (
-    int? key = begin;
-    key != null && key <= end;
-    key = firstKeyAfter(key)
-    ) {
-      final valueMap = this[key]!;
-      for (var entry in valueMap.entries) {
-        final keyKey = entry.key;
-        yield* entry.value.mapBitsAvailable(sizeEach, (v) => (key!, keyKey, v));
-      }
-    }
-  }
-
-  Iterable<(int, int, int)> _recordsWithin(
-      int sizeEach,
-      (int, int, int) begin,
-      (int, int, int) end,
-      ) sync* {
-    final keyBegin = begin.$1;
-    final keyEnd = end.$1;
-    assert(keyBegin <= keyEnd);
-
-    final keyKeyBegin = begin.$2;
-    final keyKeyEnd = end.$2;
-    final valueBegin = begin.$3;
-    final valueEnd = end.$3;
-
-    // ==
-    if (keyEnd == keyBegin) {
-      assert(keyKeyBegin <= keyKeyEnd);
-
-      // ==
-      if (keyKeyBegin == keyKeyEnd) {
-        assert(valueBegin <= valueEnd);
-        yield* _recordsWithinValues(
-          sizeEach,
-          keyBegin,
-          keyKeyBegin,
-          valueBegin,
-          valueEnd,
-        );
-        return;
-      }
-
-      // <
-      final valueMap = this[keyBegin];
-      if (valueMap == null) return;
-
-      // keyKey begin
-      var values = valueMap[keyKeyBegin];
-      if (values != null) {
-        yield* values.mapBitsAvailableFrom(
-          sizeEach,
-          valueBegin,
-              (v) => (keyBegin, keyKeyBegin, v),
-        );
-      }
-
-      // keyKeys between
-      for (
-      var keyKey = valueMap.firstKeyAfter(keyKeyBegin);
-      keyKey != null && keyKey < keyKeyEnd;
-      keyKey = valueMap.firstKeyAfter(keyKey)
-      ) {
-        yield* valueMap[keyKey]!.mapBitsAvailable(
-          sizeEach,
-              (v) => (keyBegin, keyKey!, v),
-        );
-      }
-
-      // keyKey end
-      values = valueMap[keyKeyEnd];
-      if (values != null) {
-        yield* values.mapBitsAvailableTo(
-          sizeEach,
-          valueEnd,
-              (v) => (keyBegin, keyKeyEnd, v),
-        );
-      }
-      return;
-    }
-
-    // <
-    // key begin
-    var valueMap = this[keyBegin];
-    if (valueMap != null) {
-      final values = valueMap[keyKeyBegin];
-      if (values != null) {
-        yield* values.mapBitsAvailableFrom(
-          sizeEach,
-          valueBegin,
-              (v) => (keyBegin, keyKeyBegin, v),
-        );
-      }
-      for (
-      var keyKey = valueMap.firstKeyAfter(keyKeyBegin);
-      keyKey != null;
-      keyKey = valueMap.firstKeyAfter(keyKey)
-      ) {
-        yield* valueMap[keyKey]!.mapBitsAvailable(
-          sizeEach,
-              (v) => (keyBegin, keyKey!, v),
-        );
-      }
-    }
-
-    // keys between
-    for (
-    var key = firstKeyAfter(keyBegin);
-    key != null && key < keyEnd;
-    key = firstKeyAfter(key)
-    ) {
-      valueMap = this[key]!;
-      for (
-      var keyKey = valueMap.firstKey();
-      keyKey != null;
-      keyKey = valueMap.firstKeyAfter(keyKey)
-      ) {
-        yield* valueMap[keyKey]!.mapBitsAvailable(
-          sizeEach,
-              (v) => (key!, keyKey!, v),
-        );
-      }
-    }
-
-    // key end
-    valueMap = this[keyEnd];
-    if (valueMap != null) {
-      for (
-      var keyKey = valueMap.firstKey();
-      keyKey != null && keyKey < keyKeyEnd;
-      keyKey = valueMap.firstKeyAfter(keyKey)
-      ) {
-        yield* valueMap[keyKey]!.mapBitsAvailable(
-          sizeEach,
-              (v) => (keyEnd, keyKey!, v),
-        );
-      }
-      final values = valueMap[keyKeyEnd];
-      if (values == null) return;
-      yield* values.mapBitsAvailableTo(
-        sizeEach,
-        valueEnd,
-            (v) => (keyEnd, keyKeyEnd, v),
-      );
     }
   }
 }

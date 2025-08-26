@@ -5,11 +5,283 @@ part of '../typed_data.dart';
 ///
 /// to know the inheritance detail, see the comment above [_PFlags]
 ///
+/// [_MapperSplayTreeMapInt], ...
+/// [_SplayTreeMapIntIntTypedInt]
+///
 /// [_PFieldMapSplay]
 /// [FieldMapDate]
 /// [FieldMapHourDate]
+/// todo: extract functions from this file, remove map utils
 ///
 ///
+
+///
+///
+///
+typedef _MapperSplayTreeMapInt<T> = int? Function(SplayTreeMap<int, T> map);
+typedef _MapperSplayTreeMapIntBy<T> =
+int? Function(SplayTreeMap<int, T> map, int by);
+
+typedef _BitsListToInt = int? Function(TypedDataList<int> list, int size);
+typedef _BitsListToIntFrom =
+int? Function(TypedDataList<int> list, int k, int size);
+
+///
+///
+///
+extension _SplayTreeMapIntIntTypedInt<T extends TypedDataList<int>>
+on SplayTreeMap<int, SplayTreeMap<int, T>> {
+  ///
+  /// [_valuesAvailable]
+  ///
+  Iterable<int> _valuesAvailable(int sizeEach, int key, int keyKey) sync* {
+    final valueMap = this[key];
+    if (valueMap == null) return;
+    final values = valueMap[keyKey];
+    if (values == null) return;
+    yield* values.mapPAvailable(sizeEach, FKeep.applier);
+  }
+
+  ///
+  /// [_records], [_recordsInKey], [_recordsInKeyKey]
+  /// [_recordsWithinKeyKey]
+  /// [_recordsWithin]
+  /// [_recordsWithinValues]
+  ///
+  ///
+
+  ///
+  /// [_records]
+  /// [_recordsInKey]
+  /// [_recordsInKeyKey]
+  ///
+  Iterable<(int, int, int)> _records(int sizeEach) sync* {
+    for (var eA in entries) {
+      final key = eA.key;
+      for (var eB in eA.value.entries) {
+        final keyKey = eB.key;
+        yield* eB.value.mapPAvailable(sizeEach, (v) => (key, keyKey, v));
+      }
+    }
+  }
+
+  Iterable<(int, int, int)> _recordsInKey(int sizeEach, int key) sync* {
+    final valueMap = this[key];
+    if (valueMap == null) return;
+    for (var entry in valueMap.entries) {
+      final keyKey = entry.key;
+      yield* entry.value.mapPAvailable(sizeEach, (v) => (key, keyKey, v));
+    }
+  }
+
+  Iterable<(int, int, int)> _recordsInKeyKey(
+      int sizeEach,
+      int key,
+      int keyKey,
+      ) sync* {
+    final valueMap = this[key];
+    if (valueMap == null) return;
+    final values = valueMap[keyKey];
+    if (values == null) return;
+    yield* values.mapPAvailable(sizeEach, (v) => (key, keyKey, v));
+  }
+
+  ///
+  /// [_recordsWithinValues]
+  /// [_recordsWithinKeyKey]
+  /// [_recordsWithin]
+  ///
+  Iterable<(int, int, int)> _recordsWithinValues(
+      int sizeEach,
+      int key,
+      int keyKey,
+      int? begin,
+      int? end,
+      ) sync* {
+    final valueMap = this[key];
+    if (valueMap == null) return;
+    final values = valueMap[keyKey];
+    if (values == null) return;
+    yield* values.mapPAvailableBetween(
+      sizeEach,
+      begin,
+      end,
+          (v) => (key, keyKey, v),
+    );
+  }
+
+  Iterable<(int, int, int)> _recordsWithinKeyKey(
+      int sizeEach,
+      int key,
+      int begin,
+      int end,
+      ) sync* {
+    final valueMap = this[key];
+    if (valueMap == null) return;
+    for (
+    int? keyKey = begin;
+    keyKey != null && keyKey <= end;
+    keyKey = valueMap.firstKeyAfter(keyKey)
+    ) {
+      final values = valueMap[keyKey]!;
+      yield* values.mapPAvailable(sizeEach, (v) => (key, keyKey!, v));
+    }
+  }
+
+  Iterable<(int, int, int)> _recordsWithinKey(
+      int sizeEach,
+      int begin,
+      int end,
+      ) sync* {
+    for (
+    int? key = begin;
+    key != null && key <= end;
+    key = firstKeyAfter(key)
+    ) {
+      final valueMap = this[key]!;
+      for (var entry in valueMap.entries) {
+        final keyKey = entry.key;
+        yield* entry.value.mapPAvailable(sizeEach, (v) => (key!, keyKey, v));
+      }
+    }
+  }
+
+  Iterable<(int, int, int)> _recordsWithin(
+      int sizeEach,
+      (int, int, int) begin,
+      (int, int, int) end,
+      ) sync* {
+    final keyBegin = begin.$1;
+    final keyEnd = end.$1;
+    assert(keyBegin <= keyEnd);
+
+    final keyKeyBegin = begin.$2;
+    final keyKeyEnd = end.$2;
+    final valueBegin = begin.$3;
+    final valueEnd = end.$3;
+
+    // ==
+    if (keyEnd == keyBegin) {
+      assert(keyKeyBegin <= keyKeyEnd);
+
+      // ==
+      if (keyKeyBegin == keyKeyEnd) {
+        assert(valueBegin <= valueEnd);
+        yield* _recordsWithinValues(
+          sizeEach,
+          keyBegin,
+          keyKeyBegin,
+          valueBegin,
+          valueEnd,
+        );
+        return;
+      }
+
+      // <
+      final valueMap = this[keyBegin];
+      if (valueMap == null) return;
+
+      // keyKey begin
+      var values = valueMap[keyKeyBegin];
+      if (values != null) {
+        yield* values.mapPAvailableFrom(
+          sizeEach,
+          valueBegin,
+              (v) => (keyBegin, keyKeyBegin, v),
+        );
+      }
+
+      // keyKeys between
+      for (
+      var keyKey = valueMap.firstKeyAfter(keyKeyBegin);
+      keyKey != null && keyKey < keyKeyEnd;
+      keyKey = valueMap.firstKeyAfter(keyKey)
+      ) {
+        yield* valueMap[keyKey]!.mapPAvailable(
+          sizeEach,
+              (v) => (keyBegin, keyKey!, v),
+        );
+      }
+
+      // keyKey end
+      values = valueMap[keyKeyEnd];
+      if (values != null) {
+        yield* values.mapPAvailableTo(
+          sizeEach,
+          valueEnd,
+              (v) => (keyBegin, keyKeyEnd, v),
+        );
+      }
+      return;
+    }
+
+    // <
+    // key begin
+    var valueMap = this[keyBegin];
+    if (valueMap != null) {
+      final values = valueMap[keyKeyBegin];
+      if (values != null) {
+        yield* values.mapPAvailableFrom(
+          sizeEach,
+          valueBegin,
+              (v) => (keyBegin, keyKeyBegin, v),
+        );
+      }
+      for (
+      var keyKey = valueMap.firstKeyAfter(keyKeyBegin);
+      keyKey != null;
+      keyKey = valueMap.firstKeyAfter(keyKey)
+      ) {
+        yield* valueMap[keyKey]!.mapPAvailable(
+          sizeEach,
+              (v) => (keyBegin, keyKey!, v),
+        );
+      }
+    }
+
+    // keys between
+    for (
+    var key = firstKeyAfter(keyBegin);
+    key != null && key < keyEnd;
+    key = firstKeyAfter(key)
+    ) {
+      valueMap = this[key]!;
+      for (
+      var keyKey = valueMap.firstKey();
+      keyKey != null;
+      keyKey = valueMap.firstKeyAfter(keyKey)
+      ) {
+        yield* valueMap[keyKey]!.mapPAvailable(
+          sizeEach,
+              (v) => (key!, keyKey!, v),
+        );
+      }
+    }
+
+    // key end
+    valueMap = this[keyEnd];
+    if (valueMap != null) {
+      for (
+      var keyKey = valueMap.firstKey();
+      keyKey != null && keyKey < keyKeyEnd;
+      keyKey = valueMap.firstKeyAfter(keyKey)
+      ) {
+        yield* valueMap[keyKey]!.mapPAvailable(
+          sizeEach,
+              (v) => (keyEnd, keyKey!, v),
+        );
+      }
+      final values = valueMap[keyKeyEnd];
+      if (values == null) return;
+      yield* values.mapPAvailableTo(
+        sizeEach,
+        valueEnd,
+            (v) => (keyEnd, keyKeyEnd, v),
+      );
+    }
+  }
+}
+
 
 ///
 ///
@@ -209,9 +481,6 @@ sealed class _PFieldMapSplay
 
 ///
 ///
-/// [FlagsMapDate.empty]
-/// [includesSub], ...
-/// [firstYear], ...
 /// [yearsAvailable], ...
 ///
 ///
@@ -225,58 +494,19 @@ class FieldMapDate extends _PFieldMapSplay with _MFlagsO32 {
         toValueEnd: DateTimeExtension.monthDaysOf,
       );
 
-  factory FieldMapDate.from((int, int, int) date) {
-    assert(date.isValidDate);
-    return FieldMapDate.empty()..[date] = true;
-  }
-
-  factory FieldMapDate.fromIterable(Iterable<(int, int, int)> iterable) =>
-      iterable.iterator.inductInited(FieldMapDate.from, (flags, date) {
-        assert(date.isValidDate);
-        return flags..[date] = true;
-      });
-
   ///
   ///
-  /// [firstYear], [firstMonth], [lastYear], [lastMonth]
-  /// [firstDate], [lastDate]
-  /// [firstDateInYear], [firstDateAfter]
-  /// [lastDateInYear], [lastDateBefore]
+  /// [firstDateAfter]
+  /// [lastDateBefore]
   ///
   ///
-  int? get firstYear => _findKey(SplayTreeMapKeyInt.toFirstKey);
-
-  (int, int)? get firstMonth => _findKeyKey(SplayTreeMapKeyInt.toFirstKey);
-
-  int? get lastYear => _findKey(SplayTreeMapKeyInt.toLastKey);
-
-  (int, int)? get lastMonth => _findKeyKey(SplayTreeMapKeyInt.toLastKey);
-
-  (int, int, int)? get firstDate =>
-      _findFlag(SplayTreeMapKeyInt.toFirstKey, TypedIntList.getBitFirst1);
-
-  (int, int, int)? get lastDate =>
-      _findFlag(SplayTreeMapKeyInt.toLastKey, TypedIntList.getBitLast1);
-
-  (int, int, int)? firstDateInYear(int year) => _findEntryInKey(
-    year,
-    SplayTreeMapKeyInt.toFirstKey,
-    TypedIntList.getBitLast1,
-  );
-
   (int, int, int)? firstDateAfter((int, int, int) date) => _findEntryNearBy(
     date,
     SplayTreeMapKeyInt.toFirstKey,
     SplayTreeMapKeyInt.toFirstKeyAfter,
     IntExtension.predicateReduce_larger,
-    TypedIntList.getBitFirst1,
-    TypedIntList.getBitFirst1From,
-  );
-
-  (int, int, int)? lastDateInYear(int year) => _findEntryInKey(
-    year,
-    SplayTreeMapKeyInt.toLastKey,
-    TypedIntList.getBitLast1,
+    TypedIntList.getPFirst1,
+    TypedIntList.getPFirst1From,
   );
 
   (int, int, int)? lastDateBefore((int, int, int) date) => _findEntryNearBy(
@@ -284,36 +514,15 @@ class FieldMapDate extends _PFieldMapSplay with _MFlagsO32 {
     SplayTreeMapKeyInt.toLastKey,
     SplayTreeMapKeyInt.toLastKeyBefore,
     IntExtension.predicateReduce_less,
-    TypedIntList.getBitLast1,
-    TypedIntList.getBitLast1From,
+    TypedIntList.getPLast1,
+    TypedIntList.getPLast1From,
   );
 
   ///
   ///
-  /// [yearsAvailable], [monthsAvailable], [daysAvailable]
-  /// [dates], [datesInYear], [datesInMonth]
   /// [datesWithinDays], [datesWithinMonths], [datesWithinYears]
   ///
   ///
-
-  //
-  Iterable<int> get yearsAvailable => _field.keys;
-
-  Iterable<int>? monthsAvailable(int year) => _field[year]?.keys;
-
-  Iterable<int> daysAvailable(int year, int month) =>
-      _field._valuesAvailable(_sizeEach, year, month);
-
-  //
-  Iterable<(int, int, int)> get dates => _field._records(_sizeEach);
-
-  Iterable<(int, int, int)> datesInYear(int year) =>
-      _field._recordsInKey(_sizeEach, year);
-
-  Iterable<(int, int, int)> datesInMonth(int year, int month) =>
-      _field._recordsInKeyKey(_sizeEach, year, month);
-
-  //
   Iterable<(int, int, int)> datesWithinDays(
     int year,
     int month,
@@ -371,19 +580,19 @@ class FieldMapHourDate extends _PFieldMapSplay {
   (int, int)? get firstDate => _findKeyKey(SplayTreeMapKeyInt.toFirstKey);
 
   (int, int, int)? get firstHour =>
-      _findFlag(SplayTreeMapKeyInt.toFirstKey, TypedIntList.getBitFirst1);
+      _findFlag(SplayTreeMapKeyInt.toFirstKey, TypedIntList.getPFirst1);
 
   int? get lastMonth => _findKey(SplayTreeMapKeyInt.toLastKey);
 
   (int, int)? get lastDate => _findKeyKey(SplayTreeMapKeyInt.toLastKey);
 
   (int, int, int)? get lastHour =>
-      _findFlag(SplayTreeMapKeyInt.toLastKey, TypedIntList.getBitLast1);
+      _findFlag(SplayTreeMapKeyInt.toLastKey, TypedIntList.getPLast1);
 
   (int, int, int)? firstDayInMonth(int month) => _findEntryInKey(
     month,
     SplayTreeMapKeyInt.toFirstKey,
-    TypedIntList.getBitLast1,
+    TypedIntList.getPLast1,
   );
 
   (int, int, int)? firstHourAfter((int, int, int) hour) => _findEntryNearBy(
@@ -391,14 +600,14 @@ class FieldMapHourDate extends _PFieldMapSplay {
     SplayTreeMapKeyInt.toFirstKey,
     SplayTreeMapKeyInt.toFirstKeyAfter,
     IntExtension.predicateReduce_larger,
-    TypedIntList.getBitFirst1,
-    TypedIntList.getBitFirst1From,
+    TypedIntList.getPFirst1,
+    TypedIntList.getPFirst1From,
   );
 
   (int, int, int)? lastDayInMonth(int month) => _findEntryInKey(
     month,
     SplayTreeMapKeyInt.toLastKey,
-    TypedIntList.getBitLast1,
+    TypedIntList.getPLast1,
   );
 
   (int, int, int)? lastHourBefore((int, int, int) hour) => _findEntryNearBy(
@@ -406,8 +615,8 @@ class FieldMapHourDate extends _PFieldMapSplay {
     SplayTreeMapKeyInt.toLastKey,
     SplayTreeMapKeyInt.toLastKeyBefore,
     IntExtension.predicateReduce_larger,
-    TypedIntList.getBitLast1,
-    TypedIntList.getBitFirst1From,
+    TypedIntList.getPLast1,
+    TypedIntList.getPFirst1From,
   );
 
   ///

@@ -22,13 +22,6 @@ part of '../typed_data.dart';
 /// [_MSlotContainerPositionAble]
 ///
 ///
-/// [_MSetField]
-/// [_MSetFieldIndexable]
-/// [_MSetFieldMonthsDatesScoped]
-/// [_MSetFieldBits]
-/// [_MSetFieldBitsMonthsDates]
-/// [_MSetSlot]
-///
 /// [_MOperatableField]
 /// [_MEquatableSlot]
 ///
@@ -170,11 +163,11 @@ mixin _MFlagsScopedDatePositionDay
 ///
 ///
 mixin _MBitsField implements _AField, _AFieldBits {
-  bool _bitOn(int position) => _field.bitOn(position, _shift, _mask);
+  bool _bitOn(int position) => _field.pOn(position, _shift, _mask);
 
-  void _bitSet(int position) => _field.bitSet(position, _shift, _mask);
+  void _bitSet(int position) => _field.pSet(position, _shift, _mask);
 
-  void _bitClear(int position) => _field.bitClear(position, _shift, _mask);
+  void _bitClear(int position) => _field.pClear(position, _shift, _mask);
 }
 
 mixin _MBitsFieldMonthsDates
@@ -194,13 +187,13 @@ mixin _MBitsFieldMonthsDates
 
 mixin _MBitsFlagsField implements _AFieldBits {
   bool _bitOn(int position, TypedDataList<int> list) =>
-      list.bitOn(position, _shift, _mask);
+      list.pOn(position, _shift, _mask);
 
   void _bitSet(int position, TypedDataList<int> list) =>
-      list.bitSet(position, _shift, _mask);
+      list.pSet(position, _shift, _mask);
 
   void _bitClear(int position, TypedDataList<int> list) =>
-      list.bitClear(position, _shift, _mask);
+      list.pClear(position, _shift, _mask);
 
   TypedDataList<int> get _newField;
 
@@ -259,188 +252,6 @@ mixin _MSlotContainerPositionAble<I, T>
   void operator []=(I index, T? value) {
     assert(validateIndex(index));
     _slot[_positionOf(index)] = value;
-  }
-}
-
-///
-///
-///
-mixin _MSetField implements _AField, _AFieldIdentical, _AFlagsSet<int> {
-  @override
-  int? get first => _field.bitFirst(_sizeEach);
-
-  @override
-  int? get last => _field.bitLast(_sizeEach);
-}
-
-mixin _MSetFieldIndexable<T>
-    implements _AField, _AFieldIdentical, _AFlagsSet<T> {
-  @override
-  T? get first => _field.bitFirst(_sizeEach).nullOrMap(_indexOf);
-
-  @override
-  T? get last => _field.bitLast(_sizeEach).nullOrMap(_indexOf);
-
-  T _indexOf(int position);
-}
-
-mixin _MSetFieldMonthsDatesScoped
-    implements _AFlagsSet<(int, int, int)>, _AFlagsScoped<(int, int)>, _AField {
-  @override
-  (int, int, int)? get first {
-    final begin = this.begin;
-    final field = _field;
-    final length = field.length;
-
-    var y = begin.$1;
-    var m = begin.$2;
-    for (var i = 0; i < length; i++) {
-      for (var bits = field[i], d = 1; bits > 0; bits >>= 1, d++) {
-        if (bits & 1 == 1) return (y, m, d);
-      }
-
-      m++;
-      if (m > 12) {
-        m = 1;
-        y++;
-      }
-    }
-    return null;
-  }
-
-  @override
-  (int, int, int)? get last {
-    final end = this.end;
-    final field = _field;
-
-    var y = end.$1;
-    var m = end.$2;
-    for (var i = field.length - 1; i > -1; i++) {
-      for (
-        var bits = field[i], mask = 1 << 30, d = 31;
-        mask > 0;
-        mask >>= 1, d--
-      ) {
-        if ((bits & mask) >> d - 1 == 1) return (y, m, d);
-      }
-
-      m--;
-      if (m < 1) {
-        m = 12;
-        y--;
-      }
-    }
-    return null;
-  }
-}
-
-///
-///
-///
-mixin _MSetFieldBits<T> on _MBitsField implements _AFieldSet<T> {
-  @override
-  void includesSub(T begin, [T? limit]) => _ranges(_bitSet, begin, limit);
-
-  @override
-  void excludesSub(T begin, [T? limit]) => _ranges(_bitClear, begin, limit);
-
-  void _ranges(Consumer<int> consume, T begin, T? limit);
-}
-
-mixin _MSetFieldBitsMonthsDates on _MBitsFieldMonthsDates
-    implements _AFieldSet<(int, int, int)> {
-  @override
-  void includesSub((int, int, int) begin, [(int, int, int)? limit]) =>
-      _sub(_bitSet, begin, limit);
-
-  @override
-  void excludesSub((int, int, int) begin, [(int, int, int)? limit]) =>
-      _sub(_bitClear, begin, limit);
-
-  void _sub(
-    TriCallback<int> consume,
-    (int, int, int) begin,
-    (int, int, int)? limit,
-  );
-}
-
-///
-///
-///
-mixin _MSetSlot<I, T>
-    implements _ASlot<T>, _ASlotSet<I, T>, _AFlagsPositionAble<I> {
-  @override
-  T? get first {
-    final slot = _slot;
-    final length = slot.length;
-    for (var i = 0; i < length; i++) {
-      final s = slot[i];
-      if (s != null) return s;
-    }
-    return null;
-  }
-
-  @override
-  T? get last {
-    final slot = _slot;
-    final length = slot.length;
-    for (var i = length - 1; i > -1; i--) {
-      final s = slot[i];
-      if (s != null) return s;
-    }
-    return null;
-  }
-
-  @override
-  Iterable<T> filterOn(FieldParent field) sync* {
-    final slot = _slot;
-    final length = slot.length;
-    final f = field._field;
-    final sizeEach = field._sizeEach;
-    final count = f.length;
-    assert(length == sizeEach * count);
-    for (var j = 0; j < count; j++) {
-      final start = j * sizeEach;
-      for (var i = 0, bits = f[j]; i < sizeEach; i++, bits >>= 1) {
-        if (bits & 1 == 1) {
-          final value = slot[start + i];
-          if (value != null) yield value;
-        }
-      }
-    }
-  }
-
-  @override
-  void pasteSub(T value, I begin, [I? limit]) {
-    final slot = _slot;
-    final length = limit == null ? slot.length : _positionOf(limit);
-    for (var i = _positionOf(begin); i < length; i++) {
-      slot[i] = value;
-    }
-  }
-
-  @override
-  void includesFrom(Iterable<T> iterable, I begin, [bool inclusive = true]) {
-    final slot = _slot;
-    var i = inclusive ? _positionOf(begin) : _positionOf(begin) + 1;
-    assert(i > -1 && i < slot.length);
-    for (var it in iterable) {
-      slot[i] = it;
-      i++;
-    }
-  }
-
-  @override
-  void includesTo(Iterable<T> iterable, I limit, [bool inclusive = true]) {
-    final slot = _slot;
-    var last = inclusive ? _positionOf(limit) + 1 : _positionOf(limit);
-    assert(last < slot.length);
-    var i = last - iterable.length;
-    assert(i > -1);
-    for (var it in iterable) {
-      slot[i] = it;
-      i++;
-    }
   }
 }
 
