@@ -95,8 +95,7 @@ sealed class _PFlags {
                   } *
                   (instance.bDivision + 1) +
               2,
-        FieldDatesInMonths() || FieldMapDate() => 15 + 32 + 4 + 2,
-        FieldMapHourDate() => 4 + 5 + 3 + 32 + 4 + 2,
+        FieldDatesInMonths() => 15 + 32 + 4 + 2,
         _ => 0,
       };
       buffer.writeRepeat(borderLength, '-');
@@ -328,55 +327,6 @@ sealed class _PFlags {
               }
             }
           }(),
-        };
-      } else if (instance is _PFieldMapSplay) {
-        void flags(
-          int pad,
-          void Function(int y, int m, TypedDataList<int> d) applyField,
-        ) {
-          for (var entry in instance._map.field.entries) {
-            final key = entry.key;
-            buffer.write('|');
-            buffer.write('($key'.padLeft(pad));
-            buffer.write(',');
-            var padding = false;
-            for (var valueEntry in entry.value.entries) {
-              if (padding) {
-                buffer.write('|');
-                buffer.writeRepeat(pad + 1, ' ');
-              } else {
-                padding = true;
-              }
-              final keyKey = valueEntry.key;
-              buffer.write('$keyKey)'.padLeft(4));
-              buffer.write(' : ');
-              applyField(key, keyKey, valueEntry.value);
-              buffer.writeln();
-            }
-          }
-        }
-
-        final _ = switch (instance) {
-          FieldMapDate() => flags(
-            6,
-            (year, month, days) => buffer.writeBitsOfMonth(
-              days[0],
-              DateTimeExtension.monthDaysOf(year, month),
-            ),
-          ),
-          FieldMapHourDate() => flags(4, (month, day, hours) {
-            final size = TypedIntList.sizeEach8;
-            for (var j = 0; j < 3; j++) {
-              var i = 0;
-              var bits = hours[j];
-              while (i < size) {
-                buffer.writeBit(bits);
-                bits >>= 1;
-                i++;
-              }
-              buffer.write(' ');
-            }
-          }),
         };
       } else {
         throw UnimplementedError();

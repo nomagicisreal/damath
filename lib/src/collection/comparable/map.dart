@@ -171,5 +171,138 @@ class SplayTreeMapIntIntInt<V> {
     }
   }
 
+  ///
+  ///
+  ///
+  bool operator []((int, int, int) index) {
+    assert(index.isValidDate);
+    final months = field[index.$1];
+    if (months == null) return false;
+    final days = months[index.$2];
+    if (days == null) return false;
+    throw UnimplementedError();
+    // return days[0] >> index.$3 - 1 == 1;
+  }
+
+  void operator []=((int, int, int) index, bool value) {
+    assert(index.isValidDate);
+    value
+        ? setRecord(index.$1, index.$2, index.$3)
+        : removeRecord(index.$1, index.$2, index.$3);
+  }
+
   void clear() => field.clear();
+
+  ///
+  ///
+  /// [_errorEmptyFlagsNotRemoved], [_excluding]
+  /// [_findKey], [_findKeyKey], [_findFlag]
+  /// [_findEntryInKey], [_findEntryNearBy]
+  ///
+  ///
+  ///
+  // static StateError _errorEmptyFlagsNotRemoved(int key, int keyKey) =>
+  //     StateError('empty flags key: ($key, $keyKey) should be removed');
+  //
+  // static bool _excluding(TypedDataList<int> list) {
+  //   final length = list.length;
+  //   for (var j = 0; j < length; j++) {
+  //     if (list[j] != 0) return false;
+  //   }
+  //   return true;
+  // }
+  //
+  // int? _findKey(_MapperSplayTreeMapInt toKey) => toKey(field);
+  //
+  // (int, int)? _findKeyKey(_MapperSplayTreeMapInt toKey) {
+  //   final field = this.field;
+  //   final key = toKey(field);
+  //   if (key == null) return null;
+  //   return (key, toKey(field[key]!)!);
+  // }
+  //
+  // (int, int, int)? _findFlag(
+  //   _MapperSplayTreeMapInt toKey,
+  //   _BitsListToInt toBits,
+  // ) {
+  //   final field = this.field;
+  //   final key = toKey(field);
+  //   if (key == null) return null;
+  //   final valueMap = field[key]!;
+  //   final keyKey = toKey(valueMap)!;
+  //   final value = toBits(valueMap[keyKey]!, _sizeEach);
+  //   if (value != null) return (key, keyKey, value);
+  //   throw _errorEmptyFlagsNotRemoved(key, keyKey);
+  // }
+  //
+  // ///
+  // /// [_findEntryInKey]
+  // /// [_findEntryNearBy]
+  // ///
+  // (int, int, int)? _findEntryInKey(
+  //   int key,
+  //   _MapperSplayTreeMapInt toKey,
+  //   _BitsListToInt toPosition,
+  // ) {
+  //   final valueMap = field[key];
+  //   if (valueMap == null) return null;
+  //   final keyKey = toKey(valueMap)!;
+  //   final value = toPosition(valueMap[keyKey]!, _sizeEach);
+  //   if (value != null) return (key, keyKey, value);
+  //   throw _errorEmptyFlagsNotRemoved(key, keyKey);
+  // }
+  //
+  // (int, int, int)? _findEntryNearBy(
+  //   (int, int, int) record,
+  //   _MapperSplayTreeMapInt toKey,
+  //   _MapperSplayTreeMapIntBy toKeyBy,
+  //   PredicatorReducer<int> predicate,
+  //   _BitsListToInt toPosition,
+  //   _BitsListToIntFrom toPositionFrom,
+  // ) {
+  //   final field = this.field;
+  //   var key = toKey(field);
+  //   if (key == null) return null;
+  //
+  //   // recent key > a || latest key < a
+  //   final a = record.$1;
+  //   if (predicate(key, a)) return _findEntryInKey(key, toKey, toPosition);
+  //
+  //   // recent keyKey > b || latest keyKey < b
+  //   if (key == a) {
+  //     final b = record.$2;
+  //     final valueMap = field[a]!;
+  //     int? keyKey = toKey(valueMap)!;
+  //     if (predicate(keyKey, b)) {
+  //       return (a, keyKey, toPosition(valueMap[keyKey]!, _sizeEach)!);
+  //     }
+  //
+  //     // recent value > c || latest value < c
+  //     if (keyKey == b) {
+  //       final c = record.$3;
+  //       final value = toPositionFrom(valueMap[b]!, c, _sizeEach);
+  //       if (value != null) return (a, b, value);
+  //     }
+  //
+  //     // next keyKey > b || previous keyKey < b
+  //     keyKey = toKeyBy(valueMap, b);
+  //     if (keyKey != null) {
+  //       return (a, keyKey, toPosition(valueMap[keyKey]!, _sizeEach)!);
+  //     }
+  //   }
+  //
+  //   // next key > a || previous keyKey < a
+  //   key = toKeyBy(field, a);
+  //   if (key != null) return _findEntryInKey(key, toKey, toPosition);
+  //
+  //   return null;
+  // }
 }
+
+// typedef _MapperSplayTreeMapInt<T> = int? Function(SplayTreeMap<int, T> map);
+// typedef _MapperSplayTreeMapIntBy<T> =
+//     int? Function(SplayTreeMap<int, T> map, int by);
+//
+// typedef _BitsListToInt = int? Function(TypedDataList<int> list, int size);
+// typedef _BitsListToIntFrom =
+//     int? Function(TypedDataList<int> list, int k, int size);

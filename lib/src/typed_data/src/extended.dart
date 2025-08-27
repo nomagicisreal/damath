@@ -104,8 +104,8 @@ extension TypedIntList on TypedDataList<int> {
   /// [bsOf]
   /// [bsMappedOf]
   ///
-  int? bFirstOf(int i) {
-    for (var bits = this[i], p = 1; bits > 0; bits >>= 1, p++) {
+  int? bFirstOf(int i, [int from = 1]) {
+    for (var bits = this[i] >> from - 1, p = from; bits > 0; bits >>= 1, p++) {
       if (bits & 1 == 1) return p;
     }
     return null;
@@ -122,14 +122,18 @@ extension TypedIntList on TypedDataList<int> {
     return null;
   }
 
-  Iterable<int> bsOf(int i) sync* {
-    for (var bits = this[i], p = 1; bits > 0; bits >>= 1, p++) {
+  Iterable<int> bsOf(int i, [int from = 1]) sync* {
+    for (var bits = this[i] >> from - 1, p = from; bits > 0; bits >>= 1, p++) {
       if (bits & 1 == 1) yield p;
     }
   }
 
-  Iterable<T> bsMappedOf<T>(int i, Mapper<int, T> mapping) sync* {
-    for (var bits = this[i], p = 1; bits > 0; bits >>= 1, p++) {
+  Iterable<T> bsMappedOf<T>(
+    int i,
+    Mapper<int, T> mapping, [
+    int from = 1,
+  ]) sync* {
+    for (var bits = this[i] >> from - 1, p = from; bits > 0; bits >>= 1, p++) {
       if (bits & 1 == 1) yield mapping(p);
     }
   }

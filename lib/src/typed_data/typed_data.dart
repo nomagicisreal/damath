@@ -1,5 +1,6 @@
 library;
 
+import 'dart:math' as math;
 import 'dart:collection';
 import 'dart:typed_data';
 
@@ -18,4 +19,4 @@ part 'src/flags.dart';
 part 'src/flags_abstraction.dart';
 part 'src/flags_impl.dart';
 part 'src/flags_impl_set.dart';
-part 'src/flags_map.dart';
+part 'src/flags_impl_map.dart';

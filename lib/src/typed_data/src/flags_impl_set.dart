@@ -38,17 +38,57 @@ mixin _MSetFieldIndexable<T>
 mixin _MSetFieldMonthsDatesScoped
     implements _AFlagsSet<(int, int, int)>, _AFlagsScoped<(int, int)>, _AField {
   ///
+  /// [_indexOfMonth], [_firstIndexedMonthOf], [_lastIndexedMonthOf]
+  ///
+  int _indexOfMonth(int year, int month) {
+    final begin = this.begin;
+    assert(year >= begin.$1 && year <= end.$1);
+    return month - begin.$2 + (year - begin.$1) * 12;
+  }
+
+  (int, int)? _firstIndexedMonthOf(int year) {
+    final begin = this.begin;
+    if (year == begin.$1) return (begin.$2, 0);
+    final i = _indexOfMonth(year, 1);
+    assert(year > begin.$1 && i > -1);
+    return i < _field.length ? (1, i) : null;
+  }
+
+  (int, int)? _lastIndexedMonthOf(int year) {
+    final end = this.end;
+    if (year == end.$1) return (end.$2, _field.length - 1);
+    final i = _indexOfMonth(year, 12);
+    assert(year < end.$1 && i < _field.length);
+    return i > -1 ? (12, i) : null;
+  }
+
+  ///
+  /// [firstInMonth]
+  /// [lastInMonth]
+  ///
+  int? firstInMonth(int year, int month) {
+    assert(DateTimeExtension.isValidMonth(month));
+    final field = _field, i = _indexOfMonth(year, month);
+    return i < 0 || i >= field.length ? null : field.bFirstOf(i);
+  }
+
+  int? lastInMonth(int year, int month) {
+    assert(DateTimeExtension.isValidMonth(month));
+    final field = _field, i = _indexOfMonth(year, month);
+    return i < 0 || i >= field.length
+        ? null
+        : field.bLastOf(i, DateTimeExtension.monthDaysOf(year, month));
+  }
+
+  ///
   /// [first]
   /// [firstInYear]
+  /// [firstAfter]
   ///
   @override
   (int, int, int)? get first {
-    final begin = this.begin;
-    var y = begin.$1;
-    var m = begin.$2;
-    final field = _field;
-    final length = field.length;
-    for (var i = 0; i < length; i++) {
+    final begin = this.begin, field = _field, length = field.length;
+    for (var y = begin.$1, m = begin.$2, i = 0; i < length; i++) {
       final d = field.bFirstOf(i);
       if (d != null) return (y, m, d);
       m++;
@@ -61,88 +101,122 @@ mixin _MSetFieldMonthsDatesScoped
   }
 
   (int, int, int)? firstInYear(int year) {
-    final begin = this.begin;
-    final yBegin = begin.$1;
-    assert(year >= yBegin && year <= end.$1);
-    final field = _field;
-    final mBegin = begin.$2;
-
-    // ==
-    if (year == yBegin) {
-      for (var m = mBegin; m < 13; m++) {
-        final d = field.bFirstOf(m - mBegin);
-        if (d != null) return (year, m, d);
-      }
-      return null;
-    }
-
-    // >
-    var i = 13 - mBegin + (year - yBegin - 1) * 12;
-    var mLimit = 13;
-    final max = field.length - 1;
-    if (i + 11 > max) {
-      if (i > max) return null;
-      mLimit = end.$2 + 1;
-    }
-    for (var m = 1; m < mLimit; m++, i++) {
+    final mi = _firstIndexedMonthOf(year);
+    if (mi == null) return null;
+    final field = _field,
+        end = this.end,
+        mLimit = year == end.$1 ? end.$2 + 1 : 13;
+    for (var m = mi.$1, i = mi.$2; m < mLimit; m++, i++) {
       final d = field.bFirstOf(i);
       if (d != null) return (year, m, d);
     }
     return null;
   }
 
+  (int, int, int)? firstAfter((int, int, int) date) {
+    assert(date.isValidDate);
+    final yDate = date.$1, mDate = date.$2, field = _field;
+    var i = _indexOfMonth(yDate, mDate);
+    if (i < 0 || i >= field.length) return null;
+
+    final begin = this.begin, length = field.length;
+    var y = begin.$1, m = begin.$2;
+    bool nextMonth() {
+      i++;
+      if (i >= length) return false;
+      m++;
+      if (m > 12) {
+        y++;
+        m = 1;
+      }
+      return true;
+    }
+
+    final dDate = date.$3;
+    int? d;
+    if (dDate == DateTimeExtension.monthDaysOf(yDate, mDate)) {
+      if (!nextMonth()) return null;
+      d = field.bFirstOf(i);
+    } else {
+      d = field.bFirstOf(i, dDate + 1);
+    }
+    if (d != null) return (y, m, d);
+    if (!nextMonth()) return null;
+    do {
+      d = field.bFirstOf(i);
+      if (d != null) return (y, m, d);
+    } while (nextMonth());
+    return null;
+  }
+
   ///
   /// [last]
   /// [lastInYear]
+  /// [lastBefore]
   ///
   @override
   (int, int, int)? get last {
-    final end = this.end;
-    var y = end.$1;
-    var m = end.$2;
-    final field = _field;
-    for (var i = field.length - 1; i > -1; i++) {
-      final d = field.bLastOf(i, 31);
+    final end = this.end,
+        field = _field,
+        daysOf = DateTimeExtension.monthDaysOf;
+    for (var y = end.$1, m = end.$2, i = field.length - 1; i > -1; i--) {
+      final d = field.bLastOf(i, daysOf(y, m));
       if (d != null) return (y, m, d);
       m--;
       if (m < 1) {
-        m = 12;
         y--;
+        m = 12;
       }
     }
     return null;
   }
 
   (int, int, int)? lastInYear(int year) {
-    final begin = this.begin;
-    final yBegin = begin.$1;
-    assert(year >= yBegin && year <= end.$1);
-    final field = _field;
-    final mBegin = begin.$2;
-
-    // ==
-    if (year == yBegin) {
-      final end = this.end;
-      for (var m = year == end.$1 ? end.$2 : 12; m >= mBegin; m--) {
-        final d = field.bLastOf(m - mBegin, 31);
-        if (d != null) return (year, m, d);
-      }
-      return null;
-    }
-
-    // >
-    var m = 12;
-    var i = 12 - mBegin + (year - yBegin) * 12;
-    final max = field.length - 1;
-    if (i > max) {
-      if (i - 11 > max) return null;
-      m = end.$2;
-      i = max;
-    }
-    for (; m > 0; m--, i++) {
-      final d = field.bLastOf(i, 31);
+    final mi = _lastIndexedMonthOf(year);
+    if (mi == null) return null;
+    final field = _field,
+        mLimit = year == begin.$1 ? begin.$2 - 1 : 0,
+        daysOf = DateTimeExtension.monthDaysOf;
+    for (var m = mi.$1, i = mi.$2; m > mLimit; m--, i++) {
+      final d = field.bLastOf(i, daysOf(year, m));
       if (d != null) return (year, m, d);
     }
+    return null;
+  }
+
+  (int, int, int)? lastBefore((int, int, int) date) {
+    assert(date.isValidDate);
+    final yDate = date.$1, mDate = date.$2, field = _field;
+    var i = _indexOfMonth(yDate, mDate);
+    if (i < 0 || i >= field.length) return null;
+
+    final end = this.end;
+    var y = end.$1, m = end.$2;
+    bool nextMonth() {
+      i--;
+      if (i < 0) return false;
+      m--;
+      if (m < 0) {
+        y--;
+        m = 12;
+      }
+      return true;
+    }
+
+    final daysOf = DateTimeExtension.monthDaysOf, dDate = date.$3;
+    int? d;
+    if (dDate == 1) {
+      if (!nextMonth()) return null;
+      d = field.bLastOf(i, daysOf(yDate, mDate));
+    } else {
+      d = field.bLastOf(i, dDate - 1);
+    }
+    if (d != null) return (y, m, d);
+    if (!nextMonth()) return null;
+    do {
+      d = field.bLastOf(i, daysOf(y, m));
+      if (d != null) return (y, m, d);
+    } while (nextMonth());
     return null;
   }
 
@@ -152,12 +226,8 @@ mixin _MSetFieldMonthsDatesScoped
   /// [availableDates]
   ///
   Iterable<int> get availableYears sync* {
-    final begin = this.begin;
-    final field = _field;
-    final max = field.length - 1;
-    var y = begin.$1;
-    var m = begin.$2;
-    var i = 0;
+    final begin = this.begin, field = _field, max = field.length - 1;
+    var y = begin.$1, m = begin.$2, i = 0;
 
     while (true) {
       if (field.bFirstOf(i) != null) {
@@ -179,34 +249,21 @@ mixin _MSetFieldMonthsDatesScoped
   }
 
   Iterable<(int, int)> availableMonths([int? year]) sync* {
-    final field = _field;
-    final begin = this.begin;
+    final begin = this.begin, end = this.end, field = _field;
 
     // months in year
     if (year != null) {
-      final yBegin = begin.$1;
-      final end = this.end;
-      assert(year >= yBegin && year <= end.$1);
-
-      late int i;
-      late int m;
-      if (year == yBegin) {
-        i = 0;
-        m = begin.$2;
-      } else {
-        i = 1 - begin.$2 + (year - yBegin) * 12;
-        m = 1;
-      }
-      for (final l = 1 + (year == end.$1 ? end.$2 : 12); m < l; m++, i++) {
+      final mi = _firstIndexedMonthOf(year);
+      if (mi == null) return;
+      final mLimit = year == end.$1 ? end.$2 + 1 : 13;
+      for (var m = mi.$1, i = mi.$2; m < mLimit; m++, i++) {
         if (field.bFirstOf(i) != null) yield (year, m);
       }
       return;
     }
 
     // all months
-    var y = begin.$1;
-    var m = begin.$2;
-    var i = 0;
+    var y = begin.$1, m = begin.$2, i = 0;
     final max = field.length - 1;
     while (true) {
       if (field.bFirstOf(i) != null) yield (y, m);
@@ -221,35 +278,23 @@ mixin _MSetFieldMonthsDatesScoped
   }
 
   Iterable<(int, int, int)> availableDates([int? year, int? month]) sync* {
-    final field = _field;
-    final begin = this.begin;
-    final end = this.end;
+    final begin = this.begin, end = this.end, field = _field;
 
     if (year != null) {
-      final yBegin = begin.$1;
-      final mBegin = begin.$2;
-      assert(year >= yBegin && year <= this.end.$1);
-      final december = (year - yBegin) * 12 - mBegin;
-
       // dates in a year month
       if (month != null) {
-        final i = december + month;
-        if (i > field.length - 1) return;
+        assert(DateTimeExtension.isValidMonth(month));
+        final i = _indexOfMonth(year, month);
+        if (i >= field.length) return;
         yield* field.bsMappedOf(i, (d) => (year, month, d));
         return;
       }
 
       // dates in a year
-      late int i;
-      late int m;
-      if (december < 0) {
-        i = 0;
-        m = mBegin;
-      } else {
-        i = december + 1;
-        m = 1;
-      }
-      for (final l = 1 + year == end.$1 ? end.$2 : 12; m < l; m++, i++) {
+      final mi = _firstIndexedMonthOf(year);
+      if (mi == null) return;
+      final mLimit = year == end.$1 ? end.$2 + 1 : 13;
+      for (var m = mi.$1, i = mi.$2; m < mLimit; m++, i++) {
         yield* field.bsMappedOf(i, (d) => (year, m, d));
       }
       return;
@@ -257,32 +302,26 @@ mixin _MSetFieldMonthsDatesScoped
 
     // dates in same month
     if (month != null) {
-      final yBegin = begin.$1;
-      final mBegin = begin.$2;
-      final yEnd = end.$1;
-      final mEnd = end.$2;
+      assert(DateTimeExtension.isValidMonth(month));
+      final yBegin = begin.$1, yEnd = end.$1;
       if (yBegin == yEnd) {
-        assert(month >= mBegin && month <= mEnd);
-        yield* field.bsMappedOf(month - mBegin, (d) => (yBegin, month, d));
+        assert(month >= begin.$2 && month <= end.$2);
+        yield* field.bsMappedOf(month - begin.$2, (d) => (yBegin, month, d));
         return;
       }
-      var i = month - mBegin;
-      var y = yBegin;
+      var y = yBegin, i = month - begin.$2;
       if (i < 0) {
         y++;
         i += 12;
       }
-      final length = field.length;
-      for (; i < length; y++, i += 12) {
+      for (final length = field.length; i < length; y++, i += 12) {
         yield* field.bsMappedOf(i, (d) => (y, month, d));
       }
       return;
     }
 
     // all dates
-    var y = begin.$1;
-    var m = begin.$2;
-    var i = 0;
+    var y = begin.$1, m = begin.$2, i = 0;
     final max = field.length - 1;
     while (true) {
       yield* field.bsMappedOf(i, (d) => (y, m, d));
@@ -294,6 +333,56 @@ mixin _MSetFieldMonthsDatesScoped
         m = 1;
       }
     }
+  }
+
+  ///
+  ///
+  ///
+  Iterable<(int, int, int)> availableDatesFrom(
+    int yearFrom, [
+    int? monthFrom,
+    int? dayFrom,
+    bool inclusive = true,
+  ]) sync* {
+    // todo:
+    if (monthFrom != null) {
+      assert(dayFrom == null);
+      return;
+    }
+
+    if (dayFrom == null) {
+      return;
+    }
+  }
+
+  Iterable<(int, int, int)> availableDatesTo(
+    int yearTo, [
+    int? monthTo,
+    int? dayTo,
+    bool inclusive = true,
+  ]) sync* {
+    // todo:
+    if (monthTo != null) {
+      assert(dayTo == null);
+      return;
+    }
+
+    if (dayTo == null) {
+      return;
+    }
+  }
+
+  Iterable<(int, int, int)> availableDatesSub(
+    int yearFrom,
+    int yearTo,
+    int monthFrom,
+    int monthTo,
+    int dayFrom,
+    int dayTo, [
+    bool includeFrom = true,
+    bool includeTo = false,
+  ]) sync* {
+    // todo:
   }
 }
 
