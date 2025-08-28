@@ -19,12 +19,9 @@ void main(List<String> arguments) {
   // ;
   // print(node);
 
-  void hello(int value) {
-    print(value);
-  }
+  // final flags = Slot2D<String>(10, 5);
+  final flags = Field3D(10, 5, 2);
 
-  var i = 1;
-  hello(i++);
-  hello(++i);
-
+  flags[(1, 1, 1)] = true;
+  print(flags.toString());
 }

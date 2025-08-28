@@ -33,6 +33,7 @@ extension MatchExtension on Match {
 
 ///
 /// static methods:
+/// [mapToLength], ...
 /// [reduceLine], ...
 ///
 /// instance methods:
@@ -41,9 +42,15 @@ extension MatchExtension on Match {
 ///
 extension StringExtension on String {
   ///
+  /// [mapToLength]
+  ///
+  static int mapToLength(String s) => s.length;
+
+  ///
   /// [reduceLine]
   /// [reduceTab]
   /// [reduceComma]
+  /// [reduceMaxLength]
   ///
   static String reduceLine(String v1, String v2) => '$v1\n$v2';
 

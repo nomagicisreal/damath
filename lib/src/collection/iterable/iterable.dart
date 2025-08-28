@@ -14,6 +14,7 @@ part of '../collection.dart';
 /// return int                --> [cardinality], ...
 /// reduce current type item  --> [reduceTogether], ...
 /// return typed item         --> [foldWith], ...
+/// return iterable string    --> [toIterableString], ...
 /// return iterable           --> [takeOn], ...
 /// return list               --> [mapToListWhere], ...
 /// return nested iterable    --> [chunk], ...
@@ -218,6 +219,15 @@ extension IterableExtension<I> on Iterable<I> {
             ),
           )
           : throw StateError(ErrorMessage.iterableSizeInvalid);
+
+  ///
+  /// [toIterableString]
+  ///
+  Iterable<String> get toIterableString sync* {
+    for (var item in this) {
+      yield '$item';
+    }
+  }
 
   ///
   ///
