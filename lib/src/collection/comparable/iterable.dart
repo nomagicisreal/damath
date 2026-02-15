@@ -61,7 +61,7 @@ extension IterableComparable<C extends Comparable> on Iterable<C> {
   }
 
   bool isOrdered({OrderLinear? order, bool strictly = false}) =>
-      isNotOrdered(order: order, strictly: strictly);
+      !isNotOrdered(order: order, strictly: strictly);
 
   ///
   /// [everyUpperThan]
