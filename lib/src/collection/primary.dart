@@ -15,7 +15,7 @@ part of 'collection.dart';
 ///
 ///
 extension MapNullable<K, V> on Map<K, V?> {
-  void reset({V? fill}) => updateAll((_, __) => fill);
+  void reset({V? fill}) => updateAll((_, _) => fill);
 }
 
 ///

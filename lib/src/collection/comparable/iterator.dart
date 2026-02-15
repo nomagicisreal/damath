@@ -102,6 +102,19 @@ extension IteratorComparable<C extends Comparable> on Iterable<C> {
 ///
 extension IteratorDouble on Iterator<double> {
   ///
+  /// [everySignEqual]
+  ///
+  bool get everySignEqual {
+    if (!moveNext()) throw StateError(ErrorMessage.iterableNoElement);
+    if (current.isNegative) {
+      if (any(DoubleExtension.predicatePositive)) return false;
+    } else {
+      if (any(DoubleExtension.predicateNegative)) return false;
+    }
+    return true;
+  }
+
+  ///
   /// [min], [max], [mode]
   ///
   double get min => reduce(DoubleExtension.reduceMin);

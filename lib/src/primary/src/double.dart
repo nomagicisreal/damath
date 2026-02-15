@@ -98,6 +98,16 @@ extension DoubleExtension on double {
 
   static bool predicateNaN(double value) => value.isNaN;
 
+  static bool predicateRadianOutRound(double value) =>
+      value >= DoubleExtension.radian_angle360 ||
+          value <= -DoubleExtension.radian_angle360;
+
+  static bool predicateRadianInRound(double value) {
+    if (value >= DoubleExtension.radian_angle360) return false;
+    if (value <= -DoubleExtension.radian_angle360) return false;
+    return true;
+  }
+
   ///
   ///
   /// apply

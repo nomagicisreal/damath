@@ -48,28 +48,24 @@ extension IterableComparable<C extends Comparable> on Iterable<C> {
       );
 
   ///
+  /// [isNotOrdered]
   /// [isOrdered]
   ///
-  bool isOrdered({
-    OrderLinear? order,
-    bool strictly = false,
-  }) => switch (order) {
-    OrderLinear.increase => iterator.exist(
-      IteratorComparable.predicateInvalid(OrderLinear.increase, strictly),
-    ),
-    OrderLinear.decrease => iterator.exist(
-      IteratorComparable.predicateInvalid(OrderLinear.decrease, strictly),
-    ),
-    null =>
-      iterator.exist(
-            IteratorComparable.predicateInvalid(OrderLinear.increase, strictly),
-          ) ||
-          iterator.exist(
-            IteratorComparable.predicateInvalid(OrderLinear.decrease, strictly),
-          ),
-  };
+  /// see also [collection].[isSorted], which requires a [Comparator]
+  ///
+  bool isNotOrdered({OrderLinear? order, bool strictly = false}) {
+    final invalid = IteratorComparable.predicateInvalid;
+    if (order != null) return iterator.exist(invalid(order, strictly));
+    return iterator.exist(invalid(OrderLinear.increase, strictly)) ||
+        iterator.exist(invalid(OrderLinear.decrease, strictly));
+  }
+
+  bool isOrdered({OrderLinear? order, bool strictly = false}) =>
+      isNotOrdered(order: order, strictly: strictly);
 
   ///
+  /// [everyUpperThan]
+  /// [everyLowerThan]
   /// [everyRangeIn]
   ///
   bool everyUpperThan(C min, [bool orSame = false]) =>
@@ -251,9 +247,7 @@ extension IterableDouble on Iterable<double> {
 
     if (requireTScores != null) {
       yield* requireTScores
-          ? iterator.takeAllApply(
-            (x) => (x - mean) / sd * 10 + 50,
-          )
+          ? iterator.takeAllApply((x) => (x - mean) / sd * 10 + 50)
           : iterator.takeAllApply((x) => (x - mean) / sd);
     }
 

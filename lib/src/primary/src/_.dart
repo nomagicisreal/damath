@@ -61,7 +61,14 @@ extension ErrorMessage on Error {
   ///
   /// comparable
   ///
-  static String comparableDisordered = 'comparable disordered';
+  static const String comparableDisordered = 'comparable disordered';
+  static const String invalidYearMonthScope = 'invalid year month scope';
+  static const String invalidRangeBoundary = 'invalid range boundary';
+  static const String invalidMonth = 'invalid month';
+  static const String invalidHour = 'invalid hour';
+  static const String invalidMinute = 'invalid minute';
+  static const String invalidInt = 'invalid int';
+  static const String invalidPartition = 'invalid partition';
 
   ///
   /// others
@@ -70,63 +77,6 @@ extension ErrorMessage on Error {
   static const String unsupportedSwitchCase = 'unsupported switch case';
   static const String numberNatural = 'number is natural';
   static const String regexNotMatchAny = 'regex not match any';
-}
-
-///
-/// [invalidIndex], ...
-/// [validateMonth], ...
-///
-extension Erroring on Error {
-  ///
-  ///
-  ///
-  static const String name_invalidYearMonthScope = 'invalid year month scope';
-  static const String name_invalidRangeBoundary = 'invalid range boundary';
-  static const String name_invalidMonth = 'invalid month';
-  static const String name_invalidHour = 'invalid hour';
-  static const String name_invalidMinute = 'invalid minute';
-  static const String name_invalidInt = 'invalid int';
-  static const String name_invalidPartition = 'invalid partition';
-
-  ///
-  /// functions
-  ///
-  static ArgumentError invalidInt(int i) =>
-      ArgumentError.value(i, name_invalidInt);
-
-  static ArgumentError invalidPartition(int m, int n) =>
-      ArgumentError('$m into $n group', name_invalidPartition);
-
-  static ArgumentError invalidMonth(int month) =>
-      ArgumentError.value(month, name_invalidMonth);
-
-  static ArgumentError invalidHour(int hour) =>
-      ArgumentError.value(hour, name_invalidHour);
-
-  static ArgumentError invalidMinute(int minute) =>
-      ArgumentError.value(minute, name_invalidMinute);
-
-  static ArgumentError invalidYearMonthsScope(
-    (int, int) monthBegin,
-    (int, int) monthEnd,
-  ) => ArgumentError.value(
-    '${monthBegin.$1}.${monthBegin.$2} ~ ${monthEnd.$1} ~ ${monthEnd.$2}',
-    name_invalidYearMonthScope,
-  );
-
-  static ArgumentError invalidRangeBoundary(int begin, int end) =>
-      ArgumentError.value('$begin ~ $end', name_invalidRangeBoundary);
-
-  //
-  static RangeError invalidIndex(int index, [int? max]) =>
-      RangeError.range(index, 0, max);
-
-  static RangeError invalidIntOver(int i, [int min = 0]) =>
-      RangeError.range(i, min, i - 1);
-
-  //
-  static StateError invalidComparableResult(int value) =>
-      StateError('comparable value not provided: $value');
 }
 
 extension NullableExtension<T> on T? {
@@ -145,7 +95,7 @@ extension BoolExtension on bool {
 
 ///
 /// static methods:
-/// [predicateLarger], ...
+/// [predicate_larger], ...
 ///
 /// instance methods:
 /// [squared], ...

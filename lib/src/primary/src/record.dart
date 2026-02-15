@@ -8,7 +8,6 @@ part of '../primary.dart';
 ///
 ///
 
-
 ///
 ///
 /// static methods:
@@ -16,7 +15,7 @@ part of '../primary.dart';
 /// [compareNumOn1], ...
 ///
 /// instance methods:
-/// [join]
+/// [join], ...
 /// [isRelationBetween], ...
 ///
 ///
@@ -57,9 +56,13 @@ extension Record2<A, B> on (A, B) {
   ///
 
   ///
-  ///
+  /// [join]
+  /// [joinWithAnother]
   ///
   String join([String separator = '']) => '${$1}$separator${$2}';
+
+  String joinWithAnother((double, double) another, [String separator = '~']) =>
+      '$this $separator $another';
 
   ///
   /// [isRelationBetween]
@@ -86,14 +89,12 @@ extension RecordDouble2 on (double, double) {
   static (double, double) maxDirection(
     (double, double) a,
     (double, double) b,
-  ) =>
-      a.direction > b.direction ? a : b;
+  ) => a.direction > b.direction ? a : b;
 
   static (double, double) minDirection(
     (double, double) a,
     (double, double) b,
-  ) =>
-      a.direction < b.direction ? a : b;
+  ) => a.direction < b.direction ? a : b;
 
   ///
   /// [toStringAsFixed]
@@ -145,26 +146,22 @@ extension RecordDouble3 on (double, double, double) {
   static (double, double, double) maxAzimuthal(
     (double, double, double) a,
     (double, double, double) b,
-  ) =>
-      a.directionAzimuthal > b.directionAzimuthal ? a : b;
+  ) => a.directionAzimuthal > b.directionAzimuthal ? a : b;
 
   static (double, double, double) minAzimuthal(
     (double, double, double) a,
     (double, double, double) b,
-  ) =>
-      a.directionAzimuthal < b.directionAzimuthal ? a : b;
+  ) => a.directionAzimuthal < b.directionAzimuthal ? a : b;
 
   static (double, double, double) maxPolar(
     (double, double, double) a,
     (double, double, double) b,
-  ) =>
-      a.directionPolar > b.directionPolar ? a : b;
+  ) => a.directionPolar > b.directionPolar ? a : b;
 
   static (double, double, double) minPolar(
     (double, double, double) a,
     (double, double, double) b,
-  ) =>
-      a.directionPolar < b.directionPolar ? a : b;
+  ) => a.directionPolar < b.directionPolar ? a : b;
 
   ///
   ///
@@ -179,7 +176,8 @@ extension RecordDouble3 on (double, double, double) {
   ///
   /// [toStringAsFixed]
   ///
-  String toStringAsFixed(int digit) => '(${$1.toStringAsFixed(digit)}, '
+  String toStringAsFixed(int digit) =>
+      '(${$1.toStringAsFixed(digit)}, '
       '${$2.toStringAsFixed(digit)}, ${$3.toStringAsFixed(digit)})';
 
   ///

@@ -153,7 +153,7 @@ abstract final class NodeNext<T, N extends NodeNext<T, N>> extends Vertex<T> {
     required Generator<T> value,
     required Generator<N Function(T data, [N? next])> construct,
   }) {
-    if (length < 1) throw Erroring.invalidInt(length);
+    if (length < 1) throw ArgumentError.value(length, ErrorMessage.invalidInt);
 
     var i = inOrder ? length - 1 : 0;
     final limit = inOrder ? () => i > -1 : () => i < length;
@@ -172,7 +172,7 @@ abstract final class NodeNext<T, N extends NodeNext<T, N>> extends Vertex<T> {
 
   bool get isGrowable {
     try {
-      this.next = this.next;
+      next = next;
       return true;
     } on StateError catch (e) {
       if (e.message == NodeNext.tryToModifyFixed) return false;
@@ -193,9 +193,9 @@ abstract final class NodeNext<T, N extends NodeNext<T, N>> extends Vertex<T> {
   /// [indexOf], [last] (operator [] and []= see [NodeNextOperatable])
   ///
   static N indexOf<T, N extends NodeNext<T, N>>(N node, int index) {
-    if (index.isNegative) throw Erroring.invalidIndex(index);
+    if (index.isNegative) throw RangeError.value(index);
     for (var i = 0; i < index; i++) {
-      node = node.next ?? (throw Erroring.invalidIntOver(i));
+      node = node.next ?? (throw RangeError.range(index, 0, i));
     }
     return node;
   }

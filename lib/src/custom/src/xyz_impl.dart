@@ -87,7 +87,8 @@ mixin _MxyOperatable<P extends _MxyOperatable<P>> on _Mxy<P>
 base mixin _MxyzO<P extends _MxyzO<P>> on _Mxyz<P>
     implements _MxyOperatable<P> {
   @override
-  P _instance(double x, double y, [double z = double.nan]);
+  // ignore: unused_element_parameter
+  P _instance(double x, double y, [double z]);
 
   @override
   P operator -() => _instance(-x, -y, -z);

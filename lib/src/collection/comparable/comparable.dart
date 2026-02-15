@@ -88,46 +88,38 @@ extension ComparableExtension<C extends Comparable> on C {
   static bool orderingAfter<C extends Comparable>(C current, C other) =>
       current.compareTo(other) == 1;
 
+  static const String _ucv = 'unimplement comparable value';
+
   ///
   ///
   ///
-  bool? ternaryIncrease(C other) {
-    final value = compareTo(other);
-    return switch (value) {
-      0 => null,
-      1 => false,
-      -1 => true,
-      _ => throw Erroring.invalidComparableResult(value),
-    };
-  }
+  bool? ternaryIncrease(C other) => switch (compareTo(other)) {
+    0 => null,
+    1 => false,
+    -1 => true,
+    _ => throw UnimplementedError('$_ucv: ${compareTo(other)}'),
+  };
 
-  bool? ternaryDecrease(C other) {
-    final value = compareTo(other);
-    return switch (value) {
-      0 => null,
-      1 => true,
-      -1 => false,
-      _ => throw Erroring.invalidComparableResult(value),
-    };
-  }
+  bool? ternaryDecrease(C other) => switch (compareTo(other)) {
+    0 => null,
+    1 => true,
+    -1 => false,
+    _ => throw UnimplementedError('$_ucv: ${compareTo(other)}'),
+  };
 
-  static bool? ternaryIncreasing<C extends Comparable>(C current, C other) {
-    final value = current.compareTo(other);
-    return switch (value) {
-      0 => null,
-      1 => false,
-      -1 => true,
-      _ => throw Erroring.invalidComparableResult(value),
-    };
-  }
+  static bool? ternaryIncreasing<C extends Comparable>(C current, C other) =>
+      switch (current.compareTo(other)) {
+        0 => null,
+        1 => false,
+        -1 => true,
+        _ => throw UnimplementedError('$_ucv: ${current.compareTo(other)}'),
+      };
 
-  static bool? ternaryDecreasing<C extends Comparable>(C current, C other) {
-    final value = current.compareTo(other);
-    return switch (value) {
-      0 => null,
-      1 => true,
-      -1 => false,
-      _ => throw Erroring.invalidComparableResult(value),
-    };
-  }
+  static bool? ternaryDecreasing<C extends Comparable>(C current, C other) =>
+      switch (current.compareTo(other)) {
+        0 => null,
+        1 => true,
+        -1 => false,
+        _ => throw UnimplementedError('$_ucv: ${current.compareTo(other)}'),
+      };
 }

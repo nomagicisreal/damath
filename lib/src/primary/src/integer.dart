@@ -355,7 +355,7 @@ extension IntExtension on int {
   }
 
   static int accumulate(int n) {
-    if (n < 0) Erroring.invalidInt(n);
+    if (n < 0) throw ArgumentError.value(n, ErrorMessage.invalidInt);
     if (n < 101) return IntExtension.accumulatedIn100[n - 1];
     var value = IntExtension.accumulatedIn100.last;
     for (var i = 101; i <= n; i++) {
@@ -368,7 +368,7 @@ extension IntExtension on int {
   ///
   ///
   static int factorial(int n) {
-    if (n < 0) Erroring.invalidInt(n);
+    if (n < 0) throw ArgumentError.value(n, ErrorMessage.invalidInt);
     if (n > 19) throw UnsupportedError('require BigInt');
     return IntExtension.factorialIn20[n - 1];
   }
@@ -397,7 +397,7 @@ extension IntExtension on int {
   }
 
   static Iterable<int> factorized(int n) sync* {
-    if (n < 2) Erroring.invalidInt(n);
+    if (n < 2) throw ArgumentError.value(n, ErrorMessage.invalidInt);
     final primes = List.of(IntExtension.primesIn100);
     if (primes.any(IntExtension.predicator_equalTo(n))) {
       yield n;
@@ -430,7 +430,7 @@ extension IntExtension on int {
   }
 
   static Iterable<int> collatzConjecture(int n, [int scale = 3]) sync* {
-    if (n == 0) Erroring.invalidInt(n);
+    if (n == 0) throw ArgumentError.value(n, ErrorMessage.invalidInt);
     yield n;
     while (n != 1) {
       n = (n.isOdd ? n * scale + 1 : n / 2).toInt();
@@ -541,8 +541,8 @@ extension IntExtension on int {
   /// [combination]
   ///
   static int combination(int n, int k) {
-    if (n < 1) Erroring.invalidInt(n);
-    if (k.isNegative) Erroring.invalidInt(k);
+    if (n < 1) throw ArgumentError.value(n, ErrorMessage.invalidInt);
+    if (k.isNegative) throw ArgumentError.value(k, ErrorMessage.invalidInt);
     if (k > n) throw ArgumentError('invalid binomial coefficient ($n, $k)');
     var value = 1.0;
     while (k > 0) {
@@ -577,10 +577,10 @@ extension IntExtension on int {
   ///   7. [1, 1, 1, 1, 1]
   ///
   static int partition(int m, [int? n]) {
-    if (m.isNegative) Erroring.invalidInt(m);
+    if (m.isNegative) throw ArgumentError.value(m, ErrorMessage.invalidInt);
     if (n != null) {
       if (n.isRangeClose(1, m)) {
-        throw ArgumentError(Erroring.invalidPartition(m, n));
+        throw ArgumentError('$m into $n group', ErrorMessage.invalidPartition);
       }
       return _partitionSet(
         m,
@@ -611,10 +611,10 @@ extension IntExtension on int {
   ///   - [1, 1, 1]
   ///
   static Iterable<int> partitionSet(int m, [int? n]) sync* {
-    if (m.isNegative) Erroring.invalidInt(m);
+    if (m.isNegative) throw ArgumentError.value(m, ErrorMessage.invalidInt);
     if (n != null) {
       if (n.isRangeClose(1, m)) {
-        throw ArgumentError(Erroring.invalidPartition(m, n));
+        throw ArgumentError('$m into $n group', ErrorMessage.invalidPartition);
       }
       yield* _partitionSet(m).where((element) => element.length == n).flatted;
     }
@@ -632,9 +632,9 @@ extension IntExtension on int {
   /// this functions returns true only if [integers] is one of [3, 1], [1, 3], [2, 2].
   ///
   static bool partitionPredicate(Iterable<int> integers, int m, int n) {
-    if (m < 1) Erroring.invalidInt(m);
+    if (m < 1) throw ArgumentError.value(m, ErrorMessage.invalidInt);
     if (n.isRangeClose(1, m)) {
-      throw Erroring.invalidPartition(m, n);
+      throw ArgumentError('$m into $n group', ErrorMessage.invalidPartition);
     }
     return integers.length == n &&
         collection.IterableIntegerExtension(integers).sum == m;
@@ -717,7 +717,7 @@ extension IntExtension on int {
   ) => source.fold(<int, List<T>>{}, (steps, data) {
     final index = combiner(data);
     if (index < 0 || index >= source.length) {
-      throw Erroring.invalidIndex(index, source.length - 1);
+      throw RangeError.range(index, 0, source.length - 1);
     }
     return steps
       ..putIfAbsent(index, () => [])
